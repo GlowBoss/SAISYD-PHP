@@ -1,0 +1,34 @@
+body,
+html {
+    height: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    background-color: var(--card-bg-color)
+}
+
+
+.mainContainer {
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--card-bg-color)
+}
+
+.product-container {
+    width: 100%;
+    height: 700px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+
+.search {
+    max-width: 240px;
+}
+
+@media (max-width: 576px) {
+    .search {
+        max-width: 100%;
+    }
+}

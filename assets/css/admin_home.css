@@ -1,0 +1,168 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=ABeeZee&display=swap');
+
+:root {
+    /* Fonts */
+    --primaryFont: 'Poppins', sans-serif;
+    --secondaryFont: 'ABeeZee', sans-serif;
+
+    /* Colors */
+    --bg-color: linear-gradient(to bottom, #FFFBF2, #FFFFFF);
+    --bg-banner: linear-gradient(to bottom, #d5c9b9bd, #945400ea);
+    --primary-color: #C4A277;
+    --secondary-color: #EDE9E6;
+    --card-bg-color: #FFFBF2;
+    --text-color-light: #FFFBF2;
+    --text-color-dark: #2E1A00;
+    --gray: #333333;
+
+    /* FONT-SIZE */
+    --title: clamp(2.5rem, 6vw, 6rem);
+    --heading: clamp(1.8rem, 4vw, 2.5rem);
+    --subheading: clamp(1.2rem, 3vw, 1.5rem);
+    --lead: clamp(0.95rem, 2vw, 1rem);
+    --h6: clamp(0.75rem, 1.5vw, 0.88rem);
+
+    /* HOVER */
+    --btn-hover1: #2E1A00;
+    --btn-hover2: #333333;
+}
+
+body,
+html {
+    height: 100%;
+    margin: 0;
+    font-family: var(--primaryFont);
+    background-image: url('../img/admin_home_bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+.custom-visit {
+    background-color: var(--primary-color);
+    color: var(--text-color-light);
+    border: none;
+    font-family: var(--secondaryFont);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.custom-logout {
+    background-color: black;
+    color: var(--text-color-light);
+    border: none;
+    font-family: var(--secondaryFont);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.custom-visit:hover{
+    opacity: 0.9;
+    background-color: var(--btn-hover1);
+    color: var(--text-color-light);
+}
+
+.custom-logout:hover {
+    opacity: 0.9;
+    background-color: var(--btn-hover2);
+    color: var(--text-color-light);
+}
+
+
+.dashboard-container {
+    padding: 20px;
+    min-height: 100vh;
+    color: var(--text-color-light);
+}
+
+.dashboard-title {
+        color: var(--primary-color);
+    }
+
+@media (max-width: 767.98px) {
+    .dashboard-title {
+        padding-top: 2rem; /* Add some top padding */
+        font-size: 1.75rem; /* Decrease font size */
+        color: var(--primary-color);
+    }
+}
+
+
+.dashboard-subtitle {
+    font-style: italic;
+    color: var(--text-color-dark);
+    margin-bottom: 40px;
+    font-size: var(--lead);
+}
+
+.dashboard-box {
+    background-color: var(--gray);
+    height: 130px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: var(--subheading);
+    color: var(--text-color-light);
+    transition: background-color 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+@media (max-width: 767.98px) { /* Bootstrap's sm breakpoint */
+    .dashboard-box {
+        max-width: 90%; /* Set a maximum width */
+        height: auto; /* Allow height to adjust based on content */
+        padding: 10px; /* Adjust padding for smaller screens */
+        font-size: var(--h6); /* Adjust font size for better readability */
+        border-radius: 15px; /* Maintain rounded corners */
+        margin: 0 auto; /* Center the boxes */
+    }
+}
+
+.dashboard-box:hover {
+    background-color: var(--btn-hover1);
+    cursor: pointer;
+}
+/* Existing CSS */
+
+.icon-btn {
+    font-size: 1.5rem; /* Increased size */
+    padding: 0.5rem; /* Added padding */
+}
+
+@media (max-width: 767.98px) { /* Bootstrap's sm breakpoint */
+    .custom-visit,
+    .custom-logout {
+        padding: 0.5rem; /* Adjust padding for icon buttons */
+        font-size: 1.2rem; /* Adjust icon size */
+        width: auto; /* Adjust width as needed */
+        height: auto; /* Adjust height as needed */
+        display: inline-flex; /* Use flexbox for centering */
+        align-items: center; /* Vertically center the icon */
+        justify-content: center; /* Horizontally center the icon */
+    }
+
+    .custom-visit i,
+    .custom-logout i {
+        font-size: 1.2rem; /* Adjust icon size */
+    }
+
+    .d-flex.gap-3 {
+        gap: 0.5rem !important; /* Reduce gap between items */
+    }
+}
+
+.logo {
+    height: 40px;
+    object-fit: contain;
+}
+
+footer p {
+    font-family: var(--secondaryFont);
+    font-size: var(--h6);
+}
+
+

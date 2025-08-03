@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Inventory Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <!-- <link rel="stylesheet" href="../assets/css/main.css"> -->
+    <link rel="stylesheet" href="../assets/css/inventory-management.css">
+    <link rel="stylesheet" href="../assets/css/sidebar.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet" />
+    <link rel="icon" href="../assets/img/round_logo.png" type="image/png">
+
+</head>
+
+<body>
+    <div class="container-fluid mainContainer p-3">
+        <div class="row">
+            <!-- Sidebar column for md+ screens -->
+            <div class="col-12 col-md-4 col-lg-3 d-none d-md-block">
+
+                <div class="custom-sidebar rounded-5 p-4 bg-white border">
+                    <!-- Sidebar content here -->
+                    <!-- Logo centered -->
+                    <div class="row pb-4">
+                        <div class="sideBar text-center">
+                            <img src="../assets/img/saisydLogo.png" class="card-img-top" alt="logo" />
+                        </div>
+                    </div>
+
+                    <!-- MENU section -->
+                    <div class="row pb-4">
+                        <div class="sideBar">
+                            <p class="fw-bold m-0">MENU</p>
+                            <div class="nav-item d-flex justify-content-start align-items-center">
+                                <img src="../assets/img/dots.png" alt="Menu Icon" class="menu-icon ms-2" />
+                                <a class="nav-link active ms-2" href="home.html">Dashboard</a>
+                            </div>
+                            <div class="nav-item d-flex justify-content-start align-items-center">
+                                <img src="../assets/img/dots.png" alt="Menu Icon" class="menu-icon ms-2" />
+                                <a class="nav-link active ms-2" href="notification.html">Notification</a>
+                            </div>
+                            <div class="nav-item d-flex justify-content-start align-items-center">
+                                <img src="../assets/img/dots.png" alt="Menu Icon" class="menu-icon ms-2" />
+                                <a class="nav-link active ms-2" href="point-of-sales.html">POS</a>
+                            </div>
+                            <div class="nav-item d-flex justify-content-start align-items-center">
+                                <img src="../assets/img/dots.png" alt="Menu Icon" class="menu-icon ms-2" />
+                                <a class="nav-link active ms-2" href="menu-management.html">Menu Management</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row pb-4">
+                        <div class="sideBar">
+                            <p class="fw-bold m-0">FINANCIAL</p>
+                            <div class="nav-item d-flex justify-content-start align-items-center">
+                                <img src="../assets/img/dots.png" alt="Menu Icon" class="menu-icon ms-2" />
+                                <a class="nav-link active ms-2" href="sales-and-report.html">Sales and Report</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row pb-4">
+                        <div class="sideBar">
+                            <p class="fw-bold m-0">TOOLS</p>
+                            <div class="nav-item d-flex justify-content-start align-items-center">
+                                <img src="../assets/img/dots.png" alt="Menu Icon" class="menu-icon ms-2" />
+                                <a class="nav-link active ms-2" href="#">Settings</a>
+                            </div>
+                            <div class="nav-item d-flex justify-content-start align-items-center">
+                                <img src="../assets/img/dots.png" alt="Menu Icon" class="menu-icon ms-2" />
+                                <a class="nav-link active ms-2" href="login.html">Logout</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Offcanvas Sidebar -->
+            <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasSidebar"
+                aria-labelledby="offcanvasSidebarLabel">
+                <!-- Header with Logo and Close Button -->
+                <div
+                    class="offcanvas-header d-flex align-items-center justify-content-between px-3 pt-3 pb-2 border-bottom">
+                    <img src="../assets/img/saisydLogo.png" alt="Logo" class="me-2"
+                        style="max-height: 50px; max-width: 100px;" />
+                    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
+                        aria-label="Close"></button>
+                </div>
+
+                <!-- Body -->
+                <div class="offcanvas-body overflow-auto px-0">
+                    <div class="custom-sidebar px-4 py-3 bg-white h-100">
+
+                        <!-- Menu Section -->
+                        <div class="sideBar pb-4">
+                            <p class="fw-bold">MENU</p>
+                            <div class="nav-item d-flex align-items-center">
+                                <img src="../assets/img/dots.png" alt="Menu Icon" class="menu-icon ms-2" />
+                                <a class="nav-link active ms-2" href="home.html">Dashboard</a>
+                            </div>
+                            <div class="nav-item d-flex align-items-center">
+                                <img src="../assets/img/dots.png" alt="Menu Icon" class="menu-icon ms-2" />
+                                <a class="nav-link active ms-2" href="notification.html">Notification</a>
+                            </div>
+                            <div class="nav-item d-flex align-items-center">
+                                <img src="../assets/img/dots.png" alt="Menu Icon" class="menu-icon ms-2" />
+                                <a class="nav-link active ms-2" href="point-of-sales.html">POS</a>
+                            </div>
+                            <div class="nav-item d-flex align-items-center">
+                                <img src="../assets/img/dots.png" alt="Menu Icon" class="menu-icon ms-2" />
+                                <a class="nav-link active ms-2" href="menu-management.html">Menu Management</a>
+                            </div>
+
+                        </div>
+
+                        <!-- Financial Section -->
+                        <div class="sideBar pb-4">
+                            <p class="fw-bold">FINANCIAL</p>
+                            <div class="nav-item d-flex align-items-center">
+                                <img src="../assets/img/dots.png" alt="Menu Icon" class="menu-icon ms-2" />
+                                <a class="nav-link active ms-2" href="sales-and-report.html">Sales and
+                                    Report</a>
+                            </div>
+                        </div>
+
+                        <!-- Tools Section -->
+                        <div class="sideBar pb-2">
+                            <p class="fw-bold">TOOLS</p>
+                            <div class="nav-item d-flex align-items-center">
+                                <img src="../assets/img/dots.png" alt="Menu Icon" class="menu-icon ms-2" />
+                                <a class="nav-link active ms-2" href="#">Settings</a>
+                            </div>
+                            <div class="nav-item d-flex align-items-center">
+                                <img src="../assets/img/dots.png" alt="Menu Icon" class="menu-icon ms-2" />
+                                <a class="nav-link active ms-2" href="login.html">Logout</a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content column -->
+            <div class="col-md-8 col-lg-9">
+                <div class="col-12 col-md-12 col-lg-12">
+                    <div class="card rounded-4 p-2" style="max-height: 95vh; overflow-y: auto;">
+
+                        <div>
+                            <!-- TOP FUNCTIONS BAR -->
+                            <!-- Header Row -->
+                            <div class="align-items-center py-4 px-lg-5 px-2">
+                                <h4 class="subheading fw-bold  m-1 d-flex align-items-center" role="button"
+                                    data-bs-toggle="offcanvas" data-bs-target="#offcanvasSidebar"
+                                    aria-controls="offcanvasSidebar" style="cursor: pointer;">
+                                    <i class="ri-menu-line d-md-none me-2"></i>
+                                    <span>Inventory Management</span>
+                                </h4>
+                            </div>
+                            <div class="row g-2 align-items-center mb-3 px-2 px-lg-3">
+                                <div class="col-12 col-sm-6">
+                                    <h4 class="subheading fw-bold">Current Stock</h4>
+                                </div>
+                                <!-- search -->
+                                <div class="col-12 col-sm">
+                                    <input type="text" class="form-control" placeholder="Search Product Name"
+                                        aria-label="Enter product Name" id="item-input">
+                                </div>
+                                <!-- add button -->
+                                <div class="col-12 col-sm-auto col-md-12 col-lg-auto">
+                                    <button class="btn categorybtn w-100" type="button" data-bs-toggle="modal"
+                                        data-bs-target="#confirmModal">
+                                        Search
+                                    </button>
+                                </div>
+                                <div class="col-12 col-sm-auto col-md-12 col-lg-auto">
+                                    <button class="btn categorybtn w-100" type="button" data-bs-toggle="modal"
+                                        data-bs-target="#confirmModal">
+                                        Add
+                                    </button>
+                                </div>
+                                <div class="col-12 col-sm-auto col-md-12 col-lg-auto">
+                                    <button class="btn btn-outline-success w-100" type="button" data-bs-toggle="modal"
+                                        data-bs-target="#confirmModal">
+                                        Export
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+                        <!-- TABLE -->
+                        <div class="card mb-5 mx-3 overflow-scroll" style="height: 90vh">
+                            <table class="table overflow-hidden">
+                                <thead class="table-secondary text-center">
+                                    <tr>
+                                        <th scope="col">Item Code.</th>
+                                        <th scope="col">Photo</th>
+                                        <th scope="col">Item Name</th>
+                                        <th scope="col">Item Group</th>
+                                        <th scope="col">Last Purchase</th>
+                                        <th scope="col">On Hand</th>
+                                        <th scope="col">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-center">
+                                    <tr>
+                                        <th scope="row">1</th>
+                                        <td>orange.png</td>
+                                        <td>Orange</td>
+                                        <td>Fruits</td>
+                                        <td>03 May 2025</td>
+                                        <td>100 Kg</td>
+                                        <td><a class="btn"><i class="ri-edit-box-line"></i></a>
+                                            <a class="btn"><i class="ri-more-line"></i></a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">2</th>
+                                        <td>orange.png</td>
+                                        <td>Orange</td>
+                                        <td>Fruits</td>
+                                        <td>04 May 2025</td>
+                                        <td>100 Kg</td>
+                                        <td><a class="btn"><i class="ri-edit-box-line"></i></a>
+                                            <a class="btn"><i class="ri-more-line"></i></a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Add this script at the bottom to initialize Bootstrap offcanvas -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const offcanvasElement = document.getElementById("offcanvasSidebar");
+            const bsOffcanvas = bootstrap.Offcanvas.getOrCreateInstance(offcanvasElement);
+
+            // Open offcanvas by default on small screens
+            if (window.innerWidth < 768) {
+                bsOffcanvas.show();
+            }
+        });
+    </script>
+    <script src=" https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous">
+        </script>
+</body>
+
+</html>

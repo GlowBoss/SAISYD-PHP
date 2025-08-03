@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cart</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/cart.css">
+    <link rel="stylesheet" href="assets/css/swiper-bundle.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet" />
+    <link rel="icon" href="../assets/img/round_logo.png" type="image/png">
+
+</head>
+
+<style>
+    .form-check-input {
+        width: 1.5em;
+        height: 1.5em;
+        margin-top: 0.25em;
+        border: 3px solid var(--primary-color) !important;
+    }
+
+    .form-check-input:checked {
+        background-color: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+    }
+
+    .form-check-label {
+        margin-left: 0.5em;
+        font-weight: 500;
+    }
+</style>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top py-2" style="background-color: white;">
+        <div class="container-fluid p-0">
+            <!-- Left: Logo -->
+            <a class="navbar-brand fw-bold" href="#">
+                <img src="assets/img/saisydLogo.png" alt="SAISYD Logo" style="height: 50px;">
+            </a>
+
+            <!-- Right: Toggle + Icon (for small screens) -->
+            <div class="d-flex align-items-center">
+                <!-- Icon + Text (visible only on small screens) -->
+                <a href="cart.html" class="d-flex d-lg-none align-items-center text-decoration-none me-2">
+                    <img src="https://cdn-icons-png.flaticon.com/512/4903/4903482.png" class="icon-bag me-1" />
+                    <span class="lead" style="color: var(--text-color-dark);">Cart</span>
+                </a>
+
+                <!-- Toggle button -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#saisydNavbar"
+                    aria-controls="saisydNavbar" aria-expanded="false" aria-label="Toggle navigation"
+                    style="background: none; border: none; box-shadow: none; padding: 0;">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </div>
+
+
+            <!-- Center: Nav links | Right: Icon + Button for large screens -->
+            <div class="collapse navbar-collapse" id="saisydNavbar">
+
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0 d-flex align-items-lg-center gap-lg-4">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#about">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#location">Location</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
+                </ul>
+
+                <div class="d-flex align-items-center mt-lg-0">
+                    <!-- Large screen icon with "Cart" label -->
+                    <a href="cart.html" class="d-none d-lg-flex align-items-center me-2 text-decoration-none">
+                        <img src="https://cdn-icons-png.flaticon.com/512/4903/4903482.png" class="icon-bag me-1" />
+                        <span class="lead " style="color: var(--text-color-dark)">Cart</span>
+                    </a>
+                    <button class="contact-btn ms-0 ms-lg-2" onclick="location.href='menu.html'">Menu</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- CART & SUMMARY SECTION -->
+    <div class="container-fluid mt-5">
+        <div class="row justify-content-center">
+            <!-- Cart Card -->
+            <div class="col-12 col-lg-5 mb-4">
+                <div class="card rounded-5 cart-section p-3" style="max-height: 75vh;">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="icon me-2"></div>
+                            <div class="subheading2 fw-bold cart-title">Cart</div>
+                        </div>
+                        <button class="btn btn-outline-danger btn-sm h6" id="clearCartBtn">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+
+                    <div class="overflow-auto" style="max-height: 75vh;">
+                        <!-- Cart Item -->
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex align-items-center">
+                                <button class="btn btn-sm btn-outline-secondary me-2">-</button>
+                                <div class="quantity subheading fw-bold mx-1">1x</div>
+                                <button class="btn btn-sm btn-outline-secondary ms-2">+</button>
+                            </div>
+                            <div class="product subheading fw-bold ms-3">Amerikano</div>
+                            <div class="price subheading fw-bold ms-2">₱120</div>
+                        </div>
+                        <hr>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Card -->
+            <div class="col-12 col-lg-6 mb-4">
+                <div class="card rounded-5 p-3 h-100">
+                    <h3 class="subheading2 text-start ms-2 pt-2 pb-3">Summary</h3>
+                    <div class="d-flex justify-content-evenly mb-2">
+                        <p class="lead mb-0">Items: <span id="item-count">0</span></p>
+                        <p class="lead mb-0">Total: <span id="order-total">₱0.00</span></p>
+                    </div>
+                    <hr>
+
+                    <!-- Order Method -->
+                    <div class="mx-3 mb-3">
+                        <p class="lead">Choose your order method:</p>
+                        <div class="row row-cols-2 gx-2">
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input" onclick="updateOrderDataWithSelections()"
+                                        type="radio" name="orderType" id="dinein">
+                                    <label class="form-check-label" onclick="updateOrderDataWithSelections()"
+                                        for="dinein">Dine-in</label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <!-- Placeholder for possible future method -->
+                            </div>
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input" onclick="updateOrderDataWithSelections()"
+                                        type="radio" name="orderType" id="takeout">
+                                    <label class="form-check-label" onclick="updateOrderDataWithSelections()"
+                                        for="takeout">Takeout</label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input" onclick="updateOrderDataWithSelections()"
+                                        type="radio" name="orderType" id="pickup">
+                                    <label class="form-check-label" onclick="updateOrderDataWithSelections()"
+                                        for="pickup">Pickup</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+
+                    <!-- Payment Method -->
+                    <div class="row row-cols-1 row-cols-md-2 g-4 mx-2 mb-3">
+                        <div class="col">
+                            <p class="lead">Mode of Payment:</p>
+                            <div class="form-check my-2">
+                                <input class="form-check-input" onclick="updateOrderDataWithSelections()" type="radio"
+                                    name="modePayment" id="cash">
+                                <label class="form-check-label" onclick="updateOrderDataWithSelections()"
+                                    for="cash">Cash</label>
+                            </div>
+                            <div class="form-check my-2">
+                                <input class="form-check-input" onclick="updateOrderDataWithSelections()" type="radio"
+                                    name="modePayment" id="gcash">
+                                <label class="form-check-label" onclick="updateOrderDataWithSelections()"
+                                    for="gcash">GCash</label>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="mb-3">
+                                <label for="refNumber" class="form-label">Enter Reference Number</label>
+                                <input type="text" class="form-control" id="refNumber" placeholder="1234-5678-910 (Required)" required>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+
+                    <div class="text-end px-3 mb-3">
+                        <h3 class="subheading3">TOTAL: <span id="grand-total">₱0.00</span></h3>
+                    </div>
+                    <button onclick="openPopup()" class="btn buy-btn rounded-5 mx-auto d-block mb-2">Checkout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Placeholder for modal -->
+    <div id="modal-placeholder"></div>
+
+    <!-- Scripts -->
+    <script src="assets/js/swiper-bundle.min.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script>
+        // Load modal content and attach cart logic
+        fetch("modal/cart-modal.html")
+            .then(res => res.text())
+            .then(data => {
+                document.getElementById("modal-placeholder").innerHTML = data;
+
+                const rawData = localStorage.getItem("orders");
+                let orderData = rawData ? JSON.parse(rawData) : [];
+
+                const cartContainer = document.querySelector('.overflow-auto');
+                if (!cartContainer) return;
+
+                // Clear container
+                cartContainer.innerHTML = '';
+
+                // Check if cart is empty
+                if (orderData.length === 0) {
+                    cartContainer.innerHTML = '<div class="text-muted text-center py-4">Your cart is empty.</div>';
+                    updateOrderSummary(); // Update summary for empty cart
+                    return;
+                }
+
+                // Render cart items
+                orderData.forEach((item, index) => {
+                    const itemHTML = document.createElement('div');
+                    itemHTML.classList.add('cart-item-wrapper');
+
+                    const displayPrice = typeof item.price === 'string' ? item.price : `₱${item.price}`;
+                    const displayName = item.displayName || item.name.split('_')[0] || item.name;
+                    const isDrink = !displayName.toLowerCase().includes('sandwich');
+
+                    itemHTML.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="d-flex align-items-center">
+                            <button class="btn btn-sm btn-outline-secondary me-2 minus-btn" data-index="${index}">-</button>
+                            <div class="quantity subheading fw-bold mx-1" id="qty-${index}">${item.quantity}x</div>
+                            <button class="btn btn-sm btn-outline-secondary ms-2 plus-btn" data-index="${index}">+</button>
+                        </div>
+                        <div class="product subheading fw-bold ms-3">${displayName}</div>
+                        <div class="price subheading fw-bold ms-2">${displayPrice}</div>
+                    </div>
+                    ${item.size ? `<div class="text-muted small ms-5">Size: ${item.size}</div>` : ''}
+                    ${item.sugar ? `<div class="text-muted small ms-5">Sugar: ${item.sugar}%</div>` : ''}
+                    ${(item.ice && isDrink) ? `<div class="text-muted small ms-5">Ice: ${item.ice}</div>` : ''}
+                    ${item.notes ? `<div class="text-muted small ms-5">Notes: ${item.notes}</div>` : ''}
+                    <hr>
+                `;
+                    cartContainer.appendChild(itemHTML);
+                });
+
+                // Update cart totals
+                updateCartTotal(orderData);
+                updateOrderSummary();
+
+                // Update cart UI
+                function updateCartUI(index) {
+                    document.getElementById(`qty-${index}`).textContent = `${orderData[index].quantity}x`;
+                    updateCartTotal(orderData);
+                    updateOrderSummary();
+                }
+
+                // Save cart to localStorage
+                function saveCart() {
+                    localStorage.setItem("orders", JSON.stringify(orderData));
+                    updateOrderSummary();
+                }
+
+                // Plus buttons
+                document.querySelectorAll('.plus-btn').forEach(btn => {
+                    btn.addEventListener('click', e => {
+                        const index = parseInt(e.target.getAttribute('data-index'));
+                        orderData[index].quantity++;
+                        updateCartUI(index);
+                        saveCart();
+                    });
+                });
+
+                // Minus buttons
+                document.querySelectorAll('.minus-btn').forEach(btn => {
+                    btn.addEventListener('click', e => {
+                        const index = parseInt(e.target.getAttribute('data-index'));
+                        if (orderData[index].quantity > 1) {
+                            orderData[index].quantity--;
+                            updateCartUI(index);
+                            saveCart();
+                        } else {
+                            if (confirm("Remove this item from cart?")) {
+                                orderData.splice(index, 1);
+                                saveCart();
+                                location.reload();
+                            }
+                        }
+                    });
+                });
+
+                // Confirm button in modal
+                const addBtn = document.querySelector('.addbtn');
+                if (addBtn) {
+                    addBtn.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        confirmOrder();
+                    });
+                }
+
+                // Clear cart button
+                const clearCartBtn = document.getElementById('clearCartBtn');
+                if (clearCartBtn) {
+                    clearCartBtn.addEventListener('click', function () {
+                        if (confirm("Are you sure you want to clear the cart?")) {
+                            localStorage.removeItem("orders");
+                            cartContainer.innerHTML = '<div class="text-muted text-center py-4">Your cart is empty.</div>';
+                            updateCartTotal([]);
+                            updateOrderSummary();
+                        }
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error loading cart modal:', error);
+            });
+
+        // Calculate and display total
+        function updateCartTotal(orderData) {
+            let total = 0;
+            orderData.forEach(item => {
+                const price = typeof item.price === 'string' ?
+                    parseFloat(item.price.replace('₱', '')) :
+                    parseFloat(item.price);
+                total += price * item.quantity;
+            });
+
+            const totalElement = document.querySelector('.cart-total');
+            if (totalElement) {
+                totalElement.textContent = `Total: ₱${total.toFixed(2)}`;
+            }
+        }
+
+        // Calculate order summary
+        function updateOrderSummary() {
+            const rawData = localStorage.getItem("orders");
+            const orderData = rawData ? JSON.parse(rawData) : [];
+
+            let subtotal = 0;
+            let itemCount = 0;
+
+            orderData.forEach(item => {
+                const price = typeof item.price === 'string' ?
+                    parseFloat(item.price.replace('₱', '')) :
+                    item.price;
+                subtotal += price * item.quantity;
+                itemCount += item.quantity;
+            });
+
+            if (document.getElementById('item-count')) {
+                document.getElementById('item-count').textContent = itemCount;
+            }
+            if (document.getElementById('order-total')) {
+                document.getElementById('order-total').textContent = `₱${subtotal.toFixed(2)}`;
+            }
+            if (document.getElementById('grand-total')) {
+                document.getElementById('grand-total').textContent = `₱${subtotal.toFixed(2)}`;
+            }
+        }
+
+        // Open confirmation modal
+        function openPopup() {
+            const rawData = localStorage.getItem("orders");
+            const orderData = rawData ? JSON.parse(rawData) : [];
+
+            if (orderData.length === 0) {
+                alert("Your cart is empty. Please add items before checking out.");
+                return;
+            }
+
+            updateModalOrderSummary(orderData);
+
+            const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+            modal.show();
+        }
+
+        // Update modal order summary
+        function updateModalOrderSummary(orderData) {
+            const orderSummaryList = document.getElementById('orderSummaryList');
+            if (!orderSummaryList) return;
+
+            orderSummaryList.innerHTML = '';
+
+            orderData.forEach(item => {
+                const li = document.createElement('li');
+                const displayName = item.displayName || item.name.split('_')[0] || item.name;
+                const isDrink = !displayName.toLowerCase().includes('sandwich');
+
+                li.textContent = `${item.quantity}x ${displayName}`;
+                orderSummaryList.appendChild(li);
+
+                if (item.size || item.sugar || (item.ice && isDrink) || item.notes) {
+                    const details = document.createElement('div');
+                    details.className = 'text-muted small ms-3';
+
+                    const detailsText = [];
+                    if (item.size) detailsText.push(`Size: ${item.size}`);
+                    if (item.sugar) detailsText.push(`Sugar: ${item.sugar}%`);
+                    if (item.ice && isDrink) detailsText.push(`Ice: ${item.ice}`);
+                    if (item.notes) detailsText.push(`Notes: ${item.notes}`);
+
+                    details.textContent = detailsText.join(', ');
+                    li.appendChild(details);
+                }
+            });
+
+            const total = orderData.reduce((sum, item) => {
+                const price = typeof item.price === 'string' ?
+                    parseFloat(item.price.replace('₱', '')) :
+                    item.price;
+                return sum + (price * item.quantity);
+            }, 0);
+
+            const totalLi = document.createElement('li');
+            totalLi.innerHTML = `<hr><strong>Total: ₱${total.toFixed(2)}</strong>`;
+            orderSummaryList.appendChild(totalLi);
+        }
+
+        // Get selected radio button
+        function getSelectedRadio(name) {
+            const selected = document.querySelector(`input[name="${name}"]:checked`);
+            return selected ? selected.id : null;
+        }
+
+        // Confirm order
+        function confirmOrder() {
+            const orderMethod = getSelectedRadio("orderType");
+            const paymentMethod = getSelectedRadio("modePayment");
+            const refNumber = document.getElementById("refNumber")?.value.trim();
+
+            if (!orderMethod || !paymentMethod) {
+                alert("Please select both order method and payment method.");
+                return;
+            }
+
+            if (paymentMethod === "gcash" && (!refNumber || refNumber === "")) {
+                alert("Please enter a GCash reference number.");
+                return;
+            }
+
+            const rawData = localStorage.getItem("orders");
+            const items = rawData ? JSON.parse(rawData) : [];
+
+            // Optional: calculate total amount
+            const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2);
+
+            // Create the new order object with a structure like you want
+            const newOrder = {
+                items: [...items],                         // all cart items
+                total: total,                              // computed total
+                paymentMode: paymentMethod,                // e.g. "Cash" or "Gcash"
+                refNumber: paymentMethod === "gcash" ? refNumber : null,
+                timestamp: new Date().toISOString()
+            };
+
+            // Append this new order to orderData list
+            const completedRaw = localStorage.getItem("orderData");
+            const orderData = completedRaw ? JSON.parse(completedRaw) : [];
+
+            orderData.push(newOrder);
+
+            // Save updated list
+            localStorage.setItem("orderData", JSON.stringify(orderData));
+
+            // Clear the current cart
+            localStorage.removeItem("orders");
+
+            // Close modal and show toast
+            bootstrap.Modal.getInstance(document.getElementById('confirmModal'))?.hide();
+            new bootstrap.Toast(document.getElementById('orderToast')).show();
+
+
+            updateOrderSummary();
+
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        }
+
+        // Update cart badge
+        function updateCartBadge() {
+            const rawData = localStorage.getItem("orders");
+            const orderData = rawData ? JSON.parse(rawData) : [];
+            const totalItems = orderData.reduce((sum, item) => sum + item.quantity, 0);
+
+            const badge = document.querySelector('.cart-badge');
+            if (badge) {
+                badge.textContent = totalItems;
+                badge.style.display = totalItems > 0 ? 'block' : 'none';
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            updateCartBadge();
+            updateOrderSummary();
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            updateCartBadge();
+            updateOrderSummary();
+
+            // Disable "Cash" payment when "Pickup" is selected
+            const orderTypeRadios = document.querySelectorAll('input[name="orderType"]');
+            const cashRadio = document.getElementById('cash');
+
+            function toggleCashOption() {
+                const selected = document.querySelector('input[name="orderType"]:checked');
+                if (selected && selected.id === "pickup") {
+                    cashRadio.disabled = true;
+                    // Optional: uncheck it if currently selected
+                    if (cashRadio.checked) {
+                        cashRadio.checked = false;
+                    }
+                } else {
+                    cashRadio.disabled = false;
+                }
+            }
+
+            orderTypeRadios.forEach(radio => {
+                radio.addEventListener('change', toggleCashOption);
+            });
+
+            // Initial call on page load
+            toggleCashOption();
+        });
+
+    </script>
+
+
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO"
+        crossorigin="anonymous"></script>
+</body>
+
+
+</html>
