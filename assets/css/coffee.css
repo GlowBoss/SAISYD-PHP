@@ -15,7 +15,7 @@ body {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    border-radius: 40px;
+    border-radius: 16px;
 }
 
 .coffee-banner-title{
@@ -35,7 +35,7 @@ line-height: 1;
 .site-stats-card{
     height: 210px;
     width: auto;
-    border-radius: 40px;
+    border-radius: 16px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
     border: none!important;
 }
@@ -145,7 +145,7 @@ color: var(--text-color-dark);
 .products-section{
     height: 935px;
     overflow: scroll;
-    border-radius: 40px;
+    border-radius: 16px;
 
     overflow: scroll;
     -webkit-overflow-scrolling: touch;
@@ -159,7 +159,7 @@ color: var(--text-color-dark);
 
 .cart-section{
     height: 935px;
-    border-radius: 40px;
+    border-radius: 16px;
     border: none!important;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
