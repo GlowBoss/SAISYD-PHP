@@ -21,8 +21,8 @@
 
 <style>
     .form-check-input {
-        width: 1.5em;
-        height: 1.5em;
+        width: 1.3em;
+        height: 1.3em;
         margin-top: 0.25em;
         border: 3px solid var(--primary-color) !important;
     }
@@ -33,8 +33,11 @@
     }
 
     .form-check-label {
-        margin-left: 0.5em;
         font-weight: 500;
+    }
+
+    .btn-outline-dark:hover {
+        background-color: var(--btn-hover1) !important;
     }
 </style>
 
@@ -46,9 +49,9 @@
     <!-- Sidebar -->
     <div id="mobileSidebar" class="sidebar">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <a class="navbar-brand mx-0" href="#">
-                <img src="assets/img/saisydLogo.png" style="height: 40px;" alt="SAISYD Logo" />
-            </a>
+
+            <img src="assets/img/saisydLogo.png" style="height: 40px;" alt="SAISYD Logo" />
+
             <button id="closeSidebar" class="fs-3 border-0 bg-transparent">&times;</button>
         </div>
 
@@ -56,8 +59,7 @@
             <a href="index.php" class="nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.15s">
                 <i class="bi bi-house fs-5"></i> <span>Home</span>
             </a>
-            <a href="index.php#about" class="nav-link wow animate__animated animate__fadeInLeft"
-                data-wow-delay="0.25s">
+            <a href="index.php#about" class="nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.25s">
                 <i class="bi bi-info-circle fs-5"></i> <span>About</span>
             </a>
             <a href="index.php#location" class="nav-link wow animate__animated animate__fadeInLeft"
@@ -84,9 +86,8 @@
     <nav id="mainNavbar" class="navbar navbar-expand-lg navbar-custom fixed-top py-2">
         <div class="container-fluid px-3">
             <!-- Logo -->
-            <a class="navbar-brand fw-bold" href="#">
-                <img src="assets/img/saisydLogo.png" alt="SAISYD Logo" style="height: 45px;" />
-            </a>
+
+            <img src="assets/img/saisydLogo.png" alt="SAISYD Logo" style="height: 45px;" />
 
             <!-- Right icons (mobile only) -->
             <div class="d-flex align-items-center">
@@ -138,40 +139,43 @@
     </nav>
 
     <!-- CART & SUMMARY SECTION -->
-    <div class="container-fluid mt-5">
+    <div class="container-fluid mt-5 mt-3 pt-lg-3">
         <div class="row justify-content-center">
             <!-- Cart Card -->
-            <div class="col-12 col-lg-5 mb-4">
-                <div class="card rounded-5 cart-section p-3" style="max-height: 75vh;">
+            <div class="col-12 col-lg-6 mb-4">
+                <div class=" cart-section p-3" style="max-height: 75vh;">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div class="d-flex align-items-center">
                             <div class="icon me-2"></div>
                             <div class="subheading2 fw-bold cart-title">Cart</div>
                         </div>
-                        <button class="btn btn-outline-danger btn-sm h6" id="clearCartBtn">
+                        <button class="btn btn-outline-danger btn-sm h6 mx-2" id="clearCartBtn">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </div>
 
                     <div class="overflow-auto" style="max-height: 75vh;">
                         <!-- Cart Item -->
-                        <div class="d-flex justify-content-between align-items-center mb-2">
+
+
+                        <div class="d-flex justify-content-between align-items-center mb-2 px-2">
                             <div class="d-flex align-items-center">
-                                <button class="btn btn-sm btn-outline-secondary me-2">-</button>
+                                <button class="btn btn-sm rounded-2 btn-outline-dark me-2 fw-bold">-</button>
                                 <div class="quantity subheading fw-bold mx-1">1x</div>
-                                <button class="btn btn-sm btn-outline-secondary ms-2">+</button>
+                                <button class="btn btn-sm rounded-2 btn-outline-dark ms-2 fw-bold">+</button>
                             </div>
                             <div class="product subheading fw-bold ms-3">Amerikano</div>
                             <div class="price subheading fw-bold ms-2">₱120</div>
                         </div>
                         <hr>
+
                     </div>
                 </div>
             </div>
 
             <!-- Summary Card -->
-            <div class="col-12 col-lg-6 mb-4">
-                <div class="card rounded-5 p-3 h-100">
+            <div class="col-12 col-lg-4 mb-4">
+                <div class="card p-3" style="border-radius: 16px;">
                     <h3 class="subheading2 text-start ms-2 pt-2 pb-3">Summary</h3>
                     <div class="d-flex justify-content-evenly mb-2">
                         <p class="lead mb-0">Items: <span id="item-count">0</span></p>
@@ -184,34 +188,32 @@
                         <p class="lead">Choose your order method:</p>
                         <div class="row row-cols-2 gx-2">
                             <div class="col">
-                                <div class="form-check">
-                                    <input class="form-check-input" onclick="updateOrderDataWithSelections()"
+                                <div class="form-check d-flex align-items-center">
+                                    <input class="form-check-input me-2" onclick="updateOrderDataWithSelections()"
                                         type="radio" name="orderType" id="dinein">
-                                    <label class="form-check-label" onclick="updateOrderDataWithSelections()"
-                                        for="dinein">Dine-in</label>
+                                    <label class="form-check-label" for="dinein">Dine-in</label>
                                 </div>
                             </div>
                             <div class="col">
                                 <!-- Placeholder for possible future method -->
                             </div>
                             <div class="col">
-                                <div class="form-check">
-                                    <input class="form-check-input" onclick="updateOrderDataWithSelections()"
+                                <div class="form-check d-flex align-items-center">
+                                    <input class="form-check-input me-2" onclick="updateOrderDataWithSelections()"
                                         type="radio" name="orderType" id="takeout">
-                                    <label class="form-check-label" onclick="updateOrderDataWithSelections()"
-                                        for="takeout">Takeout</label>
+                                    <label class="form-check-label" for="takeout">Takeout</label>
                                 </div>
                             </div>
                             <div class="col">
-                                <div class="form-check">
-                                    <input class="form-check-input" onclick="updateOrderDataWithSelections()"
+                                <div class="form-check d-flex align-items-center">
+                                    <input class="form-check-input me-2" onclick="updateOrderDataWithSelections()"
                                         type="radio" name="orderType" id="pickup">
-                                    <label class="form-check-label" onclick="updateOrderDataWithSelections()"
-                                        for="pickup">Pickup</label>
+                                    <label class="form-check-label" for="pickup">Pickup</label>
                                 </div>
                             </div>
                         </div>
                     </div>
+
                     <hr>
 
                     <!-- Payment Method -->
@@ -219,14 +221,14 @@
                         <div class="col">
                             <p class="lead">Mode of Payment:</p>
                             <div class="form-check my-2">
-                                <input class="form-check-input" onclick="updateOrderDataWithSelections()" type="radio"
-                                    name="modePayment" id="cash">
+                                <input class="form-check-input me-2" onclick="updateOrderDataWithSelections()"
+                                    type="radio" name="modePayment" id="cash">
                                 <label class="form-check-label" onclick="updateOrderDataWithSelections()"
                                     for="cash">Cash</label>
                             </div>
                             <div class="form-check my-2">
-                                <input class="form-check-input" onclick="updateOrderDataWithSelections()" type="radio"
-                                    name="modePayment" id="gcash">
+                                <input class="form-check-input me-2" onclick="updateOrderDataWithSelections()"
+                                    type="radio" name="modePayment" id="gcash">
                                 <label class="form-check-label" onclick="updateOrderDataWithSelections()"
                                     for="gcash">GCash</label>
                             </div>
@@ -258,37 +260,37 @@
     <script src="assets/js/main.js"></script>
     <script>
         // Load modal content and attach cart logic
-        fetch("modal/cart-modal.php")
-            .then(res => res.text())
-            .then(data => {
-                document.getElementById("modal-placeholder").innerHTML = data;
+        // fetch("modal/cart-modal.php")
+        //     .then(res => res.text())
+        //     .then(data => {
+        //         document.getElementById("modal-placeholder").innerHTML = data;
 
-                const rawData = localStorage.getItem("orders");
-                let orderData = rawData ? JSON.parse(rawData) : [];
+        //         const rawData = localStorage.getItem("orders");
+        //         let orderData = rawData ? JSON.parse(rawData) : [];
 
-                const cartContainer = document.querySelector('.overflow-auto');
-                if (!cartContainer) return;
+        //         const cartContainer = document.querySelector('.overflow-auto');
+        //         if (!cartContainer) return;
 
-                // Clear container
-                cartContainer.innerHTML = '';
+        //         // Clear container
+        //         cartContainer.innerHTML = '';
 
-                // Check if cart is empty
-                if (orderData.length === 0) {
-                    cartContainer.innerHTML = '<div class="text-muted text-center py-4">Your cart is empty.</div>';
-                    updateOrderSummary(); // Update summary for empty cart
-                    return;
-                }
+        //         // Check if cart is empty
+        //         if (orderData.length === 0) {
+        //             cartContainer.innerHTML = '<div class="text-muted text-center py-4">Your cart is empty.</div>';
+        //             updateOrderSummary(); // Update summary for empty cart
+        //             return;
+        //         }
 
-                // Render cart items
-                orderData.forEach((item, index) => {
-                    const itemHTML = document.createElement('div');
-                    itemHTML.classList.add('cart-item-wrapper');
+        // Render cart items
+        orderData.forEach((item, index) => {
+            const itemHTML = document.createElement('div');
+            itemHTML.classList.add('cart-item-wrapper');
 
-                    const displayPrice = typeof item.price === 'string' ? item.price : `₱${item.price}`;
-                    const displayName = item.displayName || item.name.split('_')[0] || item.name;
-                    const isDrink = !displayName.toLowerCase().includes('sandwich');
+            const displayPrice = typeof item.price === 'string' ? item.price : `₱${item.price}`;
+            const displayName = item.displayName || item.name.split('_')[0] || item.name;
+            const isDrink = !displayName.toLowerCase().includes('sandwich');
 
-                    itemHTML.innerHTML = `
+            itemHTML.innerHTML = `
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <div class="d-flex align-items-center">
                             <button class="btn btn-sm btn-outline-secondary me-2 minus-btn" data-index="${index}">-</button>
@@ -304,79 +306,79 @@
                     ${item.notes ? `<div class="text-muted small ms-5">Notes: ${item.notes}</div>` : ''}
                     <hr>
                 `;
-                    cartContainer.appendChild(itemHTML);
-                });
+            cartContainer.appendChild(itemHTML);
+        });
 
-                // Update cart totals
-                updateCartTotal(orderData);
-                updateOrderSummary();
+        // Update cart totals
+        updateCartTotal(orderData);
+        updateOrderSummary();
 
-                // Update cart UI
-                function updateCartUI(index) {
-                    document.getElementById(`qty-${index}`).textContent = `${orderData[index].quantity}x`;
-                    updateCartTotal(orderData);
-                    updateOrderSummary();
-                }
+        // Update cart UI
+        function updateCartUI(index) {
+            document.getElementById(`qty-${index}`).textContent = `${orderData[index].quantity}x`;
+            updateCartTotal(orderData);
+            updateOrderSummary();
+        }
 
-                // Save cart to localStorage
-                function saveCart() {
-                    localStorage.setItem("orders", JSON.stringify(orderData));
-                    updateOrderSummary();
-                }
+        // Save cart to localStorage
+        function saveCart() {
+            localStorage.setItem("orders", JSON.stringify(orderData));
+            updateOrderSummary();
+        }
 
-                // Plus buttons
-                document.querySelectorAll('.plus-btn').forEach(btn => {
-                    btn.addEventListener('click', e => {
-                        const index = parseInt(e.target.getAttribute('data-index'));
-                        orderData[index].quantity++;
-                        updateCartUI(index);
-                        saveCart();
-                    });
-                });
-
-                // Minus buttons
-                document.querySelectorAll('.minus-btn').forEach(btn => {
-                    btn.addEventListener('click', e => {
-                        const index = parseInt(e.target.getAttribute('data-index'));
-                        if (orderData[index].quantity > 1) {
-                            orderData[index].quantity--;
-                            updateCartUI(index);
-                            saveCart();
-                        } else {
-                            if (confirm("Remove this item from cart?")) {
-                                orderData.splice(index, 1);
-                                saveCart();
-                                location.reload();
-                            }
-                        }
-                    });
-                });
-
-                // Confirm button in modal
-                const addBtn = document.querySelector('.addbtn');
-                if (addBtn) {
-                    addBtn.addEventListener('click', function (e) {
-                        e.preventDefault();
-                        confirmOrder();
-                    });
-                }
-
-                // Clear cart button
-                const clearCartBtn = document.getElementById('clearCartBtn');
-                if (clearCartBtn) {
-                    clearCartBtn.addEventListener('click', function () {
-                        if (confirm("Are you sure you want to clear the cart?")) {
-                            localStorage.removeItem("orders");
-                            cartContainer.innerHTML = '<div class="text-muted text-center py-4">Your cart is empty.</div>';
-                            updateCartTotal([]);
-                            updateOrderSummary();
-                        }
-                    });
-                }
-            })
-            .catch(error => {
-                console.error('Error loading cart modal:', error);
+        // Plus buttons
+        document.querySelectorAll('.plus-btn').forEach(btn => {
+            btn.addEventListener('click', e => {
+                const index = parseInt(e.target.getAttribute('data-index'));
+                orderData[index].quantity++;
+                updateCartUI(index);
+                saveCart();
             });
+        });
+
+        // Minus buttons
+        document.querySelectorAll('.minus-btn').forEach(btn => {
+            btn.addEventListener('click', e => {
+                const index = parseInt(e.target.getAttribute('data-index'));
+                if (orderData[index].quantity > 1) {
+                    orderData[index].quantity--;
+                    updateCartUI(index);
+                    saveCart();
+                } else {
+                    if (confirm("Remove this item from cart?")) {
+                        orderData.splice(index, 1);
+                        saveCart();
+                        location.reload();
+                    }
+                }
+            });
+        });
+
+        // Confirm button in modal
+        const addBtn = document.querySelector('.addbtn');
+        if (addBtn) {
+            addBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                confirmOrder();
+            });
+        }
+
+        // Clear cart button
+        const clearCartBtn = document.getElementById('clearCartBtn');
+        if (clearCartBtn) {
+            clearCartBtn.addEventListener('click', function () {
+                if (confirm("Are you sure you want to clear the cart?")) {
+                    localStorage.removeItem("orders");
+                    cartContainer.innerHTML = '<div class="text-muted text-center py-4">Your cart is empty.</div>';
+                    updateCartTotal([]);
+                    updateOrderSummary();
+                }
+            });
+        }
+            })
+            .catch (error => {
+            console.error('Error loading cart modal:', error);
+        });
 
         // Calculate and display total
         function updateCartTotal(orderData) {
