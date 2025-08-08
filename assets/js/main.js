@@ -25,67 +25,187 @@ let swiperCards = new Swiper(".card__content", {
     },
 });
 
-// LOCATION
-function showBranch(event, branch) {
-    event.preventDefault();
 
-
-    document.getElementById('branch-suplang').classList.add('d-none');
-    document.getElementById('branch-santor').classList.add('d-none');
-
-
-    document.getElementById('branch-' + branch).classList.remove('d-none');
-
-
-    document.getElementById('link-suplang').classList.remove('active');
-    document.getElementById('link-santor').classList.remove('active');
-    document.getElementById('link-' + branch).classList.add('active');
-}
-
-// Loading Screen
+// Loading Screen 
 let loadingProgress = 0;
 const progressBar = document.getElementById('progress-bar');
 const loadingPercentage = document.getElementById('loading-percentage');
 const loadingScreen = document.getElementById('loading-screen');
 const body = document.body;
 
+// Check if loading screen should be shown (one-time only)
+function shouldShowLoading() {
+    const hasLoadedBefore = sessionStorage.getItem('saisydCafeLoadingShown');
+    const navigationEntries = performance.getEntriesByType('navigation');
+    const navigationType = navigationEntries.length > 0 ? navigationEntries[0].type : 'navigate';
+    const isReload = navigationType === 'reload';
+    
+    return !hasLoadedBefore || isReload;
+}
+
+// EARLY CHECK - Hide loading screen immediately if not needed
+function preInitializeLoading() {
+    if (!shouldShowLoading()) {
+        // Hide loading screen IMMEDIATELY - no flash
+        if (loadingScreen) {
+            loadingScreen.style.display = 'none';
+            loadingScreen.style.visibility = 'hidden';
+        }
+        if (body) {
+            body.classList.remove('loading');
+            body.classList.add('skip-loading');
+        }
+        return false;
+    }
+    return true;
+}
+
 function updateLoadingProgress() {
     if (loadingProgress < 100) {
-
-        const increment = Math.random() * 20 + 1;
+        // Smoother increment with better easing
+        const increment = Math.random() * 15 + 3;
         loadingProgress = Math.min(loadingProgress + increment, 100);
 
+        // Add smooth transition to progress bar
+        progressBar.style.transition = 'width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
         progressBar.style.width = loadingProgress + '%';
+        
+        // Smooth percentage update
+        loadingPercentage.style.transition = 'all 0.3s ease-out';
         loadingPercentage.textContent = Math.floor(loadingProgress) + '%';
 
-        setTimeout(updateLoadingProgress, Math.random() * 100 + 50);
+        // More consistent timing for smoother experience
+        const nextDelay = loadingProgress > 85 ? 200 : Math.random() * 120 + 60;
+        setTimeout(updateLoadingProgress, nextDelay);
     } else {
-        // Loading complete - IMMEDIATE smooth transition
-        body.classList.remove('loading'); // Show main content immediately
-
-        // Start landing animations right away - NO WOW ANIMATIONS FOR LANDING
-        setTimeout(() => {
-            triggerLandingAnimations();
-        }, 100);
-
-        // Fade out loading screen while animations play
-        setTimeout(() => {
-            loadingScreen.classList.add('fade-out');
-        }, 200);
-
-        // Initialize main site features
-        setTimeout(() => {
-            initializeMainSite();
-        }, 600);
+        // Smooth loading completion sequence
+        completeLoadingSmooth();
     }
+}
+
+function completeLoadingSmooth() {
+    // Step 1: Brief pause for completion feel
+    setTimeout(() => {
+        // Add completion class for subtle scale animation
+        loadingScreen.classList.add('loading-complete');
+    }, 300);
+
+    // Step 2: Start main content preparation
+    setTimeout(() => {
+        // Prepare content but keep it hidden
+        body.classList.add('content-preparing');
+    }, 600);
+
+    // Step 3: Begin fade out of loading screen
+    setTimeout(() => {
+        loadingScreen.classList.add('fade-out');
+    }, 400);
+
+    // Step 4: Reveal main content smoothly
+    setTimeout(() => {
+        // Remove loading class to show main content
+        body.classList.remove('loading');
+        body.classList.add('content-revealing');
+        
+        // Start landing animations with smooth entry
+        if (typeof triggerLandingAnimations === 'function') {
+            triggerLandingAnimations();
+        }
+    }, 1200);
+
+    // Step 5: Complete initialization
+    setTimeout(() => {
+        // Initialize main site features
+        if (typeof initializeMainSite === 'function') {
+            initializeMainSite();
+        }
+        
+        // Clean up classes
+        body.classList.remove('content-preparing', 'content-revealing');
+        loadingScreen.classList.remove('loading-complete', 'fade-out');
+        
+        // Hide loading screen completely
+        loadingScreen.style.display = 'none';
+        loadingScreen.style.visibility = 'hidden';
+    }, 1800);
+}
+
+// Initialize loading based on session
+function initializeLoading() {
+    // Early check already handled the "no loading" case
+    if (body.classList.contains('skip-loading')) {
+        // Direct entry - super smooth
+        body.classList.add('direct-entry');
+        
+        // Immediate smooth entrance
+        requestAnimationFrame(() => {
+            body.classList.add('content-visible');
+            if (typeof triggerLandingAnimations === 'function') {
+                triggerLandingAnimations();
+            }
+            if (typeof initializeMainSite === 'function') {
+                initializeMainSite();
+            }
+        });
+        
+        // Clean up
+        setTimeout(() => {
+            body.classList.remove('direct-entry', 'skip-loading');
+        }, 800);
+        return;
+    }
+
+    // Show loading screen
+    sessionStorage.setItem('saisydCafeLoadingShown', 'true');
+    
+    // Ensure loading screen is visible
+    body.classList.add('loading');
+    if (loadingScreen) {
+        loadingScreen.style.display = 'flex';
+        loadingScreen.style.visibility = 'visible';
+    }
+    
+    // Reset progress
+    loadingProgress = 0;
+    if (progressBar) progressBar.style.width = '0%';
+    if (loadingPercentage) loadingPercentage.textContent = '0%';
+    
+    // Start smooth loading
+    updateLoadingProgress();
+}
+
+// PRE-INITIALIZE - Run this ASAP to prevent flash
+(function() {
+    // Run as early as possible
+    if (document.readyState === 'loading') {
+        preInitializeLoading();
+    } else {
+        // DOM already loaded, still try to prevent flash
+        preInitializeLoading();
+    }
+})();
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    initializeLoading();
+});
+
+// Also run on immediate script execution (backup)
+if (document.readyState !== 'loading') {
+    setTimeout(initializeLoading, 0);
+}
+
+// Optional: Reset for new session
+function resetLoadingForNewSession() {
+    sessionStorage.removeItem('saisydCafeLoadingShown');
 }
 
 function triggerLandingAnimations() {
     const mainContent = document.querySelector('.main-content');
-
-    // Add ready class to trigger CSS transitions ONLY
-    mainContent.classList.add('ready');
-
+    if (mainContent) {
+        // Add ready class to trigger CSS transitions ONLY
+        mainContent.classList.add('ready');
+    }
 }
 
 function initializeMainSite() {
@@ -113,10 +233,19 @@ function initializeMainSite() {
     initializeToggleButtons();
 }
 
-
-
 function initializeBackToTop() {
     const backToTopBtn = document.getElementById('backToTop');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    function setActiveNav(linkHref) {
+        navLinks.forEach(link => {
+            if (link.getAttribute('href') === linkHref) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        });
+    }
 
     function checkScrollPosition() {
         if (window.scrollY > 300) {
@@ -142,6 +271,9 @@ function initializeBackToTop() {
             top: 0,
             behavior: 'smooth'
         });
+
+        // Set the "Home" nav link as active
+        setActiveNav('index.php');
     });
 
     backToTopBtn.style.transition = 'all 0.3s ease';
@@ -149,50 +281,52 @@ function initializeBackToTop() {
     backToTopBtn.style.transform = 'translateY(20px)';
 }
 
+
+
 function initializeBranchSwitching() {
+    let isSwitching = false;
+
     window.showBranch = function (event, branch) {
         event.preventDefault();
+        if (isSwitching) return;
+
+        isSwitching = true;
 
         const branches = ['suplang', 'santor'];
+        const selectedBranchId = `branch-${branch}`;
+        const selected = document.getElementById(selectedBranchId);
+
         branches.forEach(b => {
-            const branchElement = document.getElementById(`branch-${b}`);
-            if (branchElement) {
-                branchElement.style.opacity = '0';
-                branchElement.style.transform = 'translateY(20px)';
-                setTimeout(() => {
-                    branchElement.classList.add('d-none');
-                }, 300);
+            const el = document.getElementById(`branch-${b}`);
+            if (el && `branch-${b}` !== selectedBranchId) {
+                el.classList.add('d-none');
+                el.classList.remove('animate__animated', 'animate__fadeInUp');
             }
         });
 
-        setTimeout(() => {
-            const selectedBranch = document.getElementById(`branch-${branch}`);
-            if (selectedBranch) {
-                selectedBranch.classList.remove('d-none');
-                setTimeout(() => {
-                    selectedBranch.style.opacity = '1';
-                    selectedBranch.style.transform = 'translateY(0)';
-                }, 50);
-            }
-        }, 320);
+        if (selected) {
+            selected.classList.remove('d-none');
 
+            // Remove old animation class (if any), force reflow, then add animation class
+            selected.classList.remove('animate__fadeInUp');
+            void selected.offsetWidth; // force reflow
+            selected.classList.add('animate__animated', 'animate__fadeInUp');
+        }
 
+        // Update active nav link
         document.querySelectorAll('.branch-nav a').forEach(link => {
             link.classList.remove('active');
             link.style.transform = 'scale(1)';
         });
         event.target.classList.add('active');
         event.target.style.transform = 'scale(1.05)';
+
+        setTimeout(() => {
+            isSwitching = false;
+        }, 500);
     };
 
-    const branchElements = document.querySelectorAll('[id^="branch-"]');
-    branchElements.forEach(element => {
-        element.style.transition = 'all 0.3s ease';
-        element.style.opacity = element.classList.contains('d-none') ? '0' : '1';
-        element.style.transform = 'translateY(0)';
-    });
-
-
+    // Nav link hover transitions
     document.querySelectorAll('.branch-nav a').forEach(link => {
         link.style.transition = 'all 0.3s ease';
         link.addEventListener('mouseenter', () => {
@@ -742,3 +876,4 @@ document.addEventListener('DOMContentLoaded', function () {
 
     new CafeCarousel();
 });
+

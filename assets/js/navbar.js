@@ -2,6 +2,7 @@ const overlay = document.getElementById('sidebarOverlay');
 const sidebar = document.getElementById('mobileSidebar');
 const openBtn = document.getElementById('openSidebarBtn');
 const closeBtn = document.getElementById('closeSidebar');
+const mainContent = document.getElementById('mainContent'); 
 
 const navLinks = document.querySelectorAll('.nav-link');
 
@@ -25,14 +26,22 @@ openBtn.addEventListener('click', () => {
 
     overlay.style.display = 'block';
     sidebar.classList.add('active');
+    
+    // ADD BLUR EFFECT
+    if (mainContent) {
+        mainContent.classList.add('blur');
+    }
+    document.body.style.overflow = 'hidden'; // Prevent body scrolling
 
     // Reset WOW.js animations every open
     document.querySelectorAll('#mobileSidebar .nav-link').forEach((el) => {
         el.classList.remove('animate__animated', 'animate__fadeInLeft', 'wow');
+        // FIXED: Force visibility regardless of WOW state
+        el.style.visibility = 'visible';
+        el.style.opacity = '1';
         void el.offsetWidth;
         el.classList.add('wow', 'animate__animated', 'animate__fadeInLeft');
     });
-
 
     new WOW().sync();
 });
@@ -55,10 +64,23 @@ function closeSidebar() {
             overlay.style.display = 'none';
         }
     });
+    
+    // REMOVE BLUR EFFECT
+    if (mainContent) {
+        mainContent.classList.remove('blur');
+    }
+    document.body.style.overflow = 'auto'; // Re-enable body scrolling
 }
 
 closeBtn.addEventListener('click', closeSidebar);
 overlay.addEventListener('click', closeSidebar);
+
+// Close sidebar on ESC key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && sidebar.classList.contains('active')) {
+        closeSidebar();
+    }
+});
 
 function getCurrentPage() {
     const path = window.location.pathname;
@@ -75,7 +97,6 @@ function clearActive() {
     });
 }
 
-
 function setActiveBasedOnCurrentPageAndHash() {
     const currentPage = getCurrentPage();
     const currentHash = getCurrentHash();
@@ -83,7 +104,6 @@ function setActiveBasedOnCurrentPageAndHash() {
     clearActive();
 
     if (currentPage === 'index.php' && currentHash) {
-
         const hashLinks = document.querySelectorAll(`.nav-link[href="index.php${currentHash}"]`);
         if (hashLinks.length > 0) {
             hashLinks.forEach(link => link.classList.add('active'));
@@ -104,7 +124,6 @@ function setActiveBasedOnCurrentPageAndHash() {
 }
 
 if (window.location.hash) {
-
     const targetHash = window.location.hash;
 
     history.replaceState(null, null, window.location.pathname);
@@ -125,7 +144,6 @@ if (window.location.hash) {
         }, 50);
     });
 } else {
-
     window.addEventListener('DOMContentLoaded', () => {
         setActiveBasedOnCurrentPageAndHash();
     });
@@ -140,7 +158,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             clearActive();
 
-
             document.querySelectorAll(`.nav-link[href="${clickedHref}"]`).forEach(l => {
                 l.classList.add('active');
             });
@@ -150,6 +167,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    // Initialize navbar and sidebar effects
+    initializeNavbarEffects();
+    initializeSidebarEffects();
 });
 
 window.addEventListener('hashchange', () => {
@@ -180,14 +201,12 @@ function initializeNavbarEffects() {
 
         if (typeof gsap !== 'undefined') {
             if (scrollTop > lastScrollTop && scrollTop > 200) {
-
                 gsap.to(navbar, {
                     duration: 0.3,
                     y: -100,
                     ease: "power2.out"
                 });
             } else if (scrollTop < lastScrollTop || scrollTop <= 200) {
-
                 gsap.to(navbar, {
                     duration: 0.3,
                     y: 0,
@@ -217,7 +236,6 @@ function initializeNavbarEffects() {
             if (targetElement) {
                 let offsetTop = targetElement.offsetTop;
 
-
                 if (targetId !== '#location') {
                     offsetTop -= 80;
                 }
@@ -231,7 +249,6 @@ function initializeNavbarEffects() {
     });
 
     window.addEventListener('scroll', requestNavbarTick);
-
     updateNavbar();
 }
 
@@ -245,7 +262,12 @@ function initializeSidebarEffects() {
     function openSidebar() {
         sidebar.classList.add('show');
         overlay.classList.add('show');
-        body.style.overflow = 'hidden';
+        document.body.style.overflow = 'hidden';
+        
+        // ADD BLUR EFFECT
+        if (mainContent) {
+            mainContent.classList.add('blur');
+        }
 
         const navLinks = sidebar.querySelectorAll('.nav-link');
         navLinks.forEach((link, index) => {
@@ -259,7 +281,12 @@ function initializeSidebarEffects() {
     function closeSidebar() {
         sidebar.classList.remove('show');
         overlay.classList.remove('show');
-        body.style.overflow = '';
+        document.body.style.overflow = '';
+        
+        // REMOVE BLUR EFFECT
+        if (mainContent) {
+            mainContent.classList.remove('blur');
+        }
 
         const navLinks = sidebar.querySelectorAll('.nav-link');
         navLinks.forEach(link => {
@@ -273,6 +300,10 @@ function initializeSidebarEffects() {
         link.style.transform = 'translateX(20px)';
         link.style.opacity = '0';
         link.style.transition = 'all 0.3s ease';
+        // FIXED: Force visibility for WOW elements
+        if (link.classList.contains('wow')) {
+            link.style.visibility = 'visible';
+        }
     });
 
     openBtn.addEventListener('click', openSidebar);
@@ -286,5 +317,3 @@ function initializeSidebarEffects() {
         });
     });
 }
-
-
