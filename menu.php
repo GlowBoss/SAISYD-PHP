@@ -14,7 +14,8 @@
     <link rel="stylesheet" href="assets/css/styles.css">
     <link rel="stylesheet" href="assets/css/coffee.css">
     <link rel="stylesheet" href="assets/css/navbar.css">
-    <link rel="icon" href="../assets/img/round_logo.png" type="image/png">
+    <link rel="icon" href="assets/img/round_logo.png" type="image/png">
+
 
 
 </head>
@@ -27,9 +28,7 @@
     <!-- Sidebar -->
     <div id="mobileSidebar" class="sidebar">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <a class="navbar-brand mx-0" href="#">
-                <img src="assets/img/saisydLogo.png" style="height: 40px;" alt="SAISYD Logo" />
-            </a>
+            <img src="assets/img/saisydLogo.png" style="height: 40px;" alt="SAISYD Logo" />
             <button id="closeSidebar" class="fs-3 border-0 bg-transparent">&times;</button>
         </div>
 
@@ -37,8 +36,7 @@
             <a href="index.php" class="nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.15s">
                 <i class="bi bi-house fs-5"></i> <span>Home</span>
             </a>
-            <a href="index.php#about" class="nav-link wow animate__animated animate__fadeInLeft"
-                data-wow-delay="0.25s">
+            <a href="index.php#about" class="nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.25s">
                 <i class="bi bi-info-circle fs-5"></i> <span>About</span>
             </a>
             <a href="index.php#location" class="nav-link wow animate__animated animate__fadeInLeft"
@@ -65,9 +63,9 @@
     <nav id="mainNavbar" class="navbar navbar-expand-lg navbar-custom fixed-top py-2">
         <div class="container-fluid px-3">
             <!-- Logo -->
-            <a class="navbar-brand fw-bold" href="#">
-                <img src="assets/img/saisydLogo.png" alt="SAISYD Logo" style="height: 45px;" />
-            </a>
+
+            <img src="assets/img/saisydLogo.png" alt="SAISYD Logo" style="height: 45px;" />
+
 
             <!-- Right icons (mobile only) -->
             <div class="d-flex align-items-center">
@@ -119,10 +117,8 @@
     </nav>
 
 
-    <!-- main container -->
-    <div class="container-fluid mt-5 d-none d-md-block">
-
-        <!-- coffee-banner -->
+    <!-- banner -->
+    <!-- <div class="container-fluid mt-5 d-none d-md-block">
         <div class="coffee-banner">
             <div class="d-flex flex-column justify-content-center align-items-start text-start text-md-start mt-sm-5"
                 style="height: 100vh;">
@@ -133,44 +129,54 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
 
     <!-- Categories + Sort Section -->
-    <div class="container-fluid px-sm-2 px-md-4 px-lg-5 mt-5 mt-lg-4">
+    <div class="container-fluid px-sm-2 px-md-4 px-lg-5 mt-5 mt-lg-4 pt-lg-5">
         <!-- Top Row: Categories Label + Sort -->
         <div
             class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-2">
 
             <!-- Categories Label -->
-            <div class="title-category heading">Categories</div>
+            <div class="title-category heading align-items-sm-start">Cafe Menu</div>
 
-            <!-- Sort Dropdown -->
-            <div class="d-flex align-items-center gap-2 px-3 py-2 border rounded-pill shadow-sm mx-auto mx-md-0"
-                style="background-color: var(--card-bg-color); font-family: var(--primaryFont); font-size: var(--lead); font-weight: 500; color: var(--text-color-dark); border-color: var(--primary-color);">
-                <i class="bi bi-funnel-fill" style="color: var(--text-color-dark); font-size: 1rem;"></i>
-                <label for="sortSelect" class="mb-0 fw-semibold">Sort by:</label>
-                <select id="sortSelect" class="form-select form-select-sm border-0 bg-transparent shadow-none"
-                    style="width: 160px; font-weight: 600; font-size: var(--lead); font-family: var(--primaryFont); color: var(--text-color-dark);">
-                    <option value="popularity">Popularity</option>
-                    <option value="price-low-high">Price: Low to High</option>
-                    <option value="price-high-low">Price: High to Low</option>
-                    <option value="newest">Newest</option>
-                </select>
-            </div>
         </div>
 
         <!-- Category Pills Row -->
-        <div class="category-scroll d-flex gap-3 overflow-auto py-3">
-            <div class="category-pill text-center active" data-category="All">All</div>
-            <div class="category-pill text-center" data-category="Coffee">Coffee</div>
-            <div class="category-pill text-center" data-category="Tea">Tea</div>
-            <div class="category-pill text-center" data-category="Food">Food</div>
-        </div>
+        <div class="d-flex flex-column flex-md-row align-items-md-center gap-3">
+    
+    <!-- Sort Dropdown -->
+    <div class="d-flex align-items-center gap-2 px-3 py-2 border rounded-pill shadow-sm mx-auto mx-md-0 order-0 order-md-1 mb-lg-2 "
+        style="background-color: var(--card-bg-color); font-family: var(--primaryFont); font-size: var(--lead); font-weight: 500; color: var(--text-color-dark); border-color: var(--primary-color);">
+        <i class="bi bi-funnel-fill" style="color: var(--text-color-dark); font-size: 1rem;"></i>
+        <label for="sortSelect" class="mb-0 fw-semibold">Sort by:</label>
+        <select id="sortSelect" class="form-select form-select-sm border-0 bg-transparent shadow-none"
+            style="width: 160px; font-weight: 600; font-size: var(--lead); font-family: var(--primaryFont); color: var(--text-color-dark);">
+            <option value="popularity">Popularity</option>
+            <option value="price-low-high">Price: Low to High</option>
+            <option value="price-high-low">Price: High to Low</option>
+            <option value="newest">Newest</option>
+        </select> 
     </div>
 
-    <div class="products-section border p-3 p-lg-5">
+    <!-- Category Pills Row -->
+    <div class="category-scroll d-flex gap-3 overflow-auto pb-3 pt-1 flex-grow-1 order-1 order-md-0">
+        <div class="category-pill text-center active" data-category="All">All</div>
+        <div class="category-pill text-center" data-category="Coffee">Coffee</div>
+        <div class="category-pill text-center" data-category="Tea">Tea</div>
+        <div class="category-pill text-center" data-category="Food">Food</div>
+    </div>
+
+</div>
+
+
+    </div>
+
+    <div class="products-section border p-3 p-lg-5 mx-lg-3">
         <div class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6" id="productGrid">
             <!-- PRODUCTS -->
+
+
         </div>
     </div>
 
