@@ -33,7 +33,7 @@ html {
     height: 100%;
     margin: 0;
     font-family: var(--primaryFont);
-    background-image: url('../img/admin_home_bg.png');
+    background-image: url('../img/admin_home_bg.webp');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -81,8 +81,8 @@ html {
 
 @media (max-width: 767.98px) {
     .dashboard-title {
-        padding-top: 2rem; /* Add some top padding */
-        font-size: 1.75rem; /* Decrease font size */
+        padding-top: 2rem; 
+        font-size: 1.75rem; 
         color: var(--primary-color);
     }
 }
@@ -111,14 +111,14 @@ html {
     transition: background-color 0.3s ease;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
-@media (max-width: 767.98px) { /* Bootstrap's sm breakpoint */
+@media (max-width: 767.98px) { 
     .dashboard-box {
-        max-width: 90%; /* Set a maximum width */
-        height: auto; /* Allow height to adjust based on content */
-        padding: 10px; /* Adjust padding for smaller screens */
-        font-size: var(--h6); /* Adjust font size for better readability */
-        border-radius: 15px; /* Maintain rounded corners */
-        margin: 0 auto; /* Center the boxes */
+        max-width: 90%; 
+        height: auto; 
+        padding: 10px; 
+        font-size: var(--h6); 
+        border-radius: 15px; 
+        margin: 0 auto;
     }
 }
 
@@ -126,32 +126,31 @@ html {
     background-color: var(--btn-hover1);
     cursor: pointer;
 }
-/* Existing CSS */
 
 .icon-btn {
-    font-size: 1.5rem; /* Increased size */
-    padding: 0.5rem; /* Added padding */
+    font-size: 1.5rem; 
+    padding: 0.5rem; 
 }
 
-@media (max-width: 767.98px) { /* Bootstrap's sm breakpoint */
+@media (max-width: 767.98px) { 
     .custom-visit,
     .custom-logout {
-        padding: 0.5rem; /* Adjust padding for icon buttons */
-        font-size: 1.2rem; /* Adjust icon size */
-        width: auto; /* Adjust width as needed */
-        height: auto; /* Adjust height as needed */
-        display: inline-flex; /* Use flexbox for centering */
-        align-items: center; /* Vertically center the icon */
-        justify-content: center; /* Horizontally center the icon */
+        padding: 0.5rem; 
+        font-size: 1.2rem; 
+        width: auto; 
+        height: auto; 
+        display: inline-flex; 
+        align-items: center; 
+        justify-content: center; 
     }
 
     .custom-visit i,
     .custom-logout i {
-        font-size: 1.2rem; /* Adjust icon size */
+        font-size: 1.2rem;
     }
 
     .d-flex.gap-3 {
-        gap: 0.5rem !important; /* Reduce gap between items */
+        gap: 0.5rem !important; 
     }
 }
 
