@@ -128,22 +128,6 @@
     </div>
 </nav>
 
-
-
-    <!-- banner -->
-    <!-- <div class="container-fluid mt-5 d-none d-md-block">
-        <div class="coffee-banner">
-            <div class="d-flex flex-column justify-content-center align-items-start text-start text-md-start mt-sm-5"
-                style="height: 100vh;">
-                <div class="coffee-banner-title title mb-3">Daily Delights</div>
-                <div class="coffee-banner-desc lead">
-                    Our meals and drinks are freshly prepared every day. We use quality ingredients to bring out
-                    the best flavors. Enjoy a delicious treat that brightens your everyday moments.
-                </div>
-            </div>
-        </div>
-    </div> -->
-
     <!-- Categories + Sort Section -->
     <div class="container-fluid px-sm-2 px-md-4 px-lg-5 mt-5 mt-lg-4 pt-lg-5">
         <!-- Top Row: Categories Label + Sort -->
