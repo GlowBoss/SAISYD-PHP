@@ -22,7 +22,7 @@
 <body class="loading">
 
     <!-- Loading Screen -->
-    <div id="loading-screen">
+    <div id="loading-screen" style="display: none !important; visibility: hidden !important;">
         <div class="loading-logo">
             <div class="coffee-cup-container">
                 <div class="steam">
@@ -70,7 +70,7 @@
         <!-- Sidebar -->
         <div id="mobileSidebar" class="sidebar">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <a class="navbar-brand mx-0" href="#">
+                <a class="navbar-brand mx-0">
                     <img src="assets/img/saisydLogo.png" style="height: 40px;" alt="SAISYD Logo" />
                 </a>
                 <button id="closeSidebar" class="fs-3 border-0 bg-transparent">&times;</button>
@@ -94,7 +94,7 @@
                 </a>
             </div>
 
-            <button class="btn menu-btn wow animate__animated animate__pulse animate__infinite" data-wow-delay="0.65s"
+            <button class="btn menu-btn"
                 onclick="location.href='menu.php'">
                 <i class="fas fa-mug-hot me-2"></i> Menu
             </button>
@@ -104,27 +104,39 @@
         <!-- Navbar -->
         <nav id="mainNavbar" class="navbar navbar-expand-lg navbar-custom fixed-top py-2">
             <div class="container-fluid px-3">
-                <!-- Logo -->
-                <a class="navbar-brand fw-bold" href="#">
-                    <img src="assets/img/saisydLogo.png" alt="SAISYD Logo" style="height: 45px;" />
-                </a>
 
-                <!-- Right icons (mobile only) -->
-                <div class="d-flex align-items-center">
-                    <a href="cart.php" class="d-flex d-lg-none align-items-center text-decoration-none me-2">
-                        <i class="bi bi-cart3 me-1 fs-5" style="color: var(--text-color-dark);"></i>
-                    </a>
-                    <button id="openSidebarBtn" class="navbar-toggler">
+                <!-- Mobile Layout: Burger (left) - Logo (center) - Cart (right) -->
+                <div class="d-flex d-lg-none align-items-center w-100 position-relative" style="min-height: 50px;">
+                    <!-- Left: Burger menu -->
+                    <button id="openSidebarBtn" class="navbar-toggler border-0 p-1">
                         <span class="navbar-toggler-icon"></span>
                     </button>
+
+                    <!-- Center: Logo  -->
+                    <div class="position-absolute top-50 translate-middle" style="left: 53%;">
+                        <a class="navbar-brand fw-bold mb-0">
+                            <img src="assets/img/saisydLogo.png" alt="SAISYD Logo" style="height: 45px;" />
+                        </a>
+                    </div>
+
+                    <!-- Right: Cart -->
+                    <div class="ms-auto">
+                        <a href="cart.php" class="d-flex align-items-center text-decoration-none">
+                            <i class="bi bi-cart3 fs-5" style="color: var(--text-color-dark);"></i>
+                        </a>
+                    </div>
                 </div>
+
+                <!-- Desktop Layout: Logo on left -->
+                <a class="navbar-brand fw-bold d-none d-lg-block">
+                    <img src="assets/img/saisydLogo.png" alt="SAISYD Logo" style="height: 45px;" />
+                </a>
 
                 <!-- Navbar Links -->
                 <div class="collapse navbar-collapse" id="saisydNavbar">
                     <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-lg-3" id="navbarNav">
                         <li class="nav-item">
                             <a class="nav-link" href="index.php">
-
                                 <i class="bi bi-house"></i> <span>Home</span>
                             </a>
                         </li>
@@ -1146,10 +1158,10 @@
         </div>
     </footer>
 
-    <!-- Back to Top Button -->
-    <button id="backToTop" class="back-to-top-btn animate__animated animate__fadeInUp wow" data-wow-delay="0.2s">
-        <i class="fas fa-arrow-up"></i>
-    </button>
+   <button id="backToTop" class="back-to-top-btn">
+    <i class="fas fa-arrow-up"></i>
+</button>
+
 
     <!-- Scripts -->
     <script src="assets/js/swiper-bundle.min.js"></script>
