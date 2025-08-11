@@ -19,6 +19,7 @@
     <link rel="icon" href="assets/img/round_logo.png" type="image/png">
 
 </head>
+
 <body>
 
     <!-- Sidebar Overlay -->
@@ -51,8 +52,7 @@
             </a>
         </div>
 
-        <button class="btn menu-btn"
-            onclick="location.href='menu.php'">
+        <button class="btn menu-btn" onclick="location.href='menu.php'">
             <i class="fas fa-mug-hot me-2"></i> Menu
         </button>
 
@@ -156,6 +156,10 @@
                             <div class="product subheading fw-bold ms-3">Amerikano</div>
                             <div class="price subheading fw-bold ms-2">₱120</div>
                         </div>
+                        <div class="text-muted small ms-5">Size: 16oz</div>
+                        <div class="text-muted small ms-5">Sugar: 0%</div>
+                        <div class="text-muted small ms-5">Ice: Default</div>
+                        <div class="text-muted small ms-5">Notes: hello world</div>
                         <hr>
 
 

@@ -22,111 +22,110 @@
 
 <body>
 
-     <!-- Sidebar Overlay -->
-     <div id="sidebarOverlay" class="sidebar-overlay"></div>
+    <!-- Sidebar Overlay -->
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
 
-<!-- Sidebar -->
-<div id="mobileSidebar" class="sidebar">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <!-- Sidebar -->
+    <div id="mobileSidebar" class="sidebar">
+        <div class="d-flex justify-content-between align-items-center mb-4">
             <img src="assets/img/saisydLogo.png" style="height: 40px;" alt="SAISYD Logo" />
-        <button id="closeSidebar" class="fs-3 border-0 bg-transparent">&times;</button>
-    </div>
-
-    <div id="sidebarNav">
-        <a href="index.php" class="nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.15s">
-            <i class="bi bi-house fs-5"></i> <span>Home</span>
-        </a>
-        <a href="index.php#about" class="nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.25s">
-            <i class="bi bi-info-circle fs-5"></i> <span>About</span>
-        </a>
-        <a href="index.php#location" class="nav-link wow animate__animated animate__fadeInLeft"
-            data-wow-delay="0.35s">
-            <i class="bi bi-geo-alt fs-5"></i> <span>Location</span>
-        </a>
-        <a href="index.php#contact" class="nav-link wow animate__animated animate__fadeInLeft"
-            data-wow-delay="0.45s">
-            <i class="bi bi-envelope fs-5"></i> <span>Contact</span>
-        </a>
-        <a href="cart.php" class="nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.55s">
-            <i class="bi bi-cart fs-5"></i> <span>Cart</span>
-        </a>
-    </div>
-
-    <button class="btn menu-btn wow"
-        onclick="location.href='menu.php'">
-        <i class="fas fa-mug-hot me-2"></i> Menu
-    </button>
-
-</div>
-
-<!-- Navbar -->
-<nav id="mainNavbar" class="navbar navbar-expand-lg navbar-custom fixed-top py-2">
-    <div class="container-fluid px-3">
-
-        <!-- Mobile Layout: Burger (left) - Logo (center) - Cart (right) -->
-        <div class="d-flex d-lg-none align-items-center w-100 position-relative" style="min-height: 50px;">
-            <!-- Left: Burger menu -->
-            <button id="openSidebarBtn" class="navbar-toggler border-0 p-1">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <!-- Center: Logo  -->
-            <div class="position-absolute top-50 translate-middle" style="left: 53%;">
-                <a class="navbar-brand fw-bold mb-0">
-                    <img src="assets/img/saisydLogo.png" alt="SAISYD Logo" style="height: 45px;" />
-                </a>
-            </div>
-
-            <!-- Right: Cart -->
-            <div class="ms-auto">
-                <a href="cart.php" class="d-flex align-items-center text-decoration-none">
-                    <i class="bi bi-cart3 fs-5" style="color: var(--text-color-dark);"></i>
-                </a>
-            </div>
+            <button id="closeSidebar" class="fs-3 border-0 bg-transparent">&times;</button>
         </div>
 
-        <!-- Desktop Layout: Logo on left -->
-        <a class="navbar-brand fw-bold d-none d-lg-block">
-            <img src="assets/img/saisydLogo.png" alt="SAISYD Logo" style="height: 45px;" />
-        </a>
+        <div id="sidebarNav">
+            <a href="index.php" class="nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.15s">
+                <i class="bi bi-house fs-5"></i> <span>Home</span>
+            </a>
+            <a href="index.php#about" class="nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.25s">
+                <i class="bi bi-info-circle fs-5"></i> <span>About</span>
+            </a>
+            <a href="index.php#location" class="nav-link wow animate__animated animate__fadeInLeft"
+                data-wow-delay="0.35s">
+                <i class="bi bi-geo-alt fs-5"></i> <span>Location</span>
+            </a>
+            <a href="index.php#contact" class="nav-link wow animate__animated animate__fadeInLeft"
+                data-wow-delay="0.45s">
+                <i class="bi bi-envelope fs-5"></i> <span>Contact</span>
+            </a>
+            <a href="cart.php" class="nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.55s">
+                <i class="bi bi-cart fs-5"></i> <span>Cart</span>
+            </a>
+        </div>
 
-        <!-- Navbar Links -->
-        <div class="collapse navbar-collapse" id="saisydNavbar">
-            <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-lg-3" id="navbarNav">
-                <li class="nav-item">
-                    <a class="nav-link" href="index.php">
-                        <i class="bi bi-house"></i> <span>Home</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="index.php#about">
-                        <i class="bi bi-info-circle"></i> <span>About</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="index.php#location">
-                        <i class="bi bi-geo-alt"></i> <span>Location</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="v#contact">
-                        <i class="bi bi-envelope"></i> <span>Contact</span>
-                    </a>
-                </li>
-            </ul>
+        <button class="btn menu-btn wow" onclick="location.href='menu.php'">
+            <i class="fas fa-mug-hot me-2"></i> Menu
+        </button>
 
-            <!-- Desktop: Cart + Menu -->
-            <div class="d-none d-lg-flex align-items-center">
-                <a href="cart.php" class="nav-link me-2">
-                    <i class="bi bi-cart3"></i> <span>Cart</span>
-                </a>
-                <button class="btn menu-btn" onclick="location.href='menu.php'">
-                    <i class="fas fa-mug-hot me-2"></i> Menu
+    </div>
+
+    <!-- Navbar -->
+    <nav id="mainNavbar" class="navbar navbar-expand-lg navbar-custom fixed-top py-2">
+        <div class="container-fluid px-3">
+
+            <!-- Mobile Layout: Burger (left) - Logo (center) - Cart (right) -->
+            <div class="d-flex d-lg-none align-items-center w-100 position-relative" style="min-height: 50px;">
+                <!-- Left: Burger menu -->
+                <button id="openSidebarBtn" class="navbar-toggler border-0 p-1">
+                    <span class="navbar-toggler-icon"></span>
                 </button>
+
+                <!-- Center: Logo  -->
+                <div class="position-absolute top-50 translate-middle" style="left: 53%;">
+                    <a class="navbar-brand fw-bold mb-0">
+                        <img src="assets/img/saisydLogo.png" alt="SAISYD Logo" style="height: 45px;" />
+                    </a>
+                </div>
+
+                <!-- Right: Cart -->
+                <div class="ms-auto">
+                    <a href="cart.php" class="d-flex align-items-center text-decoration-none">
+                        <i class="bi bi-cart3 fs-5" style="color: var(--text-color-dark);"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Desktop Layout: Logo on left -->
+            <a class="navbar-brand fw-bold d-none d-lg-block">
+                <img src="assets/img/saisydLogo.png" alt="SAISYD Logo" style="height: 45px;" />
+            </a>
+
+            <!-- Navbar Links -->
+            <div class="collapse navbar-collapse" id="saisydNavbar">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-lg-3" id="navbarNav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.php">
+                            <i class="bi bi-house"></i> <span>Home</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.php#about">
+                            <i class="bi bi-info-circle"></i> <span>About</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.php#location">
+                            <i class="bi bi-geo-alt"></i> <span>Location</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="v#contact">
+                            <i class="bi bi-envelope"></i> <span>Contact</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Desktop: Cart + Menu -->
+                <div class="d-none d-lg-flex align-items-center">
+                    <a href="cart.php" class="nav-link me-2">
+                        <i class="bi bi-cart3"></i> <span>Cart</span>
+                    </a>
+                    <button class="btn menu-btn" onclick="location.href='menu.php'">
+                        <i class="fas fa-mug-hot me-2"></i> Menu
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
-</nav>
+    </nav>
 
     <!-- Categories + Sort Section -->
     <div class="container-fluid px-sm-2 px-md-4 px-lg-5 mt-5 mt-lg-4 pt-lg-5">
@@ -141,30 +140,30 @@
 
         <!-- Category Pills Row -->
         <div class="d-flex flex-column flex-md-row align-items-md-center gap-3">
-    
-    <!-- Sort Dropdown -->
-    <div class="d-flex align-items-center gap-2 px-3 py-2 border rounded-pill shadow-sm mx-auto mx-md-0 order-0 order-md-1 mb-lg-2 "
-        style="background-color: var(--card-bg-color); font-family: var(--primaryFont); font-size: var(--lead); font-weight: 500; color: var(--text-color-dark); border-color: var(--primary-color);">
-        <i class="bi bi-funnel-fill" style="color: var(--text-color-dark); font-size: 1rem;"></i>
-        <label for="sortSelect" class="mb-0 fw-semibold">Sort by:</label>
-        <select id="sortSelect" class="form-select form-select-sm border-0 bg-transparent shadow-none"
-            style="width: 160px; font-weight: 600; font-size: var(--lead); font-family: var(--primaryFont); color: var(--text-color-dark);">
-            <option value="popularity">Popularity</option>
-            <option value="price-low-high">Price: Low to High</option>
-            <option value="price-high-low">Price: High to Low</option>
-            <option value="newest">Newest</option>
-        </select> 
-    </div>
 
-    <!-- Category Pills Row -->
-    <div class="category-scroll d-flex gap-3 overflow-auto pb-3 pt-1 flex-grow-1 order-1 order-md-0">
-        <div class="category-pill text-center active" data-category="All">All</div>
-        <div class="category-pill text-center" data-category="Coffee">Coffee</div>
-        <div class="category-pill text-center" data-category="Tea">Tea</div>
-        <div class="category-pill text-center" data-category="Food">Food</div>
-    </div>
+            <!-- Sort Dropdown -->
+            <div class="d-flex align-items-center gap-2 px-3 py-2 border rounded-pill shadow-sm mx-auto mx-md-0 order-0 order-md-1 mb-lg-2 "
+                style="background-color: var(--card-bg-color); font-family: var(--primaryFont); font-size: var(--lead); font-weight: 500; color: var(--text-color-dark); border-color: var(--primary-color);">
+                <i class="bi bi-funnel-fill" style="color: var(--text-color-dark); font-size: 1rem;"></i>
+                <label for="sortSelect" class="mb-0 fw-semibold">Sort by:</label>
+                <select id="sortSelect" class="form-select form-select-sm border-0 bg-transparent shadow-none"
+                    style="width: 160px; font-weight: 600; font-size: var(--lead); font-family: var(--primaryFont); color: var(--text-color-dark);">
+                    <option value="popularity">Popularity</option>
+                    <option value="price-low-high">Price: Low to High</option>
+                    <option value="price-high-low">Price: High to Low</option>
+                    <option value="newest">Newest</option>
+                </select>
+            </div>
 
-</div>
+            <!-- Category Pills Row -->
+            <div class="category-scroll d-flex gap-3 overflow-auto pb-3 pt-1 flex-grow-1 order-1 order-md-0">
+                <div class="category-pill text-center active" data-category="All">All</div>
+                <div class="category-pill text-center" data-category="Coffee">Coffee</div>
+                <div class="category-pill text-center" data-category="Tea">Tea</div>
+                <div class="category-pill text-center" data-category="Food">Food</div>
+            </div>
+
+        </div>
 
 
     </div>
@@ -173,6 +172,37 @@
         <div class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6" id="productGrid">
             <!-- PRODUCTS -->
 
+            <div class="col">
+                <div class="menu-item text-center shadow-sm" style="
+                    height: 320px; 
+                    background-color: #fff9f2; 
+                    border-radius: 20px; 
+                    border: 1px solid #e0c9a6;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
+                    display: flex; 
+                    flex-direction: column; 
+                    justify-content: space-between; 
+                    padding: 15px;
+                    transition: transform 0.2s ease;
+                ">
+                    <div style="height: 150px; display: flex; align-items: center; justify-content: center;">
+                        <img src="assets/img/coffee.png" alt="" class="img-fluid"
+                            style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                    </div>
+                    <div class="subheading menu-name" style="font-size: 1.2rem; font-weight: 500; color: #4b2e2e;margin-top: 10px;">
+                        Amerikano
+                    </div>
+                    <div class="d-flex justify-content-center align-items-center text-center px-2"
+                        style="color: #6e4f3a; font-size: 0.85rem;">
+                        12oz – ₱60 | 16oz – ₱80
+                    </div>
+                    <button class="lead buy-btn mt-auto" data-bs-toggle="modal" data-bs-target="#item-customization"
+                        data-name="${prod.name}" data-price="${getPrice(prod)}"
+                        data-sizes='${JSON.stringify(prod.sizes || [])}'
+                        data-sugar='${JSON.stringify(prod.sugarLevels || [])}'
+                        data-type="${prod.sizes ? 'beverage' : 'food'}" onclick="openPopup(this)">Order Now</button>
+                </div>
+            </div>
 
         </div>
     </div>
@@ -348,84 +378,62 @@
             .catch(error => {
                 console.error('Error loading item customization modal:', error);
             });
+            function openPopup() {
+    const modal = new bootstrap.Modal(document.getElementById('item-customization'));
+    modal.show();
 
-        function openPopup(button) {
-            const modal = new bootstrap.Modal(document.getElementById('item-customization'));
-            modal.show();
+    // Static placeholder values (no data logic)
+    document.querySelector('.itemName').textContent = 'Sample Item';
+    document.querySelector('.itemPrice').textContent = '₱0.00';
 
-            const name = button.getAttribute('data-name');
-            const sizes = JSON.parse(button.getAttribute('data-sizes'));
-            const sugars = JSON.parse(button.getAttribute('data-sugar'));
-            const type = button.getAttribute('data-type');
-            const iceSection = document.getElementById('ice-section');
+    // Show ice section for prototype
+    document.getElementById('ice-section').style.display = 'block';
 
-            if (type === 'beverage') {
-                iceSection.style.display = 'block';
-            } else {
-                iceSection.style.display = 'none';
-            }
+    // Show size section with static options
+    const sizeSection = document.getElementById('size-section');
+    const sizeContainer = document.getElementById('size-options');
+    sizeSection.style.display = 'block';
+    sizeContainer.innerHTML = `
+        <div class="col">
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="priceOptions" id="size16oz" checked>
+                <label class="form-check-label h6" for="size16oz">16oz</label>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="priceOptions" id="size18oz">
+                <label class="form-check-label h6" for="size18oz">18oz</label>
+            </div>
+        </div>
+    `;
 
-            // Set name and clear base price
-            document.querySelector('.itemName').textContent = name;
-            document.querySelector('.itemPrice').textContent = '';
+    // Show sugar section with static options
+    const sugarSection = document.getElementById('sugar-section');
+    const sugarContainer = document.getElementById('sugar-options');
+    sugarSection.style.display = 'block';
+    sugarContainer.innerHTML = `
+        <div class="col">
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="sugarOption" id="sugar25" checked>
+                <label class="form-check-label h6" for="sugar25">25%</label>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="sugarOption" id="sugar50">
+                <label class="form-check-label h6" for="sugar50">50%</label>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="sugarOption" id="sugar100">
+                <label class="form-check-label h6" for="sugar100">100%</label>
+            </div>
+        </div>
+    `;
+}
 
-            // === SIZE OPTIONS ===
-            const sizeSection = document.getElementById('size-section');
-            const sizeContainer = document.getElementById('size-options');
-            if (type === 'beverage') {
-                sizeSection.style.display = 'block';
-                sizeContainer.innerHTML = '';
-
-                sizes.forEach((sz, i) => {
-                    const id = `size${sz.name.replace(/\s/g, '')}`;
-                    const html = `
-            <div class="col">
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="priceOptions" id="${id}" value="${sz.name}" ${i === 1 ? 'checked' : ''}>
-                    <label class="form-check-label h6" for="${id}">${sz.name}</label>
-                </div>
-            </div>`;
-                    sizeContainer.insertAdjacentHTML('beforeend', html);
-                });
-
-                // Update price when size changes
-                document.querySelectorAll('input[name="priceOptions"]').forEach(radio => {
-                    radio.addEventListener('change', () => updateModalPrice(sizes));
-                });
-
-                // Set initial price
-                updateModalPrice(sizes);
-
-            } else {
-                sizeSection.style.display = 'none';
-                // Set price for food immediately
-                const product = allProducts.find(p => p.name === name);
-                if (product) {
-                    document.querySelector('.itemPrice').textContent = `₱${product.price}`;
-                }
-            }
-
-            // === SUGAR OPTIONS ===
-            const sugarSection = document.getElementById('sugar-section');
-            const sugarContainer = document.getElementById('sugar-options');
-            if (type === 'beverage') {
-                sugarSection.style.display = 'block';
-                sugarContainer.innerHTML = '';
-                sugars.forEach((sugar, i) => {
-                    const id = `sugar${sugar}`;
-                    const html = `
-            <div class="col">
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="sugarOption" id="${id}" value="${sugar}" ${i === 0 ? 'checked' : ''}>
-                    <label class="form-check-label h6" for="${id}">${sugar}%</label>
-                </div>
-            </div>`;
-                    sugarContainer.insertAdjacentHTML('beforeend', html);
-                });
-            } else {
-                sugarSection.style.display = 'none';
-            }
-        }
 
         function updateModalPrice(sizes) {
             const selectedSize = document.querySelector('input[name="priceOptions"]:checked')?.value;
