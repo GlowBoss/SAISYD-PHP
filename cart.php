@@ -27,9 +27,7 @@
     <!-- Sidebar -->
     <div id="mobileSidebar" class="sidebar">
         <div class="d-flex justify-content-between align-items-center mb-4">
-
             <img src="assets/img/saisydLogo.png" style="height: 40px;" alt="SAISYD Logo" />
-
             <button id="closeSidebar" class="fs-3 border-0 bg-transparent">&times;</button>
         </div>
 
@@ -159,6 +157,9 @@
                             <div class="price subheading fw-bold ms-2">₱120</div>
                         </div>
                         <hr>
+
+
+
 
                     </div>
                 </div>

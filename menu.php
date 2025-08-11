@@ -22,123 +22,112 @@
 
 <body>
 
-    <!-- Sidebar Overlay -->
-    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+     <!-- Sidebar Overlay -->
+     <div id="sidebarOverlay" class="sidebar-overlay"></div>
 
-    <!-- Sidebar -->
-    <div id="mobileSidebar" class="sidebar">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+<!-- Sidebar -->
+<div id="mobileSidebar" class="sidebar">
+    <div class="d-flex justify-content-between align-items-center mb-4">
             <img src="assets/img/saisydLogo.png" style="height: 40px;" alt="SAISYD Logo" />
-            <button id="closeSidebar" class="fs-3 border-0 bg-transparent">&times;</button>
-        </div>
-
-        <div id="sidebarNav">
-            <a href="index.php" class="nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.15s">
-                <i class="bi bi-house fs-5"></i> <span>Home</span>
-            </a>
-            <a href="index.php#about" class="nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.25s">
-            <a href="index.php#about" class="nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.25s">
-                <i class="bi bi-info-circle fs-5"></i> <span>About</span>
-            </a>
-            <a href="index.php#location" class="nav-link wow animate__animated animate__fadeInLeft"
-                data-wow-delay="0.35s">
-                <i class="bi bi-geo-alt fs-5"></i> <span>Location</span>
-            </a>
-            <a href="index.php#contact" class="nav-link wow animate__animated animate__fadeInLeft"
-                data-wow-delay="0.45s">
-                <i class="bi bi-envelope fs-5"></i> <span>Contact</span>
-            </a>
-            <a href="cart.php" class="nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.55s">
-                <i class="bi bi-cart fs-5"></i> <span>Cart</span>
-            </a>
-        </div>
-
-        <button class="btn menu-btn wow"
-            onclick="location.href='menu.php'">
-            <i class="fas fa-mug-hot me-2"></i> Menu
-        </button>
-
+        <button id="closeSidebar" class="fs-3 border-0 bg-transparent">&times;</button>
     </div>
 
-    <!-- Navbar -->
-    <nav id="mainNavbar" class="navbar navbar-expand-lg navbar-custom fixed-top py-2">
-        <div class="container-fluid px-3">
-            <!-- Logo -->
+    <div id="sidebarNav">
+        <a href="index.php" class="nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.15s">
+            <i class="bi bi-house fs-5"></i> <span>Home</span>
+        </a>
+        <a href="index.php#about" class="nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.25s">
+            <i class="bi bi-info-circle fs-5"></i> <span>About</span>
+        </a>
+        <a href="index.php#location" class="nav-link wow animate__animated animate__fadeInLeft"
+            data-wow-delay="0.35s">
+            <i class="bi bi-geo-alt fs-5"></i> <span>Location</span>
+        </a>
+        <a href="index.php#contact" class="nav-link wow animate__animated animate__fadeInLeft"
+            data-wow-delay="0.45s">
+            <i class="bi bi-envelope fs-5"></i> <span>Contact</span>
+        </a>
+        <a href="cart.php" class="nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.55s">
+            <i class="bi bi-cart fs-5"></i> <span>Cart</span>
+        </a>
+    </div>
 
-            <img src="assets/img/saisydLogo.png" alt="SAISYD Logo" style="height: 45px;" />
+    <button class="btn menu-btn wow"
+        onclick="location.href='menu.php'">
+        <i class="fas fa-mug-hot me-2"></i> Menu
+    </button>
 
+</div>
 
-            <!-- Right icons (mobile only) -->
-            <div class="d-flex align-items-center">
-                <a href="cart.php" class="d-flex d-lg-none align-items-center text-decoration-none me-2">
-                    <i class="bi bi-cart3 me-1 fs-5" style="color: var(--text-color-dark);"></i>
+<!-- Navbar -->
+<nav id="mainNavbar" class="navbar navbar-expand-lg navbar-custom fixed-top py-2">
+    <div class="container-fluid px-3">
+
+        <!-- Mobile Layout: Burger (left) - Logo (center) - Cart (right) -->
+        <div class="d-flex d-lg-none align-items-center w-100 position-relative" style="min-height: 50px;">
+            <!-- Left: Burger menu -->
+            <button id="openSidebarBtn" class="navbar-toggler border-0 p-1">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Center: Logo  -->
+            <div class="position-absolute top-50 translate-middle" style="left: 53%;">
+                <a class="navbar-brand fw-bold mb-0">
+                    <img src="assets/img/saisydLogo.png" alt="SAISYD Logo" style="height: 45px;" />
                 </a>
-                <button id="openSidebarBtn" class="navbar-toggler">
-
-            <!-- Mobile Layout: Burger (left) - Logo (center) - Cart (right) -->
-            <div class="d-flex d-lg-none align-items-center w-100 position-relative" style="min-height: 50px;">
-                <!-- Left: Burger menu -->
-                <button id="openSidebarBtn" class="navbar-toggler border-0 p-1">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-
-                <!-- Center: Logo  -->
-                <div class="position-absolute top-50 translate-middle" style="left: 53%;">
-                    <a class="navbar-brand fw-bold mb-0">
-                        <img src="assets/img/saisydLogo.png" alt="SAISYD Logo" style="height: 45px;" />
-                    </a>
-                </div>
-
-                <!-- Right: Cart -->
-                <div class="ms-auto">
-                    <a href="cart.php" class="d-flex align-items-center text-decoration-none">
-                        <i class="bi bi-cart3 fs-5" style="color: var(--text-color-dark);"></i>
-                    </a>
-                </div>
             </div>
 
-            <!-- Desktop Layout: Logo on left -->
-            <a class="navbar-brand fw-bold d-none d-lg-block">
-                <img src="assets/img/saisydLogo.png" alt="SAISYD Logo" style="height: 45px;" />
-            </a>
-
-            <!-- Navbar Links -->
-            <div class="collapse navbar-collapse" id="saisydNavbar">
-                <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-lg-3" id="navbarNav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.php">
-                            <i class="bi bi-house"></i> <span>Home</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.php#about">
-                            <i class="bi bi-info-circle"></i> <span>About</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.php#location">
-                            <i class="bi bi-geo-alt"></i> <span>Location</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="v#contact">
-                            <i class="bi bi-envelope"></i> <span>Contact</span>
-                        </a>
-                    </li>
-                </ul>
-
-                <!-- Desktop: Cart + Menu -->
-                <div class="d-none d-lg-flex align-items-center">
-                    <a href="cart.php" class="nav-link me-2">
-                        <i class="bi bi-cart3"></i> <span>Cart</span>
-                    </a>
-                    <button class="btn menu-btn" onclick="location.href='menu.php'">
-                        <i class="fas fa-mug-hot me-2"></i> Menu
-                    </button>
-                </div>
+            <!-- Right: Cart -->
+            <div class="ms-auto">
+                <a href="cart.php" class="d-flex align-items-center text-decoration-none">
+                    <i class="bi bi-cart3 fs-5" style="color: var(--text-color-dark);"></i>
+                </a>
             </div>
         </div>
-    </nav>
+
+        <!-- Desktop Layout: Logo on left -->
+        <a class="navbar-brand fw-bold d-none d-lg-block">
+            <img src="assets/img/saisydLogo.png" alt="SAISYD Logo" style="height: 45px;" />
+        </a>
+
+        <!-- Navbar Links -->
+        <div class="collapse navbar-collapse" id="saisydNavbar">
+            <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-lg-3" id="navbarNav">
+                <li class="nav-item">
+                    <a class="nav-link" href="index.php">
+                        <i class="bi bi-house"></i> <span>Home</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="index.php#about">
+                        <i class="bi bi-info-circle"></i> <span>About</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="index.php#location">
+                        <i class="bi bi-geo-alt"></i> <span>Location</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="v#contact">
+                        <i class="bi bi-envelope"></i> <span>Contact</span>
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Desktop: Cart + Menu -->
+            <div class="d-none d-lg-flex align-items-center">
+                <a href="cart.php" class="nav-link me-2">
+                    <i class="bi bi-cart3"></i> <span>Cart</span>
+                </a>
+                <button class="btn menu-btn" onclick="location.href='menu.php'">
+                    <i class="fas fa-mug-hot me-2"></i> Menu
+                </button>
+            </div>
+        </div>
+    </div>
+</nav>
+
 
 
     <!-- banner -->
