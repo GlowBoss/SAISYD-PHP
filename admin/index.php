@@ -25,10 +25,10 @@
                         <i class="bi bi-bell"></i>
                     </button>
 
-                    <a href="../index.html" class="btn custom-visit">
+                    <a href="../index.php" class="btn custom-visit">
                         <i class="bi bi-globe"></i> <span class="d-none d-md-inline">Visit Site</span>
                     </a>
-                    <a class="btn custom-logout" href="login.html">
+                    <a class="btn custom-logout" href="login.php">
                         <i class="bi bi-power"></i> <span class="d-none d-md-inline">Log Out</span>
                     </a>
                 </div>
@@ -41,28 +41,28 @@
                 <div class="container mt-5 mb-5">
                     <div class="row g-4 justify-content-center"> 
                         <div class="col-12 col-sm-6 col-md-4">
-                            <a href="point-of-sales.html" class="dashboard-box text-decoration-none">Point of Sale System</a>
+                            <a href="point-of-sales.php" class="dashboard-box text-decoration-none">Point of Sale System</a>
                         </div>
                         <div class="col-12 col-sm-6 col-md-4">
-                            <a href="notification.html" class="dashboard-box text-decoration-none">Notification</a>
+                            <a href="notification.php" class="dashboard-box text-decoration-none">Notification</a>
                         </div>
                         <div class="col-12 col-sm-6 col-md-4">
-                            <a href="inventory-management.html" class="dashboard-box text-decoration-none">Inventory
+                            <a href="inventory-management.php" class="dashboard-box text-decoration-none">Inventory
                                 Management</a>
                         </div>
                         <div class="col-12 col-sm-6 col-md-4">
-                            <a href="sales-and-report.html" class="dashboard-box text-decoration-none">Sales and
+                            <a href="sales-and-report.php" class="dashboard-box text-decoration-none">Sales and
                                 Report</a>
                         </div>
                         <div class="col-12 col-sm-6 col-md-4">
-                            <a href="menu-management.html" class="dashboard-box text-decoration-none">Menu
+                            <a href="menu-management.php" class="dashboard-box text-decoration-none">Menu
                                 Management</a>
                         </div>
                         <div class="col-12 col-sm-6 col-md-4">
-                            <a href="notification.html" class="dashboard-box text-decoration-none">Notification</a>
+                            <a href="notification.php" class="dashboard-box text-decoration-none">Notification</a>
                         </div>
                         <div class="col-12 col-sm-6 col-md-4">
-                            <a href="setting.html" class="dashboard-box text-decoration-none">Settings</a>
+                            <a href="setting.php" class="dashboard-box text-decoration-none">Settings</a>
                         </div>
                     </div>
                 </div>
