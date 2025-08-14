@@ -14,7 +14,8 @@
     <link rel="stylesheet" href="assets/css/styles.css">
     <link rel="stylesheet" href="assets/css/coffee.css">
     <link rel="stylesheet" href="assets/css/navbar.css">
-    <link rel="icon" href="../assets/img/round_logo.png" type="image/png">
+    <link rel="icon" href="assets/img/round_logo.png" type="image/png">
+
 
 
 </head>
@@ -27,9 +28,7 @@
     <!-- Sidebar -->
     <div id="mobileSidebar" class="sidebar">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <a class="navbar-brand mx-0" href="#">
-                <img src="assets/img/saisydLogo.png" style="height: 40px;" alt="SAISYD Logo" />
-            </a>
+            <img src="assets/img/saisydLogo.png" style="height: 40px;" alt="SAISYD Logo" />
             <button id="closeSidebar" class="fs-3 border-0 bg-transparent">&times;</button>
         </div>
 
@@ -53,8 +52,7 @@
             </a>
         </div>
 
-        <button class="btn menu-btn wow"
-            onclick="location.href='menu.php'">
+        <button class="btn menu-btn wow" onclick="location.href='menu.php'">
             <i class="fas fa-mug-hot me-2"></i> Menu
         </button>
 
@@ -129,34 +127,22 @@
         </div>
     </nav>
 
-
-    <!-- main container -->
-    <div class="container-fluid mt-5 d-none d-md-block">
-
-        <!-- coffee-banner -->
-        <div class="coffee-banner">
-            <div class="d-flex flex-column justify-content-center align-items-start text-start text-md-start mt-sm-5"
-                style="height: 100vh;">
-                <div class="coffee-banner-title title mb-3">Daily Delights</div>
-                <div class="coffee-banner-desc lead">
-                    Our meals and drinks are freshly prepared every day. We use quality ingredients to bring out
-                    the best flavors. Enjoy a delicious treat that brightens your everyday moments.
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Categories + Sort Section -->
-    <div class="container-fluid px-sm-2 px-md-4 px-lg-5 mt-5 mt-lg-4">
+    <div class="container-fluid px-sm-2 px-md-4 px-lg-5 mt-5 mt-lg-4 pt-lg-5">
         <!-- Top Row: Categories Label + Sort -->
         <div
             class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-2">
 
             <!-- Categories Label -->
-            <div class="title-category heading">Categories</div>
+            <div class="title-category heading align-items-sm-start">Cafe Menu</div>
+
+        </div>
+
+        <!-- Category Pills Row -->
+        <div class="d-flex flex-column flex-md-row align-items-md-center gap-3">
 
             <!-- Sort Dropdown -->
-            <div class="d-flex align-items-center gap-2 px-3 py-2 border rounded-pill shadow-sm mx-auto mx-md-0"
+            <div class="d-flex align-items-center gap-2 px-3 py-2 border rounded-pill shadow-sm mx-auto mx-md-0 order-0 order-md-1 mb-lg-2 "
                 style="background-color: var(--card-bg-color); font-family: var(--primaryFont); font-size: var(--lead); font-weight: 500; color: var(--text-color-dark); border-color: var(--primary-color);">
                 <i class="bi bi-funnel-fill" style="color: var(--text-color-dark); font-size: 1rem;"></i>
                 <label for="sortSelect" class="mb-0 fw-semibold">Sort by:</label>
@@ -168,20 +154,56 @@
                     <option value="newest">Newest</option>
                 </select>
             </div>
+
+            <!-- Category Pills Row -->
+            <div class="category-scroll d-flex gap-3 overflow-auto pb-3 pt-1 flex-grow-1 order-1 order-md-0">
+                <div class="category-pill text-center active" data-category="All">All</div>
+                <div class="category-pill text-center" data-category="Coffee">Coffee</div>
+                <div class="category-pill text-center" data-category="Tea">Tea</div>
+                <div class="category-pill text-center" data-category="Food">Food</div>
+            </div>
+
         </div>
 
-        <!-- Category Pills Row -->
-        <div class="category-scroll d-flex gap-3 overflow-auto py-3">
-            <div class="category-pill text-center active" data-category="All">All</div>
-            <div class="category-pill text-center" data-category="Coffee">Coffee</div>
-            <div class="category-pill text-center" data-category="Tea">Tea</div>
-            <div class="category-pill text-center" data-category="Food">Food</div>
-        </div>
+
     </div>
 
-    <div class="products-section border p-3 p-lg-5">
+    <div class="products-section border p-3 p-lg-5 mx-lg-3">
         <div class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6" id="productGrid">
             <!-- PRODUCTS -->
+
+            <div class="col">
+                <div class="menu-item text-center shadow-sm" style="
+                    height: 320px; 
+                    background-color: #fff9f2; 
+                    border-radius: 20px; 
+                    border: 1px solid #e0c9a6;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
+                    display: flex; 
+                    flex-direction: column; 
+                    justify-content: space-between; 
+                    padding: 15px;
+                    transition: transform 0.2s ease;
+                ">
+                    <div style="height: 150px; display: flex; align-items: center; justify-content: center;">
+                        <img src="assets/img/coffee.png" alt="" class="img-fluid"
+                            style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                    </div>
+                    <div class="subheading menu-name" style="font-size: 1.2rem; font-weight: 500; color: #4b2e2e;margin-top: 10px;">
+                        Amerikano
+                    </div>
+                    <div class="d-flex justify-content-center align-items-center text-center px-2"
+                        style="color: #6e4f3a; font-size: 0.85rem;">
+                        12oz – ₱60 | 16oz – ₱80
+                    </div>
+                    <button class="lead buy-btn mt-auto" data-bs-toggle="modal" data-bs-target="#item-customization"
+                        data-name="${prod.name}" data-price="${getPrice(prod)}"
+                        data-sizes='${JSON.stringify(prod.sizes || [])}'
+                        data-sugar='${JSON.stringify(prod.sugarLevels || [])}'
+                        data-type="${prod.sizes ? 'beverage' : 'food'}" onclick="openPopup(this)">Order Now</button>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -356,84 +378,62 @@
             .catch(error => {
                 console.error('Error loading item customization modal:', error);
             });
+            function openPopup() {
+    const modal = new bootstrap.Modal(document.getElementById('item-customization'));
+    modal.show();
 
-        function openPopup(button) {
-            const modal = new bootstrap.Modal(document.getElementById('item-customization'));
-            modal.show();
+    // Static placeholder values (no data logic)
+    document.querySelector('.itemName').textContent = 'Sample Item';
+    document.querySelector('.itemPrice').textContent = '₱0.00';
 
-            const name = button.getAttribute('data-name');
-            const sizes = JSON.parse(button.getAttribute('data-sizes'));
-            const sugars = JSON.parse(button.getAttribute('data-sugar'));
-            const type = button.getAttribute('data-type');
-            const iceSection = document.getElementById('ice-section');
+    // Show ice section for prototype
+    document.getElementById('ice-section').style.display = 'block';
 
-            if (type === 'beverage') {
-                iceSection.style.display = 'block';
-            } else {
-                iceSection.style.display = 'none';
-            }
+    // Show size section with static options
+    const sizeSection = document.getElementById('size-section');
+    const sizeContainer = document.getElementById('size-options');
+    sizeSection.style.display = 'block';
+    sizeContainer.innerHTML = `
+        <div class="col">
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="priceOptions" id="size16oz" checked>
+                <label class="form-check-label h6" for="size16oz">16oz</label>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="priceOptions" id="size18oz">
+                <label class="form-check-label h6" for="size18oz">18oz</label>
+            </div>
+        </div>
+    `;
 
-            // Set name and clear base price
-            document.querySelector('.itemName').textContent = name;
-            document.querySelector('.itemPrice').textContent = '';
+    // Show sugar section with static options
+    const sugarSection = document.getElementById('sugar-section');
+    const sugarContainer = document.getElementById('sugar-options');
+    sugarSection.style.display = 'block';
+    sugarContainer.innerHTML = `
+        <div class="col">
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="sugarOption" id="sugar25" checked>
+                <label class="form-check-label h6" for="sugar25">25%</label>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="sugarOption" id="sugar50">
+                <label class="form-check-label h6" for="sugar50">50%</label>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="sugarOption" id="sugar100">
+                <label class="form-check-label h6" for="sugar100">100%</label>
+            </div>
+        </div>
+    `;
+}
 
-            // === SIZE OPTIONS ===
-            const sizeSection = document.getElementById('size-section');
-            const sizeContainer = document.getElementById('size-options');
-            if (type === 'beverage') {
-                sizeSection.style.display = 'block';
-                sizeContainer.innerHTML = '';
-
-                sizes.forEach((sz, i) => {
-                    const id = `size${sz.name.replace(/\s/g, '')}`;
-                    const html = `
-            <div class="col">
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="priceOptions" id="${id}" value="${sz.name}" ${i === 1 ? 'checked' : ''}>
-                    <label class="form-check-label h6" for="${id}">${sz.name}</label>
-                </div>
-            </div>`;
-                    sizeContainer.insertAdjacentHTML('beforeend', html);
-                });
-
-                // Update price when size changes
-                document.querySelectorAll('input[name="priceOptions"]').forEach(radio => {
-                    radio.addEventListener('change', () => updateModalPrice(sizes));
-                });
-
-                // Set initial price
-                updateModalPrice(sizes);
-
-            } else {
-                sizeSection.style.display = 'none';
-                // Set price for food immediately
-                const product = allProducts.find(p => p.name === name);
-                if (product) {
-                    document.querySelector('.itemPrice').textContent = `₱${product.price}`;
-                }
-            }
-
-            // === SUGAR OPTIONS ===
-            const sugarSection = document.getElementById('sugar-section');
-            const sugarContainer = document.getElementById('sugar-options');
-            if (type === 'beverage') {
-                sugarSection.style.display = 'block';
-                sugarContainer.innerHTML = '';
-                sugars.forEach((sugar, i) => {
-                    const id = `sugar${sugar}`;
-                    const html = `
-            <div class="col">
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="sugarOption" id="${id}" value="${sugar}" ${i === 0 ? 'checked' : ''}>
-                    <label class="form-check-label h6" for="${id}">${sugar}%</label>
-                </div>
-            </div>`;
-                    sugarContainer.insertAdjacentHTML('beforeend', html);
-                });
-            } else {
-                sugarSection.style.display = 'none';
-            }
-        }
 
         function updateModalPrice(sizes) {
             const selectedSize = document.querySelector('input[name="priceOptions"]:checked')?.value;

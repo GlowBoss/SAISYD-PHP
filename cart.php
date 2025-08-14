@@ -16,30 +16,9 @@
     <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link rel="icon" href="../assets/img/round_logo.png" type="image/png">
+    <link rel="icon" href="assets/img/round_logo.png" type="image/png">
 
 </head>
-
-<style>
-    .form-check-input {
-        width: 1.3em;
-        height: 1.3em;
-        margin-top: 0.25em;
-        border: 3px solid var(--primary-color) !important;
-    }
-
-    .form-check-input:checked {
-        background-color: var(--primary-color) !important;
-        border-color: var(--primary-color) !important;
-    }
-
-    .form-check-label {
-        font-weight: 500;
-    }
-
-    .btn-outline-dark:hover {
-        background-color: var(--btn-hover1) !important;
-    }
-</style>
 
 <body>
 
@@ -49,9 +28,7 @@
     <!-- Sidebar -->
     <div id="mobileSidebar" class="sidebar">
         <div class="d-flex justify-content-between align-items-center mb-4">
-
             <img src="assets/img/saisydLogo.png" style="height: 40px;" alt="SAISYD Logo" />
-
             <button id="closeSidebar" class="fs-3 border-0 bg-transparent">&times;</button>
         </div>
 
@@ -75,8 +52,7 @@
             </a>
         </div>
 
-        <button class="btn menu-btn"
-            onclick="location.href='menu.php'">
+        <button class="btn menu-btn" onclick="location.href='menu.php'">
             <i class="fas fa-mug-hot me-2"></i> Menu
         </button>
 
@@ -156,7 +132,7 @@
         <div class="row justify-content-center">
             <!-- Cart Card -->
             <div class="col-12 col-lg-6 mb-4">
-                <div class=" cart-section p-3" style="max-height: 75vh;">
+                <div class="card cart-section p-3 border-0" style="max-height: 75vh;">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div class="d-flex align-items-center">
                             <div class="icon me-2"></div>
@@ -167,7 +143,7 @@
                         </button>
                     </div>
 
-                    <div class="overflow-auto" style="max-height: 75vh;">
+                    <div class="overflow-auto custom-scroll" style="max-height: 49vh;">
                         <!-- Cart Item -->
 
 
@@ -180,7 +156,14 @@
                             <div class="product subheading fw-bold ms-3">Amerikano</div>
                             <div class="price subheading fw-bold ms-2">₱120</div>
                         </div>
+                        <div class="text-muted small ms-5">Size: 16oz</div>
+                        <div class="text-muted small ms-5">Sugar: 0%</div>
+                        <div class="text-muted small ms-5">Ice: Default</div>
+                        <div class="text-muted small ms-5">Notes: hello world</div>
                         <hr>
+
+
+
 
                     </div>
                 </div>
@@ -188,7 +171,7 @@
 
             <!-- Summary Card -->
             <div class="col-12 col-lg-4 mb-4">
-                <div class="card p-3" style="border-radius: 16px;">
+                <div class="card p-3" style="border-radius: 16px; max-height: 75vh;">
                     <h3 class="subheading2 text-start ms-2 pt-2 pb-3">Summary</h3>
                     <div class="d-flex justify-content-evenly mb-2">
                         <p class="lead mb-0">Items: <span id="item-count">0</span></p>
