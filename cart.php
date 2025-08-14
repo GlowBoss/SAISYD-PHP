@@ -242,7 +242,7 @@
                     <div class="text-end px-3 mb-3">
                         <h3 class="subheading3">TOTAL: <span id="grand-total">₱0.00</span></h3>
                     </div>
-                    <button onclick="openPopup()" class="btn buy-btn rounded-5 mx-auto d-block mb-2">Checkout</button>
+                    <button class="btn buy-btn rounded-5 mx-auto mb-2">Checkout</button>
                 </div>
             </div>
         </div>
