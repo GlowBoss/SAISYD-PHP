@@ -1,72 +1,174 @@
 body,
 html {
-    height: auto;
-    overflow-x: hidden;
-    overflow-y: auto;
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background-color: var(--secondary-color);
 }
 
+h4 {
+  color: var(--text-color-dark);
+}
 
 .mainContainer {
-    width: 100%;
-    height: auto;
-    display: flex;
-    flex-direction: column;
-    background-color: var(--card-bg-color);
+  width: 100%;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--card-bg-color);
+}
+
+.cardMain {
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.125) !important;
+  background-color: var(--card-bg-color);
 }
 
 .carousel-control-prev-icon {
-    background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" fill="%23C4A277" viewBox="0 0 16 16"><path d="M11.5 1.5a.5.5 0 0 1 .5.5v12a.5.5 0 0 1-.5.5l-8-6a.5.5 0 0 1 0-.8l8-6a.5.5 0 0 1 .5-.2z"/></svg>');
-    background-size: cover;
-    padding: 10px;
+  background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" fill="%23C4A277" viewBox="0 0 16 16"><path d="M11.5 1.5a.5.5 0 0 1 .5.5v12a.5.5 0 0 1-.5.5l-8-6a.5.5 0 0 1 0-.8l8-6a.5.5 0 0 1 .5-.2z"/></svg>');
+  background-size: cover;
+  padding: 10px;
 }
 
 .carousel-control-next-icon {
-    background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" fill="%23C4A277" viewBox="0 0 16 16"><path d="M4.5 1.5a.5.5 0 0 0-.5.5v12a.5.5 0 0 0 .5.5l8-6a.5.5 0 0 0 0-.8l-8-6a.5.5 0 0 0-.5-.2z"/></svg>');
-    background-size: cover;
-    padding: 10px;
+  background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" fill="%23C4A277" viewBox="0 0 16 16"><path d="M4.5 1.5a.5.5 0 0 0-.5.5v12a.5.5 0 0 0 .5.5l8-6a.5.5 0 0 0 0-.8l-8-6a.5.5 0 0 0-.5-.2z"/></svg>');
+  background-size: cover;
+  padding: 10px;
 }
-
 
 .carousel-control-prev,
 .carousel-control-next {
-    width: 10%;
+  width: 10%;
 }
 
 .carousel-control-prev-icon::before,
 .carousel-control-next-icon::before {
-    color:#C4A277;
-    font-size: 24px;
+  color: #c4a277;
+  font-size: 24px;
 }
 
 .cardSmall {
-    width: 20rem;
-    height: 8rem;
-    border-radius: 20px;
-    text-align: center;
-   
-
+  width: 20rem;
+  height: 8rem;
+  border-radius: 20px;
+  text-align: center;
+  font-family: var(--secondaryFont);
+  font-size: var(--lead);
+  color: var(--text-color-dark);
+  background-color: var(--card-bg-color);
 }
 
 .cardBig {
-    width: 15rem;
-    height: 18rem;
-    border-radius: 20px;
-    text-align: center;
-    border: none;
-   
+  width: 15rem;
+  height: 18rem;
+  text-align: center;
+  border: none;
+  font-family: var(--secondaryFont);
+  font-size: var(--lead);
+  color: var(--text-color-dark);
+  background-color: var(--card-bg-color);
+}
+
+.cardStats {
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.125) !important;
 }
 
 .cardContainer {
-    border-radius: 20px;
-    text-align: center;
-    border: none;
+  border-radius: 20px;
+  text-align: center;
+  border: none;
+  background-color: var(--card-bg-color);
 }
-.btn-dropdown{
-    background-color: var(--primary-color);
-    border-radius: 10px;
+
+input.form-control[aria-label="search-bar"] {
+  border-radius: 12px !important;
+  font-family: var(--secondaryFont) !important;
+  font-size: var(--lead) !important;
+}
+
+.btn-dropdown {
+  background-color: var(--primary-color);
+  border-radius: 12px;
+  font-family: var(--secondaryFont);
+  font-size: var(--lead);
+  color: var(--text-color-light);
+}
+
+.btn-dropdown.show,
+.btn-dropdown:active {
+  background-color: var(--primary-color) !important;
+  color: var(--text-color-light) !important;
 }
 
 button.btn.btn-dropdown:hover {
-    background-color: #945400ea !important;
-    color: white !important;
+  background-color: #945400ea !important;
+  color: white !important;
 }
+
+.excelBtn {
+  background-color: var(--text-color-dark);
+  border-radius: 12px;
+  font-family: var(--secondaryFont);
+  font-size: var(--lead);
+  color: var(--text-color-light);
+}
+
+.excelBtn.show,
+.excelBtn:active {
+  background-color: var(--text-color-dark) !important;
+  color: var(--text-color-light) !important;
+}
+
+button.btn.excelBtn:hover {
+  background-color: #4a2800 !important;
+  color: white !important;
+}
+
+.cardOrders,
+.cardOrders * {
+  border: none;
+  font-family: var(--secondaryFont);
+  color: var(--text-color-dark);
+  font-size: var(--lead);
+  background-color: var(--card-bg-color);
+}
+
+.table {
+  background-color: var(--card-bg-color);
+}
+
+.table th,
+.table td {
+  background-color: var(--card-bg-color) !important;
+}
+
+.btnModal {
+  background-color: var(--primary-color);
+  border-radius: 12px;
+  font-family: var(--secondaryFont);
+  color: var(--text-color-light);
+}
+
+.btnModal.show,
+.btnModal:active {
+  background-color: var(--primary-color) !important;
+  color: var(--text-color-light) !important;
+}
+
+button.btn.btnDownload:hover {
+  background-color: #945400ea !important;
+  color: white !important;
+}
+
+button.btn.btnCancel:hover {
+  background-color: var(--text-color-dark) !important;
+  color: white !important;
+}
+
+.modalText{
+font-family: var(--secondaryFont);
+  color: var(--text-color-dark);
+}
+
+

@@ -161,144 +161,97 @@
 
     <!-- Main Content Area -->
     <div class="main-content">
-        <div class="container-fluid">
-            <div class="card rounded-4">
-                <!-- Header Row  -->
-                <div class="d-none d-md-block align-items-center py-4 px-lg-3 px-2">
-                    <h4 class="subheading fw-bold m-1 d-flex align-items-center">
-                        <span>Menu Management</span>
-                    </h4>
-                </div>
-
-                <div class="row g-2 align-items-center mb-3 px-2 px-lg-3">
-                    <!-- search -->
-                    <div class="col-12 col-sm">
-                        <input type="text" class="form-control" placeholder="Search Product Name"
-                            aria-label="Enter product Name" id="item-input">
+        <div class="row">
+            <div class="col">
+                <div class="cardMain shadow-sm w-100 ">
+                    <!-- Header Row  -->
+                    <div class="d-none d-md-block align-items-center py-4 px-lg-3 px-2">
+                        <div class="subheading fw-bold m-1 d-flex align-items-center">
+                            <span style="color: var(--text-color-dark);">Menu Management</span>
+                        </div>
                     </div>
-                    <!-- add button -->
-                    <div class="col-12 col-sm-auto">
-                        <button class="btn btn-success w-100" type="button" data-bs-toggle="modal"
-                            data-bs-target="#confirmModal">
-                            Add
-                        </button>
-                    </div>
-                    <!-- category part  -->
-                    <div class="col-12 col-sm-auto">
-                        <select class="form-select w-100">
-                            <option selected>Sort by Category</option>
-                            <option value="coffee">Coffee</option>
-                            <option value="tea">Tea</option>
-                            <option value="food">Food</option>
-                            <option value="beverage">Beverage</option>
-                        </select>
-                    </div>
-                </div>
 
-                <!-- product -->
-                <div class="container border p-4 rounded-4 shadow-sm product-container">
-                    <div id="productGrid" class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6">
-
+                    <div class="row g-2 align-items-center mb-3 px-2 px-lg-3 m-3">
+                        <!-- search -->
                         <div class="col">
-                            <div class="menu-item border p-3 rounded shadow-sm text-center width-auto">
-                                <img src="../assets/img/coffee.png" alt="Amerikano" class="img-fluid mb-2"
-                                    style="max-height: 150px;">
-                                <div class="lead menu-name fw-bold">Amerikano</div>
+                            <input type="text" class="form-control search" placeholder="Search Product Name"
+                                aria-label="search-bar" id="item-input">
+                        </div>
+                        <!-- add button -->
+                        <div class="col-auto">
+                            <button class="btn btnAdd" type="button" data-bs-toggle="modal"
+                                data-bs-target="#confirmModal">Add
+                            </button>
+                        </div>
+
+                        <!-- category part  -->
+                        <div class="col-12 col-sm-auto">
+                            <select class="form-select">
+                                <option selected>Sort by Category</option>
+                                <option value="coffee">Coffee</option>
+                                <option value="tea">Tea</option>
+                                <option value="food">Food</option>
+                                <option value="beverage">Beverage</option>
+                            </select>
+                        </div>
+                    </div>
+
+
+                    <!-- Menu -->
+
+                    <div id="productGrid" class="row row-cols-2 row-cols-sm-3 row-cols-md-2 row-cols-lg-5 m-5">
+                        <div class="col">
+                            <div class="menu-item border p-3 rounded shadow-sm text-center">
+                                <img src="../assets/img/coffee.png" alt="Amerikano" class="img-fluid mb-2 menu-img">
+                                <div class="lead menu-name fs-6">Amerikano (S)</div>
                                 <div class="d-flex justify-content-center align-items-center gap-2 my-2">
                                     <span class="lead fw-bold menu-price">₱140</span>
-                                    <span class="lead menu-size">500ml</span>
                                 </div>
                                 <div class="d-flex flex-wrap justify-content-center gap-2">
-                                    <button class="btn btn-warning btn-sm rounded-4 flex-grow-1 flex-sm-grow-0"
-                                        data-bs-toggle="modal" data-bs-target="#editModal">
-                                        <i class="bi bi-pencil-square"></i> Edit
+                                    <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editModal">
+                                        Edit
                                     </button>
-                                    <button class="btn btn-danger btn-sm rounded-4 flex-grow-1 flex-sm-grow-0">
-                                        <i class="bi bi-trash"></i> Delete
+                                    <button class="btn btn-sm btn-del flex-grow-1 flex-sm-grow-0">
+                                        Delete
                                     </button>
                                 </div>
                             </div>
                         </div>
 
                         <div class="col">
-                            <div class="menu-item border p-3 rounded shadow-sm text-center width-auto">
-                                <img src="../assets/img/coffee.png" alt="Cappuccino" class="img-fluid mb-2"
-                                    style="max-height: 150px;">
-                                <div class="lead menu-name fw-bold">Cappuccino</div>
+                            <div class="menu-item border p-3 rounded shadow-sm text-center">
+                                <img src="../assets/img/coffee.png" class="img-fluid mb-2 menu-img">
+                                <div class="lead menu-name fs-6">Cappuccino (S)</div>
                                 <div class="d-flex justify-content-center align-items-center gap-2 my-2">
                                     <span class="lead fw-bold menu-price">₱160</span>
-                                    <span class="lead menu-size">350ml</span>
                                 </div>
                                 <div class="d-flex flex-wrap justify-content-center gap-2">
-                                    <button class="btn btn-warning btn-sm rounded-4 flex-grow-1 flex-sm-grow-0"
-                                        data-bs-toggle="modal" data-bs-target="#editModal">
-                                        <i class="bi bi-pencil-square"></i> Edit
+                                    <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editModal">
+                                        Edit
                                     </button>
-                                    <button class="btn btn-danger btn-sm rounded-4 flex-grow-1 flex-sm-grow-0">
-                                        <i class="bi bi-trash"></i> Delete
+                                    <button class="btn btn-sm btn-del flex-grow-1 flex-sm-grow-0">
+                                        Delete
                                     </button>
                                 </div>
                             </div>
                         </div>
-
-                        <div class="col">
-                            <div class="menu-item border p-3 rounded shadow-sm text-center width-auto">
-                                <img src="../assets/img/coffee.png" alt="Latte" class="img-fluid mb-2"
-                                    style="max-height: 150px;">
-                                <div class="lead menu-name fw-bold">Latte</div>
-                                <div class="d-flex justify-content-center align-items-center gap-2 my-2">
-                                    <span class="lead fw-bold menu-price">₱180</span>
-                                    <span class="lead menu-size">400ml</span>
-                                </div>
-                                <div class="d-flex flex-wrap justify-content-center gap-2">
-                                    <button class="btn btn-warning btn-sm rounded-4 flex-grow-1 flex-sm-grow-0"
-                                        data-bs-toggle="modal" data-bs-target="#editModal">
-                                        <i class="bi bi-pencil-square"></i> Edit
-                                    </button>
-                                    <button class="btn btn-danger btn-sm rounded-4 flex-grow-1 flex-sm-grow-0">
-                                        <i class="bi bi-trash"></i> Delete
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col">
-                            <div class="menu-item border p-3 rounded shadow-sm text-center width-auto">
-                                <img src="../assets/img/coffee.png" alt="Mocha" class="img-fluid mb-2"
-                                    style="max-height: 150px;">
-                                <div class="lead menu-name fw-bold">Mocha</div>
-                                <div class="d-flex justify-content-center align-items-center gap-2 my-2">
-                                    <span class="lead fw-bold menu-price">₱200</span>
-                                    <span class="lead menu-size">400ml</span>
-                                </div>
-                                <div class="d-flex flex-wrap justify-content-center gap-2">
-                                    <button class="btn btn-warning btn-sm rounded-4 flex-grow-1 flex-sm-grow-0"
-                                        data-bs-toggle="modal" data-bs-target="#editModal">
-                                        <i class="bi bi-pencil-square"></i> Edit
-                                    </button>
-                                    <button class="btn btn-danger btn-sm rounded-4 flex-grow-1 flex-sm-grow-0">
-                                        <i class="bi bi-trash"></i> Delete
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
 
+
+
     <!-- MODALLLL FOR PRODUCTTT -->
-    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal fade " id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content text-center">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="confirmModalLabel">Add Product</h5>
+                    <h5 class="modal-title modalText" id="confirmModalLabel">Add Product</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body modalText">
                     <form>
                         <div class="row">
                             <div class="col-md-6">
@@ -334,8 +287,8 @@
                             </div>
                         </div>
                         <div class="d-flex justify-content-end mt-3">
-                            <button type="button" class="btn btn-danger me-2" data-bs-dismiss="modal">CANCEL</button>
-                            <button type="submit" class="btn btn-success" data-bs-toggle="modal"
+                            <button type="button" class="btn btn-sm btn-del me-2" data-bs-dismiss="modal">CANCEL</button>
+                            <button type="submit" class="btn btn-sm" data-bs-toggle="modal"
                                 data-bs-target="#confirmModal">ADD ITEM</button>
                         </div>
                     </form>
@@ -349,10 +302,10 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content text-center">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="editModalLabel">Edit Product</h5>
+                    <h5 class="modal-title modalText" id="editModalLabel">Edit Product</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body modalText">
                     <form>
                         <div class="row">
                             <div class="col-md-6">
@@ -386,8 +339,8 @@
                             </div>
                         </div>
                         <div class="d-flex justify-content-end mt-3">
-                            <button type="button" class="btn btn-danger me-2" data-bs-dismiss="modal">CANCEL</button>
-                            <button type="submit" class="btn btn-success">SAVE CHANGES</button>
+                            <button type="button" class="btn btn-sm btn-del me-2" data-bs-dismiss="modal">CANCEL</button>
+                            <button type="submit" class="btn btn-sm ">SAVE CHANGES</button>
                         </div>
                     </form>
                 </div>
@@ -396,15 +349,6 @@
     </div>
 
     <script>
-        // document.addEventListener("DOMContentLoaded", function () {
-        //     const offcanvasElement = document.getElementById("offcanvasSidebar");
-        //     const bsOffcanvas = bootstrap.Offcanvas.getOrCreateInstance(offcanvasElement);
-
-        // Open offcanvas by default on small screens
-        //     if (window.innerWidth < 768) {
-        //         bsOffcanvas.show();
-        //     }
-        // });
 
         let currentEditingCard = null;
 
