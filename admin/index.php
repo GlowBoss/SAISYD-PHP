@@ -23,9 +23,6 @@
                 <div class="d-flex gap-3 align-items-center flex-wrap justify-content-end">
                     <button class="btn bg-transparent icon-btn">
                         <i class="bi bi-bell"></i>
-                    </button>
-
-                    <a href="../index.php" class="btn custom-visit">
                         <i class="bi bi-globe"></i> <span class="d-none d-md-inline">Visit Site</span>
                     </a>
                     <a class="btn custom-logout" href="login.php">
@@ -59,7 +56,6 @@
                                 Management</a>
                         </div>
                         <div class="col-12 col-sm-6 col-md-4">
-                            <a href="notification.php" class="dashboard-box text-decoration-none">Notification</a>
                         </div>
                         <div class="col-12 col-sm-6 col-md-4">
                             <a href="setting.php" class="dashboard-box text-decoration-none">Settings</a>
