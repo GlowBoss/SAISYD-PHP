@@ -26,7 +26,12 @@
     <link rel="icon" href="../assets/img/round_logo.png" type="image/png">
 
     <style>
-       
+        @media (min-width: 992px) {
+            .receipt-container {
+                min-width: 400px;
+            }
+        }
+
         @media (min-width: 768px) {
             .offcanvas {
                 background: var(--card-bg-color);
@@ -179,14 +184,15 @@
         </div>
     </div>
 
-    <div class="container-fluid mainContainer p-3">
+    <div class="container-fluid mainContainer p-2">
         <div class="row">
             <!-- Offcanvas Sidebar  -->
             <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasSidebar"
                 aria-labelledby="offcanvasSidebarLabel">
-                
+
                 <div class="offcanvas-header d-flex align-items-center justify-content-between">
-                    <img src="../assets/img/saisydLogo.png" alt="Saisyd Cafe Logo" class="admin-logo" style="max-height: 70px; width: auto;" />
+                    <img src="../assets/img/saisydLogo.png" alt="Saisyd Cafe Logo" class="admin-logo"
+                        style="max-height: 70px; width: auto;" />
                     <button type="button" class="btn-close" data-bs-dismiss="offcanvas"
                         aria-label="Close">&times;</button>
                 </div>
@@ -252,7 +258,7 @@
             </div>
 
             <!-- Main content column -->
-            <div class="container-fluid">
+            <div class="container-fluid mb-2">
                 <div class="d-flex flex-column flex-lg-row pt-3">
                     <!-- POS content -->
                     <div class="flex-fill">
@@ -260,7 +266,7 @@
                             <div class="container-fluid">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <div class="d-flex align-items-center gap-3">
-                                        <button class="btn btn-sm mobile-menu-toggle" data-bs-toggle="offcanvas"
+                                        <button class="btn btn-sm mobile-menu-toggle pt-2" data-bs-toggle="offcanvas"
                                             data-bs-target="#offcanvasSidebar" aria-controls="offcanvasSidebar"
                                             aria-label="Toggle sidebar">
                                             <i class="fa fa-bars"></i>
@@ -285,8 +291,8 @@
                             </div>
                         </div>
 
-                        <div class="card overflow-auto p-3 maincontainer">
-                            <div class="subheading px-2">
+                        <div class="card overflow-auto p-3 maincontainer" style="height: 70vh">
+                            <div class="subheading px-2 mb-3">
                                 Items
                             </div>
                             <div class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6"
@@ -296,14 +302,18 @@
                         </div>
                     </div>
 
-                    <!-- Receipt -->
-                    <div class="flex-lg-shrink-0 ms-0 ms-lg-3 mt-3 mt-lg-0" style="min-width: 300px;">
-                        <div class="card p-3 overflow-auto" style="height: 100%;">
+                    <div class="flex-lg-shrink-0 ms-0 ms-lg-3 mt-3 mt-lg-0 receipt-container">
+                        <div class="card p-3 receiptCard" style="height: 100%;">
                             <div class="category-title">Receipt</div>
                             <div class="container-fluid">
                                 <div class="line-divider"></div>
                             </div>
-                            <div id="receipt"><!-- receipt items --></div>
+
+                            <!-- Scrollable receipt list -->
+                            <div id="receipt" style="max-height: 600px; overflow-y: auto;">
+                                <!-- receipt items -->
+                            </div>
+
                             <div class="container-fluid">
                                 <div class="line-divider" style="height: 1px;"></div>
                                 <div class="mt-4 d-flex flex-row justify-content-between">
@@ -311,15 +321,15 @@
                                     <div><b id="totalValue">0</b></div>
                                 </div>
                                 <div class="d-flex flex-column flex-md-row justify-content-center gap-3 mt-4">
-                                    <button class="btn btn-dark w-100 w-md-auto rounded-3" onclick="openPopup()">Order
-                                        Now</button>
-                                    <button class="btn btn-outline-dark w-100 w-md-auto rounded-3"
-                                        onclick="cancelOrder()">Cancel
-                                        Order</button>
+                                    <button class="btn btn-dark w-100 w-md-auto rounded-5 py-2 px-3"
+                                        onclick="openPopup()">Order Now</button>
+                                    <button class="btn btn-outline-dark w-100 w-md-auto rounded-5 py-2 px-3"
+                                        onclick="cancelOrder()">Cancel Order</button>
                                 </div>
                             </div>
                         </div>
                     </div>
+
                 </div>
             </div>
 
@@ -372,7 +382,7 @@
 
                                 maincontainer.innerHTML += `
                     <div class="col">
-                        <div class="menu-item border p-3 rounded shadow-sm text-center width-auto card-hover" style="cursor: pointer;">
+                        <div class="menu-item border p-3 rounded shadow text-center width-auto card-hover" style="cursor: pointer;">
                             <img src="../assets/img/${content.img}" alt="${content.name}" class="img-fluid mb-2" style="max-height: 170px; min-height: 120px">
                             <div class="lead menu-name fw-bold">${content.name}</div>
                             <div class="d-flex justify-content-center align-items-center gap-2 my-2">
@@ -398,7 +408,7 @@
                             maincontainer.innerHTML += `
                 <div class="col">
                     <div onclick="showQuantityModal('${content.price}','${content.code}','${content.name}')" 
-                         class="menu-item border p-3 rounded shadow-sm text-center width-auto card-hover" 
+                         class="menu-item border p-3 rounded shadow text-center width-auto card-hover" 
                          style="cursor: pointer; height: 230px;">
                         <img src="../assets/img/${content.img}" alt="${content.name}" class="img-fluid mb-2" style="max-height: 150px;">
                         <div class="lead menu-name fw-bold">${content.name}</div>

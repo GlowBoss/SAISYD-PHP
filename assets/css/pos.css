@@ -1,25 +1,45 @@
 body,
 html {
-    height: auto;
+    height: 100%;
     overflow-x: hidden;
-    overflow-y: auto;
+    overflow-y: hidden;
+    padding: 0px;
+    margin: 0px;
     font-family: var(--primaryFont);
 }
 
 
 .mainContainer {
     width: 100%;
-    height: auto;
+    height: 100vh;
     display: flex;
     flex-direction: column;
     background-color: var(--card-bg-color)
+}
+
+.maincontainer {
+    height: 100%;
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.menu-item {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.menu-item:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
 }
 
 
 body{
     background-color: #FFFDF9;
 }
-.topcontainer {
+
+.topcontainer, .receiptCard {
     height: auto;
     background-color: #F8F8F8;
 }
@@ -38,18 +58,6 @@ font-weight: bold;
     font-size: 14px;
     line-height: .5;
 }
-
-/* .category-title{
-    font-size: 20px;
-}
-
-.category{
-    height: 100px;
-    width: 200px;
-    border-radius: 10px;
-    border-color: black 1px;
-} */
-
 
 .category-scroll {
     -webkit-overflow-scrolling: touch;
@@ -90,13 +98,6 @@ font-weight: bold;
       padding: 8px 16px;
     }
   }
-  
-
-.card-hover:hover {
-    box-shadow: 0 0 10px rgba(0,0,0,0.3);
-    transform: scale(1.02);
-    transition: 0.2s;
-}
 
 .product-img {
     width: 100%; 
