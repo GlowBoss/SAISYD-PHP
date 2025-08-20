@@ -29,10 +29,10 @@
 
                 <!-- Action Buttons -->
                 <div class="d-grid gap-2">
-                    <button type="button" class="btn btn-success confirm-order-btn">
+                    <button type="button" class="btn btnConfirm">
                         <i class="bi bi-check-circle me-2"></i>Confirm Order
                     </button>
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <button type="button" class="btn btnCancel" data-bs-dismiss="modal">
                         <i class="bi bi-x-circle me-2" id="cancelBtn"></i>Cancel
                     </button>
                 </div>
@@ -64,11 +64,17 @@
             </div>
             <div class="modal-body">
                 <label for="quantityInput" class="form-label">Quantity</label>
-                <input type="number" id="quantityInput" value="1" min="1" step="1" class="form-control" style="appearance: auto; -moz-appearance: auto; -webkit-appearance: auto;" />
+                <div class="input-group">
+                    <button class="btn btnOrder" type="button" id="minusBtn">−</button>
+                    <input type="number" id="quantityInput" value="1" min="1" step="1"
+                        class="form-control text-center" />
+                    <button class="btn btnOrder" type="button" id="plusBtn">+</button>
+                </div>
             </div>
             <div class="modal-footer d-flex justify-content-between">
-                <button type="button" class="btn btn-success w-100 w-md-auto" id="addToReceiptButton" onclick="addToReceipt()">Add to Order</button>
-                <button type="button" class="btn btn-danger w-100 w-md-auto" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btnOrder w-100 w-md-auto" id="addToReceiptButton"
+                    onclick="addToReceipt()">Add to Order</button>
+                <button type="button" class="btn btnOrder w-100 w-md-auto" data-bs-dismiss="modal">Cancel</button>
             </div>
         </div>
     </div>

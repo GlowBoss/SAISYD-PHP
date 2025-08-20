@@ -2,10 +2,11 @@ body,
 html {
     height: 100%;
     overflow-x: hidden;
-    overflow-y: hidden;
+    overflow-y: auto;
     padding: 0px;
     margin: 0px;
     font-family: var(--primaryFont);
+    background-color: var(--bg-color);
 }
 
 
@@ -23,38 +24,30 @@ html {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    background-color: var(--card-bg-color)
 }
 
 .menu-item {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .menu-item:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
-
-body{
-    background-color: #FFFDF9;
-}
-
-.topcontainer, .receiptCard {
+.topcontainer,
+.receiptCard {
     height: auto;
-    background-color: #F8F8F8;
+    background-color: var(--card-bg-color);
 }
 
-.maincontainer {
-    height: 65dvh;
-    background-color: #F8F8F8;
+.title {
+    font-size: 28px;
+    font-weight: bold;
 }
 
-.title{
-font-size: 28px;
-font-weight: bold;
-}
-
-.subtitle{
+.subtitle {
     font-size: 14px;
     line-height: .5;
 }
@@ -62,12 +55,12 @@ font-weight: bold;
 .category-scroll {
     -webkit-overflow-scrolling: touch;
     scroll-snap-type: x mandatory;
-  }
-  
-  .category-pill {
+}
+
+.category-pill {
     min-width: 120px;
     padding: 10px 20px;
-    border-radius: 50px;
+    border-radius: 12px;
     border: 2px solid var(--btn-hover1);
     color: var(--text-color-dark);
     font-weight: 600;
@@ -79,31 +72,87 @@ font-weight: bold;
     scroll-snap-align: start;
     flex-shrink: 0;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  }
-  
-  .category-pill:hover {
-    background-color: #e6d5c3;
-  }
-  
-  .category-pill.active {
-    background-color: var(--btn-hover1);
-    color: #fff;
-    border-color: var(--btn-hover1);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-  }
+}
 
-  @media (max-width: 576px) {
+.category-pill:hover {
+    background-color: var(--primary-color);
+}
+
+.category-pill.active {
+    background-color: var(--primary-color);
+    color: var(--text-color-light);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    border: 0px solid var(--primary-color);
+}
+
+.btnOrder {
+    border-radius: 12px;
+    color: var(--text-color-light);
+    background-color: var(--primary-color);
+    font-family: var(--primaryFont);
+    font-size: var(--lead);
+    white-space: nowrap;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.btnOrder:hover,
+.btnConfirm:hover,
+.btnCancel:hover {
+    background-color: var(--btn-hover1);
+    color: var(--text-color-light);
+}
+
+.btnConfirm {
+    border-radius: 12px;
+    color: var(--text-color-light);
+    background-color: var(--primary-color);
+    font-family: var(--primaryFont);
+    font-size: var(--lead);
+    white-space: nowrap;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.btnOrder {
+    border-radius: 12px;
+    color: var(--text-color-light);
+    background-color: var(--primary-color);
+    font-family: var(--primaryFont);
+    font-size: var(--lead);
+    white-space: nowrap;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.btnCancel:hover {
+    background-color: var(--btn-hover1);
+    color: var(--text-color-light);
+}
+.btnCancel {
+    border-radius: 12px;
+    color: var(--text-color-dark);
+    font-family: var(--primaryFont);
+    font-size: var(--lead);
+    white-space: nowrap;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+     border-color: var(--btn-hover1);
+}
+
+
+@media (max-width: 576px) {
     .category-pill {
-      min-width: 100px;
-      padding: 8px 16px;
+        min-width: 100px;
+        padding: 8px 16px;
     }
-  }
+}
 
 .product-img {
-    width: 100%; 
-    height: auto; 
-    max-height: 120px; 
-    object-fit: contain; 
+    width: 100%;
+    height: auto;
+    max-height: 120px;
+    object-fit: contain;
     border-radius: 8px;
 }
 
@@ -114,7 +163,7 @@ font-weight: bold;
 }
 
 .product-price {
-    font-size: 12px; 
+    font-size: 12px;
     margin-top: 5px;
 }
 
@@ -141,20 +190,43 @@ font-weight: bold;
     margin-bottom: 20px;
 }
 
-.btn-outline-dark{
- border-color: var(--btn-hover1);
+.btn-outline-dark {
+    border-color: var(--btn-hover1);
 }
 
-.btn-outline-dark:hover{
-    background-color: var(--btn-hover1);
+.btn-outline-dark:hover {
+    background-color: var(--primary-color);
     color: var(--text-color-light)
 }
 
-.btn-dark{
+.btn-dark {
     background-color: var(--btn-hover1);
-    color: var(--text-color-light)
+    color: var(--text-color-light);
+    border-radius: 12px;
 }
 
-.btn-dark:hover{
-    background-color: var(--btn-hover2);
+.btn-dark:hover {
+    background-color: var(--primary-color);
+    color: var(--text-color-light);
+    border: 0px solid var(--primary-color);
+}
+
+.modal-header,
+.modal-body,
+.modal-footer {
+    background-color: var(--secondary-color);
+    color: var(--text-color-dark);
+}
+
+select option:hover {
+    background-color: var(--primary-color);
+    color: var(--text-color-light);
+    cursor: pointer;
+}
+
+
+.dropdown-menu .dropdown-item:hover {
+    background-color: var(--primary-color);
+    color: var(--text-color-light);
+    cursor: pointer;
 }

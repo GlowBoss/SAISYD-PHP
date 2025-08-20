@@ -32,14 +32,6 @@
 </head>
 
 <body>
-    <!-- Mobile Menu Toggle Button  -->
-    <div class="d-md-none mobile-header d-flex align-items-center p-3">
-        <button id="menuToggle" class="mobile-menu-toggle me-3">
-            <i class="fas fa-bars"></i>
-        </button>
-        <h4 class="mobile-header-title">Inventory Management</h4>
-    </div>
-
     <!-- Desktop Sidebar (visible on md+ screens) -->
     <div class="d-none d-md-block">
         <div class="desktop-sidebar p-4">
@@ -63,11 +55,11 @@
                     <i class="bi bi-shop-window"></i>
                     <span>Point of Sales</span>
                 </a>
-                <a href="inventory-management.php" class="admin-nav-link active">
+                <a href="inventory-management.php" class="admin-nav-link">
                     <i class="bi bi-boxes"></i>
                     <span>Inventory Management</span>
                 </a>
-                <a href="menu-management.php" class="admin-nav-link">
+                <a href="menu-management.php" class="admin-nav-link active">
                     <i class="bi bi-menu-button-wide"></i>
                     <span>Menu Management</span>
                 </a>
@@ -116,26 +108,31 @@
                 <i class="bi bi-speedometer2"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="notification.php" class="admin-nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.15s">
+            <a href="notification.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
+                data-wow-delay="0.15s">
                 <i class="bi bi-bell"></i>
                 <span>Notifications</span>
             </a>
-            <a href="point-of-sales.php" class="admin-nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.2s">
+            <a href="point-of-sales.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
+                data-wow-delay="0.2s">
                 <i class="bi bi-shop-window"></i>
                 <span>Point of Sales</span>
             </a>
-            <a href="inventory-management.php" class="admin-nav-link active wow animate__animated animate__fadeInLeft" data-wow-delay="0.25s">
+            <a href="inventory-management.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
+                data-wow-delay="0.25s">
                 <i class="bi bi-boxes"></i>
                 <span>Inventory Management</span>
             </a>
-            <a href="menu-management.php" class="admin-nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.3s">
+            <a href="menu-management.php" class="admin-nav-link active wow animate__animated animate__fadeInLeft"
+                data-wow-delay="0.3s">
                 <i class="bi bi-menu-button-wide"></i>
                 <span>Menu Management</span>
             </a>
 
             <!-- FINANCIAL Section -->
             <div class="section-header">Financial</div>
-            <a href="sales-and-report.php" class="admin-nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.35s">
+            <a href="sales-and-report.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
+                data-wow-delay="0.35s">
                 <i class="bi bi-graph-up-arrow"></i>
                 <span>Sales & Reports</span>
             </a>
@@ -154,96 +151,131 @@
     </div>
 
     <!-- Main Content Area -->
-    <div class="main-content">
-        <div class="container-fluid">
-            <div class="card rounded-4">
-                <!-- Header Row  -->
-                <div class="d-none d-md-block align-items-center py-4 px-lg-3 px-2">
-                    <h4 class="subheading fw-bold m-1 d-flex align-items-center">
-                        <span>Inventory Management</span>
-                    </h4>
-                </div>
-                
-                <div class="row g-2 align-items-center mb-3 px-2 px-lg-3">
-                    <div class="col-12 col-sm-6">
-                        <h4 class="subheading fw-bold">Current Stock</h4>
-                    </div>
-                    <!-- search -->
-                    <div class="col-12 col-sm">
-                        <input type="text" class="form-control" placeholder="Search Product Name"
-                            aria-label="Enter product Name" id="item-input">
-                    </div>
-                    <!-- buttons -->
-                    <div class="col-12 col-sm-auto col-md-12 col-lg-auto">
-                        <button class="btn categorybtn w-100" type="button">
-                            Search
+    <div class="main-content p-3">
+        <div class="row">
+            <div class="col">
+                <div class="card cardContent shadow-sm mt-2">
+                    <!-- Mobile Menu Toggle Button  -->
+                    <div class="d-md-none mobile-header d-flex align-items-center p-3">
+                        <button id="menuToggle" class="mobile-menu-toggle me-3">
+                            <i class="fas fa-bars"></i>
                         </button>
+                        <h4 class="mobile-header-title">Inventory Management</h4>
                     </div>
-                    <div class="col-12 col-sm-auto col-md-12 col-lg-auto">
-                        <button class="btn categorybtn w-100" type="button" data-bs-toggle="modal"
-                            data-bs-target="#confirmModal">
-                            Add
-                        </button>
+                    <!-- Header Row -->
+                    <div class="d-none d-md-block align-items-center py-4 px-lg-3 px-2">
+                        <h4 class="subheading fw-bold m-1 d-flex align-items-center">
+                            <span>Inventory Management</span>
+                        </h4>
                     </div>
-                    <div class="col-12 col-sm-auto col-md-12 col-lg-auto">
-                        <button class="btn btn-outline-success w-100" type="button">
-                            Export
-                        </button>
-                    </div>
-                </div>
 
-                <!-- TABLE -->
-                <div class="card mb-5 mx-3 overflow-scroll" style="height: 90vh">
-                    <table class="table overflow-hidden">
-                        <thead class="table-secondary text-center">
-                            <tr>
-                                <th scope="col">Item Code.</th>
-                                <th scope="col">Photo</th>
-                                <th scope="col">Item Name</th>
-                                <th scope="col">Item Group</th>
-                                <th scope="col">Last Purchase</th>
-                                <th scope="col">On Hand</th>
-                                <th scope="col">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-center">
-                            <tr>
-                                <th scope="row">1</th>
-                                <td>orange.png</td>
-                                <td>Orange</td>
-                                <td>Fruits</td>
-                                <td>03 May 2025</td>
-                                <td>100 Kg</td>
-                                <td>
-                                    <a class="btn"><i class="ri-edit-box-line"></i></a>
-                                    <a class="btn"><i class="ri-more-line"></i></a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row">2</th>
-                                <td>orange.png</td>
-                                <td>Orange</td>
-                                <td>Fruits</td>
-                                <td>04 May 2025</td>
-                                <td>100 Kg</td>
-                                <td>
-                                    <a class="btn"><i class="ri-edit-box-line"></i></a>
-                                    <a class="btn"><i class="ri-more-line"></i></a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div class="row g-2 align-items-center mb-3 px-2 px-lg-3">
+                        <div class="col-12 col-sm-4 col-md-4 col-lg-6">
+                            <h4 class="subheading fw-bold">Current Stock</h4>
+                        </div>
+                        <!-- search -->
+                        <div class="col-12 col-sm my-0 me-1 d-flex justify-content-end">
+                            <input type="text" class="form-control search w-100" placeholder="Search" aria-label="search-bar"
+                                id="search-inventory">
+                        </div>
+                        <!-- buttons -->
+                        <div class="col-12 col-sm-auto col-md-12 col-lg-auto mt-2 mt-lg-0 d-flex justify-content-end">
+                            <button class="btn categorybtn w-100" type="button">
+                                Search
+                            </button>
+                        </div>
+                        <div class="col-12 col-sm-auto col-md-12 col-lg-auto mt-2 mt-lg-0 d-flex justify-content-end">
+                            <button class="btn categorybtn w-100" type="button" data-bs-toggle="modal"
+                                data-bs-target="#addItemModal">
+                                Add
+                            </button>
+                        </div>
+                        <div class="col-12 col-sm-auto col-md-12 col-lg-auto mt-2 mt-lg-0 d-flex justify-content-end">
+                            <button class="btn btnExport w-100" type="button">
+                                Export
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- TABLE -->
+                    <div class="card tableCard mb-3">
+                        <table class="table">
+                            <thead class="text-center custom-thead">
+                                <tr>
+                                    <th scope="col">Item Code</th>
+                                    <th scope="col">Item Name</th>
+                                    <th scope="col">Item Group</th>
+                                    <th scope="col">Last Purchase</th>
+                                    <th scope="col">On Hand</th>
+                                    <th scope="col">Supplier</th>
+                                    <th scope="col">Unit Cost</th>
+                                    <th scope="col">Total Value</th>
+                                    <th scope="col">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-center">
+                                <tr>
+                                    <th scope="row">INV-001</th>
+                                    <td>Orange</td>
+                                    <td>Fruits</td>
+                                    <td>03 May 2025</td>
+                                    <td>100 Kg</td>
+                                    <td>Fresh Farms Co.</td>
+                                    <td>₱80.00</td>
+                                    <td>₱8,000.00</td>
+                                    <td>
+                                        <button class="btn btn-sm categorybtn"><i
+                                                class="bi bi-pencil-square"></i></button>
+                                        <button class="btn btn-sm btnExport"><i
+                                                class="bi bi-three-dots-vertical"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">INV-002</th>
+                                    <td>Apple</td>
+                                    <td>Fruits</td>
+                                    <td>04 May 2025</td>
+                                    <td>75 Kg</td>
+                                    <td>Orchard Fresh Ltd.</td>
+                                    <td>₱95.00</td>
+                                    <td>₱7,125.00</td>
+                                    <td>
+                                        <button class="btn btn-sm categorybtn"><i
+                                                class="bi bi-pencil-square"></i></button>
+                                        <button class="btn btn-sm btnExport"><i
+                                                class="bi bi-three-dots-vertical"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">INV-003</th>
+                                    <td>Fresh Milk</td>
+                                    <td>Dairy</td>
+                                    <td>02 May 2025</td>
+                                    <td>50 L</td>
+                                    <td>Dairy Delight Inc.</td>
+                                    <td>₱120.00</td>
+                                    <td>₱6,000.00</td>
+                                    <td>
+                                        <button class="btn btn-sm categorybtn"><i
+                                                class="bi bi-pencil-square"></i></button>
+                                        <button class="btn btn-sm btnExport"><i
+                                                class="bi bi-three-dots-vertical"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Add Item Modal -->
-    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content text-center">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="confirmModalLabel">Add Inventory Item</h5>
+                    <h5 class="modal-title" id="addItemModalLabel">Add Inventory Item</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -257,33 +289,53 @@
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Item Group</label>
-                                    <select class="form-select" name="item_group">
-                                        <option disabled selected>Select Category</option>
-                                        <option value="fruits">Fruits</option>
-                                        <option value="vegetables">Vegetables</option>
-                                        <option value="dairy">Dairy</option>
-                                        <option value="beverages">Beverages</option>
-                                    </select>
+                                    <div class="dropdown">
+                                        <button class="form-select text-start" type="button" id="itemGroupDropdown"
+                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                            Select Category
+                                        </button>
+                                        <ul class="dropdown-menu" aria-labelledby="itemGroupDropdown">
+                                            <li><a class="dropdown-item" href="#" data-value="fruits">Fruits</a></li>
+                                            <li><a class="dropdown-item" href="#" data-value="vegetables">Vegetables</a>
+                                            </li>
+                                            <li><a class="dropdown-item" href="#" data-value="dairy">Dairy</a></li>
+                                            <li><a class="dropdown-item" href="#" data-value="beverages">Beverages</a>
+                                            </li>
+                                        </ul>
+                                        <input type="hidden" name="item_group" id="itemGroupInput" value="">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Unit Cost</label>
+                                    <input type="text" class="form-control" name="unitCost"
+                                        placeholder="Enter unit cost">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Quantity</label>
-                                    <input type="text" class="form-control" name="quantity" placeholder="Enter quantity">
+                                    <label class="form-label">On Hand Quantity</label>
+                                    <input type="text" class="form-control" name="quantity"
+                                        placeholder="Enter quantity">
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">Unit</label>
+                                    <label class="form-label">Unit Cost</label>
                                     <input type="text" class="form-control" name="unit" placeholder="Kg, pcs, etc.">
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">Photo</label>
-                                    <input type="file" class="form-control" name="photo">
+                                    <label class="form-label">Supplier</label>
+                                    <input type="text" class="form-control" name="supplier"
+                                        placeholder="Enter supplier name">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Last Purchase</label>
+                                    <input type="text" class="form-control" name="lastPurchase"
+                                        placeholder="Enter last purchase date">
                                 </div>
                             </div>
                         </div>
                         <div class="d-flex justify-content-end mt-3">
-                            <button type="button" class="btn btn-danger me-2" data-bs-dismiss="modal">CANCEL</button>
-                            <button type="submit" class="btn btn-success">ADD ITEM</button>
+                            <button type="button" class="btn btnCancel me-2" data-bs-dismiss="modal">CANCEL</button>
+                            <button type="submit" class="btn btnAdd">ADD ITEM</button>
                         </div>
                     </form>
                 </div>
@@ -291,7 +343,25 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const dropdownToggle = document.getElementById('itemGroupDropdown');
+            const dropdownItems = document.querySelectorAll('.dropdown-item');
+            const hiddenInput = document.getElementById('itemGroupInput');
+
+            dropdownItems.forEach(item => {
+                item.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const value = this.getAttribute('data-value');
+                    const text = this.textContent;
+
+                    dropdownToggle.textContent = text;
+                    hiddenInput.value = value;
+                });
+            });
+        });
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
     <script src="../assets/js/admin_sidebar.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"

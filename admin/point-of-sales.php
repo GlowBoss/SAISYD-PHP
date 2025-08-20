@@ -69,13 +69,6 @@
             }
         }
 
-        /* Hide offcanvas on mobile, show custom sidebar */
-        @media (max-width: 767.98px) {
-            .offcanvas {
-                display: none !important;
-            }
-        }
-
         /* Hide mobile sidebar elements on large screens */
         @media (min-width: 768px) {
             .sidebar-overlay {
@@ -115,77 +108,8 @@
 </head>
 
 <body>
-    <!-- Mobile Menu Toggle Button  -->
-    <div class="d-md-none mobile-header d-flex align-items-center p-3">
-        <button id="menuToggle" class="mobile-menu-toggle me-3">
-            <i class="fas fa-bars"></i>
-        </button>
-        <h4 class="mobile-header-title">Point of Sales</h4>
-    </div>
-
-    <!-- Sidebar Overlay  -->
-    <div id="sidebarOverlay" class="sidebar-overlay"></div>
-
-    <!-- Mobile Sidebar  -->
-    <div id="adminSidebar" class="admin-sidebar">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div class="d-flex align-items-center">
-                <img src="../assets/img/saisydLogo.png" class="admin-logo me-2" alt="Saisyd Cafe" />
-            </div>
-            <button id="closeSidebar">&times;</button>
-        </div>
-
-        <div id="sidebarNav">
-            <!-- MENU Section -->
-            <div class="section-header">Menu</div>
-            <a href="index.php" class="admin-nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.1s">
-                <i class="bi bi-speedometer2"></i>
-                <span>Dashboard</span>
-            </a>
-            <a href="notification.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
-                data-wow-delay="0.15s">
-                <i class="bi bi-bell"></i>
-                <span>Notifications</span>
-            </a>
-            <a href="point-of-sales.php" class="admin-nav-link active wow animate__animated animate__fadeInLeft"
-                data-wow-delay="0.2s">
-                <i class="bi bi-shop-window"></i>
-                <span>Point of Sales</span>
-            </a>
-            <a href="inventory-management.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
-                data-wow-delay="0.25s">
-                <i class="bi bi-boxes"></i>
-                <span>Inventory Management</span>
-            </a>
-            <a href="menu-management.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
-                data-wow-delay="0.3s">
-                <i class="bi bi-menu-button-wide"></i>
-                <span>Menu Management</span>
-            </a>
-
-            <!-- FINANCIAL Section -->
-            <div class="section-header">Financial</div>
-            <a href="sales-and-report.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
-                data-wow-delay="0.35s">
-                <i class="bi bi-graph-up-arrow"></i>
-                <span>Sales & Reports</span>
-            </a>
-
-            <!-- TOOLS Section -->
-            <div class="section-header">Tools</div>
-            <a href="#" class="admin-nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.4s">
-                <i class="bi bi-gear"></i>
-                <span>Settings</span>
-            </a>
-            <a href="login.php" class="admin-nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.45s">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Logout</span>
-            </a>
-        </div>
-    </div>
-
     <div class="container-fluid mainContainer p-2">
-        <div class="row">
+        <div class="row p-0">
             <!-- Offcanvas Sidebar  -->
             <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasSidebar"
                 aria-labelledby="offcanvasSidebarLabel">
@@ -321,9 +245,9 @@
                                     <div><b id="totalValue">0</b></div>
                                 </div>
                                 <div class="d-flex flex-column flex-md-row justify-content-center gap-3 mt-4">
-                                    <button class="btn btn-dark w-100 w-md-auto rounded-5 py-2 px-3"
-                                        onclick="openPopup()">Order Now</button>
-                                    <button class="btn btn-outline-dark w-100 w-md-auto rounded-5 py-2 px-3"
+                                    <button class="btn btn-dark w-100 w-md-auto py-2 px-3" onclick="openPopup()">Order
+                                        Now</button>
+                                    <button class="btn btn-outline-dark w-100 w-md-auto py-2 px-3"
                                         onclick="cancelOrder()">Cancel Order</button>
                                 </div>
                             </div>
@@ -335,6 +259,34 @@
 
             <!-- Order Confirmation Modal -->
             <div id="modal-placeholder"></div>
+            <script>
+                // Plus / Minus buttons
+                document.addEventListener('click', (e) => {
+                    if (e.target.closest('#plusBtn')) {
+                        const input = document.getElementById('quantityInput');
+                        input?.stepUp();
+                    }
+                    if (e.target.closest('#minusBtn')) {
+                        const input = document.getElementById('quantityInput');
+                        if (input && +input.value > 1) input.stepDown();
+                    }
+                });
+
+                // Reset input value when modal closes
+                const quantityModalEl = document.getElementById('quantityModal');
+                if (quantityModalEl) {
+                    quantityModalEl.addEventListener('hidden.bs.modal', (event) => {
+                        const input = document.getElementById('quantityInput');
+                        if (input) {
+                            input.value = 1;
+                        }
+                    });
+                }
+            </script>
+
+
+
+
 
             <script>
                 var products = [];
@@ -377,11 +329,15 @@
                                 const iceSelectId = `ice-${categoryIndex}-${contentIndex}-${sizeIndex}`;
 
                                 const sugarLevels = (content.sugarLevels && content.sugarLevels.length > 0) ? content.sugarLevels : [0, 25, 50, 75, 100];
-                                const sugarOptions = sugarLevels.map(level => `<option value="${level}">${level}% Sugar</option>`).join('');
-                                const iceOptions = ["No Ice", "Less Ice", "Regular Ice"].map(level => `<option value="${level}">${level}</option>`).join('');
+                                const sugarOptions = sugarLevels.map(level =>
+
+                                    `<li><a class="dropdown-item" value="${level}">${level}% Sugar Level</a></li>`
+                                ).join('');
+
+                                const iceOptions = ["No Ice", "Less Ice", "Regular Ice"].map(level => `<li><a class="dropdown-item" value="${level}">${level}</a></li>`).join('');
 
                                 maincontainer.innerHTML += `
-                    <div class="col">
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
                         <div class="menu-item border p-3 rounded shadow text-center width-auto card-hover" style="cursor: pointer;">
                             <img src="../assets/img/${content.img}" alt="${content.name}" class="img-fluid mb-2" style="max-height: 170px; min-height: 120px">
                             <div class="lead menu-name fw-bold">${content.name}</div>
@@ -389,13 +345,19 @@
                                 <span class="lead fw-bold menu-price">₱${size.price}</span>
                                 <span class="lead menu-size">${size.name}</span>
                             </div>
-                            <select class="form-select mb-2" id="${sugarSelectId}">
-                                ${sugarOptions}
-                            </select>
-                            <select class="form-select mb-2" id="${iceSelectId}">
-                                ${iceOptions}
-                            </select>
-                            <button class="btn btn-dark btn-sm mt-1 rounded-5"
+                           
+                            <div class="dropdown mb-2">
+                                <button class="btn btn-outline-dark dropdown-toggle w-100" type="button" id="${sugarSelectId}" data-bs-toggle="dropdown" aria-expanded="false">Sugar Level</button>
+                                <ul class="dropdown-menu" aria-labelledby="${sugarSelectId}">
+                                ${sugarOptions} </ul>
+                             </div>
+
+                             <div class="dropdown mb-2">
+                            <button class="btn btn-outline-dark dropdown-toggle w-100" type="button" id="${iceSelectId}" data-bs-toggle="dropdown" aria-expanded="false">Ice Level</button>
+                            <ul class="dropdown-menu" aria-labelledby="${iceSelectId}">${iceOptions}</ul>
+                            </div>
+
+                            <button class="btn btn-dark btn-sm mt-1"
                                 onclick="showQuantityModal('${size.price}','${content.code + size.code}','${content.name} ${size.name}', '${sugarSelectId}', '${iceSelectId}')">
                                 Add to Order
                             </button>
@@ -403,6 +365,15 @@
                     </div>`;
                             });
                         });
+                        document.querySelectorAll(".dropdown-menu .dropdown-item").forEach(item => {
+                            item.addEventListener("click", function () {
+                                const btn = this.closest(".dropdown").querySelector("button");
+                                btn.textContent = this.textContent;
+                                btn.setAttribute("data-value", this.getAttribute("value"));
+
+                            });
+                        });
+
                     } else {
                         products[categoryIndex].contents.forEach(content => {
                             maincontainer.innerHTML += `
@@ -459,7 +430,7 @@
                     if (sugarSelectId) {
                         const sugarDropdown = document.getElementById(sugarSelectId);
                         if (sugarDropdown) {
-                            sugarLevel = sugarDropdown.value;
+                            sugarLevel = sugarDropdown.getAttribute('data-value') || '';
                         }
                     }
 
@@ -467,20 +438,20 @@
                     if (iceSelectId) {
                         const iceDropdown = document.getElementById(iceSelectId);
                         if (iceDropdown) {
-                            iceLevel = iceDropdown.value;
+                            iceLevel = iceDropdown.getAttribute('data-value') || '';
                         }
                     }
 
                     const receiptContainer = document.getElementById("receipt");
                     receiptContainer.innerHTML += `
-        <div class="d-flex flex-row justify-content-between align-items-center mb-1 receipt-item">
-            <div class="flex-grow-1 item-name">
-                <small><span style="font-weight: bold;">${name} | ${quantity}x</span> ${code} ${sugarLevel ? '| ' + sugarLevel + '% Sugar' : ''} ${iceLevel ? '| ' + iceLevel : ''}</small>
-            </div>
-            <div class="item-price">
-                <small>₱ ${(parseFloat(price) * quantity).toFixed(2)}</small>
-            </div>
-        </div>`;
+    <div class="d-flex flex-row justify-content-between align-items-center mb-1 receipt-item">
+        <div class="flex-grow-1 item-name">
+            <small><span style="font-weight: bold;">${name} | ${quantity}x</span> ${code} ${sugarLevel ? '| ' + sugarLevel + '% Sugar' : ''} ${iceLevel ? '| ' + iceLevel : ''}</small>
+        </div>
+        <div class="item-price">
+            <small>₱ ${(parseFloat(price) * quantity).toFixed(2)}</small>
+        </div>
+    </div>`;
 
                     let category = '';
                     for (const product of products) {
@@ -503,6 +474,7 @@
 
                     const quantityModal = bootstrap.Modal.getInstance(document.getElementById('quantityModal'));
                     quantityModal.hide();
+
                 }
 
                 function openPopup() {
@@ -566,9 +538,10 @@
                         .then(res => res.text())
                         .then(data => {
                             document.getElementById("modal-placeholder").innerHTML = data;
-                            document.querySelector('.confirm-order-btn').addEventListener('click', confirmOrder);
+                            document.querySelector('.btnConfirm').addEventListener('click', confirmOrder);
                         });
                 });
+
             </script>
 
             <script src="../assets/js/admin_sidebar.js"></script>
@@ -577,6 +550,8 @@
                 crossorigin="anonymous"></script>
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
         </div>
     </div>
 </body>

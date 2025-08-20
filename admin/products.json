@@ -1,0 +1,89 @@
+[
+    {
+        "category": "Coffee",
+        "img": "coffee.png",
+        "contents": [
+            {
+                "isAvailable": true,
+                "name": "Espresso",
+                "code": "ESP",
+                "img": "img-menu/espresso.png",
+                "sizes": [
+                    { "name": "12oz", "code": "12", "price": 60 },
+                    { "name": "16oz", "code": "16", "price": 80 }
+                ],
+                "sugarLevels": [0, 25, 50, 75, 100]
+            },
+            {
+                "isAvailable": true,
+                "name": "Americano",
+                "code": "AMR",
+                "img": "img-menu/americano.png",
+                "sizes": [
+                    { "name": "12oz", "code": "12", "price": 70 },
+                    { "name": "16oz", "code": "16", "price": 90 }
+                ],
+                "sugarLevels": [0, 25, 50, 75, 100]
+            },
+            {
+                "isAvailable": true,
+                "name": "Latte",
+                "code": "LTT",
+                "img": "img-menu/latte.png",
+                "sizes": [
+                    { "name": "12oz", "code": "12", "price": 80 },
+                    { "name": "16oz", "code": "16", "price": 100 }
+                ],
+                "sugarLevels": [0, 25, 50, 75, 100]
+            }
+        ]
+    },
+    {
+        "category": "Tea",
+        "img": "tea.png",
+        "contents": [
+            {
+                "isAvailable": true,
+                "name": "Green Tea",
+                "code": "GRN",
+                "img": "img-menu/green_tea.png",
+                "sizes": [
+                    { "name": "12oz", "code": "12", "price": 50 },
+                    { "name": "16oz", "code": "16", "price": 70 }
+                ],
+                "sugarLevels": [0, 25, 50, 75, 100]
+            },
+            {
+                "isAvailable": true,
+                "name": "Milk Tea",
+                "code": "MLK",
+                "img": "img-menu/milk_tea.png",
+                "sizes": [
+                    { "name": "12oz", "code": "12", "price": 65 },
+                    { "name": "16oz", "code": "16", "price": 85 }
+                ],
+                "sugarLevels": [0, 25, 50, 75, 100]
+            },
+            {
+                "isAvailable": true,
+                "name": "Matcha Latte",
+                "code": "MCH",
+                "img": "img-menu/matcha_latte.png",
+                "sizes": [
+                    { "name": "12oz", "code": "12", "price": 80 },
+                    { "name": "16oz", "code": "16", "price": 100 }
+                ],
+                "sugarLevels": [0, 25, 50, 75, 100]
+            }
+        ]
+    },
+    {
+        "category": "Food",
+        "img": "food.png",
+        "contents": [
+            { "isAvailable": true, "name": "Ham & Cheese Sandwich", "code": "HCS", "price": 85, "img": "img-menu/ham_cheese.png" },
+            { "isAvailable": true, "name": "Chicken Wings", "code": "WNG", "price": 140, "img": "img-menu/chicken_wings.png" },
+            { "isAvailable": true, "name": "Fries", "code": "FRS", "price": 60, "img": "img-menu/fries.png" }
+        ]
+    }
+]
