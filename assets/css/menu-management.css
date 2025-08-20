@@ -32,11 +32,12 @@ input.form-control[aria-label="search-bar"] {
   font-family: var(--secondaryFont);
   font-size: var(--lead);
   color: var(--text-color-light);
-  padding: 0.3rem 3.5rem;
+  padding-block: 0.3rem;
+  padding-inline: clamp(1rem, 5vw, 3.5rem);
 }
 
 button.btn.btnAdd:hover {
-  background-color: #945400ea !important;
+  background-color: var(--btn-hover1) !important;
   color: white !important;
 }
 
@@ -59,12 +60,13 @@ select.form-select {
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  height: auto; 
-  max-width: 14rem; 
+  height: auto;
+  max-width: 14rem;
   margin: 0 auto;
   font-family: var(--secondaryFont);
   font-size: var(--lead);
   color: var(--text-color-dark);
+  
 }
 
 .menu-item:hover {
@@ -84,6 +86,33 @@ select.form-select {
   text-align: center;
 }
 
+.btn-dropdown {
+  background-color: var(--primary-color);
+  border-radius: 12px;
+  font-family: var(--secondaryFont);
+  font-size: var(--lead);
+  color: var(--text-color-light);
+}
+
+.btn-dropdown.show,
+.btn-dropdown:active {
+  background-color: var(--primary-color) !important;
+  color: var(--text-color-light) !important;
+}
+
+button.btn.btn-dropdown:hover {
+  background-color: var(--btn-hover1) !important;
+  color: white !important;
+}
+.dropdown-item {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background-color: #4a2800;
+  color: #fff;
+}
+
 .btn-sm {
   background-color: var(--primary-color);
   border-radius: 12px;
@@ -98,18 +127,25 @@ select.form-select {
   color: var(--text-color-light);
 }
 
+.btn-sm,
+.btn-del {
+  width: clamp(70px, 90px, 100px);
+  text-align: center;
+  white-space: nowrap;
+}
+
 .btn-sm:hover {
   transform: scale(1.03);
   transition: transform 0.2s ease;
 }
 
 button.btn.btn-sm:hover {
-  background-color: #945400ea !important;
+  background-color: var(--btn-hover1) !important;
   color: white !important;
 }
 
 button.btn.btn-del:hover {
-  background-color: #4a2800 !important;
+  background-color: var(--btn-hover2) !important;
   color: white !important;
 }
 

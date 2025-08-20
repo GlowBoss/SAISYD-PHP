@@ -174,25 +174,32 @@
                     <div class="row g-2 align-items-center mb-3 px-2 px-lg-3 m-3">
                         <!-- search -->
                         <div class="col">
-                            <input type="text" class="form-control search" placeholder="Search"
+                            <input type="text" class="form-control search ms-lg-2" placeholder="Search"
                                 aria-label="search-bar" id="item-input">
                         </div>
                         <!-- add button -->
-                        <div class="col-auto">
+                       <div class="col-auto ps-0 ps-sm-3">
                             <button class="btn btnAdd" type="button" data-bs-toggle="modal"
-                                data-bs-target="#confirmModal">Add
+                                data-bs-target="#confirmModal">
+                                <i class="bi bi-plus-circle"></i>
+                                <span class="d-none d-sm-inline ms-2">Add</span>
                             </button>
                         </div>
 
                         <!-- category part  -->
-                        <div class="col-12  col-sm-auto">
-                            <select class="form-select">
-                                <option selected>Sort by Category</option>
-                                <option value="coffee">Coffee</option>
-                                <option value="tea">Tea</option>
-                                <option value="food">Food</option>
-                                <option value="beverage">Beverage</option>
-                            </select>
+                        <div class="col-12 col-sm-auto">
+                            <div class="dropdown">
+                                <button class="btn btn-dropdown dropdown-toggle w-100" type="button"
+                                    id="categoryDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Sort by Category
+                                </button>
+                                <ul class="dropdown-menu w-100" aria-labelledby="categoryDropdown">
+                                    <li><a class="dropdown-item" data-value="coffee">Coffee</a></li>
+                                    <li><a class="dropdown-item" data-value="tea">Tea</a></li>
+                                    <li><a class="dropdown-item" data-value="food">Food</a></li>
+                                    <li><a class="dropdown-item" data-value="beverage">Beverage</a></li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
 
@@ -211,11 +218,10 @@
                                 </div>
                                 <div class="d-flex flex-wrap justify-content-center gap-2">
                                     <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editModal">
-                                        Edit
+                                        <i class=" bi-pencil-square"></i> Edit
                                     </button>
-                                    <button class="btn btn-del flex-grow-1 flex-sm-grow-0">
-                                        Delete
-                                    </button>
+                                    <button class="btn btn-del">
+                                        <i class=" bi-trash"></i>Delete
                                 </div>
                             </div>
                         </div>
@@ -229,51 +235,13 @@
                                 </div>
                                 <div class="d-flex flex-wrap justify-content-center gap-2">
                                     <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editModal">
-                                        Edit
+                                        <i class=" bi-pencil-square"></i> Edit
                                     </button>
-                                    <button class="btn btn-del flex-grow-1 flex-sm-grow-0">
-                                        Delete
-                                    </button>
+                                    <button class="btn btn-del">
+                                        <i class=" bi-trash"></i>Delete
                                 </div>
                             </div>
                         </div>
-
-                        <div class="col-6 col-md-4 col-lg-2">
-                            <div class="menu-item border p-3 rounded shadow-sm text-center">
-                                <img src="../assets/img/coffee.png" class="img-fluid mb-2 menu-img">
-                                <div class="lead menu-name fs-6">Cappuccino (S)</div>
-                                <div class="d-flex justify-content-center align-items-center gap-2 my-2">
-                                    <span class="lead fw-bold menu-price">₱160</span>
-                                </div>
-                                <div class="d-flex flex-wrap justify-content-center gap-2">
-                                    <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editModal">
-                                        Edit
-                                    </button>
-                                    <button class="btn btn-del flex-grow-1 flex-sm-grow-0">
-                                        Delete
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-6 col-md-4 col-lg-2">
-                            <div class="menu-item border p-3 rounded shadow-sm text-center">
-                                <img src="../assets/img/coffee.png" class="img-fluid mb-2 menu-img">
-                                <div class="lead menu-name fs-6">Cappuccino (S)</div>
-                                <div class="d-flex justify-content-center align-items-center gap-2 my-2">
-                                    <span class="lead fw-bold menu-price">₱160</span>
-                                </div>
-                                <div class="d-flex flex-wrap justify-content-center gap-2">
-                                    <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editModal">
-                                        Edit
-                                    </button>
-                                    <button class="btn btn-del flex-grow-1 flex-sm-grow-0">
-                                        Delete
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
                     </div>
                 </div>
             </div>
@@ -317,7 +285,11 @@
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Size</label>
-                                    <input type="text" class="form-control" name="menu_size" placeholder="Enter size">
+                                    <select class="form-select" name="menu_size">
+                                        <option value="None" selected>-- None --</option>
+                                        <option value="12oz">12oz</option>
+                                        <option value="16oz">16oz</option>
+                                    </select>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Attachment</label>
@@ -381,7 +353,7 @@
                         <div class="d-flex justify-content-end mt-3">
                             <button type="button" class="btn btn-sm btn-del me-2"
                                 data-bs-dismiss="modal">CANCEL</button>
-                            <button type="submit" class="btn btn-sm ">SAVE CHANGES</button>
+                            <button type="submit" class="btn btn-sm ">SAVE</button>
                         </div>
                     </form>
                 </div>
@@ -482,7 +454,6 @@
             this.reset();
         });
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
     <script src="../assets/js/admin_sidebar.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
