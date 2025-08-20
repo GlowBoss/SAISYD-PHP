@@ -340,9 +340,13 @@
                                     <label class="form-label">Price</label>
                                     <input type="text" class="form-control" name="menu_price" value="140">
                                 </div>
-                                <div class="mb-3">
+                                 <div class="mb-3">
                                     <label class="form-label">Size</label>
-                                    <input type="text" class="form-control" name="menu_size" value="500ml">
+                                    <select class="form-select" name="menu_size">
+                                        <option value="None" selected>-- None --</option>
+                                        <option value="12oz">12oz</option>
+                                        <option value="16oz">16oz</option>
+                                    </select>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Attachment</label>
