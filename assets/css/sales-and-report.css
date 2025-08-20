@@ -24,32 +24,40 @@ h4 {
   background-color: var(--card-bg-color);
 }
 
-.carousel-control-prev-icon {
-  background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" fill="%23C4A277" viewBox="0 0 16 16"><path d="M11.5 1.5a.5.5 0 0 1 .5.5v12a.5.5 0 0 1-.5.5l-8-6a.5.5 0 0 1 0-.8l8-6a.5.5 0 0 1 .5-.2z"/></svg>');
-  background-size: cover;
-  padding: 10px;
+#smallCardCarousel .carousel-item .card {
+  margin: 0.75rem 0;  
+  width: 100%;         
+  max-width: 320px;    
 }
 
+#smallCardCarousel .carousel-item .d-flex {
+  gap: 1rem;           /* space between stacked cards */
+}
+
+
+.carousel-control-prev-icon,
 .carousel-control-next-icon {
-  background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" fill="%23C4A277" viewBox="0 0 16 16"><path d="M4.5 1.5a.5.5 0 0 0-.5.5v12a.5.5 0 0 0 .5.5l8-6a.5.5 0 0 0 0-.8l-8-6a.5.5 0 0 0-.5-.2z"/></svg>');
-  background-size: cover;
-  padding: 10px;
+  width: 2rem;
+  height: 2rem;
+  margin: 0 0.5rem;
+  background-size: 100% 100%;
 }
 
-.carousel-control-prev,
-.carousel-control-next {
-  width: 10%;
+.carousel-control-prev:hover .carousel-control-prev-icon {
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%234a2800' viewBox='0 0 16 16'%3E%3Cpath d='M11.354 1.646a.5.5 0 010 .708L5.707 8l5.647 5.646a.5.5 0 01-.708.708l-6-6a.5.5 0 010-.708l6-6a.5.5 0 01.708 0z'/%3E%3C/svg%3E"); 
 }
 
-.carousel-control-prev-icon::before,
-.carousel-control-next-icon::before {
-  color: #c4a277;
-  font-size: 24px;
+.carousel-control-next:hover .carousel-control-next-icon {
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%234a2800' viewBox='0 0 16 16'%3E%3Cpath d='M4.646 1.646a.5.5 0 000 .708L10.293 8l-5.647 5.646a.5.5 0 00.708.708l6-6a.5.5 0 000-.708l-6-6a.5.5 0 00-.708 0z'/%3E%3C/svg%3E"); 
 }
+
+
 
 .cardSmall {
-  width: 20rem;
-  height: 8rem;
+  max-width: 18rem; 
+  width: 100%;
+  height: auto;     
+  max-height: 8rem; 
   border-radius: 20px;
   text-align: center;
   font-family: var(--secondaryFont);
@@ -59,7 +67,7 @@ h4 {
 }
 
 .cardBig {
-  width: 15rem;
+  width: 18rem;
   height: 18rem;
   text-align: center;
   border: none;
@@ -105,6 +113,14 @@ button.btn.btn-dropdown:hover {
   background-color: #945400ea !important;
   color: white !important;
 }
+.dropdown-item {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background-color: #c4a277;
+  color: #fff;
+}
 
 .excelBtn {
   background-color: var(--text-color-dark);
@@ -144,10 +160,21 @@ button.btn.excelBtn:hover {
 }
 
 .btnModal {
-  background-color: var(--primary-color);
   border-radius: 12px;
   font-family: var(--secondaryFont);
   color: var(--text-color-light);
+}
+
+.btnDownload {
+  background-color: var(--primary-color);
+}
+
+.btnDownload {
+  background-color: var(--primary-color);
+}
+
+.btnCancel {
+  background-color: var(--secondary-color);
 }
 
 .btnModal.show,
@@ -166,9 +193,8 @@ button.btn.btnCancel:hover {
   color: white !important;
 }
 
-.modalText{
-font-family: var(--secondaryFont);
+.modalText {
+  font-family: var(--secondaryFont);
   color: var(--text-color-dark);
 }
-
 

@@ -1,87 +1,87 @@
 body,
 html {
-    height: auto;
-    overflow-x: hidden;
-    overflow-y: auto;
-    background-color: var(--secondary-color)
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background-color: var(--secondary-color);
 }
 
-.cardMain{
-    background-color: var(--card-bg-color);
-    border-radius: 20px;
-    border: 1px solid rgba(0, 0, 0, 0.125) !important;
+.cardMain {
+  background-color: var(--card-bg-color);
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.125) !important;
 }
 
 .mainContainer {
-    width: 100%;
-    height: auto;
-    display: flex;
-    flex-direction: column;
-    background-color: var(--card-bg-color)
+  width: 100%;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--card-bg-color);
 }
 
 input.form-control[aria-label="search-bar"] {
-    border-radius: 12px !important;
-    font-family: var(--secondaryFont) !important;
-    font-size: var(--lead) !important;
+  border-radius: 12px !important;
+  font-family: var(--secondaryFont) !important;
+  font-size: var(--lead) !important;
 }
 
-.btnAdd{
-    background-color: var(--primary-color);
-    border-radius: 12px;
-    font-family: var(--secondaryFont);
-    font-size: var(--lead);
-    color: var(--text-color-light);
+.btnAdd {
+  background-color: var(--primary-color);
+  border-radius: 12px;
+  font-family: var(--secondaryFont);
+  font-size: var(--lead);
+  color: var(--text-color-light);
+  padding: 0.3rem 3.5rem;
 }
 
 button.btn.btnAdd:hover {
-    background-color: #945400ea !important;
-    color: white !important;
+  background-color: #945400ea !important;
+  color: white !important;
 }
 
 select.form-select {
-    border-radius: 12px !important;
-    font-family: var(--secondaryFont) !important;
-    font-size: var(--lead) !important;
-    color: var(--text-color-dark);
+  border-radius: 12px !important;
+  font-family: var(--secondaryFont) !important;
+  font-size: var(--lead) !important;
+  color: var(--text-color-dark);
 }
 
 .search {
-    width: 100%
+  width: 100%;
 }
 
 .menu-item {
-    background-color: var(--card-bg-color);
-    border-radius: 12px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 250px;
-    min-height: 350px;
-    font-family: var(--secondaryFont);
-    font-size: var(--lead);
-    color: var(--text-color-dark);
+  background-color: var(--card-bg-color);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  height: auto; 
+  max-width: 14rem; 
+  margin: 0 auto;
+  font-family: var(--secondaryFont);
+  font-size: var(--lead);
+  color: var(--text-color-dark);
 }
-
 
 .menu-item:hover {
-    transform: scale(1.03);
-    transition: transform 0.2s ease;
+  transform: scale(1.03);
+  transition: transform 0.2s ease;
 }
 
-
 .menu-img {
-    max-height: 150px;
-    object-fit: contain;
-    width: 100%;
+  max-height: 150px;
+  object-fit: contain;
+  width: 100%;
 }
 
 .menu-name,
 .menu-price {
-    word-wrap: break-word;
-    text-align: center;
+  word-wrap: break-word;
+  text-align: center;
 }
 
 .btn-sm {
@@ -91,10 +91,16 @@ select.form-select {
   color: var(--text-color-light);
 }
 
+.btn-del {
+  background-color: var(--text-color-dark);
+  border-radius: 12px;
+  font-family: var(--secondaryFont);
+  color: var(--text-color-light);
+}
 
-.btn-sm:hover{
-    transform: scale(1.03);
-    transition: transform 0.2s ease;
+.btn-sm:hover {
+  transform: scale(1.03);
+  transition: transform 0.2s ease;
 }
 
 button.btn.btn-sm:hover {
@@ -103,7 +109,7 @@ button.btn.btn-sm:hover {
 }
 
 button.btn.btn-del:hover {
-  background-color: var(--text-color-dark) !important;
+  background-color: #4a2800 !important;
   color: white !important;
 }
 
@@ -113,18 +119,19 @@ button.btn.btn-del:hover {
   color: var(--text-color-light) !important;
 }
 
-.modalText{
-font-family: var(--secondaryFont);
+.modalText {
+  font-family: var(--secondaryFont);
   color: var(--text-color-dark);
 }
-
-
 @media (max-width: 576px) {
-    .search {
-        max-width: 100%;
-    }
+  .btnAdd {
+    display: block;
+    width: 100%;
+  }
 }
-
-
- 
-
+@media (max-width: 992px) and (min-width: 768px) {
+  .btnAdd {
+    font-size: 0.9rem;
+    padding: 0.4rem 1rem;
+  }
+}

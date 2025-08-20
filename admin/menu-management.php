@@ -174,7 +174,7 @@
                     <div class="row g-2 align-items-center mb-3 px-2 px-lg-3 m-3">
                         <!-- search -->
                         <div class="col">
-                            <input type="text" class="form-control search" placeholder="Search Product Name"
+                            <input type="text" class="form-control search" placeholder="Search"
                                 aria-label="search-bar" id="item-input">
                         </div>
                         <!-- add button -->
@@ -185,7 +185,7 @@
                         </div>
 
                         <!-- category part  -->
-                        <div class="col-12 col-sm-auto">
+                        <div class="col-12  col-sm-auto">
                             <select class="form-select">
                                 <option selected>Sort by Category</option>
                                 <option value="coffee">Coffee</option>
@@ -199,8 +199,10 @@
 
                     <!-- Menu -->
 
-                    <div id="productGrid" class="row row-cols-2 row-cols-sm-3 row-cols-md-2 row-cols-lg-5 m-5">
-                        <div class="col">
+                    <div id="productGrid" class="row g-2 m-3 align-items-center">
+
+                        <!-- Products -->
+                        <div class="col-6 col-md-4 col-lg-2">
                             <div class="menu-item border p-3 rounded shadow-sm text-center">
                                 <img src="../assets/img/coffee.png" alt="Amerikano" class="img-fluid mb-2 menu-img">
                                 <div class="lead menu-name fs-6">Amerikano (S)</div>
@@ -211,14 +213,14 @@
                                     <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editModal">
                                         Edit
                                     </button>
-                                    <button class="btn btn-sm btn-del flex-grow-1 flex-sm-grow-0">
+                                    <button class="btn btn-del flex-grow-1 flex-sm-grow-0">
                                         Delete
                                     </button>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="col">
+                        <div class="col-6 col-md-4 col-lg-2">
                             <div class="menu-item border p-3 rounded shadow-sm text-center">
                                 <img src="../assets/img/coffee.png" class="img-fluid mb-2 menu-img">
                                 <div class="lead menu-name fs-6">Cappuccino (S)</div>
@@ -229,12 +231,49 @@
                                     <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editModal">
                                         Edit
                                     </button>
-                                    <button class="btn btn-sm btn-del flex-grow-1 flex-sm-grow-0">
+                                    <button class="btn btn-del flex-grow-1 flex-sm-grow-0">
                                         Delete
                                     </button>
                                 </div>
                             </div>
                         </div>
+
+                        <div class="col-6 col-md-4 col-lg-2">
+                            <div class="menu-item border p-3 rounded shadow-sm text-center">
+                                <img src="../assets/img/coffee.png" class="img-fluid mb-2 menu-img">
+                                <div class="lead menu-name fs-6">Cappuccino (S)</div>
+                                <div class="d-flex justify-content-center align-items-center gap-2 my-2">
+                                    <span class="lead fw-bold menu-price">₱160</span>
+                                </div>
+                                <div class="d-flex flex-wrap justify-content-center gap-2">
+                                    <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editModal">
+                                        Edit
+                                    </button>
+                                    <button class="btn btn-del flex-grow-1 flex-sm-grow-0">
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-6 col-md-4 col-lg-2">
+                            <div class="menu-item border p-3 rounded shadow-sm text-center">
+                                <img src="../assets/img/coffee.png" class="img-fluid mb-2 menu-img">
+                                <div class="lead menu-name fs-6">Cappuccino (S)</div>
+                                <div class="d-flex justify-content-center align-items-center gap-2 my-2">
+                                    <span class="lead fw-bold menu-price">₱160</span>
+                                </div>
+                                <div class="d-flex flex-wrap justify-content-center gap-2">
+                                    <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editModal">
+                                        Edit
+                                    </button>
+                                    <button class="btn btn-del flex-grow-1 flex-sm-grow-0">
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -287,7 +326,8 @@
                             </div>
                         </div>
                         <div class="d-flex justify-content-end mt-3">
-                            <button type="button" class="btn btn-sm btn-del me-2" data-bs-dismiss="modal">CANCEL</button>
+                            <button type="button" class="btn btn-de btn-del me-2"
+                                data-bs-dismiss="modal">CANCEL</button>
                             <button type="submit" class="btn btn-sm" data-bs-toggle="modal"
                                 data-bs-target="#confirmModal">ADD ITEM</button>
                         </div>
@@ -339,7 +379,8 @@
                             </div>
                         </div>
                         <div class="d-flex justify-content-end mt-3">
-                            <button type="button" class="btn btn-sm btn-del me-2" data-bs-dismiss="modal">CANCEL</button>
+                            <button type="button" class="btn btn-sm btn-del me-2"
+                                data-bs-dismiss="modal">CANCEL</button>
                             <button type="submit" class="btn btn-sm ">SAVE CHANGES</button>
                         </div>
                     </form>

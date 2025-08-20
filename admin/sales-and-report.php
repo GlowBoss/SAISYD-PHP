@@ -172,9 +172,9 @@
                 <div id="modal-placeholder"></div>
 
                 <div class="container-fluid">
-                    <div class="row align-items-start">
+                    <div class="row g-3 align-items-start">
                         <div class="col-12 col-lg-4">
-                            <div id="smallCardCarousel" class="carousel slide" data-bs-ride="false">
+                            <div id="smallCardCarousel" class="carousel slide " data-bs-ride="false">
                                 <div class="carousel-indicators">
                                     <button type="button" data-bs-target="#smallCardCarousel" data-bs-slide-to="0"
                                         class="active"></button>
@@ -183,7 +183,7 @@
                                 </div>
                                 <div class="carousel-inner">
                                     <div class="carousel-item active">
-                                        <div class="d-flex flex-wrap justify-content-center my-3">
+                                        <div class="d-flex flex-column align-items-center my-3">
                                             <div class="card cardSmall m-2 fw-bolder p-3"
                                                 style="background-color:#C4A277; color:aliceblue">
                                                 <div class="text-center">
@@ -202,12 +202,13 @@
                                         </div>
                                     </div>
                                     <div class="carousel-item">
-                                        <div class="d-flex flex-wrap justify-content-center my-3">
+                                        <div class="d-flex flex-column align-items-center my-3">
                                             <div class="card cardSmall m-2 fw-bolder p-3" 
                                             style="background-color:#C4A277; color:aliceblue">
                                                <div class="text-center">
                                                     <div class="sales-label fw-semibold">Most Popular:</div>
                                                     <div class="sales-amount mt-2 fs-4">Benguet</div>
+                                                    <div class="sales-period mt-2">This week</div>
                                                 </div>
                                             </div>
                                             <div class="card cardSmall m-2 fw-bolder p-3" >

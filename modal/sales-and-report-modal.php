@@ -14,7 +14,7 @@
                 </div>
                 <div class="d-grid gap-2">
                     <button type="button" class="btn addbtn btnModal btnDownload " id="downloadExcelBtn">Download</button>
-                    <button type="button" class="btn btnModal btnCancel" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btnModal btnCancel text-dark" data-bs-dismiss="modal">Cancel</button>
                 </div>
             </div>
         </div>
