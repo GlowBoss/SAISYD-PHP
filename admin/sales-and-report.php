@@ -116,26 +116,31 @@
                 <i class="bi bi-speedometer2"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="notification.php" class="admin-nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.15s">
+            <a href="notification.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
+                data-wow-delay="0.15s">
                 <i class="bi bi-bell"></i>
                 <span>Notifications</span>
             </a>
-            <a href="point-of-sales.php" class="admin-nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.2s">
+            <a href="point-of-sales.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
+                data-wow-delay="0.2s">
                 <i class="bi bi-shop-window"></i>
                 <span>Point of Sales</span>
             </a>
-            <a href="inventory-management.php" class="admin-nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.25s">
+            <a href="inventory-management.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
+                data-wow-delay="0.25s">
                 <i class="bi bi-boxes"></i>
                 <span>Inventory Management</span>
             </a>
-            <a href="menu-management.php" class="admin-nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.3s">
+            <a href="menu-management.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
+                data-wow-delay="0.3s">
                 <i class="bi bi-menu-button-wide"></i>
                 <span>Menu Management</span>
             </a>
 
             <!-- FINANCIAL Section -->
             <div class="section-header">Financial</div>
-            <a href="sales-and-report.php" class="admin-nav-link active wow animate__animated animate__fadeInLeft" data-wow-delay="0.35s">
+            <a href="sales-and-report.php" class="admin-nav-link active wow animate__animated animate__fadeInLeft"
+                data-wow-delay="0.35s">
                 <i class="bi bi-graph-up-arrow"></i>
                 <span>Sales & Reports</span>
             </a>
@@ -156,84 +161,72 @@
     <!-- Main Content Area -->
     <div class="main-content">
         <div class="container-fluid">
-            <div class="card rounded-4">
+            <div class="cardMain shadow-lg">
                 <!-- Header Row  -->
                 <div class="d-none d-md-block align-items-center py-4 px-lg-3 px-2">
-                    <h4 class="subheading fw-bold m-1 d-flex align-items-center">
-                        <span>Sales and Report</span>
-                    </h4>
+                    <div class="subheading fw-bold m-1 d-flex align-items-center">
+                        <span style="color: var(--text-color-dark);">Sales and Report</span>
+                    </div>
                 </div>
 
                 <div id="modal-placeholder"></div>
-                
+
                 <div class="container-fluid">
-                    <div class="row align-items-start">
+                    <div class="row g-3 align-items-start">
                         <div class="col-12 col-lg-4">
-                            <div id="smallCardCarousel" class="carousel slide" data-bs-ride="false">
+                            <div id="smallCardCarousel" class="carousel slide " data-bs-ride="false">
                                 <div class="carousel-indicators">
-                                    <button type="button" data-bs-target="#smallCardCarousel"
-                                        data-bs-slide-to="0" class="active"></button>
+                                    <button type="button" data-bs-target="#smallCardCarousel" data-bs-slide-to="0"
+                                        class="active"></button>
                                     <button type="button" data-bs-target="#smallCardCarousel"
                                         data-bs-slide-to="1"></button>
                                 </div>
                                 <div class="carousel-inner">
                                     <div class="carousel-item active">
-                                        <div class="d-flex flex-wrap justify-content-center my-3">
+                                        <div class="d-flex flex-column align-items-center my-3">
                                             <div class="card cardSmall m-2 fw-bolder p-3"
                                                 style="background-color:#C4A277; color:aliceblue">
-                                                <div
-                                                    class="d-flex justify-content-center align-items-center">
-                                                    <span class=>Total Sales</span>
-                                                </div>
-                                                <div class="sales-amount mt-3"
-                                                    style="font-size: var(--lead);">₱10,000
-                                                    <span class="sales-subtext">this month</span>
+                                                <div class="text-center">
+                                                    <div class="sales-label fw-semibold">Total Sales:</div>
+                                                    <div class="sales-amount mt-2 fs-4">₱10,000</div>
+                                                    <div class="sales-period mt-2">This week</div>
                                                 </div>
                                             </div>
                                             <div class="card cardSmall m-2 fw-bolder p-3">
-                                                <div
-                                                    class="d-flex justify-content-center align-items-center">
-                                                    <span>Total Order</span>
-                                                </div>
-                                                <div class="sales-amount mt-3"
-                                                    style="font-size: var(--lead);"> 3,000
-                                                    <span class="sales-subtext">this month</span>
+                                                <div class="text-center">
+                                                    <div class="sales-label fw-semibold">Total Products:</div>
+                                                    <div class="sales-amount mt-2 fs-4">1000 items</div>
+                                                    <div class="sales-period mt-2">This week</div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="carousel-item">
-                                        <div class="d-flex flex-wrap justify-content-center my-3">
-                                            <div class="card cardSmall m-2 fw-bolder p-3">
-                                                <div
-                                                    class="d-flex justify-content-center align-items-center">
-                                                    <span>Visit Website</span>
-                                                </div>
-                                                <div class="sales-amount mt-3"
-                                                    style="font-size: var(--lead);">
-                                                    3,000
-                                                    <span class="sales-subtext">this month</span>
+                                        <div class="d-flex flex-column align-items-center my-3">
+                                            <div class="card cardSmall m-2 fw-bolder p-3" 
+                                            style="background-color:#C4A277; color:aliceblue">
+                                               <div class="text-center">
+                                                    <div class="sales-label fw-semibold">Most Popular:</div>
+                                                    <div class="sales-amount mt-2 fs-4">Benguet</div>
+                                                    <div class="sales-period mt-2">This week</div>
                                                 </div>
                                             </div>
-                                            <div class="card cardSmall m-2 fw-bolder p-3">
-                                                <div
-                                                    class="d-flex justify-content-center align-items-center">
-                                                    <span></span>
-                                                </div>
-                                                <div class="sales-amount mt-3"
-                                                    style="font-size: var(--lead);">
-                                                    <span class="sales-subtext"></span>
+                                            <div class="card cardSmall m-2 fw-bolder p-3" >
+                                                <div class="text-center">
+                                                    <div class="sales-label fw-semibold">Total Sales:</div>
+                                                    <div class="sales-amount mt-2 fs-4">₱10,000</div>
+                                                    <div class="sales-period mt-2">This week</div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <button class="carousel-control-prev" type="button"
-                                    data-bs-target="#smallCardCarousel" data-bs-slide="prev">
+                                <button class="carousel-control-prev" type="button" data-bs-target="#smallCardCarousel"
+                                    data-bs-slide="prev">
                                     <span class="carousel-control-prev-icon"></span>
                                 </button>
-                                <button class="carousel-control-next" type="button"
-                                    data-bs-target="#smallCardCarousel" data-bs-slide="next">
+                                <button class="carousel-control-next" type="button" data-bs-target="#smallCardCarousel"
+                                    data-bs-slide="next">
                                     <span class="carousel-control-next-icon"></span>
                                 </button>
                             </div>
@@ -244,33 +237,10 @@
                                 <div class="card cardBig flex-grow-1 m-2">
                                     <div class="card-body text-start ms-2">
                                         <div class="subheading">Product Statistics</div>
-                                        <span class="lead text-muted">Track product sales</span>
-                                        <div class="card mt-3 w-100">
+                                        <span class="text-muted">Track product sales</span>
+                                        <div class="cardStats mt-3 w-100">
                                             <div class="card-body">
-                                                <p class="mb-0">Sales Data</p>
-                                                <div class="table-responsive">
-                                                    <table class="table table-bordered table-sm w-100">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Product</th>
-                                                                <th>Sales</th>
-                                                                <th>Revenue</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr>
-                                                                <td>Item 1</td>
-                                                                <td>150</td>
-                                                                <td>$3,000</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>Item 2</td>
-                                                                <td>230</td>
-                                                                <td>$4,500</td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
+                                                <p class="text-center p-5">Graph or something</p>
                                             </div>
                                         </div>
                                     </div>
@@ -278,123 +248,116 @@
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <div class="row align-items-center">
-                        <div class="col-12">
-                            <div class="card cardContainer m-2">
-                                <div class="card-body text-center">
-                                    <p class="fw-bold">Table</p>
-                                    <div class="row mt-3 g-3 justify-content-center">
+                <div class="row align-items-center">
+                    <div class="col-12">
+                        <div class="card cardContainer m-2">
+                            <div class="card-body text-center">
+                                <div class="row mt-3 g-3 justify-content-center">
 
-                                        <!-- Search Bar -->
-                                        <div class="col-12 col-md-6 col-lg-4">
-                                            <input class="form-control" type="text" placeholder="Search"
-                                                aria-label="search-bar">
-                                        </div>
+                                    <!-- Search Bar -->
+                                    <div class="col-12 col-md-6 col-lg-4">
+                                        <input class="form-control" type="text" placeholder="Search"
+                                            aria-label="search-bar">
+                                    </div>
 
-                                        <!-- Dropdown 1 -->
-                                        <div class="col-12 col-sm-6 col-md-4 col-lg-2">
-                                            <div class="dropdown-center">
-                                                <button
-                                                    class="btn btn-dropdown dropdown-toggle w-100 fw-semibold"
-                                                    type="button" data-bs-toggle="dropdown">
-                                                    Name
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                    <li><a class="dropdown-item" href="#">Ascending (A-Z)</a>
-                                                    </li>
-                                                    <li><a class="dropdown-item" href="#">Descending (Z-A)</a>
-                                                    </li>
-
-                                                </ul>
-                                            </div>
-                                        </div>
-
-                                        <!-- Dropdown 2 -->
-                                        <div class="col-12 col-sm-6 col-md-4 col-lg-2">
-                                            <div class="dropdown-center">
-                                                <button
-                                                    class="btn btn-dropdown dropdown-toggle w-100 fw-semibold"
-                                                    type="button" data-bs-toggle="dropdown">
-                                                    Price
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                    <li><a class="dropdown-item" href="#">Price <i
-                                                                class="bi bi-arrow-up text-dark"></i></a></li>
-                                                    <li><a class="dropdown-item" href="#">Price <i
-                                                                class="bi bi-arrow-down text-dark"></i></a></li>
-                                                </ul>
-                                            </div>
-                                        </div>
-
-                                        <!-- Dropdown 3 -->
-                                        <div class="col-12 col-sm-6 col-md-4 col-lg-2">
-                                            <div class="dropdown-center">
-                                                <button
-                                                    class="btn btn-dropdown dropdown-toggle w-100 fw-semibold"
-                                                    type="button" data-bs-toggle="dropdown">
-                                                    Status
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                    <li><a class="dropdown-item" href="#">Available</a></li>
-                                                    <li><a class="dropdown-item" href="#">Out of Stock</a>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-
-                                        <!-- Export Button -->
-                                        <div class="col-12 col-sm-6 col-md-4 col-lg-2">
-                                            <button type="button" class="btn btn-success w-100"
-                                                style="border-radius: 10px;" onclick="openPopup()">Export
+                                    <!-- Dropdown 1 -->
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="dropdown-center">
+                                            <button class="btn btn-dropdown dropdown-toggle w-100 fw-semibold"
+                                                type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                Name
                                             </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="#">Ascending (A-Z)</a>
+                                                </li>
+                                                <li><a class="dropdown-item" href="#">Descending (Z-A)</a>
+                                                </li>
+
+                                            </ul>
                                         </div>
                                     </div>
+
+                                    <!-- Dropdown 2 -->
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="dropdown-center">
+                                            <button class="btn btn-dropdown dropdown-toggle w-100 fw-semibold"
+                                                type="button" data-bs-toggle="dropdown">
+                                                Price
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="#">Price <i
+                                                            class="bi bi-arrow-up text-dark"></i></a></li>
+                                                <li><a class="dropdown-item" href="#">Price <i
+                                                            class="bi bi-arrow-down text-dark"></i></a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <!-- Dropdown 3 -->
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="dropdown-center">
+                                            <button class="btn btn-dropdown dropdown-toggle w-100 fw-semibold"
+                                                type="button" data-bs-toggle="dropdown">
+                                                Status
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="#">Available</a></li>
+                                                <li><a class="dropdown-item" href="#">Out of Stock</a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <!-- Export Button -->
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <button type="button" class="btn excelBtn w-100" style="border-radius: 10px;"
+                                        onclick="openPopup()">Export
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="row align-items-center">
-                                    <div class="col-12">
-                                        <div class="card cardTable rounded-3 m-3" style="min-height: 30vh;">
-                                            <div class="card-body">
-                                                <h5 class="card-title mb-3">Order List</h5>
-                                                <div class="table-responsive">
-                                                    <table class="table table-bordered table-hover">
-                                                        <thead class="table-light">
-                                                            <tr>
-                                                                <th>#</th>
-                                                                <th>Item Name</th>
-                                                                <th>Category</th>
-                                                                <th>Price</th>
-                                                                <th>Status</th>
-                                                                <th>Product ID:</th>
-                                                                <th>Code</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr>
-                                                                <td>1</td>
-                                                                <td>Benguet Blend</td>
-                                                                <td>Iced Coffee/Coffee</td>
-                                                                <td>₱99</td>
-                                                                <td><span
-                                                                        class="badge bg-success">Available</span>
-                                                                </td>
-                                                                <td>00001</td>
-                                                                <td>ICB</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>2</td>
-                                                                <td>Matcha Latte</td>
-                                                                <td>Iced Coffee/Coffee</td>
-                                                                <td>₱129</td>
-                                                                <td><span class="badge bg-danger">Out of
-                                                                        Stock</span></td>
-                                                                <td>00002</td>
-                                                                <td>ICM</td>
-                                                            </tr>
-                                                            <!-- Items na iloloop-->
-                                                        </tbody>
-                                                    </table>
-                                                </div>
+                            </div>
+                            <div class="row align-items-center">
+                                <div class="col-12">
+                                    <div class="card cardOrders rounded-3 m-3" style="min-height: 30vh;">
+                                        <div class="card-body">
+                                            <div class="subheading fs-4 mb-3">Sales Report</div>
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>#</th>
+                                                            <th>Item Name</th>
+                                                            <th>Category</th>
+                                                            <th>Price (Each)</th>
+                                                            <th>Quantity</th>
+                                                            <th>Total</th>
+                                                            <th>Product ID</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>1</td>
+                                                            <td>Benguet Blend (MD) </td>
+                                                            <td>Iced Coffee/Coffee</td>
+                                                            <td>₱99</td>
+                                                            <td>2</td>
+                                                            <td>₱198</td>
+                                                            <td>ICB</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>2</td>
+                                                            <td>Matcha Latte (L)</td>
+                                                            <td>Iced Coffee/Coffee</td>
+                                                            <td>₱129</td>
+                                                            <td>2</td>
+                                                            <td>₱258</td>
+                                                            <td>ICM</td>
+                                                        </tr>
+                                                        <!-- Items na iloloop-->
+                                                    </tbody>
+                                                </table>
                                             </div>
                                         </div>
                                     </div>
@@ -405,6 +368,7 @@
                 </div>
             </div>
         </div>
+    </div>
     </div>
 
     <script>
@@ -447,7 +411,6 @@
     </script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
     <script src="../assets/js/admin_sidebar.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"

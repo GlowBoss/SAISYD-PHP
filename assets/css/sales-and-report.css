@@ -1,72 +1,198 @@
 body,
 html {
-    height: auto;
-    overflow-x: hidden;
-    overflow-y: auto;
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background-color: var(--secondary-color);
 }
 
+h4 {
+  color: var(--text-color-dark);
+}
 
 .mainContainer {
-    width: 100%;
-    height: auto;
-    display: flex;
-    flex-direction: column;
-    background-color: var(--card-bg-color);
+  width: 100%;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--card-bg-color);
+}
+
+.cardMain {
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.125) !important;
+  background-color: var(--card-bg-color);
+}
+
+#smallCardCarousel .carousel-item .card {
+  margin: 0.75rem 0;  
+  width: 100%;         
+  max-width: 320px;    
+}
+
+#smallCardCarousel .carousel-item .d-flex {
+  gap: 1rem;     
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  width: 2rem;
+  height: 2rem;
+  margin: 0 0.5rem;
+  background-size: 100% 100%;
 }
 
 .carousel-control-prev-icon {
-    background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" fill="%23C4A277" viewBox="0 0 16 16"><path d="M11.5 1.5a.5.5 0 0 1 .5.5v12a.5.5 0 0 1-.5.5l-8-6a.5.5 0 0 1 0-.8l8-6a.5.5 0 0 1 .5-.2z"/></svg>');
-    background-size: cover;
-    padding: 10px;
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%234a2800' viewBox='0 0 16 16'%3E%3Cpath d='M11.354 1.646a.5.5 0 010 .708L5.707 8l5.647 5.646a.5.5 0 01-.708.708l-6-6a.5.5 0 010-.708l6-6a.5.5 0 01.708 0z'/%3E%3C/svg%3E"); 
 }
 
 .carousel-control-next-icon {
-    background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" fill="%23C4A277" viewBox="0 0 16 16"><path d="M4.5 1.5a.5.5 0 0 0-.5.5v12a.5.5 0 0 0 .5.5l8-6a.5.5 0 0 0 0-.8l-8-6a.5.5 0 0 0-.5-.2z"/></svg>');
-    background-size: cover;
-    padding: 10px;
-}
-
-
-.carousel-control-prev,
-.carousel-control-next {
-    width: 10%;
-}
-
-.carousel-control-prev-icon::before,
-.carousel-control-next-icon::before {
-    color:#C4A277;
-    font-size: 24px;
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%234a2800' viewBox='0 0 16 16'%3E%3Cpath d='M4.646 1.646a.5.5 0 000 .708L10.293 8l-5.647 5.646a.5.5 0 00.708.708l6-6a.5.5 0 000-.708l-6-6a.5.5 0 00-.708 0z'/%3E%3C/svg%3E"); 
 }
 
 .cardSmall {
-    width: 20rem;
-    height: 8rem;
-    border-radius: 20px;
-    text-align: center;
-   
-
+  max-width: 18rem; 
+  width: 100%;
+  height: auto;     
+  max-height: 8rem; 
+  border-radius: 20px;
+  text-align: center;
+  font-family: var(--secondaryFont);
+  font-size: var(--lead);
+  color: var(--text-color-dark);
+  background-color: var(--card-bg-color);
 }
 
 .cardBig {
-    width: 15rem;
-    height: 18rem;
-    border-radius: 20px;
-    text-align: center;
-    border: none;
-   
+  width: 18rem;
+  height: 18rem;
+  text-align: center;
+  border: none;
+  font-family: var(--secondaryFont);
+  font-size: var(--lead);
+  color: var(--text-color-dark);
+  background-color: var(--card-bg-color);
+}
+
+.cardStats {
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.125) !important;
 }
 
 .cardContainer {
-    border-radius: 20px;
-    text-align: center;
-    border: none;
+  border-radius: 20px;
+  text-align: center;
+  border: none;
+  background-color: var(--card-bg-color);
 }
-.btn-dropdown{
-    background-color: var(--primary-color);
-    border-radius: 10px;
+
+input.form-control[aria-label="search-bar"] {
+  border-radius: 12px !important;
+  font-family: var(--secondaryFont) !important;
+  font-size: var(--lead) !important;
+}
+
+.btn-dropdown {
+  background-color: var(--primary-color);
+  border-radius: 12px;
+  font-family: var(--secondaryFont);
+  font-size: var(--lead);
+  color: var(--text-color-light);
+}
+
+.btn-dropdown.show,
+.btn-dropdown:active {
+  background-color: var(--primary-color) !important;
+  color: var(--text-color-light) !important;
 }
 
 button.btn.btn-dropdown:hover {
-    background-color: #945400ea !important;
-    color: white !important;
+  background-color: var(--btn-hover1) !important;
+  color: white !important;
 }
+.dropdown-item {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background-color:var(--btn-hover1);
+  color: #fff;
+}
+
+.excelBtn {
+  background-color: var(--text-color-dark);
+  border-radius: 12px;
+  font-family: var(--secondaryFont);
+  font-size: var(--lead);
+  color: var(--text-color-light);
+}
+
+.excelBtn.show,
+.excelBtn:active {
+  background-color: var(--text-color-dark) !important;
+  color: var(--text-color-light) !important;
+}
+
+button.btn.excelBtn:hover {
+  background-color: var(--btn-hover2) !important;
+  color: white !important;
+}
+
+.cardOrders,
+.cardOrders * {
+  border: none;
+  font-family: var(--secondaryFont);
+  color: var(--text-color-dark);
+  font-size: var(--lead);
+  background-color: var(--card-bg-color);
+}
+
+.table {
+  background-color: var(--card-bg-color);
+  border: 1px solid var(--bs-border-color);
+}
+
+.table th,
+.table td {
+  background-color: var(--card-bg-color) !important;
+}
+
+.btnModal {
+  border-radius: 12px;
+  font-family: var(--secondaryFont);
+  color: var(--text-color-light);
+}
+
+.btnDownload {
+  background-color: var(--primary-color);
+}
+
+.btnDownload {
+  background-color: var(--primary-color);
+}
+
+.btnCancel {
+  background-color: var(--secondary-color);
+}
+
+.btnModal.show,
+.btnModal:active {
+  background-color: var(--primary-color) !important;
+  color: var(--text-color-light) !important;
+}
+
+button.btn.btnDownload:hover {
+  background-color: var(--btn-hover1) !important;
+  color: white !important;
+}
+
+button.btn.btnCancel:hover {
+  background-color: var(--text-color-dark) !important;
+  color: white !important;
+}
+
+.modalText {
+  font-family: var(--secondaryFont);
+  color: var(--text-color-dark);
+}
+
