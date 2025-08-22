@@ -47,12 +47,15 @@ select.form-select {
 
 .btn-action {
   border: none;
+  border-radius: 12px;
   font-family: var(--secondaryFont);
+
 }
 
 .btn-action:hover {
   background-color: var(--primary-color);
-  color: var(--text-color-light) !important
+  color: var(--text-color-light) !important;
+  border-radius: 12px;
 }
 
 .btn-dropdown {
@@ -117,4 +120,8 @@ button.btn.btn-dropdown:hover {
 .table th,
 .table td {
   background-color: var(--card-bg-color) !important;
+}
+
+.modalText{
+    font-family: var(--secondaryFont) !important;
 }
