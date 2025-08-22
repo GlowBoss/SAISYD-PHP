@@ -116,31 +116,21 @@ html {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
-.btnOrder {
-    border-radius: 12px;
-    color: var(--text-color-light);
-    background-color: var(--primary-color);
-    font-family: var(--primaryFont);
-    font-size: var(--lead);
-    white-space: nowrap;
-    cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-}
 
 .btnCancel:hover {
-    background-color: var(--btn-hover1);
+    background-color: var(--gray);
     color: var(--text-color-light);
 }
 
 .btnCancel {
     border-radius: 12px;
-    color: var(--text-color-dark);
+    color: var(--text-color-light);
+    background-color: var(--btn-hover1);
     font-family: var(--primaryFont);
     font-size: var(--lead);
     white-space: nowrap;
     cursor: pointer;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    border-color: var(--btn-hover1);
 }
 
 
@@ -210,6 +200,30 @@ html {
 
 .btn-dark:hover {
     background-color: var(--primary-color);
+    color: var(--text-color-light);
+    border: 0px solid var(--primary-color);
+}
+
+.btn-dark-order {
+    background-color: var(--primary-color);
+    color: var(--text-color-light);
+    border-radius: 12px;
+}
+
+.btn-dark-order:hover {
+    background-color: var(--btn-hover1);
+    color: var(--text-color-light);
+    border: 0px solid var(--primary-color);
+}
+
+.btn-dark-cancel {
+    background-color: var(--btn-hover1);
+    color: var(--text-color-light);
+    border-radius: 12px;
+}
+
+.btn-dark-cancel:hover {
+    background-color: var(--gray);
     color: var(--text-color-light);
     border: 0px solid var(--primary-color);
 }

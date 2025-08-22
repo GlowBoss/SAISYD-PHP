@@ -37,7 +37,7 @@
                     <img src="../assets/img/saisydLogo.png" alt="Saisyd Cafe Logo" class="admin-logo"
                         style="max-height: 70px; width: auto;" />
                     <button type="button" class="btn-close" data-bs-dismiss="offcanvas"
-                        aria-label="Close">&times;</button>
+                        aria-label="Close"></button>
                 </div>
 
                 <!-- Body with Admin Navigation Design -->
@@ -164,9 +164,9 @@
                                     <div><b id="totalValue">0</b></div>
                                 </div>
                                 <div class="d-flex flex-column flex-md-row justify-content-center gap-3 mt-4">
-                                    <button class="btn btn-dark w-100 w-md-auto py-2 px-3" onclick="openPopup()">Order
+                                    <button class="btn btn-dark-order w-100 w-md-auto py-2 px-3" onclick="openPopup()">Order
                                         Now</button>
-                                    <button class="btn btn-outline-dark w-100 w-md-auto py-2 px-3"
+                                    <button class="btn btn-dark-cancel w-100 w-md-auto py-2 px-3"
                                         onclick="cancelOrder()">Cancel Order</button>
                                 </div>
                             </div>
@@ -467,10 +467,7 @@
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
                 integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO"
                 crossorigin="anonymous"></script>
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
         </div>
     </div>
 </body>
