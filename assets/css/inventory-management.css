@@ -1,50 +1,182 @@
 body {
-
-    font-family: var(--secondaryFont);
-    padding: 0%;
-
-
-}
-
-.row {
-    margin-right: 0;
-    margin-left: 0;
+  font-family: var(--primaryFont);
+  background-color: var(--bg-color);
+  padding: 0;
+  margin: 0;
+  background-color: #f5f5f5;
+  overflow-x: hidden !important;
 }
 
 html {
-    height: auto;
-    overflow-x: hidden;
-    overflow-y: auto;
+  height: auto;
+  overflow-x: hidden !important;
 }
 
-
-.mainContainer {
-    width: 100vw;
-    height: auto;
-    display: flex;
-    flex-direction: column;
-    background-color: var(--card-bg-color);
-    overflow-x: hidden;
+.main-content {
+  background-color: var(--card-bg-color);
+  margin-left: 250px;
+  transition: margin-left 0.3s ease;
+  padding: 20px;
+  width: calc(100% - 320px);
+  box-sizing: border-box;
+  overflow-y: hidden !important;
 }
 
-.categorybtn,
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+    padding: 15px;
+  }
+}
+
+.cardContent {
+  background: var(--card-bg-color);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+  min-height: calc(100vh - 50px);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  overflow: hidden;
+}
+/* For medium screens (769px to 980px) */
+@media (min-width: 768px) and (max-width: 810px) {
+  .cardContent {
+    width: 55%; 
+  }
+}
+
+@media (min-width: 810px) and (max-width: 890px) {
+  .cardContent {
+    width: 60%; 
+  }
+}
+
+/* For smaller screens (768px and below) */
+@media (max-width: 767px) {
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+    padding: 15px;
+  }
+  
+  .cardContent {
+    width: 100%; /* Full width on mobile */
+    padding: 1rem; /* Reduce padding on mobile */
+  }
+}
+.tableCard {
+  background: var(--bg-color);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  overflow-y: auto;
+  overflow-x: auto;
+  width: 100%;
+  flex: 1;
+}
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.custom-thead {
+  background-color: var(--primary-color);
+  color: var(--text-color-light);
+  position: sticky;
+  top: 0;
+}
+
+.custom-thead th {
+  background-color: var(--primary-color);
+  color: var(--text-color-light);
+  padding: 12px 15px;
+  font-weight: 600;
+}
+
+.categorybtn, .btnAdd {
+  background-color: var(--primary-color);
+  color: var(--text-color-light);
+  border-radius: 12px;
+  font-weight: 500;
+}
+
 .categorybtn-active {
-    border: 2px solid #C4A277;
-    color: #C4A277;
-    background-color: transparent;
-    transition: all 0.2s ease-in-out;
-    /* padding: 6px 16px; */
-    /* width: auto; */
+  background-color: var(--primary-color);
+  color: white;
 }
 
-.categorybtn-active {
-    background-color: #C4A277;
-    color: white;
+.categorybtn:hover, .btnAdd:hover {
+  background-color: var(--btn-hover1);
+  color: white;
+  cursor: pointer;
 }
 
+.btnExport, .btnCancel {
+  background-color: var(--btn-hover1);
+  color: var(--text-color-light);
+  border-radius: 12px;
+  font-weight: 500;
+}
 
-.categorybtn:hover {
-    background-color: #C4A277;
-    color: white;
+.btnExport:hover, .btnCancel:hover {
+  background-color: var(--primary-color);
+  color: white;
+  cursor: pointer;
+}
+
+.search {
+  border-radius: 20px;
+  padding: 8px 20px;
+  border: 1px solid #ddd;
+}
+
+.subheading {
+  color: var(--text-color-dark);
+  font-family: var(--primaryFont);
+  font-weight: 700;
+  font-size: var(--subheading);
+}
+
+/* Table styles */
+table {
+  border-collapse: collapse;
+  overflow-x: scroll;
+}
+
+/* Modal styles */
+.modal-content {
+  border-radius: 12px;
+  border: none;
+}
+
+.modal-header,
+.modal-body,
+.modal-footer {
+  background-color: var(--card-bg-color);
+  color: var(--text-color-dark);
+}
+
+/* Responsive adjustments */
+@media (max-width: 991.98px) {
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .cardContent {
+    padding: 1rem;
+  }
+
+  .table-responsive {
+    font-size: 14px;
+  }
+}
+
+.dropdown-menu .dropdown-item:hover {
+    background-color: var(--primary-color);
+    color: var(--text-color-light);
     cursor: pointer;
 }
