@@ -58,6 +58,31 @@ select.form-select {
   border-radius: 12px;
 }
 
+.btn-action:active {
+  background-color: var(--btn-hover1) !important;
+  color: var(--text-color-light) !important;
+  border-radius: 12px;
+}
+
+.btn-action-del {
+  border: none;
+  border-radius: 12px;
+  font-family: var(--secondaryFont);
+
+}
+
+.btn-action-del:hover {
+  background-color: var(--btn-hover1) !important;
+  color: var(--text-color-light) !important;
+  border-radius: 12px;
+}
+
+.btn-action-del:active {
+  background-color: var(--btn-hover2) !important;
+  color: var(--text-color-light) !important;
+  border-radius: 12px;
+}
+
 .btn-dropdown {
   background-color: var(--primary-color);
   border-radius: 12px;
@@ -89,6 +114,7 @@ button.btn.btn-dropdown:hover {
 }
 
 .btn-add {
+  border: none;
   background-color: var(--primary-color);
   border-radius: 12px;
   font-family: var(--secondaryFont);
@@ -96,8 +122,13 @@ button.btn.btn-dropdown:hover {
 }
 
 .btn-add:hover {
-  background-color: #4a2800;
-  color: #fff;
+  background-color: var(--btn-hover1) !important;
+  color: var(--text-color-light) !important;
+}
+
+.btn-add:active {
+  background-color: var(--btn-hover1) !important;
+  color: var(--text-color-light) !important;
 }
 
 .btn-del {
@@ -122,6 +153,6 @@ button.btn.btn-dropdown:hover {
   background-color: var(--card-bg-color) !important;
 }
 
-.modalText{
-    font-family: var(--secondaryFont) !important;
+.modalText {
+  font-family: var(--secondaryFont) !important;
 }

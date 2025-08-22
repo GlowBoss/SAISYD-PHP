@@ -219,7 +219,7 @@
                                         <button class="btn btn-action mx-auto" id="editUserBtn">
                                             <i class="bi bi-pencil-square"></i> Edit Credentials
                                         </button>
-                                        <button class="btn btn-action text-danger">
+                                        <button class="btn btn-action-del text-danger">
                                             <i class="bi bi-trash"></i> Delete
                                         </button>
                                     </td>
