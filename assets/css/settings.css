@@ -1,0 +1,158 @@
+body,
+html {
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background-color: var(--secondary-color);
+}
+
+.cardMain {
+  background-color: var(--card-bg-color);
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.125) !important;
+  font-family: var(--secondaryFont);
+}
+
+#customerMenuSwitch.form-check-input {
+  background-color: var(--card-bg-color) !important;
+}
+
+#customerMenuSwitch.form-check-input:checked {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+
+}
+
+.btnAdd {
+  background-color: var(--primary-color);
+  border-radius: 12px;
+  font-family: var(--secondaryFont);
+  font-size: var(--lead);
+  color: var(--text-color-light);
+  padding-block: 0.3rem;
+  padding-inline: clamp(1rem, 5vw, 3.5rem);
+}
+
+button.btn.btnAdd:hover {
+  background-color: var(--btn-hover1) !important;
+  color: white !important;
+}
+
+select.form-select {
+  border-radius: 12px !important;
+  font-family: var(--secondaryFont) !important;
+  font-size: var(--lead) !important;
+  color: var(--text-color-dark);
+}
+
+.btn-action {
+  border: none;
+  border-radius: 12px;
+  font-family: var(--secondaryFont);
+
+}
+
+.btn-action:hover {
+  background-color: var(--primary-color);
+  color: var(--text-color-light) !important;
+  border-radius: 12px;
+}
+
+.btn-action:active {
+  background-color: var(--btn-hover1) !important;
+  color: var(--text-color-light) !important;
+  border-radius: 12px;
+}
+
+.btn-action-del {
+  border: none;
+  border-radius: 12px;
+  font-family: var(--secondaryFont);
+
+}
+
+.btn-action-del:hover {
+  background-color: var(--btn-hover1) !important;
+  color: var(--text-color-light) !important;
+  border-radius: 12px;
+}
+
+.btn-action-del:active {
+  background-color: var(--btn-hover2) !important;
+  color: var(--text-color-light) !important;
+  border-radius: 12px;
+}
+
+.btn-dropdown {
+  background-color: var(--primary-color);
+  border-radius: 12px;
+  font-family: var(--secondaryFont);
+  font-size: var(--lead);
+  color: var(--text-color-light);
+}
+
+.btn-dropdown.show,
+.btn-dropdown:active {
+  background-color: var(--primary-color) !important;
+  color: var(--text-color-light) !important;
+}
+
+button.btn.btn-dropdown:hover {
+  background-color: var(--btn-hover1) !important;
+  color: white !important;
+}
+
+
+.dropdown-item {
+  transition: background-color 0.2s ease, color 0.2s ease;
+  font-family: var(--secondaryFont);
+}
+
+.dropdown-item:hover {
+  background-color: #4a2800;
+  color: #fff;
+}
+
+.btn-add {
+  border: none;
+  background-color: var(--primary-color);
+  border-radius: 12px;
+  font-family: var(--secondaryFont);
+  color: var(--text-color-light);
+}
+
+.btn-add:hover {
+  background-color: var(--btn-hover1) !important;
+  color: var(--text-color-light) !important;
+}
+
+.btn-add:active {
+  background-color: var(--btn-hover1) !important;
+  color: var(--text-color-light) !important;
+}
+
+.btn-del {
+  background-color: var(--btn-hover1);
+  border-radius: 12px;
+  font-family: var(--secondaryFont);
+  color: var(--text-color-light);
+}
+
+.btn-del:hover {
+  background-color: var(--btn-hover2);
+  color: var(--text-color-light);
+}
+
+.table {
+  background-color: var(--card-bg-color);
+  border: 1px solid var(--bs-border-color);
+}
+
+.table th,
+.table td {
+  background-color: var(--card-bg-color) !important;
+}
+
+.modalText {
+  font-family: var(--secondaryFont) !important;
+}
