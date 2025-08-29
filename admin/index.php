@@ -1,3 +1,16 @@
+<?php 
+include('connect.php');
+session_start();
+
+// Check if user is logged in and is an admin 
+//Prevents unauthorized access to admin pages
+if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'admin') {
+    header("Location: login.php");
+    exit();
+}
+
+?>
+
 <!doctype html>
 <html lang="en">
 
@@ -71,6 +84,9 @@
         </div>
     </div>
 
+    <script>
+        localStorage.removeItem("loginLoaded");
+    </script>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
 </body>

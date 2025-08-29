@@ -1,3 +1,33 @@
+<?php
+include('connect.php');
+session_start();
+session_destroy();
+session_start();    
+
+$error = "";
+
+if (isset($_POST['btnLogin'])) {
+  $username = $_POST['username'];
+  $password = $_POST['password'];
+
+  // Prepared stmt for SQL Injection prevention
+  $stmt = $conn->prepare("SELECT * FROM users WHERE username = ? AND password = ?");
+  $stmt->bind_param("ss", $username, $password);
+  $stmt->execute();
+  $result = $stmt->get_result();
+
+  if ($row = $result->fetch_assoc()) {
+    $_SESSION['userID'] = $row['userID'];
+    $_SESSION['role'] = $row['role'];
+    header("Location: index.php");
+    exit;
+  } else {
+    $error = "Invalid username or password.";
+  }
+
+}
+?>
+
 <!doctype html>
 <html lang="en">
 
@@ -70,13 +100,13 @@
           <div class="login-left col-md-6 order-md-0">
             <h2 class="mb-3 text-center">Log in</h2>
             <p class="text-muted text-center">Username | Email | Phone</p>
-            <form id="loginForm">
+            <form action="" method="post">
               <div class="mb-3">
-                <input type="text" class="form-control" id="username" placeholder="Username">
+                <input type="text" class="form-control" name="username" placeholder="Username" required>
               </div>
               <p class="text-muted text-center">Password</p>
               <div class="mb-2">
-                <input type="password" class="form-control" id="password" placeholder="Password">
+                <input type="password" class="form-control" name="password" placeholder="Password" required>
               </div>
               <div class="form-text mb-3 text-center">
                 Forgot Your <a href="#">Password?</a>
@@ -84,8 +114,13 @@
               <div id="errorMsg" class="text-danger text-center mb-3" style="display: none;">
                 Invalid username or password.
               </div>
+              <?php if (!empty($error)) { ?>
+                <div id="errorMsg" class="text-danger text-center mb-3">
+                  <?php echo htmlspecialchars($error); ?>
+                </div>
+              <?php } ?>
               <div class="text-center">
-                <button type="submit" class="btn btn-login px-4">SIGN IN</button>
+                <button type="submit" name="btnLogin" class="btn btn-login px-4">SIGN IN</button>
               </div>
             </form>
           </div>
@@ -93,6 +128,19 @@
       </div>
     </div>
   </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      let hasLoaded = localStorage.getItem("loginLoaded");
+
+      if (!hasLoaded) {
+        document.body.classList.add("loading"); // show loader
+        localStorage.setItem("loginLoaded", "true"); // mark as seen
+      } else {
+        document.getElementById("loading-screen").style.display = "none"; // skip loader
+      }
+    });
+  </script>
 
   <!-- JS: Remove Loader After Simulated Load -->
   <script>
@@ -114,27 +162,6 @@
       }, 20);
     });
   </script>
-
-  <!-- JS: Login Handler -->
-  <script>
-    document.getElementById('loginForm').addEventListener('submit', function (e) {
-      e.preventDefault();
-
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value.trim();
-      const errorMsg = document.getElementById('errorMsg');
-
-      const validUsers = ["admin", "admin@gmail.com", "09123456789"];
-      const validPassword = "12345";
-
-      if (validUsers.includes(username) && password === validPassword) {
-        window.location.href = "home.html";
-      } else {
-        errorMsg.style.display = "block";
-      }
-    });
-  </script>
-
   <!-- Bootstrap Bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
 </body>
