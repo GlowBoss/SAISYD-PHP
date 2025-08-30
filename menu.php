@@ -1,3 +1,140 @@
+<?php
+include 'assets/connect.php';
+session_start();
+
+// Initialize cart session if it doesn't exist
+if (!isset($_SESSION['cart'])) {
+    $_SESSION['cart'] = [];
+}
+
+// Set session timeout (30 minutes)
+if (!isset($_SESSION['cart_timeout'])) {
+    $_SESSION['cart_timeout'] = time() + (30 * 60);
+}
+
+// Check if cart session has expired
+if (time() > $_SESSION['cart_timeout']) {
+    $_SESSION['cart'] = [];
+    $_SESSION['cart_timeout'] = time() + (30 * 60);
+}
+
+// Handle Add to Cart via POST
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
+    $productId = $_POST['product_id'];
+    $productName = $_POST['product_name'];
+    $price = $_POST['price'];
+    $category = $_POST['category'];
+    $size = $_POST['size'] ?? '';
+    $sugar = $_POST['sugar'] ?? '';
+    $ice = $_POST['ice'] ?? '';
+    $notes = $_POST['notes'] ?? '';
+    $quantity = intval($_POST['quantity'] ?? 1);
+
+    // Check if item with same customizations already exists
+    $itemExists = false;
+    foreach ($_SESSION['cart'] as $index => $item) {
+        if (
+            $item['product_id'] == $productId &&
+            $item['size'] == $size &&
+            $item['sugar'] == $sugar &&
+            $item['ice'] == $ice &&
+            $item['notes'] == $notes
+        ) {
+            $_SESSION['cart'][$index]['quantity'] += $quantity;
+            $itemExists = true;
+            break;
+        }
+    }
+
+    // If item doesn't exist, add new item
+    if (!$itemExists) {
+        $_SESSION['cart'][] = [
+            'product_id' => $productId,
+            'product_name' => $productName,
+            'price' => $price,
+            'category' => $category,
+            'size' => $size,
+            'sugar' => $sugar,
+            'ice' => $ice,
+            'notes' => $notes,
+            'quantity' => $quantity
+        ];
+    }
+
+    // Reset cart timeout
+    $_SESSION['cart_timeout'] = time() + (30 * 60);
+
+    // Set success message
+    $_SESSION['cart_message'] = 'Item added to cart successfully!';
+
+    // Redirect to prevent form resubmission
+    header('Location: ' . $_SERVER['PHP_SELF'] . '?' . http_build_query($_GET));
+    exit();
+}
+
+// -------------------
+// FETCH PRODUCTS
+// -------------------
+$categoryFilter = isset($_GET['category']) ? $_GET['category'] : 'ALL';
+$sortOption = isset($_GET['sort']) ? $_GET['sort'] : 'name-asc';
+
+// Decide ORDER BY clause
+switch ($sortOption) {
+    case 'name-asc':
+        $orderBy = "p.productName ASC";
+        break;
+    case 'name-desc':
+        $orderBy = "p.productName DESC";
+        break;
+    case 'price-low-high':
+        $orderBy = "p.price ASC";
+        break;
+    case 'price-high-low':
+        $orderBy = "p.price DESC";
+        break;
+    default:
+        $orderBy = "p.productName ASC";
+}
+
+// Build product query with filter + sort
+if ($categoryFilter === 'ALL') {
+    $productQuery = "
+        SELECT p.*, c.categoryName 
+        FROM products p 
+        LEFT JOIN categories c ON p.categoryID = c.categoryID 
+        WHERE p.isAvailable = 'Yes'
+        ORDER BY $orderBy
+    ";
+} else {
+    $safeCategory = mysqli_real_escape_string($conn, $categoryFilter);
+    $productQuery = "
+        SELECT p.*, c.categoryName 
+        FROM products p 
+        LEFT JOIN categories c ON p.categoryID = c.categoryID 
+        WHERE p.isAvailable = 'Yes' AND c.categoryName = '$safeCategory'
+        ORDER BY $orderBy
+    ";
+}
+
+$products = executeQuery($productQuery);
+
+// Fetch categories
+$categoryQuery = "SELECT * FROM categories ORDER BY categoryName";
+$categories = executeQuery($categoryQuery);
+
+// Function to get cart item count
+function getCartItemCount()
+{
+    $count = 0;
+    if (isset($_SESSION['cart'])) {
+        foreach ($_SESSION['cart'] as $item) {
+            $count += $item['quantity'];
+        }
+    }
+    return $count;
+}
+?>
+
 <!doctype html>
 <html lang="en">
 
@@ -15,9 +152,6 @@
     <link rel="stylesheet" href="assets/css/coffee.css">
     <link rel="stylesheet" href="assets/css/navbar.css">
     <link rel="icon" href="assets/img/round_logo.png" type="image/png">
-
-
-
 </head>
 
 <body>
@@ -47,15 +181,23 @@
                 data-wow-delay="0.45s">
                 <i class="bi bi-envelope fs-5"></i> <span>Contact</span>
             </a>
-            <a href="cart.php" class="nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.55s">
-                <i class="bi bi-cart fs-5"></i> <span>Cart</span>
+            <a href="cart.php" class="nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.55s"
+                style="display: flex; align-items: center; justify-content: space-between; gap: 6px; position: relative;">
+                <i class="bi bi-cart fs-5"></i>
+                <span>Cart</span>
+                <?php if (getCartItemCount() > 0): ?>
+                    <span class="badge bg-danger rounded-pill"
+                        style="position: absolute; top: -5px; right: 70px; font-size: 0.75rem; padding: 0.25em 0.5em;">
+                        <?php echo getCartItemCount(); ?>
+                    </span>
+                <?php endif; ?>
             </a>
+
         </div>
 
         <button class="btn menu-btn wow" onclick="location.href='menu.php'">
             <i class="fas fa-mug-hot me-2"></i> Menu
         </button>
-
     </div>
 
     <!-- Navbar -->
@@ -76,12 +218,25 @@
                     </a>
                 </div>
 
-                <!-- Right: Cart -->
-                <div class="ms-auto">
-                    <a href="cart.php" class="d-flex align-items-center text-decoration-none">
-                        <i class="bi bi-cart3 fs-5" style="color: var(--text-color-dark);"></i>
+                <!-- Mobile: Right Cart -->
+                <div class="ms-auto d-flex align-items-center">
+                    <a href="cart.php" class="d-flex align-items-center text-decoration-none position-relative">
+                        <i class="bi bi-cart3 fs-5 me-2 " style="color: var(--text-color-dark);"></i>
+                        <?php if (getCartItemCount() > 0): ?>
+                            <span class="position-absolute badge rounded-pill bg-danger" style="
+                                top: -6px;
+                                right: -6px;
+                                font-size: 0.65rem;
+                                padding: 0.25em 0.45em;
+                                line-height: 1;
+                            ">
+                                <?php echo getCartItemCount(); ?>
+                            </span>
+                        <?php endif; ?>
                     </a>
                 </div>
+
+
             </div>
 
             <!-- Desktop Layout: Logo on left -->
@@ -108,7 +263,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="v#contact">
+                        <a class="nav-link" href="index.php#contact">
                             <i class="bi bi-envelope"></i> <span>Contact</span>
                         </a>
                     </li>
@@ -116,8 +271,18 @@
 
                 <!-- Desktop: Cart + Menu -->
                 <div class="d-none d-lg-flex align-items-center">
-                    <a href="cart.php" class="nav-link me-2">
-                        <i class="bi bi-cart3"></i> <span>Cart</span>
+                    <a href="cart.php" class="nav-link position-relative me-2">
+                        <i class="bi bi-cart3 fs-4"></i> <span>Cart</span>
+                        <?php if (getCartItemCount() > 0): ?>
+                            <span class="position-absolute badge rounded-pill bg-danger" style="
+                                top: -2px;
+                                right: -2px;
+                                font-size: 0.75rem;
+                                padding: 0.25em 0.5em;
+                            ">
+                                <?php echo getCartItemCount(); ?>
+                            </span>
+                        <?php endif; ?>
                     </a>
                     <button class="btn menu-btn" onclick="location.href='menu.php'">
                         <i class="fas fa-mug-hot me-2"></i> Menu
@@ -129,86 +294,131 @@
 
     <!-- Categories + Sort Section -->
     <div class="container-fluid px-sm-2 px-md-4 px-lg-5 mt-5 mt-lg-4 pt-lg-5">
-        <!-- Top Row: Categories Label + Sort -->
         <div
             class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-2">
-
-            <!-- Categories Label -->
             <div class="title-category heading align-items-sm-start">Cafe Menu</div>
-
         </div>
 
-        <!-- Category Pills Row -->
         <div class="d-flex flex-column flex-md-row align-items-md-center gap-3">
 
             <!-- Sort Dropdown -->
-            <div class="d-flex align-items-center gap-2 px-3 py-2 border rounded-pill shadow-sm mx-auto mx-md-0 order-0 order-md-1 mb-lg-2 "
+            <div class="custom-select-wrapper d-flex align-items-center gap-3 px-3 py-2 border rounded-pill shadow-sm mx-auto mx-md-0 order-0 order-md-1 mb-lg-2 mb-3"
                 style="background-color: var(--card-bg-color); font-family: var(--primaryFont); font-size: var(--lead); font-weight: 500; color: var(--text-color-dark); border-color: var(--primary-color);">
+
                 <i class="bi bi-funnel-fill" style="color: var(--text-color-dark); font-size: 1rem;"></i>
-                <label for="sortSelect" class="mb-0 fw-semibold">Sort by:</label>
-                <select id="sortSelect" class="form-select form-select-sm border-0 bg-transparent shadow-none"
-                    style="width: 160px; font-weight: 600; font-size: var(--lead); font-family: var(--primaryFont); color: var(--text-color-dark);">
-                    <option value="popularity">Popularity</option>
-                    <option value="price-low-high">Price: Low to High</option>
-                    <option value="price-high-low">Price: High to Low</option>
-                    <option value="newest">Newest</option>
-                </select>
+                <label class="mb-0 fw-semibold">Sort by:</label>
+
+                <div class="custom-select">
+                    <?php
+                    // current label depende sa sort option
+                    $currentSortLabel = "Name A-Z";
+                    if ($sortOption === "name-desc")
+                        $currentSortLabel = "Name Z-A";
+                    elseif ($sortOption === "price-low-high")
+                        $currentSortLabel = "Price: Low to High";
+                    elseif ($sortOption === "price-high-low")
+                        $currentSortLabel = "Price: High to Low";
+                    ?>
+
+                    <!-- Selected display -->
+                    <div class="selected">
+                        <span class="selected-text"><?php echo $currentSortLabel; ?></span>
+                        <i class="bi bi-chevron-down dropdown-icon"></i>
+                    </div>
+
+                    <!-- Options (use links para PHP reload lang) -->
+                    <div class="options">
+                        <div><a
+                                href="?sort=name-asc<?php echo ($categoryFilter !== 'ALL') ? '&category=' . urlencode($categoryFilter) : ''; ?>">Name
+                                A-Z</a></div>
+                        <div><a
+                                href="?sort=name-desc<?php echo ($categoryFilter !== 'ALL') ? '&category=' . urlencode($categoryFilter) : ''; ?>">Name
+                                Z-A</a></div>
+                        <div><a
+                                href="?sort=price-low-high<?php echo ($categoryFilter !== 'ALL') ? '&category=' . urlencode($categoryFilter) : ''; ?>">Price:
+                                Low to High</a></div>
+                        <div><a
+                                href="?sort=price-high-low<?php echo ($categoryFilter !== 'ALL') ? '&category=' . urlencode($categoryFilter) : ''; ?>">Price:
+                                High to Low</a></div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Category Pills Row -->
+
+            <!-- Category Pills Row (unchanged) -->
             <div class="category-scroll d-flex gap-3 overflow-auto pb-3 pt-1 flex-grow-1 order-1 order-md-0">
-                <div class="category-pill text-center active" data-category="All">All</div>
-                <div class="category-pill text-center" data-category="Coffee">Coffee</div>
-                <div class="category-pill text-center" data-category="Tea">Tea</div>
-                <div class="category-pill text-center" data-category="Food">Food</div>
+                <a href="?category=ALL&sort=<?php echo $sortOption; ?>"
+                    class="category-pill text-decoration-none text-center <?php echo ($categoryFilter === 'ALL') ? 'active' : ''; ?>">
+                    All
+                </a>
+                <?php
+                if (mysqli_num_rows($categories) > 0) {
+                    while ($category = mysqli_fetch_assoc($categories)) {
+                        ?>
+                        <a href="?category=<?php echo urlencode($category['categoryName']); ?>&sort=<?php echo $sortOption; ?>"
+                            class="category-pill text-decoration-none text-center <?php echo ($categoryFilter === $category['categoryName']) ? 'active' : ''; ?>">
+                            <?php echo htmlspecialchars($category['categoryName']); ?>
+                        </a>
+                        <?php
+                    }
+                }
+                ?>
             </div>
-
         </div>
-
-
     </div>
 
     <div class="products-section border p-3 p-lg-5 mx-lg-3">
         <div class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6" id="productGrid">
-            <!-- PRODUCTS -->
-
-            <div class="col">
-                <div class="menu-item text-center shadow-sm" style="
-                    height: 320px; 
-                    background-color: #fff9f2; 
-                    border-radius: 20px; 
-                    border: 1px solid #e0c9a6;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
-                    display: flex; 
-                    flex-direction: column; 
-                    justify-content: space-between; 
-                    padding: 15px;
-                    transition: transform 0.2s ease;
-                ">
-                    <div style="height: 150px; display: flex; align-items: center; justify-content: center;">
-                        <img src="assets/img/coffee.png" alt="" class="img-fluid"
-                            style="max-height: 100%; max-width: 100%; object-fit: contain;">
+            <?php
+            if (mysqli_num_rows($products) > 0) {
+                while ($product = mysqli_fetch_assoc($products)) {
+                    ?>
+                    <div class="col product-item"
+                        data-category="<?php echo htmlspecialchars($product['categoryName'] ?? 'Uncategorized'); ?>"
+                        data-name="<?php echo htmlspecialchars($product['productName']); ?>"
+                        data-price="<?php echo $product['price']; ?>">
+                        <div class="menu-item text-center shadow-sm" style="
+                        height: 320px; 
+                        background-color: #fff9f2; 
+                        border-radius: 20px; 
+                        border: 1px solid #e0c9a6;
+                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
+                        display: flex; 
+                        flex-direction: column; 
+                        justify-content: space-between; 
+                        padding: 15px;
+                        transition: transform 0.2s ease;
+                    ">
+                            <div style="height: 150px; display: flex; align-items: center; justify-content: center;">
+                                <img src="assets/img/img-menu/<?php echo htmlspecialchars($product['image'] ?? 'coffee.png'); ?>"
+                                    alt="<?php echo htmlspecialchars($product['productName']); ?>" class="img-fluid"
+                                    style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                            </div>
+                            <div class="subheading menu-name"
+                                style="font-size: 1.2rem; font-weight: 500; color: #4b2e2e;margin-top: 10px;">
+                                <?php echo htmlspecialchars($product['productName']); ?>
+                            </div>
+                            <div class="d-flex justify-content-center align-items-center text-center px-2"
+                                style="color: #6e4f3a; font-size: 0.85rem;">
+                                ₱<?php echo number_format($product['price'], 2); ?>
+                            </div>
+                            <button class="lead buy-btn mt-auto" data-bs-toggle="modal" data-bs-target="#item-customization"
+                                data-product-id="<?php echo $product['productID']; ?>"
+                                data-name="<?php echo htmlspecialchars($product['productName']); ?>"
+                                data-price="<?php echo $product['price']; ?>"
+                                data-category="<?php echo htmlspecialchars($product['categoryName'] ?? 'Uncategorized'); ?>"
+                                onclick="openPopup(this)">Order Now</button>
+                        </div>
                     </div>
-                    <div class="subheading menu-name" style="font-size: 1.2rem; font-weight: 500; color: #4b2e2e;margin-top: 10px;">
-                        Amerikano
-                    </div>
-                    <div class="d-flex justify-content-center align-items-center text-center px-2"
-                        style="color: #6e4f3a; font-size: 0.85rem;">
-                        12oz – ₱60 | 16oz – ₱80
-                    </div>
-                    <button class="lead buy-btn mt-auto" data-bs-toggle="modal" data-bs-target="#item-customization"
-                        data-name="${prod.name}" data-price="${getPrice(prod)}"
-                        data-sizes='${JSON.stringify(prod.sizes || [])}'
-                        data-sugar='${JSON.stringify(prod.sugarLevels || [])}'
-                        data-type="${prod.sizes ? 'beverage' : 'food'}" onclick="openPopup(this)">Order Now</button>
-                </div>
-            </div>
-
+                    <?php
+                }
+            }
+            ?>
         </div>
     </div>
 
-    <!-- Confirm Item Customization Modal -->
-    <div id="modal-placeholder"></div>
+    <!-- Include External Modal -->
+    <?php include 'modal/item-customization.php'; ?>
 
     <!-- Footer -->
     <footer class="bg-footer text-dark pt-5 pb-3">
@@ -285,7 +495,6 @@
                                     <i class="fab fa-tiktok me-2"></i>SAISYD
                                 </a>
                             </p>
-
                         </div>
                     </div>
                 </div>
@@ -324,7 +533,6 @@
                             <i class="fab fa-tiktok me-2"></i>SAISYD
                         </a>
                     </p>
-
                 </div>
             </div>
 
@@ -341,372 +549,107 @@
         </div>
     </footer>
 
-    <script src="assets/js/main.js"></script>
-    <script src="assets/js/navbar.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO"
         crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
 
     <script>
+        function openPopup(button) {
+            const modal = new bootstrap.Modal(document.getElementById('item-customization'));
+            modal.show();
 
-        // Load item customization modal
-        fetch("modal/item-customization.php")
-            .then(res => res.text())
-            .then(data => {
-                document.getElementById("modal-placeholder").innerHTML = data;
+            // Get product data
+            const productName = button.getAttribute('data-name');
+            const productPrice = button.getAttribute('data-price');
+            const productId = button.getAttribute('data-product-id');
+            const category = button.getAttribute('data-category');
 
-                // Add button listener
-                const addBtn = document.querySelector('.addbtn');
-                if (addBtn) {
-                    addBtn.addEventListener('click', function (e) {
-                        e.preventDefault();
-                        confirmOrder();
-                    });
-                }
+            // Update modal content
+            document.querySelector('.itemName').textContent = productName;
+            document.querySelector('.itemPrice').textContent = '₱' + parseFloat(productPrice).toFixed(2);
 
-                const modalEl = document.getElementById('item-customization');
-                if (modalEl) {
-                    modalEl.addEventListener('hidden.bs.modal', () => {
-                        document.body.style.overflow = '';
-                        document.body.classList.remove('modal-open');
-                        document.querySelector('.modal-backdrop')?.remove();
-                    });
-                }
-            })
-            .catch(error => {
-                console.error('Error loading item customization modal:', error);
-            });
-            function openPopup() {
-    const modal = new bootstrap.Modal(document.getElementById('item-customization'));
-    modal.show();
+            // Hidden fields
+            document.getElementById('modal_product_id').value = productId;
+            document.getElementById('modal_product_name').value = productName;
+            document.getElementById('modal_price').value = productPrice;
+            document.getElementById('modal_category').value = category;
 
-    // Static placeholder values (no data logic)
-    document.querySelector('.itemName').textContent = 'Sample Item';
-    document.querySelector('.itemPrice').textContent = '₱0.00';
-
-    // Show ice section for prototype
-    document.getElementById('ice-section').style.display = 'block';
-
-    // Show size section with static options
-    const sizeSection = document.getElementById('size-section');
-    const sizeContainer = document.getElementById('size-options');
-    sizeSection.style.display = 'block';
-    sizeContainer.innerHTML = `
-        <div class="col">
-            <div class="form-check">
-                <input class="form-check-input" type="radio" name="priceOptions" id="size16oz" checked>
-                <label class="form-check-label h6" for="size16oz">16oz</label>
-            </div>
-        </div>
-        <div class="col">
-            <div class="form-check">
-                <input class="form-check-input" type="radio" name="priceOptions" id="size18oz">
-                <label class="form-check-label h6" for="size18oz">18oz</label>
-            </div>
-        </div>
-    `;
-
-    // Show sugar section with static options
-    const sugarSection = document.getElementById('sugar-section');
-    const sugarContainer = document.getElementById('sugar-options');
-    sugarSection.style.display = 'block';
-    sugarContainer.innerHTML = `
-        <div class="col">
-            <div class="form-check">
-                <input class="form-check-input" type="radio" name="sugarOption" id="sugar25" checked>
-                <label class="form-check-label h6" for="sugar25">25%</label>
-            </div>
-        </div>
-        <div class="col">
-            <div class="form-check">
-                <input class="form-check-input" type="radio" name="sugarOption" id="sugar50">
-                <label class="form-check-label h6" for="sugar50">50%</label>
-            </div>
-        </div>
-        <div class="col">
-            <div class="form-check">
-                <input class="form-check-input" type="radio" name="sugarOption" id="sugar100">
-                <label class="form-check-label h6" for="sugar100">100%</label>
-            </div>
-        </div>
-    `;
-}
-
-
-        function updateModalPrice(sizes) {
-            const selectedSize = document.querySelector('input[name="priceOptions"]:checked')?.value;
-            const match = sizes.find(sz => sz.name === selectedSize);
-            if (match) {
-                document.querySelector('.itemPrice').textContent = `₱${match.price}`;
-            }
+            // Show/hide options depende sa category
+            updateModalOptions(category);
         }
 
-        function confirmOrder() {
-            const name = document.querySelector('.itemName').textContent;
-            const size = document.querySelector('input[name="priceOptions"]:checked')?.value || '';
-            const sugar = document.querySelector('input[name="sugarOption"]:checked')?.value || '';
-            const ice = document.querySelector('input[name="iceOptions"]:checked')?.id || '';
-            const note = document.getElementById('customer_notes')?.value || '';
+        function updateModalOptions(category) {
+            const sizeSection = document.getElementById("sizeOption");
+            const sugarSection = document.getElementById("sugarOption");
+            const iceSection = document.getElementById("iceOption");
 
-            const type = document.getElementById('size-section').style.display === 'none' ? 'food' : 'beverage';
-
-            // ✅ FIXED: Create better display name
-            let displayName = name;
-            let finalName = name;
-            if (type === 'beverage') {
-                finalName = `${name}_${size}_${sugar}s_${ice}`;
-                // Keep display name clean for cart
-                displayName = name;
-            }
-
-            // Get price
-            let price = 0;
-            if (type === 'beverage') {
-                const selectedSize = document.querySelector('input[name="priceOptions"]:checked')?.value;
-                const buyBtn = document.querySelector(`.buy-btn[data-name="${name}"]`);
-                if (buyBtn) {
-                    const allSizes = JSON.parse(buyBtn.getAttribute('data-sizes'));
-                    const match = allSizes.find(sz => sz.name === selectedSize);
-                    if (match) price = match.price;
-                }
+            if (category === "Coffee" || category === "Tea") {
+                sizeSection.style.display = "block";
+                sugarSection.style.display = "block";
+                iceSection.style.display = "block";
             } else {
-                const product = allProducts.find(p => p.name === name);
-                if (product) price = product.price;
-            }
-
-            // Get category
-            const product = allProducts.find(p => p.name === name);
-            const validCategories = ['Coffee', 'Tea', 'Food'];
-            let category = product?.category || 'Unknown';
-            if (!validCategories.includes(category)) {
-                category = 'Unknown';
-            }
-
-            // ✅ FIXED: Create consistent order object structure
-            const order = {
-                name: finalName,
-                displayName: displayName,
-                quantity: 1,
-                dataCategory: category,
-                price: price,
-                notes: note,
-                size: size,
-                sugar: sugar,
-                ice: ice.replace('ice', ''),
-                type: type,
-                addedAt: new Date().toISOString()
-            };
-
-            let currentOrders = [];
-            try {
-                const existingData = localStorage.getItem("orders");
-                currentOrders = existingData ? JSON.parse(existingData) : [];
-            } catch (error) {
-                console.error('Error parsing existing orders:', error);
-                currentOrders = [];
-            }
-
-            // Check if same item already exists in cart
-            const existingIndex = currentOrders.findIndex(item =>
-                item.displayName === order.displayName &&
-                item.size === order.size &&
-                item.sugar === order.sugar &&
-                item.ice === order.ice
-            );
-
-            if (existingIndex > -1) {
-                currentOrders[existingIndex].quantity++;
-            } else {
-                currentOrders.push(order);
-            }
-
-            localStorage.setItem("orders", JSON.stringify(currentOrders));
-
-
-            // Close modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('item-customization'));
-            if (modal) modal.hide();
-
-            // Fix scroll and backdrop
-            document.body.style.overflow = '';
-            document.body.classList.remove('modal-open');
-            document.querySelector('.modal-backdrop')?.remove();
-
-            // Show toast
-            const toast = new bootstrap.Toast(document.getElementById('orderToast'));
-            if (toast) toast.show();
-
-            // ✅ NEW: Update cart badge if function exists
-            if (typeof updateCartBadge === 'function') {
-                updateCartBadge();
-            }
-
-            console.log("Item added to cart:", order);
-            console.log("Current cart:", currentOrders);
-        }
-
-        let allProducts = [];
-
-        async function fetchProducts() {
-            try {
-                const res = await fetch('Admin/products.json');
-                const data = await res.json();
-
-                // Flatten contents
-                allProducts = [];
-                data.forEach(category => {
-                    category.contents.forEach(product => {
-                        const base = {
-                            ...product,
-                            category: category.category
-                        };
-                        allProducts.push(base);
-                    });
-                });
-                displayProducts();
-            } catch (error) {
-                console.error('Error fetching products:', error);
+                sizeSection.style.display = "none";
+                sugarSection.style.display = "none";
+                iceSection.style.display = "none";
             }
         }
 
-        function displayProducts(filterCategory = 'All', sortOption = 'popularity') {
-            let filtered = [...allProducts];
-
-            // Filter
-            if (filterCategory !== 'All') {
-                filtered = filtered.filter(p => p.category === filterCategory);
-            }
-
-            // Sort
-            switch (sortOption) {
-                case 'price-low-high':
-                    filtered.sort((a, b) => getPrice(a) - getPrice(b));
-                    break;
-                case 'price-high-low':
-                    filtered.sort((a, b) => getPrice(b) - getPrice(a));
-                    break;
-                case 'newest':
-                    filtered.sort(() => Math.random() - 0.5);
-                    break;
-                case 'popularity':
-                default:
-                    filtered.sort(() => Math.random() - 0.5);
-            }
-
-            const grid = document.getElementById('productGrid');
-            if (!grid) return;
-
-            grid.innerHTML = '';
-            filtered.forEach(prod => {
-                // Construct size+price string for display
-                let sizePriceDisplay = '';
-                if (prod.sizes && prod.sizes.length > 0) {
-                    sizePriceDisplay = prod.sizes
-                        .map(sz => `${sz.name} – ₱${sz.price}`)
-                        .join(' | ');
-                } else {
-                    sizePriceDisplay = `₱${prod.price}`;
-                }
-
-                const html = `
-            <div class="col">
-                <div class="menu-item text-center shadow-sm" style="
-                    height: 320px; 
-                    background-color: #fff9f2; 
-                    border-radius: 20px; 
-                    border: 1px solid #e0c9a6;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
-                    display: flex; 
-                    flex-direction: column; 
-                    justify-content: space-between; 
-                    padding: 15px;
-                    transition: transform 0.2s ease;
-                ">
-                    <div style="height: 150px; display: flex; align-items: center; justify-content: center;">
-                        <img src="assets/img/${prod.img}" alt="${prod.name}" class="img-fluid" 
-                            style="max-height: 100%; max-width: 100%; object-fit: contain;">    
-                    </div>
-                    <div class="subheading menu-name" style="
-                        font-size: 1.2rem; 
-                        font-weight: 500; 
-                        color: #4b2e2e;
-                        margin-top: 10px;
-                    ">
-                        ${prod.name}
-                    </div>  
-                    <div class="d-flex justify-content-center align-items-center text-center px-2" style="color: #6e4f3a; font-size: 0.85rem;">
-                        ${sizePriceDisplay}
-                    </div>
-                    <button class="lead buy-btn mt-auto" 
-                        data-bs-toggle="modal" 
-                        data-bs-target="#item-customization"
-                        data-name="${prod.name}"
-                        data-price="${getPrice(prod)}"
-                        data-sizes='${JSON.stringify(prod.sizes || [])}'
-                        data-sugar='${JSON.stringify(prod.sugarLevels || [])}'
-                        data-type="${prod.sizes ? 'beverage' : 'food'}" 
-                        onclick="openPopup(this)">Order Now</button>
-                </div>
-            </div>`;
-                grid.innerHTML += html;
-            });
+        // Quantity logic
+        function decreaseQuantity() {
+            const quantityInput = document.getElementById('quantity');
+            let currentValue = parseInt(quantityInput.value);
+            if (currentValue > 1) quantityInput.value = currentValue - 1;
         }
 
-        function getPrice(prod) {
-            if (prod.sizes && prod.sizes.length) return prod.sizes[0].price;
-            return prod.price || 0;
+        function increaseQuantity() {
+            const quantityInput = document.getElementById('quantity');
+            let currentValue = parseInt(quantityInput.value);
+            if (currentValue < 999) quantityInput.value = currentValue + 1;
         }
 
-        // Category click
-        document.querySelectorAll('.category-pill').forEach(item => {
-            item.addEventListener('click', () => {
-                document.querySelectorAll('.category-pill').forEach(el => el.classList.remove('active'));
-                item.classList.add('active');
-                const category = item.dataset.category;
-                const sort = document.getElementById('sortSelect')?.value || 'popularity';
-                displayProducts(category, sort);
-            });
+        // Reset form when modal hides
+        document.getElementById('item-customization').addEventListener('hidden.bs.modal', function () {
+            document.getElementById('quantity').value = 1;
+            document.getElementById('customer_notes').value = '';
+            // Reset radio buttons
+            if (document.getElementById('size12oz')) document.getElementById('size12oz').checked = true;
+            if (document.querySelector('input[name="sugar"][value="100% Sugar"]')) {
+                document.querySelector('input[name="sugar"][value="100% Sugar"]').checked = true;
+            }
+            if (document.querySelector('input[name="ice"][value="Default"]')) {
+                document.querySelector('input[name="ice"][value="Default"]').checked = true;
+            }
         });
 
-        // Sort change
-        const sortSelect = document.getElementById('sortSelect');
-        if (sortSelect) {
-            sortSelect.addEventListener('change', e => {
-                const selectedSort = e.target.value;
-                const activeCat = document.querySelector('.category-pill.active')?.dataset.category || 'All';
-                displayProducts(activeCat, selectedSort);
+        // Prevent freeze bug when closing modal
+        document.getElementById('item-customization').addEventListener('hidden.bs.modal', function () {
+            document.body.classList.remove('modal-open');
+            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+        });
+
+        // DROPDOWN
+        document.addEventListener('DOMContentLoaded', function () {
+            const customSelect = document.querySelector('.custom-select');
+            const selected = customSelect.querySelector('.selected');
+            const options = customSelect.querySelector('.options');
+
+            // Toggle open/close
+            selected.addEventListener('click', () => {
+                options.classList.toggle('show');
+                customSelect.classList.toggle('open');
             });
-        }
 
-        // ✅ NEW: Cart badge update function
-        function updateCartBadge() {
-            try {
-                const rawData = localStorage.getItem("orders");
-                const orderData = rawData ? JSON.parse(rawData) : [];
-                const totalItems = orderData.reduce((sum, item) => sum + item.quantity, 0);
-
-                const badge = document.querySelector('.cart-badge');
-                if (badge) {
-                    badge.textContent = totalItems;
-                    badge.style.display = totalItems > 0 ? 'inline' : 'none';
+            // Close when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!customSelect.contains(e.target)) {
+                    options.classList.remove('show');
+                    customSelect.classList.remove('open');
                 }
-            } catch (error) {
-                console.error('Error updating cart badge:', error);
-            }
-        }
-
-        // Initialize
-        fetchProducts();
-
-        // Update cart badge on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            updateCartBadge();
+            });
         });
     </script>
-
-
 
     <script src="assets/js/main.js"></script>
     <script src="assets/js/navbar.js"></script>
