@@ -39,7 +39,7 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
           <a href="../index.html" class="btn custom-visit">
             <i class="bi bi-globe"></i> <span class="d-none d-md-inline">Visit Site</span>
           </a>
-          <a class="btn custom-logout" href="logout.php">
+          <a class="btn custom-logout" href="login.php">
             <i class="bi bi-power"></i> <span class="d-none d-md-inline">Log Out</span>
           </a>
         </div>
