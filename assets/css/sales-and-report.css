@@ -187,7 +187,7 @@ button.btn.btnDownload:hover {
 }
 
 button.btn.btnCancel:hover {
-  background-color: var(--text-color-dark) !important;
+  background-color: var(--btn-hover2) !important;
   color: white !important;
 }
 

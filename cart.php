@@ -1,3 +1,19 @@
+<?php
+session_start();
+
+// Function to get cart item count
+function getCartItemCount()
+{
+    $count = 0;
+    if (isset($_SESSION['cart'])) {
+        foreach ($_SESSION['cart'] as $item) {
+            $count += $item['quantity'];
+        }
+    }
+    return $count;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -47,8 +63,16 @@
                 data-wow-delay="0.45s">
                 <i class="bi bi-envelope fs-5"></i> <span>Contact</span>
             </a>
-            <a href="cart.php" class="nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.55s">
-                <i class="bi bi-cart fs-5"></i> <span>Cart</span>
+            <a href="cart.php" class="nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.55s"
+                style="display: flex; align-items: center; justify-content: space-between; gap: 6px; position: relative;">
+                <i class="bi bi-cart fs-5"></i>
+                <span>Cart</span>
+                <?php if (getCartItemCount() > 0): ?>
+                    <span class="badge bg-danger rounded-pill"
+                        style="position: absolute; top: -5px; right: 70px; font-size: 0.75rem; padding: 0.25em 0.5em;">
+                        <?php echo getCartItemCount(); ?>
+                    </span>
+                <?php endif; ?>
             </a>
         </div>
 
@@ -76,10 +100,21 @@
                     </a>
                 </div>
 
-                <!-- Right: Cart -->
-                <div class="ms-auto">
-                    <a href="cart.php" class="d-flex align-items-center text-decoration-none">
-                        <i class="bi bi-cart3 fs-5" style="color: var(--text-color-dark);"></i>
+                <!-- Mobile: Right Cart -->
+                <div class="ms-auto d-flex align-items-center">
+                    <a href="cart.php" class="d-flex align-items-center text-decoration-none position-relative">
+                        <i class="bi bi-cart3 fs-5 me-2" style="color: var(--text-color-dark);"></i>
+                        <?php if (getCartItemCount() > 0): ?>
+                            <span class="position-absolute badge rounded-pill bg-danger" style="
+                                    top: -6px;
+                                    right: -6px;
+                                    font-size: 0.65rem;
+                                    padding: 0.25em 0.45em;
+                                    line-height: 1;
+                                ">
+                                <?php echo getCartItemCount(); ?>
+                            </span>
+                        <?php endif; ?>
                     </a>
                 </div>
             </div>
@@ -98,17 +133,17 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="index.php#about">
+                        <a class="nav-link" href="#about">
                             <i class="bi bi-info-circle"></i> <span>About</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="index.php#location">
+                        <a class="nav-link" href="#location">
                             <i class="bi bi-geo-alt"></i> <span>Location</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="index.php#contact">
+                        <a class="nav-link" href="#contact">
                             <i class="bi bi-envelope"></i> <span>Contact</span>
                         </a>
                     </li>
@@ -116,8 +151,18 @@
 
                 <!-- Desktop: Cart + Menu -->
                 <div class="d-none d-lg-flex align-items-center">
-                    <a href="cart.php" class="nav-link me-2">
-                        <i class="bi bi-cart3"></i> <span>Cart</span>
+                    <a href="cart.php" class="nav-link position-relative me-2">
+                        <i class="bi bi-cart3 fs-4"></i> <span>Cart</span>
+                        <?php if (getCartItemCount() > 0): ?>
+                            <span class="position-absolute badge rounded-pill bg-danger" style="
+                                    top: -2px;
+                                    right: -2px;
+                                    font-size: 0.75rem;
+                                    padding: 0.25em 0.5em;
+                                ">
+                                <?php echo getCartItemCount(); ?>
+                            </span>
+                        <?php endif; ?>
                     </a>
                     <button class="btn menu-btn" onclick="location.href='menu.php'">
                         <i class="fas fa-mug-hot me-2"></i> Menu
