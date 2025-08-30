@@ -440,7 +440,7 @@ $userResult = executeQuery("
                         </div>
                     </form>
                 <?php else: ?>
-                    <div class="card rounded-3 m-3 cardMain ">
+                    <div class="m-3 ">
                         <div class="card-body" id="cardBody">
                             <h5 class="card-title mb-3">All Users | <?= mysqli_num_rows($userResult) ?></h5>
 
@@ -458,18 +458,26 @@ $userResult = executeQuery("
                                             <?php while ($row = mysqli_fetch_assoc($userResult)): ?>
                                                 <tr>
                                                     <td>
-                                                        <h5><?= htmlspecialchars($row['fullname']); ?>
-                                                            <?= $row['userID'] == $_SESSION['userID'] ? '<span class="badge ms-2 fs-6 py-1" style="background-color: var( --primary-color)">You</span>' : '' ?>
+                                                        <h5>
+                                                            <?= htmlspecialchars($row['username']); ?>
+                                                            <?= $row['userID'] == $_SESSION['userID'] ? '<span class="badge ms-2 fs-6 py-1" style="background-color: var(--primary-color)">You</span>' : '' ?>
                                                         </h5>
+
+                                                        <h6 class="lead fst-italic d-flex align-items-center">
+                                                            <i class="bi bi-person-fill me-2 fw-bold"></i>
+                                                            <?= htmlspecialchars($row['fullname']); ?>
+                                                        </h6>
+
                                                         <h6 class="lead fst-italic d-flex align-items-center">
                                                             <i class="bi bi-envelope-fill me-2 fw-bold"></i>
                                                             <?= htmlspecialchars($row['email']); ?>
-
                                                         </h6>
+
                                                         <h6 class="lead fst-italic d-flex align-items-center">
                                                             <i class="bi bi-telephone-fill me-2 fw-bold"></i>
                                                             <?= htmlspecialchars($row['phonenumber']); ?>
                                                         </h6>
+
                                                     </td>
                                                     <td>
                                                         <div
