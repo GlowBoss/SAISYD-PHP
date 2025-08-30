@@ -161,85 +161,83 @@
 
     <!-- Main Content Area -->
     <div class="main-content">
-        <div class="row">
-            <div class="col">
-                <div class="cardMain shadow-sm w-100 ">
-                    <!-- Header Row  -->
-                    <div class="d-none d-md-block align-items-center py-4 px-lg-3 px-2">
-                        <div class="subheading fw-bold m-1 d-flex align-items-center">
-                            <span style="color: var(--text-color-dark);">Menu Management</span>
-                        </div>
+        <div class="container-fluid">
+            <div class="cardMain shadow-sm">
+
+                <!-- Header Row  -->
+                <div class="d-none d-md-block align-items-center py-4 px-lg-3 px-2">
+                    <div class="subheading fw-bold m-1 d-flex align-items-center">
+                        <span style="color: var(--text-color-dark);">Menu Management</span>
+                    </div>
+                </div>
+
+                <div class="row g-2 align-items-center mb-3 px-2 px-lg-3 m-3">
+                    <!-- search -->
+                    <div class="col">
+                        <input type="text" class="form-control search ms-lg-2" placeholder="Search"
+                            aria-label="search-bar" id="item-input">
+                    </div>
+                    <!-- add button -->
+                    <div class="col-auto ps-0 ps-sm-3">
+                        <button class="btn btnAdd" type="button" data-bs-toggle="modal" data-bs-target="#confirmModal">
+                            <i class="bi bi-plus-circle"></i>
+                            <span class="d-none d-sm-inline ms-2">Add</span>
+                        </button>
                     </div>
 
-                    <div class="row g-2 align-items-center mb-3 px-2 px-lg-3 m-3">
-                        <!-- search -->
-                        <div class="col">
-                            <input type="text" class="form-control search ms-lg-2" placeholder="Search"
-                                aria-label="search-bar" id="item-input">
-                        </div>
-                        <!-- add button -->
-                       <div class="col-auto ps-0 ps-sm-3">
-                            <button class="btn btnAdd" type="button" data-bs-toggle="modal"
-                                data-bs-target="#confirmModal">
-                                <i class="bi bi-plus-circle"></i>
-                                <span class="d-none d-sm-inline ms-2">Add</span>
+                    <!-- category part  -->
+                    <div class="col-12 col-sm-auto">
+                        <div class="dropdown">
+                            <button class="btn btn-dropdown dropdown-toggle w-100" type="button" id="categoryDropdown"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                Sort by Category
                             </button>
+                            <ul class="dropdown-menu w-100" aria-labelledby="categoryDropdown">
+                                <li><a class="dropdown-item" data-value="coffee">Coffee</a></li>
+                                <li><a class="dropdown-item" data-value="tea">Tea</a></li>
+                                <li><a class="dropdown-item" data-value="food">Food</a></li>
+                                <li><a class="dropdown-item" data-value="beverage">Beverage</a></li>
+                            </ul>
                         </div>
+                    </div>
+                </div>
 
-                        <!-- category part  -->
-                        <div class="col-12 col-sm-auto">
-                            <div class="dropdown">
-                                <button class="btn btn-dropdown dropdown-toggle w-100" type="button"
-                                    id="categoryDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                    Sort by Category
+
+                <!-- Menu -->
+
+                <div id="productGrid" class="row g-2 m-3 align-items-center">
+
+                    <!-- Products -->
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <div class="menu-item border p-3 rounded shadow-sm text-center">
+                            <img src="../assets/img/coffee.png" alt="Amerikano" class="img-fluid mb-2 menu-img">
+                            <div class="lead menu-name fs-6">Amerikano (S)</div>
+                            <div class="d-flex justify-content-center align-items-center gap-2 my-2">
+                                <span class="lead fw-bold menu-price">₱140</span>
+                            </div>
+                            <div class="d-flex flex-wrap justify-content-center gap-2">
+                                <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editModal">
+                                    <i class=" bi-pencil-square"></i> Edit
                                 </button>
-                                <ul class="dropdown-menu w-100" aria-labelledby="categoryDropdown">
-                                    <li><a class="dropdown-item" data-value="coffee">Coffee</a></li>
-                                    <li><a class="dropdown-item" data-value="tea">Tea</a></li>
-                                    <li><a class="dropdown-item" data-value="food">Food</a></li>
-                                    <li><a class="dropdown-item" data-value="beverage">Beverage</a></li>
-                                </ul>
+                                <button class="btn btn-del">
+                                    <i class=" bi-trash"></i>Delete
                             </div>
                         </div>
                     </div>
 
-
-                    <!-- Menu -->
-
-                    <div id="productGrid" class="row g-2 m-3 align-items-center">
-
-                        <!-- Products -->
-                        <div class="col-6 col-md-4 col-lg-2">
-                            <div class="menu-item border p-3 rounded shadow-sm text-center">
-                                <img src="../assets/img/coffee.png" alt="Amerikano" class="img-fluid mb-2 menu-img">
-                                <div class="lead menu-name fs-6">Amerikano (S)</div>
-                                <div class="d-flex justify-content-center align-items-center gap-2 my-2">
-                                    <span class="lead fw-bold menu-price">₱140</span>
-                                </div>
-                                <div class="d-flex flex-wrap justify-content-center gap-2">
-                                    <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editModal">
-                                        <i class=" bi-pencil-square"></i> Edit
-                                    </button>
-                                    <button class="btn btn-del">
-                                        <i class=" bi-trash"></i>Delete
-                                </div>
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <div class="menu-item border p-3 rounded shadow-sm text-center">
+                            <img src="../assets/img/coffee.png" class="img-fluid mb-2 menu-img">
+                            <div class="lead menu-name fs-6">Cappuccino (S)</div>
+                            <div class="d-flex justify-content-center align-items-center gap-2 my-2">
+                                <span class="lead fw-bold menu-price">₱160</span>
                             </div>
-                        </div>
-
-                        <div class="col-6 col-md-4 col-lg-2">
-                            <div class="menu-item border p-3 rounded shadow-sm text-center">
-                                <img src="../assets/img/coffee.png" class="img-fluid mb-2 menu-img">
-                                <div class="lead menu-name fs-6">Cappuccino (S)</div>
-                                <div class="d-flex justify-content-center align-items-center gap-2 my-2">
-                                    <span class="lead fw-bold menu-price">₱160</span>
-                                </div>
-                                <div class="d-flex flex-wrap justify-content-center gap-2">
-                                    <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editModal">
-                                        <i class=" bi-pencil-square"></i> Edit
-                                    </button>
-                                    <button class="btn btn-del">
-                                        <i class=" bi-trash"></i>Delete
-                                </div>
+                            <div class="d-flex flex-wrap justify-content-center gap-2">
+                                <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editModal">
+                                    <i class=" bi-pencil-square"></i> Edit
+                                </button>
+                                <button class="btn btn-del">
+                                    <i class=" bi-trash"></i>Delete
                             </div>
                         </div>
                     </div>
@@ -340,7 +338,7 @@
                                     <label class="form-label">Price</label>
                                     <input type="text" class="form-control" name="menu_price" value="140">
                                 </div>
-                                 <div class="mb-3">
+                                <div class="mb-3">
                                     <label class="form-label">Size</label>
                                     <select class="form-select" name="menu_size">
                                         <option value="None" selected>-- None --</option>

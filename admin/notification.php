@@ -116,33 +116,39 @@
                 <i class="bi bi-speedometer2"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="notification.php" class="admin-nav-link active wow animate__animated animate__fadeInLeft" data-wow-delay="0.15s">
+            <a href="notification.php" class="admin-nav-link active wow animate__animated animate__fadeInLeft"
+                data-wow-delay="0.15s">
                 <i class="bi bi-bell"></i>
                 <span>Notifications</span>
             </a>
-            <a href="point-of-sales.php" class="admin-nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.2s">
+            <a href="point-of-sales.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
+                data-wow-delay="0.2s">
                 <i class="bi bi-shop-window"></i>
                 <span>Point of Sales</span>
             </a>
-            <a href="inventory-management.php" class="admin-nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.25s">
+            <a href="inventory-management.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
+                data-wow-delay="0.25s">
                 <i class="bi bi-boxes"></i>
                 <span>Inventory Management</span>
             </a>
-            <a href="menu-management.php" class="admin-nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.3s">
+            <a href="menu-management.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
+                data-wow-delay="0.3s">
                 <i class="bi bi-menu-button-wide"></i>
                 <span>Menu Management</span>
             </a>
 
             <!-- FINANCIAL Section -->
             <div class="section-header">Financial</div>
-            <a href="sales-and-report.php" class="admin-nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.35s">
+            <a href="sales-and-report.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
+                data-wow-delay="0.35s">
                 <i class="bi bi-graph-up-arrow"></i>
                 <span>Sales & Reports</span>
             </a>
 
             <!-- TOOLS Section -->
             <div class="section-header">Tools</div>
-            <a href="#" class="admin-nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.4s">
+            <a href="settings.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
+                data-wow-delay="0.4s">
                 <i class="bi bi-gear"></i>
                 <span>Settings</span>
             </a>
@@ -156,87 +162,198 @@
     <!-- Main Content Area -->
     <div class="main-content">
         <div class="container-fluid">
-            <div class="card rounded-4" style="max-height: 95vh; overflow-y: auto;">
-                <div class="card-body text-center">
-                    <!-- Header Row  -->
-                    <div class="d-none d-md-block justify-content-between align-items-center mb-3">
-                        <h4 class="subheading fw-bold m-1 d-flex align-items-center">
-                            <span>Order Notification</span>
-                        </h4>
-                    </div>
+            <div class="cardMain shadow-lg">
 
-                    <!-- Category Buttons -->
-                    <div class="mb-3">
-                        <div class="d-flex flex-wrap gap-2 justify-content-center">
-                            <button class="categorybtn-active categorybtn btn btn-outline rounded-pill px-3"
-                                data-category="all">All Orders</button>
-                            <button class="categorybtn btn btn-outline rounded-pill px-3"
-                                data-category="preparing">Preparing</button>
-                            <button class="categorybtn btn btn-outline rounded-pill px-3"
-                                data-category="ready">Ready</button>
-                            <button class="categorybtn btn btn-outline rounded-pill px-3"
-                                data-category="completed">Completed</button>
-                        </div>
+                <!-- Header Row  -->
+                <div class="d-none d-md-block align-items-center py-4 px-lg-3 px-2">
+                    <div class="subheading fw-bold m-1 d-flex align-items-center">
+                        <span style="color: var(--text-color-dark);">Notifications</span>
                     </div>
+                </div>
 
-                    <!-- Order Cards -->
-                    <div class="d-flex flex-column gap-3" id="orderCardsContainer">
-                        <!-- Sample order cards - these would normally be populated by JavaScript -->
-                        <div class="card border shadow-sm">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h6 class="card-title mb-1">Order #001</h6>
-                                        <p class="card-text text-muted small mb-1">Customer: John Doe</p>
-                                        <p class="card-text small mb-0">2x Americano, 1x Cappuccino</p>
-                                    </div>
-                                    <div class="text-end">
-                                        <span class="badge bg-warning text-dark">Preparing</span>
-                                        <p class="small text-muted mb-0 mt-1">10:30 AM</p>
-                                    </div>
+                <!-- Category Buttons -->
+                <div class="m-3">
+                    <div class="d-flex flex-wrap gap-2 justify-content-center">
+                        <button class="categorybtn-active categorybtn btn btn-outline rounded-pill px-3"
+                            data-category="all">All Orders</button>
+                        <button class="categorybtn btn btn-outline rounded-pill px-3"
+                            data-category="standby">Standby</button>
+                        <button class="categorybtn btn btn-outline rounded-pill px-3"
+                            data-category="preparing">Preparing</button>
+                        <button class="categorybtn btn btn-outline rounded-pill px-3"
+                            data-category="complete">Completed</button>
+                    </div>
+                </div>
+
+
+                <div class="d-flex flex-column gap-3 ms-3 me-3 mb-3" id="orderCardsContainer">
+
+                    <!-- Card for Standby-->
+                    <div class="card orderCard shadow-sm" data-category="standby">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="text-start mt-1">
+                                    <h6 class="fw-semibold mb-2">Order #001</h6>
+                                    <!-- Product and Quantity -->
+                                    <p class="card-text small mb-0 ms-2 mt-1 d-flex flex-wrap">
+                                        <span class="fw-semibold me-2">1x</span>
+                                        Americanno
+                                        <span class="text-muted ms-2">16oz (0% sugar)</span>
+                                        <span class="fw-semibold ms-2">₱120</span>
+                                    </p>
+
+                                    <p class="card-text small mb-0 ms-2 mt-1 d-flex flex-wrap">
+                                        <span class="fw-semibold me-2">1x</span>
+                                        Capuccino
+                                        <span class="text-muted ms-2">16oz (0% sugar)</span>
+                                        <span class="fw-semibold ms-2">₱120</span>
+                                    </p>
+                                </div>
+
+                                <!-- Selector -->
+                                <div class="text-end dropdown">
+                                    <button class="btn btn-dropdown dropdown-toggle badge" type="button"
+                                        id="statusDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Standby
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="statusDropdown">
+                                        <li><a class="dropdown-item" href="#">Standby</a></li>
+                                        <li><a class="dropdown-item" href="#">Preparing</a></li>
+                                        <li><a class="dropdown-item" href="#">Completed</a></li>
+                                    </ul>
+                                    <p class="card-text small mt-2">3:30 am</p>
+                                </div>
+
+                            </div>
+                            <hr>
+                            <p class="fw-semibold text-end ms-2 ">Total: ₱240 </p>
+
+                            <!-- Buttons -->
+                            <div class="d-flex justify-content-end gap-2 mt-3">
+                                <div class="d-flex gap-2">
+                                    <button class="btn action-buttons btnAccept px-3 py-1 py-sm-2" onclick="">
+                                        Accept
+                                    </button>
+                                    <button class="btn btnDecline fw-semibold px-3 py-1 py-sm-2" onclick="">
+                                        Cancel
+                                    </button>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="card border shadow-sm">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h6 class="card-title mb-1">Order #002</h6>
-                                        <p class="card-text text-muted small mb-1">Customer: Jane Smith</p>
-                                        <p class="card-text small mb-0">1x Latte, 1x Mocha</p>
-                                    </div>
-                                    <div class="text-end">
-                                        <span class="badge bg-success">Ready</span>
-                                        <p class="small text-muted mb-0 mt-1">10:25 AM</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="card border shadow-sm">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h6 class="card-title mb-1">Order #003</h6>
-                                        <p class="card-text text-muted small mb-1">Customer: Mike Johnson</p>
-                                        <p class="card-text small mb-0">3x Americano</p>
-                                    </div>
-                                    <div class="text-end">
-                                        <span class="badge bg-secondary">Completed</span>
-                                        <p class="small text-muted mb-0 mt-1">10:15 AM</p>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
+
+                    <div class="card orderCard shadow-sm" data-category="ready">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="text-start mt-1">
+                                    <h6 class="fw-semibold mb-2">Order #001</h6>
+                                    <!-- Product and Quantity -->
+                                    <p class="card-text small mb-0 ms-2 mt-1 d-flex flex-wrap">
+                                        <span class="fw-semibold me-2">1x</span>
+                                        <span class="flex-grow-1">American Latte</span>
+                                        <span class="text-muted ms-2">16oz (0% sugar)</span>
+                                        <span class="fw-semibold ms-2">₱100</span>
+                                    </p>
+
+                                    <p class="card-text small mb-0 ms-2 mt-1 d-flex flex-wrap">
+                                        <span class="fw-semibold me-2">1x</span>
+                                        <span class="flex-grow-1">Mocha</span>
+                                        <span class="text-muted ms-2">16oz (0% sugar)</span>
+                                        <span class="fw-semibold ms-2">₱90</span>
+                                    </p>
+
+                                </div>
+
+                                <!-- Selector -->
+                                <div class="text-end dropdown">
+                                    <button class="btn btn-dropdown dropdown-toggle badge" type="button"
+                                        id="statusDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Ready
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="statusDropdown">
+                                        <li><a class="dropdown-item" href="#">Standby</a></li>
+                                        <li><a class="dropdown-item" href="#">Ready</a></li>
+                                        <li><a class="dropdown-item" href="#">Completed</a></li>
+                                    </ul>
+                                    <p class="card-text small mt-1">3:30 am</p>
+                                </div>
+
+                            </div>
+                            <hr>
+                            <p class="fw-semibold text-end ms-2 ">Total: ₱90 </p>
+
+                            <!-- Buttons -->
+                            <div class="d-flex justify-content-end gap-2 mt-3">
+                                <div class="d-flex gap-2">
+                                    <button class="btn action-buttons btnAccept px-3 py-1 py-sm-2" onclick="">
+                                        Complete
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+
+                    <!-- Card for Completed -->
+
+                    <div class="card orderCard shadow-sm" data-category="ready">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="text-start mt-1">
+                                    <h6 class="fw-semibold mb-2">Order #001</h6>
+                                    <!-- Product and Quantity -->
+                                    <p class="card-text small mb-0 ms-2 mt-1 d-flex flex-wrap">
+                                        <span class="fw-semibold me-2">1x</span>
+                                        Fries
+                                        <span class="fw-semibold ms-2">₱100</span>
+                                    </p>
+
+                                    <p class="card-text small mb-0 ms-2 mt-1 d-flex flex-wrap">
+                                        <span class="fw-semibold me-2">1x</span>
+                                        Earl Grey Tea
+                                        <span class="text-muted ms-2">16oz (0% sugar)</span>
+                                        <span class="fw-semibold ms-2">₱120</span>
+                                    </p>
+
+                                </div>
+
+                                <!-- Selector -->
+                                <div class="text-end dropdown">
+                                    <button class="btn btn-dropdown dropdown-toggle badge" type="button"
+                                        id="statusDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Completed
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="statusDropdown">
+                                        <li><a class="dropdown-item" href="#">Standby</a></li>
+                                        <li><a class="dropdown-item" href="#">Ready</a></li>
+                                        <li><a class="dropdown-item" href="#">Completed</a></li>
+                                    </ul>
+                                    <p class="card-text small mt-1">3:30 am</p>
+                                </div>
+
+                            </div>
+                            <hr>
+                            <p class="fw-semibold text-end ms-2 ">Total: ₱220 </p>
+
+                            <!-- Buttons -->
+                            <div class="d-flex justify-content-end gap-2 mt-3">
+                                <div class="d-flex gap-2">
+                                    <button class="btn action-buttons btnAccept px-3 py-1 py-sm-2" onclick="">
+                                        Clear
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
     </div>
-
     <script src="../assets/js/notif.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
     <script src="../assets/js/admin_sidebar.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"

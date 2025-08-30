@@ -238,7 +238,7 @@
                                     <div class="card-body text-start ms-2">
                                         <div class="subheading">Product Statistics</div>
                                         <span class="text-muted">Track product sales</span>
-                                        <div class="cardStats mt-3 w-100">
+                                        <div class="cardStats mt-3">
                                             <div class="card-body">
                                                 <p class="text-center p-5">Graph or something</p>
                                             </div>
@@ -265,7 +265,7 @@
                                     <!-- Dropdown 1 -->
                                     <div class="col-12 col-sm-6 col-md-4 col-lg-2">
                                         <div class="dropdown-center">
-                                            <button class="btn btn-dropdown dropdown-toggle w-100 fw-semibold"
+                                            <button class="btn btn-dropdown dropdown-toggle fw-semibold"
                                                 type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                                 Name
                                             </button>
@@ -282,7 +282,7 @@
                                     <!-- Dropdown 2 -->
                                     <div class="col-12 col-sm-6 col-md-4 col-lg-2">
                                         <div class="dropdown-center">
-                                            <button class="btn btn-dropdown dropdown-toggle w-100 fw-semibold"
+                                            <button class="btn btn-dropdown dropdown-toggle fw-semibold"
                                                 type="button" data-bs-toggle="dropdown">
                                                 Price
                                             </button>
@@ -298,7 +298,7 @@
                                     <!-- Dropdown 3 -->
                                     <div class="col-12 col-sm-6 col-md-4 col-lg-2">
                                         <div class="dropdown-center">
-                                            <button class="btn btn-dropdown dropdown-toggle w-100 fw-semibold"
+                                            <button class="btn btn-dropdown dropdown-toggle fw-semibold"
                                                 type="button" data-bs-toggle="dropdown">
                                                 Status
                                             </button>
@@ -312,8 +312,8 @@
 
                                     <!-- Export Button -->
                                     <div class="col-12 col-sm-6 col-md-4 col-lg-2">
-                                        <button type="button" class="btn excelBtn w-100" style="border-radius: 10px;"
-                                        onclick="openPopup()">Export
+                                        <button type="button" class="btn excelBtn"onclick="openPopup()">
+                                            Export
                                         </button>
                                     </div>
                                 </div>
