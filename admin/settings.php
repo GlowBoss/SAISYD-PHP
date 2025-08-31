@@ -1,3 +1,147 @@
+<?php
+include('../assets/connect.php');
+session_start();
+
+// Prevent unauthorized access
+if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
+    // Redirect non-admin users to login page or a "no access" page
+    header("Location: login.php");
+    exit();
+}
+
+
+$userToEdit = null;
+
+// EDIT USER FETCH
+if (isset($_GET['editUser'])) {
+    $userID = $_GET['editUser'];
+    $userToEdit = mysqli_fetch_assoc(executeQuery("SELECT * FROM users WHERE userID=$userID"));
+}
+
+// ADD USER
+if (isset($_POST['btnAddUser'])) {
+    $fullname = $_POST['fullname'];
+    $email = $_POST['email'];
+    $username = $_POST['username'];
+    $phonenumber = $_POST['phonenumber'];
+    $password = $_POST['password'];
+    $confirm_password = $_POST['confirm_password'];
+    $role = $_POST['role'];
+
+    if ($password !== $confirm_password) {
+        $_SESSION['alertMessage'] = "Passwords do not match.";
+        $_SESSION['alertType'] = "error";
+    } else {
+        $checkQuery = "SELECT * FROM users WHERE email='$email' OR username='$username' LIMIT 1";
+        $checkResult = executeQuery($checkQuery);
+
+        if ($checkResult && mysqli_num_rows($checkResult) > 0) {
+            $_SESSION['alertMessage'] = "Email or username already exists.";
+            $_SESSION['alertType'] = "error";
+        } else {
+            $insertQuery = "
+                INSERT INTO users (fullname, email, username, phonenumber, password, role) 
+                VALUES ('$fullname', '$email', '$username', '$phonenumber', '$password', '$role')";
+            executeQuery($insertQuery);
+            $_SESSION['alertMessage'] = "User added successfully!";
+            $_SESSION['alertType'] = "success";
+        }
+    }
+    header("Location: settings.php");
+    exit();
+}
+
+// UPDATE USER
+if (isset($_POST['btnUpdateUser'])) {
+    $id = $_POST['userID'];
+    $email = $_POST['email'];
+    $username = $_POST['username'];
+    $phonenumber = $_POST['phonenumber'];
+    $old_password = $_POST['old_password'];
+    $new_password = $_POST['new_password'];
+    $confirm_password = $_POST['confirm_password'];
+
+    $currentUser = mysqli_fetch_assoc(executeQuery("SELECT password FROM users WHERE userID=$id"));
+    $currentPassword = $currentUser['password'];
+
+    if (!empty($old_password) && $old_password !== $currentPassword) {
+        $_SESSION['alertMessage'] = "Old password is incorrect.";
+        $_SESSION['alertType'] = "error";
+    } else if (!empty($new_password) && $new_password !== $confirm_password) {
+        $_SESSION['alertMessage'] = "New password and confirm password do not match.";
+        $_SESSION['alertType'] = "error";
+    } else {
+        $finalPassword = !empty($new_password) ? $new_password : $currentPassword;
+
+        $checkQuery = "SELECT * FROM users WHERE email='$email' AND userID!=$id LIMIT 1";
+        $checkResult = executeQuery($checkQuery);
+
+        if ($checkResult && mysqli_num_rows($checkResult) > 0) {
+            $_SESSION['alertMessage'] = "Email already exists for another user.";
+            $_SESSION['alertType'] = "error";
+        } else {
+            $updateQuery = "
+                UPDATE users SET
+                email='$email',
+                username='$username',
+                phonenumber='$phonenumber',
+                password='$finalPassword'
+                WHERE userID=$id";
+            executeQuery($updateQuery);
+            $_SESSION['alertMessage'] = "User updated successfully!";
+            $_SESSION['alertType'] = "success";
+        }
+    }
+    header("Location: settings.php");
+    exit();
+}
+
+if (isset($_POST['btnDeleteUser'])) {
+    $id = $_POST['userID'];
+
+    // Prevent deleting current logged-in user
+    if ($id == $_SESSION['userID']) {
+        $_SESSION['alertMessage'] = "You cannot delete your own account.";
+        $_SESSION['alertType'] = "error";
+    } else {
+        $deleteQuery = "DELETE FROM users WHERE userID=$id";
+        executeQuery($deleteQuery);
+        $_SESSION['alertMessage'] = "User deleted successfully!";
+        $_SESSION['alertType'] = "success";
+    }
+
+    header("Location: settings.php");
+    exit();
+}
+// CHANGE ROLE
+if (isset($_POST['userID']) && isset($_POST['role'])) {
+    $id = $_POST['userID'];
+    $role = $_POST['role'];
+
+    // Prevent changing your own role
+    if ($id == $_SESSION['userID']) {
+        $_SESSION['alertMessage'] = "You cannot change your own role.";
+        $_SESSION['alertType'] = "error";
+    } else {
+        $updateQuery = "UPDATE users SET role='$role' WHERE userID='$id'";
+        mysqli_query($conn, $updateQuery) or die("Error: " . mysqli_error($conn));
+        $_SESSION['alertMessage'] = "User role updated successfully!";
+        $_SESSION['alertType'] = "success";
+    }
+
+    header("Location: settings.php");
+    exit();
+}
+
+$userResult = executeQuery("
+    SELECT * FROM users 
+    ORDER BY (userID = {$_SESSION['userID']}) DESC, userID DESC
+");
+?>
+
+
+
+
 <!doctype html>
 <html lang="en">
 
@@ -148,7 +292,8 @@
 
             <!-- TOOLS Section -->
             <div class="section-header">Tools</div>
-            <a href="settings.php" class="admin-nav-link active wow animate__animated animate__fadeInLeft" data-wow-delay="0.4s">
+            <a href="settings.php" class="admin-nav-link active wow animate__animated animate__fadeInLeft"
+                data-wow-delay="0.4s">
                 <i class="bi bi-gear"></i>
                 <span>Settings</span>
             </a>
@@ -161,96 +306,262 @@
 
     <!-- Main Content Area -->
     <div class="main-content">
-        <div class="container-fluid"">
+        <div class="container-fluid">
             <div class="card rounded-4 cardMain shadow-sm">
-            <!-- Header Row  -->
-            <div class="d-none d-md-block align-items-center py-4 px-lg-3 px-2">
-                <h4 class="subheading fw-bold m-1 d-flex align-items-center">
-                    <span>Settings</span>
-                </h4>
-            </div>
-
-            <div class="row g-2 align-items-center mb-3 px-2 px-lg-3">
-
-                <div class="col-6 col-sm-auto p-3">
-                    <h1 class="subheading">User Role Management</h1>
+                <!-- Header Row  -->
+                <div class="d-none d-md-block align-items-center py-4 px-lg-3 px-2">
+                    <h4 class="subheading fw-bold m-1 d-flex align-items-center">
+                        <span>Settings</span>
+                    </h4>
                 </div>
-                <div class="col-6 col-sm-auto ms-auto">
 
-                    <button class="btn btn-add w-100" type="button" data-bs-toggle="modal"
-                        data-bs-target="#confirmModal">
-                        <i class="bi bi-plus"></i> Add User
-                    </button>
-                </div>
-            </div>
-            <div class="card rounded-3 m-3 cardMain ">
-                <div class="card-body" id="cardBody">
-                    <!-- ALL USERS | [USER COUNT php] -->
-                    <h5 class="card-title mb-3">All Users | 5</h5>
-                    <div class="table-responsive" style="min-height: 20vh; max-height: 40vh; overflow-y: auto;">
-                        <table class="table table-bordered">
-                            <thead class="table-light sticky-top">
-                                <tr>
-                                    <th>User</th>
-                                    <th>Role</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- sample data -->
-                                <tr>
-                                    <td>
-                                        <h5>Brandon Areej D. Mauricio</h5>
-                                        <h6 class="lead fst-italic">email@gmail.com</h6>
-                                    </td>
-                                    <td>
-                                        <div class="dropdown text-center">
-                                            <button class="btn btn-dropdown dropdown-toggle fw-semibold"
-                                                type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                Role
-                                            </button>
-                                            <ul class="dropdown-menu">
-                                                <li><a class="dropdown-item" href="#">Admin</a></li>
-                                                <li><a class="dropdown-item" href="#">Staff</a></li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                    <td class="text-center">
-                                        <button class="btn btn-action mx-auto" id="editUserBtn">
-                                            <i class="bi bi-pencil-square"></i> Edit Credentials
-                                        </button>
-                                        <button class="btn btn-action-del">
-                                            <i class="bi bi-trash"></i> Delete
-                                        </button>
-                                    </td>
-                                </tr>
+                <div class="row g-2 align-items-center mb-3 px-2 px-lg-3">
 
-                            </tbody>
-                        </table>
+                    <div class="col-6 col-sm-auto p-3">
+                        <h1 class="subheading">User Role Management</h1>
+                    </div>
+                    <div class="col-6 col-sm-auto ms-auto">
+                        <!-- add button -->
+                        <button class="btn btn-add w-100" type="button" data-bs-toggle="modal"
+                            data-bs-target="#confirmModal">
+                            <i class="bi bi-plus"></i> Add User
+                        </button>
+
+
                     </div>
                 </div>
-            </div>
 
-            <hr>
 
-            <div class="row align-items-center mb-3 px-2 px-lg-3">
-                <div class="col-12 col-sm-auto px-3">
-                    <h1 class="subheading">Menu Settings</h1>
-                </div>
-            </div>
-            <div class="card rounded-3 mx-3 mb-4">
-                <div class="card-body">
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" role="switch" id="customerMenuSwitch">
-                        <label class="form-check-label" for="switchCheckChecked">Enable Customer Menu</label>
+                <?php if ($userToEdit): ?>
+                    <form method="POST" id="updateUserForm">
+                        <input type="hidden" name="userID" value="<?= $userToEdit['userID'] ?>">
+
+                        <div class="row align-items-center mb-3 g-2">
+                            <!-- Name + Email -->
+                            <div class="col-12 col-md-auto p-3">
+                                <h5 class="card-title">
+                                    <?= $userToEdit['fullname'] ?> | <i><?= $userToEdit['email'] ?></i>
+                                </h5>
+                            </div>
+
+                            <!-- Back Button -->
+                            <div class="col-12 col-md-auto ms-md-auto p-3">
+                                <button class="btn btn-add w-100 w-md-auto" type="button" onclick="window.history.back()">
+                                    <i class="bi bi-arrow-left "></i> Back
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card rounded-3 p-3" style="border:none;">
+                            <div class="row g-3 position-relative">
+
+                                <!-- Row 1 -->
+                                <div class="col-12 col-md-6">
+                                    <div class="mb-2">
+                                        <label class="form-label">Change Email Address</label>
+                                        <input type="email" class="form-control" name="email"
+                                            value="<?= $userToEdit['email'] ?>" placeholder="Enter new email" required>
+                                    </div>
+                                </div>
+                                <!-- Old Password -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label">Old Password</label>
+                                    <div class="mb-2 position-relative">
+
+                                        <input type="password" class="form-control pe-5" id="oldPassword"
+                                            name="old_password" value="<?= htmlspecialchars($userToEdit['password']) ?>"
+                                            placeholder="Enter old password" readonly
+                                            title="Password cannot be typed directly">
+
+
+                                        <span class="position-absolute top-50 end-0 translate-middle-y me-3"
+                                            style="cursor:pointer;"
+                                            onclick="togglePassword('oldPassword','oldPasswordIcon')">
+                                            <i class="bi bi-eye" id="oldPasswordIcon"></i>
+                                        </span>
+                                    </div>
+                                </div>
+
+
+                                <!-- Row 2 -->
+                                <div class="col-12 col-md-6">
+                                    <div class="mb-2">
+                                        <label class="form-label">Change Username</label>
+                                        <input type="text" class="form-control" name="username"
+                                            value="<?= $userToEdit['username'] ?>" placeholder="Enter new username"
+                                            required>
+                                    </div>
+                                </div>
+                                <!-- New Password -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label">New Password</label>
+                                    <div class="mb-2 position-relative">
+
+                                        <input type="password" class="form-control pe-5" id="newPassword"
+                                            name="new_password" placeholder="Enter new password">
+                                        <span class="position-absolute top-50 end-0 translate-middle-y me-3"
+                                            style="cursor:pointer;"
+                                            onclick="togglePassword('newPassword','newPasswordIcon')">
+                                            <i class="bi bi-eye" id="newPasswordIcon"></i>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Row 3 -->
+                                <div class="col-12 col-md-6">
+                                    <div class="mb-2">
+                                        <label class="form-label">Change Phone Number</label>
+                                        <input type="text" class="form-control" name="phonenumber"
+                                            value="<?= $userToEdit['phonenumber'] ?>" placeholder="Enter new phone number"
+                                            required>
+                                    </div>
+                                </div>
+                                <!-- Confirm Password -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label">Confirm New Password</label>
+                                    <div class="mb-2 position-relative">
+
+                                        <input type="password" class="form-control pe-5" id="confirmPassword"
+                                            name="confirm_password" placeholder="Confirm new password">
+                                        <span class="position-absolute top-50 end-0 translate-middle-y me-3"
+                                            style="cursor:pointer;"
+                                            onclick="togglePassword('confirmPassword','confirmPasswordIcon')">
+                                            <i class="bi bi-eye" id="confirmPasswordIcon"></i>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    <button class="btn btn-add text-white px-4" type="submit"
+                                        name="btnUpdateUser">Save</button>
+                                </div>
+
+                            </div>
+                        </div>
+                    </form>
+                <?php else: ?>
+                    <div class="m-3 ">
+                        <div class="card-body" id="cardBody">
+                            <h5 class="card-title mb-3">All Users | <?= mysqli_num_rows($userResult) ?></h5>
+
+                            <div class="table-responsive" style="min-height: 20vh; max-height: 40vh; overflow-y: auto;">
+                                <table class="table table-bordered">
+                                    <thead class="table-light sticky-top">
+                                        <tr>
+                                            <th>User</th>
+                                            <th>Role</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php if (mysqli_num_rows($userResult) > 0): ?>
+                                            <?php while ($row = mysqli_fetch_assoc($userResult)): ?>
+                                                <tr>
+                                                    <td>
+                                                        <h5>
+                                                            <?= htmlspecialchars($row['username']); ?>
+                                                            <?= $row['userID'] == $_SESSION['userID'] ? '<span class="badge ms-2 fs-6 py-1" style="background-color: var(--primary-color)">You</span>' : '' ?>
+                                                        </h5>
+
+                                                        <h6 class="lead fst-italic d-flex align-items-center">
+                                                            <i class="bi bi-person-fill me-2 fw-bold"></i>
+                                                            <?= htmlspecialchars($row['fullname']); ?>
+                                                        </h6>
+
+                                                        <h6 class="lead fst-italic d-flex align-items-center">
+                                                            <i class="bi bi-envelope-fill me-2 fw-bold"></i>
+                                                            <?= htmlspecialchars($row['email']); ?>
+                                                        </h6>
+
+                                                        <h6 class="lead fst-italic d-flex align-items-center">
+                                                            <i class="bi bi-telephone-fill me-2 fw-bold"></i>
+                                                            <?= htmlspecialchars($row['phonenumber']); ?>
+                                                        </h6>
+
+                                                    </td>
+                                                    <td>
+                                                        <div
+                                                            class="dropdown text-center d-flex justify-content-center align-items-center">
+                                                            <button class="btn btn-dropdown dropdown-toggle fw-semibold"
+                                                                type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                                                                <?= $row['userID'] == $_SESSION['userID'] ? 'disabled title="Cannot change your own role"' : '' ?>>
+                                                                <?= htmlspecialchars($row['role']); ?>
+                                                            </button>
+
+                                                            <ul class="dropdown-menu">
+                                                                <li>
+                                                                    <form method="POST" style="margin:0;">
+                                                                        <input type="hidden" name="userID"
+                                                                            value="<?= $row['userID']; ?>">
+                                                                        <input type="hidden" name="role" value="Admin">
+                                                                        <button type="submit" class="dropdown-item">Admin</button>
+                                                                    </form>
+                                                                </li>
+                                                                <li>
+                                                                    <form method="POST" style="margin:0;">
+                                                                        <input type="hidden" name="userID"
+                                                                            value="<?= $row['userID']; ?>">
+                                                                        <input type="hidden" name="role" value="Staff">
+                                                                        <button type="submit" class="dropdown-item">Staff</button>
+                                                                    </form>
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <form method="GET" style="display:inline;">
+                                                            <input type="hidden" name="editUser" value="<?= $row['userID']; ?>">
+                                                            <button class="btn btn-action" type="submit">
+                                                                <i class="bi bi-pencil-square"></i> Edit Credentials
+                                                            </button>
+                                                        </form>
+                                                        <form method="POST" class="deleteUserForm">
+                                                            <input type="hidden" name="userID" value="<?= $row['userID']; ?>">
+                                                            <input type="hidden" name="btnDeleteUser" value="1">
+                                                            <button type="submit" class="btn btn-delete btn-action-del">
+                                                                <i class="bi bi-trash"></i> Delete
+                                                            </button>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                            <?php endwhile; ?>
+                                        <?php else: ?>
+                                            <tr>
+                                                <td colspan="3" class="text-center">No users found.</td>
+                                            </tr>
+                                        <?php endif; ?>
+                                    </tbody>
+
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
+
+
+
+
+                <hr>
+
+                <div class="row align-items-center mb-3 px-2 px-lg-3">
+                    <div class="col-12 col-sm-auto px-3">
+                        <h1 class="subheading">Menu Settings</h1>
                     </div>
                 </div>
+                <div class="card rounded-3 mx-3 mb-4">
+                    <div class="card-body">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="customerMenuSwitch">
+                            <label class="form-check-label" for="switchCheckChecked">Enable Customer Menu</label>
+                        </div>
+                    </div>
+                </div>
+
+
+
             </div>
-
-
-
         </div>
-    </div>
     </div>
 
     <!-- add user modal -->
@@ -262,47 +573,54 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form>
+                    <form id="addUserForm" method="POST">
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Full Name</label>
-                                    <input type="text" class="form-control" name="full_name"
-                                        placeholder="Enter full name">
+                                    <input type="text" class="form-control" name="fullname"
+                                        placeholder="Enter full name" required>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Email</label>
-                                    <input type="email" class="form-control" name="email" placeholder="Enter email">
+                                    <input type="email" class="form-control" name="email" placeholder="Enter email"
+                                        required>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Password</label>
                                     <input type="password" class="form-control" name="password"
-                                        placeholder="Enter password">
+                                        placeholder="Enter password" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Phone Number</label>
-                                    <input type="text" class="form-control" name="phone_number"
+                                    <input type="text" class="form-control" name="phonenumber"
                                         placeholder="Enter phone number">
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Username</label>
-                                    <input type="text" class="form-control" name="username"
-                                        placeholder="Enter username">
+                                    <input type="text" class="form-control" name="username" placeholder="Enter username"
+                                        required>
                                 </div>
-
                                 <div class="mb-3">
                                     <label class="form-label">Confirm Password</label>
-                                    <input type="password" class="form-control" name="password"
-                                        placeholder="Confirm password">
+                                    <input type="password" class="form-control" name="confirm_password"
+                                        placeholder="Confirm password" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Role</label>
+                                    <select class="form-control custom-select" name="role" required>
+                                        <option value="" disabled selected>Select role</option>
+                                        <option class="option" value="Admin">Admin</option>
+                                        <option class="option" value="Staff">Staff</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
                         <div class="d-flex justify-content-end mt-3">
                             <button type="button" class="btn btn-del me-2" data-bs-dismiss="modal">CANCEL</button>
-                            <button type="submit" class="btn btn-add" data-bs-toggle="modal"
-                                data-bs-target="#confirmModal">CONFIRM</button>
+                            <button type="submit" class="btn btn-add" name="btnAddUser">CONFIRM</button>
                         </div>
                     </form>
                 </div>
@@ -310,105 +628,76 @@
         </div>
     </div>
 
+
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        const div = document.getElementById('cardBody');
-        const originalContent = div.innerHTML;
-
-        function attachListeners() {
-            const editBtn = document.getElementById('editUserBtn');
-            if (editBtn) {
-                editBtn.addEventListener('click', changeContent);
+        // Toggle password visibility
+        function togglePassword(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('bi-eye', 'bi-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('bi-eye-slash', 'bi-eye');
             }
+        }
 
-            const deleteBtn = document.querySelector('.btn-delete');
-            if (deleteBtn) {
-                deleteBtn.addEventListener('click', function () {
-                    alert("Delete user function goes here!");
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // Delete User Confirmation
+            document.querySelectorAll('.deleteUserForm').forEach(form => {
+                form.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: "This user will be deleted!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Yes, delete it!',
+                        cancelButtonText: 'Cancel',
+                        confirmButtonColor: 'var(--primary-color)',
+                        cancelButtonColor: 'var(--btn-hover2)',
+                        customClass: {
+                            popup: 'swal2-border-radius',
+                            confirmButton: 'swal2-confirm-radius',
+                            cancelButton: 'swal2-cancel-radius'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
                 });
-            }
-        }
-
-        //card div contents
-        function changeContent() {
-            div.innerHTML = `
-                <div class="row align-items-center mb-3 g-2">
-                    <!-- Name + Email -->
-                    <div class="col-12 col-md-auto p-3">
-                        <h5 class="card-title">
-                            Brandon Areej D. Mauricio | <i>email@gmail.com</i>
-                        </h5>
-                    </div>
-
-                    <!-- Back Button -->
-                    <div class="col-12 col-md-auto ms-md-auto p-3">
-                        <button class="btn btn-add w-100 w-md-auto" id="backBtn">
-                            <i class="bi bi-arrow-left "></i> Back
-                        </button>
-                    </div>
-                </div>
-                <div class="card rounded-3 p-3" style="border:none;">
-                    <div class="row g-3 position-relative">
-
-                        <!-- Row 1 -->
-                        <div class="col-12 col-md-6">
-                        <div class="mb-2">
-                            <label class="form-label">Change Email Address</label>
-                            <input type="email" class="form-control" placeholder="Enter new email">
-                        </div>
-                        </div>
-                        <div class="col-12 col-md-6">
-                        <div class="mb-2">
-                            <label class="form-label">Old Password</label>
-                            <input type="password" class="form-control" placeholder="Enter old password">
-                        </div>
-                        </div>
-
-                        <!-- Row 2 -->
-                        <div class="col-12 col-md-6">
-                        <div class="mb-2">
-                            <label class="form-label">Change Username</label>
-                            <input type="text" class="form-control" placeholder="Enter new username">
-                        </div>
-                        </div>
-                        <div class="col-12 col-md-6">
-                        <div class="mb-2">
-                            <label class="form-label">New Password</label>
-                            <input type="password" class="form-control" placeholder="Enter new password">
-                        </div>
-                        </div>
-
-                        <!-- Row 3 -->
-                        <div class="col-12 col-md-6">
-                        <div class="mb-2">
-                            <label class="form-label">Change Phone Number</label>
-                            <input type="text" class="form-control" placeholder="Enter new phone number">
-                        </div>
-                        </div>
-                        <div class="col-12 col-md-6">
-                        <div class="mb-2">
-                            <label class="form-label">Confirm New Password</label>
-                            <input type="password" class="form-control" placeholder="Confirm new password">
-                        </div>
-                        </div>
-                    <div class="col-12 col-md-6">
-                        <button class="btn btn-add text-white px-4" type="submit">Save</button>
-                    </div>
-                    </div>
-    `;
-            const backBtn = document.getElementById('backBtn');
-            backBtn.addEventListener('click', function () {
-                div.innerHTML = originalContent;
-                attachListeners();
             });
-        }
-        attachListeners();
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            <?php if (isset($_SESSION['alertMessage'])): ?>
+                Swal.fire({
+                    icon: '<?= $_SESSION['alertType'] ?>',
+                    title: '<?= $_SESSION['alertMessage'] ?>',
+                    showConfirmButton: false,
+                    timer: 2500,
+                    timerProgressBar: true,
+                    toast: true,
+                    position: 'top-end'
+                });
+                <?php
+                unset($_SESSION['alertMessage']);
+                unset($_SESSION['alertType']);
+                ?>
+            <?php endif; ?>
+        });
     </script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
     <script src="../assets/js/admin_sidebar.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous">
         </script>
-
 </body>
 
 </html>
