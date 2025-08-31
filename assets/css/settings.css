@@ -156,3 +156,35 @@ button.btn.btn-dropdown:hover {
 .modalText {
   font-family: var(--secondaryFont) !important;
 }
+
+.swal2-border-radius {
+  border-radius: 12px; 
+}
+
+.swal2-confirm-radius, .swal2-cancel-radius{
+  border-radius: 12px;
+}
+
+
+.custom-alert {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #f44336; /* Red for error */
+  color: white;
+  padding: 15px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  font-weight: bold;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  z-index: 9999;
+}
+
+.custom-alert.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
