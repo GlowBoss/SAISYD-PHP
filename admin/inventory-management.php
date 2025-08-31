@@ -1,3 +1,49 @@
+<?php
+include '../assets/connect.php';
+
+// Columns for sorting
+$allowedSort = ['inventoryID', 'ingredientName', 'quantity', 'lastUpdated', 'expirationDate'];
+
+// Default sort
+$sort = 'lastUpdated';
+$order = 'DESC';
+
+// Check GET parameters
+if (isset($_GET['sort']) && in_array($_GET['sort'], $allowedSort)) {
+    $sort = $_GET['sort'];
+}
+if (isset($_GET['order']) && ($_GET['order'] === 'asc' || $_GET['order'] === 'desc')) {
+    $order = strtoupper($_GET['order']);
+}
+
+// Query
+$inventoryQuery = "SELECT i.inventoryID,
+                          ing.ingredientName,
+                          i.quantity,
+                          i.unit,
+                          i.lastUpdated,
+                          i.expirationDate
+                   FROM inventory i
+                   LEFT JOIN ingredients ing 
+                        ON i.ingredientID = ing.ingredientID
+                   ORDER BY $sort $order";
+
+$result = executeQuery($inventoryQuery);
+$rows = [];
+if ($result && mysqli_num_rows($result) > 0) {
+    while ($row = mysqli_fetch_assoc($result)) {
+        $rows[] = $row;
+    }
+}
+
+// Helper to toggle order in links
+function toggleOrder($currentOrder)
+{
+    return $currentOrder === 'ASC' ? 'desc' : 'asc';
+}
+?>
+
+
 <!doctype html>
 <html lang="en">
 
@@ -151,217 +197,126 @@
     </div>
 
     <!-- Main Content Area -->
-    <div class="main-content p-3">
-        <div class="row">
-            <div class="col">
-                <div class="card cardContent shadow-sm mt-2">
-                    <!-- Mobile Menu Toggle Button  -->
-                    <div class="d-md-none mobile-header d-flex align-items-center p-3">
-                        <button id="menuToggle" class="mobile-menu-toggle me-3">
-                            <i class="fas fa-bars"></i>
+    <div class="main-content">
+        <div class="container-fluid">
+            <div class="cardMain shadow-lg">
+
+                <!-- Header Row  -->
+                <div class="d-none d-md-block align-items-center py-4 px-lg-3 px-2">
+                    <div class="subheading fw-bold m-1 d-flex align-items-center">
+                        <span style="color: var(--text-color-dark);">Inventory Management</span>
+                    </div>
+                </div>
+
+                <div class="row g-2 align-items-center mb-3 px-2 px-lg-3">
+                    <!-- Title -->
+                    <div class="col-12">
+                        <h4 class="subheading fw-bold ms-1 mt-3 mt-md-0 mb-3 mb-md-0">Current Stock</h4>
+                    </div>
+
+                    <!-- Search bar -->
+                    <div class="col-12 col-md">
+                        <input type="text" class="form-control search" placeholder="Search" aria-label="search-bar"
+                            id="search-inventory">
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="col-12 col-md-auto d-flex flex-column flex-md-row gap-2">
+                        <button class="btn categorybtn" type="button">
+                            Search
                         </button>
-                        <h4 class="mobile-header-title">Inventory Management</h4>
+                        <button class="btn categorybtn" type="button" data-bs-toggle="modal"
+                            data-bs-target="#addItemModal">
+                            <i class="bi bi-plus-circle"></i>
+                            <span class="d-none d-sm-inline ms-2">Add</span>
+                        </button>
+                        <button class="btn btnExport" type="button">
+                            Export
+                        </button>
                     </div>
-                    <!-- Header Row -->
-                    <div class="d-none d-md-block align-items-center py-4 px-lg-3 px-2">
-                        <h4 class="subheading fw-bold m-1 d-flex align-items-center">
-                            <span>Inventory Management</span>
-                        </h4>
-                    </div>
+                </div>
 
-                    <div class="row g-2 align-items-center mb-3 px-2 px-lg-3">
-                        <div class="col-12 col-sm-4 col-md-4 col-lg-6">
-                            <h4 class="subheading fw-bold">Current Stock</h4>
-                        </div>
-                        <!-- search -->
-                        <div class="col-12 col-sm my-0 me-1 d-flex justify-content-end">
-                            <input type="text" class="form-control search w-100" placeholder="Search" aria-label="search-bar"
-                                id="search-inventory">
-                        </div>
-                        <!-- buttons -->
-                        <div class="col-12 col-sm-auto col-md-12 col-lg-auto mt-2 mt-lg-0 d-flex justify-content-end">
-                            <button class="btn categorybtn w-100" type="button">
-                                Search
-                            </button>
-                        </div>
-                        <div class="col-12 col-sm-auto col-md-12 col-lg-auto mt-2 mt-lg-0 d-flex justify-content-end">
-                            <button class="btn categorybtn w-100" type="button" data-bs-toggle="modal"
-                                data-bs-target="#addItemModal">
-                                Add
-                            </button>
-                        </div>
-                        <div class="col-12 col-sm-auto col-md-12 col-lg-auto mt-2 mt-lg-0 d-flex justify-content-end">
-                            <button class="btn btnExport w-100" type="button">
-                                Export
-                            </button>
-                        </div>
-                    </div>
+                <!-- TABLE -->
+                <div class="card tableCard m-5">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table align-middle text-nowrap">
+                                <thead class="text-center custom-thead">
+                                    <tr>
+                                        <th scope="col">
+                                            <a href="?sort=inventoryID&order=<?= ($_GET['order'] ?? 'asc') === 'asc' ? 'desc' : 'asc' ?>"
+                                                class="filterStyle">
+                                                Item Code</a>
+                                        </th>
+                                        <th scope="col">
+                                            Item Name
+                                        </th>
+                                        <th scope="col">
+                                            <a href="?sort=quantity&order=<?= ($_GET['order'] ?? 'asc') === 'asc' ? 'desc' : 'asc' ?>"
+                                                class="filterStyle">
+                                                Item Quantity</a>
+                                        </th>
+                                        <th scope="col">
+                                            <a href="?sort=lastUpdated&order=<?= ($_GET['order'] ?? 'asc') === 'asc' ? 'desc' : 'asc' ?>"
+                                                class="filterStyle">
+                                                Date Purchased</a>
+                                        </th>
+                                        <th scope="col">
+                                            <a href="?sort=expirationDate&order=<?= ($_GET['order'] ?? 'asc') === 'asc' ? 'desc' : 'asc' ?>"
+                                                class="filterStyle">
+                                                Expiration Date</a>
 
-                    <!-- TABLE -->
-                    <div class="card tableCard mb-3">
-                        <table class="table">
-                            <thead class="text-center custom-thead">
-                                <tr>
-                                    <th scope="col">Item Code</th>
-                                    <th scope="col">Item Name</th>
-                                    <th scope="col">Item Group</th>
-                                    <th scope="col">Last Purchase</th>
-                                    <th scope="col">On Hand</th>
-                                    <th scope="col">Supplier</th>
-                                    <th scope="col">Unit Cost</th>
-                                    <th scope="col">Total Value</th>
-                                    <th scope="col">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody class="text-center">
-                                <tr>
-                                    <th scope="row">INV-001</th>
-                                    <td>Orange</td>
-                                    <td>Fruits</td>
-                                    <td>03 May 2025</td>
-                                    <td>100 Kg</td>
-                                    <td>Fresh Farms Co.</td>
-                                    <td>₱80.00</td>
-                                    <td>₱8,000.00</td>
-                                    <td>
-                                        <button class="btn btn-sm categorybtn"><i
-                                                class="bi bi-pencil-square"></i></button>
-                                        <button class="btn btn-sm btnExport"><i
-                                                class="bi bi-three-dots-vertical"></i></button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">INV-002</th>
-                                    <td>Apple</td>
-                                    <td>Fruits</td>
-                                    <td>04 May 2025</td>
-                                    <td>75 Kg</td>
-                                    <td>Orchard Fresh Ltd.</td>
-                                    <td>₱95.00</td>
-                                    <td>₱7,125.00</td>
-                                    <td>
-                                        <button class="btn btn-sm categorybtn"><i
-                                                class="bi bi-pencil-square"></i></button>
-                                        <button class="btn btn-sm btnExport"><i
-                                                class="bi bi-three-dots-vertical"></i></button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">INV-003</th>
-                                    <td>Fresh Milk</td>
-                                    <td>Dairy</td>
-                                    <td>02 May 2025</td>
-                                    <td>50 L</td>
-                                    <td>Dairy Delight Inc.</td>
-                                    <td>₱120.00</td>
-                                    <td>₱6,000.00</td>
-                                    <td>
-                                        <button class="btn btn-sm categorybtn"><i
-                                                class="bi bi-pencil-square"></i></button>
-                                        <button class="btn btn-sm btnExport"><i
-                                                class="bi bi-three-dots-vertical"></i></button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                                        </th>
+                                        <th scope="col">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-center">
+                                    <?php if (!empty($rows)): ?>
+                                        <?php foreach ($rows as $row): ?>
+                                            <tr>
+                                                <!-- Item Code from inventoryID -->
+                                                <th scope="row">
+                                                    <?= str_pad($row['inventoryID'], 3, "0", STR_PAD_LEFT) ?>
+                                                </th>
+
+                                                <!-- Item Name from ingredientName -->
+                                                <td><?= $row['ingredientName'] ?? 'No Ingredient' ?></td>
+
+                                                <!-- Item Quantity -->
+                                                <td><?= $row['quantity'] ?> <strong><?= $row['unit'] ?></strong></td>
+
+                                                <!-- Last Purchase (formatted date) -->
+                                                <td><?= date("M d Y", strtotime($row['lastUpdated'])) ?></td>
+
+                                                <!-- Expiration Date -->
+                                                <td><?= date("M d Y", strtotime($row['expirationDate'])) ?></td>
+
+                                                <!-- Actions -->
+                                                <td>
+                                                    <button class="btn btn-sm categorybtn"><i
+                                                            class="bi bi-pencil-square"></i></button>
+                                                    <button class="btn btn-sm btnExport"><i
+                                                            class="bi bi-three-dots-vertical"></i></button>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="6">No records found</td>
+                                        </tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    <?php include '../modal/inventory-management-modal.php'; ?>
 
-    <!-- Add Item Modal -->
-    <div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content text-center">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addItemModalLabel">Add Inventory Item</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Item Name</label>
-                                    <input type="text" class="form-control" name="item_name"
-                                        placeholder="Enter item name">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Item Group</label>
-                                    <div class="dropdown">
-                                        <button class="form-select text-start" type="button" id="itemGroupDropdown"
-                                            data-bs-toggle="dropdown" aria-expanded="false">
-                                            Select Category
-                                        </button>
-                                        <ul class="dropdown-menu" aria-labelledby="itemGroupDropdown">
-                                            <li><a class="dropdown-item" href="#" data-value="fruits">Fruits</a></li>
-                                            <li><a class="dropdown-item" href="#" data-value="vegetables">Vegetables</a>
-                                            </li>
-                                            <li><a class="dropdown-item" href="#" data-value="dairy">Dairy</a></li>
-                                            <li><a class="dropdown-item" href="#" data-value="beverages">Beverages</a>
-                                            </li>
-                                        </ul>
-                                        <input type="hidden" name="item_group" id="itemGroupInput" value="">
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Unit Cost</label>
-                                    <input type="text" class="form-control" name="unitCost"
-                                        placeholder="Enter unit cost">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">On Hand Quantity</label>
-                                    <input type="text" class="form-control" name="quantity"
-                                        placeholder="Enter quantity">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Unit Cost</label>
-                                    <input type="text" class="form-control" name="unit" placeholder="Kg, pcs, etc.">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Supplier</label>
-                                    <input type="text" class="form-control" name="supplier"
-                                        placeholder="Enter supplier name">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Last Purchase</label>
-                                    <input type="text" class="form-control" name="lastPurchase"
-                                        placeholder="Enter last purchase date">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="d-flex justify-content-end mt-3">
-                            <button type="button" class="btn btnCancel me-2" data-bs-dismiss="modal">CANCEL</button>
-                            <button type="submit" class="btn btnAdd">ADD ITEM</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const dropdownToggle = document.getElementById('itemGroupDropdown');
-            const dropdownItems = document.querySelectorAll('.dropdown-item');
-            const hiddenInput = document.getElementById('itemGroupInput');
-
-            dropdownItems.forEach(item => {
-                item.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    const value = this.getAttribute('data-value');
-                    const text = this.textContent;
-
-                    dropdownToggle.textContent = text;
-                    hiddenInput.value = value;
-                });
-            });
-        });
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/js/inventory-management.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
     <script src="../assets/js/admin_sidebar.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
