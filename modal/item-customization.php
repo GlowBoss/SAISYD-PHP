@@ -16,7 +16,7 @@
 
             <!-- Body -->
             <div class="modal-body">
-                <form method="POST" action="">
+                <form method="POST" action="" id="orderForm">
                     <!-- Hidden fields -->
                     <input type="hidden" id="modal_product_id" name="product_id">
                     <input type="hidden" id="modal_product_name" name="product_name">
@@ -32,25 +32,6 @@
                         style="color: var(--primary-color); font-family: var(--secondaryFont); font-weight: 600;">
                         ₱0.00
                     </h4>
-
-                    <!-- Size -->   
-                    <div class="mb-3" id="sizeOption">
-                        <label class="form-label fw-bold"
-                            style="font-family: var(--primaryFont); color: var(--text-color-dark);">Pick Size</label>
-                        <div class="d-flex gap-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="size" id="size12oz" value="12oz"
-                                    checked>
-                                <label class="form-check-label" for="size12oz"
-                                    style="font-family: var(--secondaryFont);">12oz</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="size" id="size16oz" value="16oz">
-                                <label class="form-check-label" for="size16oz"
-                                    style="font-family: var(--secondaryFont);">16oz</label>
-                            </div>
-                        </div>
-                    </div>
 
                     <!-- Sugar -->
                     <div class="mb-3" id="sugarOption">
@@ -128,7 +109,6 @@
                         </div>
                     </div>
 
-
                     <!-- Notes -->
                     <div class="mb-3">
                         <label for="customer_notes" class="form-label fw-bold"
@@ -139,45 +119,53 @@
                             style="resize: none; border-radius: 10px; border: 1.5px solid var(--primary-color); font-family: var(--secondaryFont);"></textarea>
                     </div>
 
+                    <!-- Error Message -->
+                    <div id="formError" class="alert alert-danger py-2 px-3 d-none"
+                        style="font-size:0.9rem; border-radius:8px;">
+                        Please check your selections before adding to cart.
+                    </div>
+
                     <!-- Add to Cart -->
-                    <button type="submit" name="add_to_cart" class="btn w-100 fw-bold" style="background: var(--primary-color); 
-                        color: var(--text-color-light); 
-                        border-radius: 10px; 
-                        font-family: var(--primaryFont); 
-                        letter-spacing: 1px; 
-                        box-shadow: 0 4px 8px rgba(0,0,0,0.25); 
-                        transition: all 0.3s ease;" onmouseover="this.style.boxShadow='0 6px 12px rgba(0,0,0,0.35)'; 
-                        this.style.transform='translateY(-2px)';
-                        this.style.background='var(--btn-hover1)';" onmouseout="this.style.boxShadow='0 4px 8px rgba(0,0,0,0.25)'; 
-                        this.style.transform='translateY(0)';
-                        this.style.background='var(--primary-color)';">
-                        ADD TO CART
+                    <button type="submit" name="add_to_cart"
+                        class="btn w-100 fw-bold d-flex align-items-center justify-content-center gap-2" style="
+                            background: var(--primary-color); 
+                            color: var(--text-color-light); 
+                            border-radius: 10px; 
+                            font-family: var(--primaryFont); 
+                            letter-spacing: 1px; 
+                            box-shadow: 0 4px 8px rgba(0,0,0,0.25); 
+        t                   ransition: all 0.3s ease;
+                        " onmouseover="
+                            this.style.boxShadow='0 6px 12px rgba(0,0,0,0.35)'; 
+                            this.style.transform='translateY(-2px)';
+                            this.style.background='var(--btn-hover1)';
+                        " onmouseout="
+                            this.style.boxShadow='0 4px 8px rgba(0,0,0,0.25)'; 
+                            this.style.transform='translateY(0)';
+                            this.style.background='var(--primary-color)';
+                        ">
+                        <i class="bi bi-cart-plus-fill"></i> ADD TO CART
                     </button>
+
                 </form>
             </div>
         </div>
     </div>
 </div>
 
-
 <!-- Toast Notification -->
 <?php if (isset($_SESSION['cart_message'])): ?>
     <div class="toast-container position-fixed bottom-0 end-0 p-3 z-3">
-        <div id="orderToast" 
-             class="toast align-items-center border-0 fade" 
-             role="alert" 
-             aria-live="assertive"
-             aria-atomic="true"
-             data-bs-delay="3000"   
-             data-bs-autohide="true"
-             style="background-color: var(--text-color-dark); color: var(--text-color-light); border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.25);">
+        <div id="orderToast" class="toast align-items-center border-0 fade" role="alert" aria-live="assertive"
+            aria-atomic="true" data-bs-delay="3000" data-bs-autohide="true"
+            style="background-color: var(--text-color-dark); color: var(--text-color-light); border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.25);">
             <div class="d-flex align-items-center">
                 <i class="bi bi-check-circle-fill ms-3" style="font-size: 1.2rem; color: var(--accent-color);"></i>
                 <div class="toast-body" style="font-family: var(--secondaryFont);">
                     <?php echo $_SESSION['cart_message']; ?>
                 </div>
                 <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"
-                        style="filter: invert(1);"></button>
+                    style="filter: invert(1);"></button>
             </div>
         </div>
     </div>
@@ -187,9 +175,21 @@
             const toastEl = document.getElementById('orderToast');
             if (toastEl) {
                 const toast = new bootstrap.Toast(toastEl);
-                toast.show(); // fade-in
+                toast.show();
             }
         });
     </script>
     <?php unset($_SESSION['cart_message']); ?>
 <?php endif; ?>
+
+<script>
+    // Validation before submit
+    document.getElementById('orderForm').addEventListener('submit', function (e) {
+        let qty = document.getElementById('quantity').value;
+        if (qty <= 0) {
+            e.preventDefault();
+            document.getElementById('formError').classList.remove('d-none');
+            document.getElementById('formError').innerText = "Quantity must be at least 1.";
+        }
+    });
+</script>

@@ -24,18 +24,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
     $productName = $_POST['product_name'];
     $price = $_POST['price'];
     $category = $_POST['category'];
-    $size = $_POST['size'] ?? '';
     $sugar = $_POST['sugar'] ?? '';
     $ice = $_POST['ice'] ?? '';
     $notes = $_POST['notes'] ?? '';
     $quantity = intval($_POST['quantity'] ?? 1);
 
-    // Check if item with same customizations already exists
+    // Check if item with same customizations already exists in SESSION
     $itemExists = false;
     foreach ($_SESSION['cart'] as $index => $item) {
         if (
             $item['product_id'] == $productId &&
-            $item['size'] == $size &&
             $item['sugar'] == $sugar &&
             $item['ice'] == $ice &&
             $item['notes'] == $notes
@@ -46,20 +44,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
         }
     }
 
-    // If item doesn't exist, add new item
+    // If item doesn't exist, add new item in SESSION
     if (!$itemExists) {
         $_SESSION['cart'][] = [
             'product_id' => $productId,
             'product_name' => $productName,
             'price' => $price,
             'category' => $category,
-            'size' => $size,
             'sugar' => $sugar,
             'ice' => $ice,
             'notes' => $notes,
             'quantity' => $quantity
         ];
     }
+
+    // -----------------------
+    // INSERT TO DATABASE
+    // -----------------------
+
+    // Check if may pending order (reuse) or create new
+    $orderResult = executeQuery("SELECT * FROM orders WHERE status='pending' LIMIT 1");
+
+    if (mysqli_num_rows($orderResult) > 0) {
+        $order = mysqli_fetch_assoc($orderResult);
+        $orderID = $order['orderID'];
+    } else {
+        $today = date("Y-m-d");
+        $insertOrder = "INSERT INTO orders (orderDate, status, totalAmount) VALUES ('$today','pending',0)";
+        executeQuery($insertOrder);
+
+        $newOrder = executeQuery("SELECT orderID FROM orders ORDER BY orderID DESC LIMIT 1");
+        $orderRow = mysqli_fetch_assoc($newOrder);
+        $orderID = $orderRow['orderID'];
+    }
+
+    // Insert item with customizations
+    $insertItem = "
+        INSERT INTO orderitems (orderID, productID, quantity, sugar, ice, notes) 
+        VALUES (
+            '$orderID',
+            '$productId',
+            '$quantity',
+            '" . mysqli_real_escape_string($conn, $sugar) . "',
+            '" . mysqli_real_escape_string($conn, $ice) . "',
+            '" . mysqli_real_escape_string($conn, $notes) . "'
+        )
+    ";
+    executeQuery($insertItem);
 
     // Reset cart timeout
     $_SESSION['cart_timeout'] = time() + (30 * 60);
@@ -133,7 +164,11 @@ function getCartItemCount()
     }
     return $count;
 }
+
+// Get current category from cookie if using JS filtering
+$currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_category'] : 'ALL';
 ?>
+
 
 <!doctype html>
 <html lang="en">
@@ -294,79 +329,64 @@ function getCartItemCount()
 
     <!-- Categories + Sort Section -->
     <div class="container-fluid px-sm-2 px-md-4 px-lg-5 mt-5 mt-lg-4 pt-lg-5">
-        <div
-            class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-2">
-            <div class="title-category heading align-items-sm-start">Cafe Menu</div>
-        </div>
+        <!-- Header Row - Title and Sort -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mb-4 ">
 
-        <div class="d-flex flex-column flex-md-row align-items-md-center gap-3">
+            <!-- Title -->
+            <div class="title-category heading pt-2 pt-lg-2">Cafe Menu</div>
 
-            <!-- Sort Dropdown -->
-            <div class="custom-select-wrapper d-flex align-items-center gap-3 px-3 py-2 border rounded-pill shadow-sm mx-auto mx-md-0 order-0 order-md-1 mb-lg-2 mb-3"
-                style="background-color: var(--card-bg-color); font-family: var(--primaryFont); font-size: var(--lead); font-weight: 500; color: var(--text-color-dark); border-color: var(--primary-color);">
-
+            <div class="custom-select-wrapper d-flex align-items-center gap-2 gap-md-3 px-2 px-md-3 py-2 border rounded-pill mt-2 mt-md-0"
+                style="font-family: var(--primaryFont); font-size: var(--lead); font-weight: 500; color: var(--text-color-dark); border-color: var(--primary-color); min-width: fit-content; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);">
                 <i class="bi bi-funnel-fill" style="color: var(--text-color-dark); font-size: 1rem;"></i>
                 <label class="mb-0 fw-semibold">Sort by:</label>
 
                 <div class="custom-select">
-                    <?php
-                    // current label depende sa sort option
-                    $currentSortLabel = "Name A-Z";
-                    if ($sortOption === "name-desc")
-                        $currentSortLabel = "Name Z-A";
-                    elseif ($sortOption === "price-low-high")
-                        $currentSortLabel = "Price: Low to High";
-                    elseif ($sortOption === "price-high-low")
-                        $currentSortLabel = "Price: High to Low";
-                    ?>
-
                     <!-- Selected display -->
                     <div class="selected">
-                        <span class="selected-text"><?php echo $currentSortLabel; ?></span>
+                        <span class="selected-text">Name A-Z</span>
                         <i class="bi bi-chevron-down dropdown-icon"></i>
                     </div>
 
-                    <!-- Options (use links para PHP reload lang) -->
+                    <!-- Options - Using data-sort attributes for JavaScript -->
                     <div class="options">
-                        <div><a
-                                href="?sort=name-asc<?php echo ($categoryFilter !== 'ALL') ? '&category=' . urlencode($categoryFilter) : ''; ?>">Name
-                                A-Z</a></div>
-                        <div><a
-                                href="?sort=name-desc<?php echo ($categoryFilter !== 'ALL') ? '&category=' . urlencode($categoryFilter) : ''; ?>">Name
-                                Z-A</a></div>
-                        <div><a
-                                href="?sort=price-low-high<?php echo ($categoryFilter !== 'ALL') ? '&category=' . urlencode($categoryFilter) : ''; ?>">Price:
-                                Low to High</a></div>
-                        <div><a
-                                href="?sort=price-high-low<?php echo ($categoryFilter !== 'ALL') ? '&category=' . urlencode($categoryFilter) : ''; ?>">Price:
-                                High to Low</a></div>
+                        <div><a href="#" data-sort="name-asc">Name A-Z</a></div>
+                        <div><a href="#" data-sort="name-desc">Name Z-A</a></div>
+                        <div><a href="#" data-sort="price-low-high">Price: Low to High</a></div>
+                        <div><a href="#" data-sort="price-high-low">Price: High to Low</a></div>
                     </div>
                 </div>
             </div>
+        </div>
 
+        <?php
+        // Make sure to reset categories result for the pills
+        mysqli_data_seek($categories, 0);
+        ?>
 
-            <!-- Category Pills Row (unchanged) -->
-            <div class="category-scroll d-flex gap-3 overflow-auto pb-3 pt-1 flex-grow-1 order-1 order-md-0">
-                <a href="?category=ALL&sort=<?php echo $sortOption; ?>"
-                    class="category-pill text-decoration-none text-center <?php echo ($categoryFilter === 'ALL') ? 'active' : ''; ?>">
-                    All
-                </a>
-                <?php
-                if (mysqli_num_rows($categories) > 0) {
-                    while ($category = mysqli_fetch_assoc($categories)) {
-                        ?>
-                        <a href="?category=<?php echo urlencode($category['categoryName']); ?>&sort=<?php echo $sortOption; ?>"
-                            class="category-pill text-decoration-none text-center <?php echo ($categoryFilter === $category['categoryName']) ? 'active' : ''; ?>">
-                            <?php echo htmlspecialchars($category['categoryName']); ?>
-                        </a>
-                        <?php
-                    }
+        <!-- Fixed Category Pills Row -->
+        <div class="category-scroll d-flex gap-3 overflow-auto pb-3 pt-1">
+            <!-- All category pill -->
+            <a href="#" class="category-pill text-decoration-none text-center active">
+                All
+            </a>
+
+            <?php
+            // Generate category pills
+            if (mysqli_num_rows($categories) > 0) {
+                while ($category = mysqli_fetch_assoc($categories)) {
+                    $categoryName = htmlspecialchars($category['categoryName']);
+                    ?>
+                    <a href="#" class="category-pill text-decoration-none text-center">
+                        <?php echo $categoryName; ?>
+                    </a>
+                    <?php
                 }
-                ?>
-            </div>
+            }
+            ?>
         </div>
     </div>
 
+    <!-- PRODUCT -->
     <div class="products-section border p-3 p-lg-5 mx-lg-3">
         <div class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6" id="productGrid">
             <?php
@@ -377,38 +397,49 @@ function getCartItemCount()
                         data-category="<?php echo htmlspecialchars($product['categoryName'] ?? 'Uncategorized'); ?>"
                         data-name="<?php echo htmlspecialchars($product['productName']); ?>"
                         data-price="<?php echo $product['price']; ?>">
-                        <div class="menu-item text-center shadow-sm" style="
-                        height: 320px; 
-                        background-color: #fff9f2; 
-                        border-radius: 20px; 
-                        border: 1px solid #e0c9a6;
-                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
-                        display: flex; 
-                        flex-direction: column; 
-                        justify-content: space-between; 
-                        padding: 15px;
-                        transition: transform 0.2s ease;
-                    ">
-                            <div style="height: 150px; display: flex; align-items: center; justify-content: center;">
+                        <div class="menu-item text-center" style="
+                            height: clamp(260px, 40vw, 320px);
+                            border-radius: 20px;
+                            background-color: var(--bg-color);
+                            border: 0.5px solid rgba(0, 0, 0, 0.2); /* very subtle border */
+                            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08); /* light shadow */
+                            display: flex;
+                            flex-direction: column;
+                            justify-content: space-between;
+                            padding: clamp(10px, 2vw, 15px);
+                            transition: transform 0.25s ease, box-shadow 0.25s ease;
+                        ">
+                            <div
+                                style="height: clamp(120px, 25vw, 150px); display: flex; align-items: center; justify-content: center;">
                                 <img src="assets/img/img-menu/<?php echo htmlspecialchars($product['image'] ?? 'coffee.png'); ?>"
                                     alt="<?php echo htmlspecialchars($product['productName']); ?>" class="img-fluid"
                                     style="max-height: 100%; max-width: 100%; object-fit: contain;">
                             </div>
+
                             <div class="subheading menu-name"
-                                style="font-size: 1.2rem; font-weight: 500; color: #4b2e2e;margin-top: 10px;">
+                                style="font-size: clamp(0.9rem, 2.5vw, 1.2rem); font-weight: 500; color: #4b2e2e; margin-top: 10px;">
                                 <?php echo htmlspecialchars($product['productName']); ?>
                             </div>
+
                             <div class="d-flex justify-content-center align-items-center text-center px-2"
-                                style="color: #6e4f3a; font-size: 0.85rem;">
+                                style="color: #6e4f3a; font-size: clamp(0.75rem, 2vw, 0.9rem);">
                                 ₱<?php echo number_format($product['price'], 2); ?>
                             </div>
+
                             <button class="lead buy-btn mt-auto" data-bs-toggle="modal" data-bs-target="#item-customization"
                                 data-product-id="<?php echo $product['productID']; ?>"
                                 data-name="<?php echo htmlspecialchars($product['productName']); ?>"
                                 data-price="<?php echo $product['price']; ?>"
                                 data-category="<?php echo htmlspecialchars($product['categoryName'] ?? 'Uncategorized'); ?>"
-                                onclick="openPopup(this)">Order Now</button>
+                                onclick="openPopup(this)" style="
+                                    font-size: clamp(0.8rem, 2vw, 1rem);
+                                    border-radius: 12px;
+                                    padding: clamp(6px, 1.5vw, 8px) clamp(10px, 2vw, 14px);
+                                ">
+                                Order Now
+                            </button>
                         </div>
+
                     </div>
                     <?php
                 }
@@ -549,6 +580,7 @@ function getCartItemCount()
         </div>
     </footer>
 
+    <!-- Bootstrap and External Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO"
         crossorigin="anonymous"></script>
@@ -556,6 +588,7 @@ function getCartItemCount()
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
 
     <script>
+        // Modal Functions
         function openPopup(button) {
             const modal = new bootstrap.Modal(document.getElementById('item-customization'));
             modal.show();
@@ -576,21 +609,21 @@ function getCartItemCount()
             document.getElementById('modal_price').value = productPrice;
             document.getElementById('modal_category').value = category;
 
-            // Show/hide options depende sa category
+            // Show/hide sugar & ice depende sa category
             updateModalOptions(category);
         }
 
         function updateModalOptions(category) {
-            const sizeSection = document.getElementById("sizeOption");
             const sugarSection = document.getElementById("sugarOption");
             const iceSection = document.getElementById("iceOption");
 
-            if (category === "Coffee" || category === "Tea") {
-                sizeSection.style.display = "block";
+            // ✅ Categories na may sugar & ice
+            const categoriesWithSugarIce = ["Milktea", "Frappe", "Iced Coffee", "Fruit Tea", "Non-Coffee"];
+
+            if (categoriesWithSugarIce.includes(category)) {
                 sugarSection.style.display = "block";
                 iceSection.style.display = "block";
             } else {
-                sizeSection.style.display = "none";
                 sugarSection.style.display = "none";
                 iceSection.style.display = "none";
             }
@@ -613,8 +646,8 @@ function getCartItemCount()
         document.getElementById('item-customization').addEventListener('hidden.bs.modal', function () {
             document.getElementById('quantity').value = 1;
             document.getElementById('customer_notes').value = '';
+
             // Reset radio buttons
-            if (document.getElementById('size12oz')) document.getElementById('size12oz').checked = true;
             if (document.querySelector('input[name="sugar"][value="100% Sugar"]')) {
                 document.querySelector('input[name="sugar"][value="100% Sugar"]').checked = true;
             }
@@ -629,30 +662,331 @@ function getCartItemCount()
             document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
         });
 
-        // DROPDOWN
+        // 🚀 ENHANCED MENU SYSTEM - Preserves category scroll position during sorting
         document.addEventListener('DOMContentLoaded', function () {
+
+            // Get elements
+            const categoryPills = document.querySelectorAll('.category-pill');
+            const productGrid = document.getElementById('productGrid');
+            const productItems = document.querySelectorAll('.product-item');
+            const categoryScroll = document.querySelector('.category-scroll');
             const customSelect = document.querySelector('.custom-select');
-            const selected = customSelect.querySelector('.selected');
-            const options = customSelect.querySelector('.options');
 
-            // Toggle open/close
-            selected.addEventListener('click', () => {
-                options.classList.toggle('show');
-                customSelect.classList.toggle('open');
+            // Store original product data for sorting
+            let allProductsData = [];
+            productItems.forEach(item => {
+                allProductsData.push({
+                    element: item,
+                    name: item.getAttribute('data-name'),
+                    price: parseFloat(item.getAttribute('data-price')),
+                    category: item.getAttribute('data-category')
+                });
             });
 
-            // Close when clicking outside
-            document.addEventListener('click', (e) => {
-                if (!customSelect.contains(e.target)) {
-                    options.classList.remove('show');
-                    customSelect.classList.remove('open');
+            // CATEGORY FILTERING - with preserved scroll position
+            categoryPills.forEach(pill => {
+                pill.addEventListener('click', function (e) {
+                    e.preventDefault();
+
+                    const selectedCategory = this.textContent.trim();
+
+                    // Store current scroll position
+                    const currentScrollPosition = categoryScroll.scrollLeft;
+
+                    // Update active state
+                    categoryPills.forEach(p => p.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Store selected category in sessionStorage
+                    sessionStorage.setItem('selectedCategory', selectedCategory);
+                    sessionStorage.setItem('categoryScrollPosition', currentScrollPosition);
+
+                    // Filter products smoothly
+                    smoothFilterProducts(selectedCategory);
+
+                    // Restore scroll position after filtering
+                    setTimeout(() => {
+                        categoryScroll.scrollLeft = currentScrollPosition;
+                    }, 100);
+                });
+            });
+
+            // SMOOTH SORTING SYSTEM - No page reload required
+            function handleSortChange(sortOption) {
+                // Get current active category and scroll position
+                const activeCategory = document.querySelector('.category-pill.active');
+                const selectedCategory = activeCategory ? activeCategory.textContent.trim() : 'All';
+                const currentScrollPosition = categoryScroll.scrollLeft;
+
+                // Store positions
+                sessionStorage.setItem('selectedCategory', selectedCategory);
+                sessionStorage.setItem('categoryScrollPosition', currentScrollPosition);
+                sessionStorage.setItem('currentSort', sortOption);
+
+                // Apply smooth sorting
+                smoothSortProducts(sortOption, selectedCategory);
+
+                // Update sort dropdown display
+                updateSortDropdownDisplay(sortOption);
+
+                // Maintain scroll position
+                setTimeout(() => {
+                    categoryScroll.scrollLeft = currentScrollPosition;
+                }, 200);
+            }
+
+            // SMOOTH SORT FUNCTION
+            function smoothSortProducts(sortOption, activeCategory = 'All') {
+                // Fade out effect
+                productGrid.style.opacity = '0.5';
+                productGrid.style.transition = 'opacity 0.3s ease';
+
+                setTimeout(() => {
+                    // Sort the products data
+                    let sortedData = [...allProductsData];
+
+                    switch (sortOption) {
+                        case 'name-asc':
+                            sortedData.sort((a, b) => a.name.localeCompare(b.name));
+                            break;
+                        case 'name-desc':
+                            sortedData.sort((a, b) => b.name.localeCompare(a.name));
+                            break;
+                        case 'price-low-high':
+                            sortedData.sort((a, b) => a.price - b.price);
+                            break;
+                        case 'price-high-low':
+                            sortedData.sort((a, b) => b.price - a.price);
+                            break;
+                        default:
+                            sortedData.sort((a, b) => a.name.localeCompare(b.name));
+                    }
+
+                    // Clear and re-append in sorted order
+                    productGrid.innerHTML = '';
+
+                    sortedData.forEach((productData, index) => {
+                        productGrid.appendChild(productData.element);
+
+                        // Apply category filter
+                        const shouldShow = activeCategory === 'All' || productData.category === activeCategory;
+
+                        if (shouldShow) {
+                            productData.element.style.display = 'block';
+                            productData.element.style.opacity = '0';
+                            productData.element.style.transform = 'translateY(30px)';
+
+                            // Staggered animation
+                            setTimeout(() => {
+                                productData.element.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+                                productData.element.style.opacity = '1';
+                                productData.element.style.transform = 'translateY(0)';
+                            }, index * 30);
+                        } else {
+                            productData.element.style.display = 'none';
+                        }
+                    });
+
+                    // Restore grid opacity
+                    setTimeout(() => {
+                        productGrid.style.opacity = '1';
+                    }, 200);
+
+                }, 150);
+            }
+
+            // SMOOTH FILTER FUNCTION - preserves current sort order
+            function smoothFilterProducts(selectedCategory) {
+                const currentScrollPosition = categoryScroll.scrollLeft;
+
+                // Fade out effect
+                productGrid.style.opacity = '0.5';
+                productGrid.style.transition = 'opacity 0.3s ease';
+
+                setTimeout(() => {
+                    let visibleCount = 0;
+
+                    // Get current sort option
+                    const currentSort = sessionStorage.getItem('currentSort') || 'name-asc';
+
+                    // Re-sort and filter
+                    let sortedData = [...allProductsData];
+                    switch (currentSort) {
+                        case 'name-asc':
+                            sortedData.sort((a, b) => a.name.localeCompare(b.name));
+                            break;
+                        case 'name-desc':
+                            sortedData.sort((a, b) => b.name.localeCompare(a.name));
+                            break;
+                        case 'price-low-high':
+                            sortedData.sort((a, b) => a.price - b.price);
+                            break;
+                        case 'price-high-low':
+                            sortedData.sort((a, b) => b.price - a.price);
+                            break;
+                    }
+
+                    // Clear and re-append in sorted order
+                    productGrid.innerHTML = '';
+
+                    sortedData.forEach((productData, index) => {
+                        productGrid.appendChild(productData.element);
+
+                        const shouldShow = selectedCategory === 'All' || productData.category === selectedCategory;
+
+                        if (shouldShow) {
+                            productData.element.style.display = 'block';
+                            productData.element.style.opacity = '0';
+                            productData.element.style.transform = 'translateY(30px)';
+
+                            setTimeout(() => {
+                                productData.element.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                                productData.element.style.opacity = '1';
+                                productData.element.style.transform = 'translateY(0)';
+                            }, visibleCount * 50);
+
+                            visibleCount++;
+                        } else {
+                            productData.element.style.display = 'none';
+                        }
+                    });
+
+                    // Restore grid opacity and scroll position
+                    setTimeout(() => {
+                        productGrid.style.opacity = '1';
+                        categoryScroll.scrollLeft = currentScrollPosition;
+                    }, 200);
+
+                }, 150);
+            }
+
+            // UPDATE SORT DROPDOWN DISPLAY
+            function updateSortDropdownDisplay(sortOption) {
+                const selectedText = document.querySelector('.selected-text');
+                if (!selectedText) return;
+
+                let displayText = "Name A-Z";
+                switch (sortOption) {
+                    case 'name-desc':
+                        displayText = "Name Z-A";
+                        break;
+                    case 'price-low-high':
+                        displayText = "Price: Low to High";
+                        break;
+                    case 'price-high-low':
+                        displayText = "Price: High to Low";
+                        break;
                 }
+
+                selectedText.textContent = displayText;
+            }
+
+            // DROPDOWN FUNCTIONALITY - Enhanced for smooth sorting
+            if (customSelect) {
+                const selected = customSelect.querySelector('.selected');
+                const options = customSelect.querySelector('.options');
+
+                // Toggle dropdown
+                selected.addEventListener('click', () => {
+                    options.classList.toggle('show');
+                    customSelect.classList.toggle('open');
+                });
+
+                // Handle option clicks - NO PAGE RELOAD
+                const optionLinks = options.querySelectorAll('a');
+                optionLinks.forEach(link => {
+                    link.addEventListener('click', function (e) {
+                        e.preventDefault(); // Prevent page reload
+
+                        // Get sort option from data attribute
+                        const sortOption = this.getAttribute('data-sort') || 'name-asc';
+
+                        // Apply smooth sorting
+                        handleSortChange(sortOption);
+
+                        // Close dropdown
+                        options.classList.remove('show');
+                        customSelect.classList.remove('open');
+                    });
+                });
+
+                // Close when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!customSelect.contains(e.target)) {
+                        options.classList.remove('show');
+                        customSelect.classList.remove('open');
+                    }
+                });
+            }
+
+            // RESTORE STATE ON PAGE LOAD
+            function restoreMenuState() {
+                // Restore selected category
+                const savedCategory = sessionStorage.getItem('selectedCategory');
+                const savedScrollPosition = sessionStorage.getItem('categoryScrollPosition');
+                const savedSort = sessionStorage.getItem('currentSort');
+
+                if (savedCategory && savedCategory !== 'All') {
+                    // Update active category pill
+                    categoryPills.forEach(pill => {
+                        pill.classList.remove('active');
+                        if (pill.textContent.trim() === savedCategory) {
+                            pill.classList.add('active');
+                        }
+                    });
+
+                    // Apply sort and filter
+                    if (savedSort) {
+                        updateSortDropdownDisplay(savedSort);
+                        smoothSortProducts(savedSort, savedCategory);
+                    } else {
+                        smoothFilterProducts(savedCategory);
+                    }
+                } else if (savedSort) {
+                    // Just apply sorting if no category filter
+                    updateSortDropdownDisplay(savedSort);
+                    smoothSortProducts(savedSort, 'All');
+                }
+
+                // Restore scroll position
+                if (savedScrollPosition) {
+                    setTimeout(() => {
+                        categoryScroll.scrollLeft = parseInt(savedScrollPosition);
+                    }, 300);
+                }
+            }
+
+            // ENHANCED MENU HOVER EFFECTS
+            const menuItems = document.querySelectorAll('.menu-item');
+            menuItems.forEach(item => {
+                item.addEventListener('mouseenter', function () {
+                    this.style.transform = 'translateY(-8px) scale(1.03)';
+                    this.style.boxShadow = '0 12px 30px rgba(0, 0, 0, 0.15)';
+                    this.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease';
+                });
+
+                item.addEventListener('mouseleave', function () {
+                    this.style.transform = 'translateY(0) scale(1)';
+                    this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+                });
             });
+
+            // Initialize state restoration
+            setTimeout(() => {
+                restoreMenuState();
+            }, 100);
+
+            // Make functions globally accessible
+            window.smoothFilterProducts = smoothFilterProducts;
+            window.handleSortChange = handleSortChange;
+            window.smoothSortProducts = smoothSortProducts;
         });
     </script>
 
+    <!-- External Scripts -->
     <script src="assets/js/main.js"></script>
     <script src="assets/js/navbar.js"></script>
+
 </body>
 
 </html>
