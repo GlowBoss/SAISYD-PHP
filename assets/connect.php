@@ -1,19 +1,25 @@
 <?php
-  $dbhost = "localhost";
-	$dbuser = "root";
-	$dbpass = "";
-	$db = "saisyd";
+$dbhost = "localhost";
+$dbuser = "root";
+$dbpass = "";
+$db = "saisyd";
 
-	$conn = new mysqli($dbhost, $dbuser, $dbpass,$db) or die("Connect failed: %s\n". $conn -> error);
+$conn = new mysqli($dbhost, $dbuser, $dbpass, $db) or die("Connect failed: %s\n" . $conn->error);
 
-	if(!$conn)
-	{
-		die("Connection Failed. ". mysqli_connect_error());
-		echo "can't connect to database";
-	}
+try {
+  $pdo = new PDO("mysql:host=$dbhost;dbname=$db", $dbuser, $dbpass);
+  $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+  die("Connection failed: " . $e->getMessage());
+}
 
-  function executeQuery($query){
-    $conn = $GLOBALS['conn'];
-    return mysqli_query($conn, $query);
-  }
+if (!$conn) {
+  die("Connection Failed. " . mysqli_connect_error());
+}
+
+function executeQuery($query)
+{
+  $conn = $GLOBALS['conn'];
+  return mysqli_query($conn, $query);
+}
 ?>

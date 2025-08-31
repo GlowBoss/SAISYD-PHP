@@ -1,3 +1,175 @@
+<?php
+include 'assets/connect.php';
+session_start();
+
+// Initialize cart session if it doesn't exist
+if (!isset($_SESSION['cart'])) {
+    $_SESSION['cart'] = [];
+}
+
+// Set session timeout (30 minutes)
+if (!isset($_SESSION['cart_timeout'])) {
+    $_SESSION['cart_timeout'] = time() + (30 * 60);
+}
+
+// Check if cart session has expired
+if (time() > $_SESSION['cart_timeout']) {
+    $_SESSION['cart'] = [];
+    $_SESSION['cart_timeout'] = time() + (30 * 60);
+}
+
+// Handle Add to Cart via POST
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
+    $productId = $_POST['product_id'];
+    $productName = $_POST['product_name'];
+    $price = $_POST['price'];
+    $category = $_POST['category'];
+    $sugar = $_POST['sugar'] ?? '';
+    $ice = $_POST['ice'] ?? '';
+    $notes = $_POST['notes'] ?? '';
+    $quantity = intval($_POST['quantity'] ?? 1);
+
+    // Check if item with same customizations already exists in SESSION
+    $itemExists = false;
+    foreach ($_SESSION['cart'] as $index => $item) {
+        if (
+            $item['product_id'] == $productId &&
+            $item['sugar'] == $sugar &&
+            $item['ice'] == $ice &&
+            $item['notes'] == $notes
+        ) {
+            $_SESSION['cart'][$index]['quantity'] += $quantity;
+            $itemExists = true;
+            break;
+        }
+    }
+
+    // If item doesn't exist, add new item in SESSION
+    if (!$itemExists) {
+        $_SESSION['cart'][] = [
+            'product_id' => $productId,
+            'product_name' => $productName,
+            'price' => $price,
+            'category' => $category,
+            'sugar' => $sugar,
+            'ice' => $ice,
+            'notes' => $notes,
+            'quantity' => $quantity
+        ];
+    }
+
+    // -----------------------
+    // INSERT TO DATABASE
+    // -----------------------
+
+    // Check if may pending order (reuse) or create new
+    $orderResult = executeQuery("SELECT * FROM orders WHERE status='pending' LIMIT 1");
+
+    if (mysqli_num_rows($orderResult) > 0) {
+        $order = mysqli_fetch_assoc($orderResult);
+        $orderID = $order['orderID'];
+    } else {
+        $today = date("Y-m-d");
+        $insertOrder = "INSERT INTO orders (orderDate, status, totalAmount) VALUES ('$today','pending',0)";
+        executeQuery($insertOrder);
+
+        $newOrder = executeQuery("SELECT orderID FROM orders ORDER BY orderID DESC LIMIT 1");
+        $orderRow = mysqli_fetch_assoc($newOrder);
+        $orderID = $orderRow['orderID'];
+    }
+
+    // Insert item with customizations
+    $insertItem = "
+        INSERT INTO orderitems (orderID, productID, quantity, sugar, ice, notes) 
+        VALUES (
+            '$orderID',
+            '$productId',
+            '$quantity',
+            '" . mysqli_real_escape_string($conn, $sugar) . "',
+            '" . mysqli_real_escape_string($conn, $ice) . "',
+            '" . mysqli_real_escape_string($conn, $notes) . "'
+        )
+    ";
+    executeQuery($insertItem);
+
+    // Reset cart timeout
+    $_SESSION['cart_timeout'] = time() + (30 * 60);
+
+    // Set success message
+    $_SESSION['cart_message'] = 'Item added to cart successfully!';
+
+    // Redirect to prevent form resubmission
+    header('Location: ' . $_SERVER['PHP_SELF'] . '?' . http_build_query($_GET));
+    exit();
+}
+
+// -------------------
+// FETCH PRODUCTS
+// -------------------
+$categoryFilter = isset($_GET['category']) ? $_GET['category'] : 'ALL';
+$sortOption = isset($_GET['sort']) ? $_GET['sort'] : 'name-asc';
+
+// Decide ORDER BY clause
+switch ($sortOption) {
+    case 'name-asc':
+        $orderBy = "p.productName ASC";
+        break;
+    case 'name-desc':
+        $orderBy = "p.productName DESC";
+        break;
+    case 'price-low-high':
+        $orderBy = "p.price ASC";
+        break;
+    case 'price-high-low':
+        $orderBy = "p.price DESC";
+        break;
+    default:
+        $orderBy = "p.productName ASC";
+}
+
+// Build product query with filter + sort
+if ($categoryFilter === 'ALL') {
+    $productQuery = "
+        SELECT p.*, c.categoryName 
+        FROM products p 
+        LEFT JOIN categories c ON p.categoryID = c.categoryID 
+        WHERE p.isAvailable = 'Yes'
+        ORDER BY $orderBy
+    ";
+} else {
+    $safeCategory = mysqli_real_escape_string($conn, $categoryFilter);
+    $productQuery = "
+        SELECT p.*, c.categoryName 
+        FROM products p 
+        LEFT JOIN categories c ON p.categoryID = c.categoryID 
+        WHERE p.isAvailable = 'Yes' AND c.categoryName = '$safeCategory'
+        ORDER BY $orderBy
+    ";
+}
+
+$products = executeQuery($productQuery);
+
+// Fetch categories
+$categoryQuery = "SELECT * FROM categories ORDER BY categoryName";
+$categories = executeQuery($categoryQuery);
+
+// Function to get cart item count
+function getCartItemCount()
+{
+    $count = 0;
+    if (isset($_SESSION['cart'])) {
+        foreach ($_SESSION['cart'] as $item) {
+            $count += $item['quantity'];
+        }
+    }
+    return $count;
+}
+
+// Get current category from cookie if using JS filtering
+$currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_category'] : 'ALL';
+?>
+
+
 <!doctype html>
 <html lang="en">
 
@@ -15,9 +187,6 @@
     <link rel="stylesheet" href="assets/css/coffee.css">
     <link rel="stylesheet" href="assets/css/navbar.css">
     <link rel="icon" href="assets/img/round_logo.png" type="image/png">
-
-
-
 </head>
 
 <body>
@@ -47,15 +216,23 @@
                 data-wow-delay="0.45s">
                 <i class="bi bi-envelope fs-5"></i> <span>Contact</span>
             </a>
-            <a href="cart.php" class="nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.55s">
-                <i class="bi bi-cart fs-5"></i> <span>Cart</span>
+            <a href="cart.php" class="nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.55s"
+                style="display: flex; align-items: center; justify-content: space-between; gap: 6px; position: relative;">
+                <i class="bi bi-cart fs-5"></i>
+                <span>Cart</span>
+                <?php if (getCartItemCount() > 0): ?>
+                    <span class="badge bg-danger rounded-pill"
+                        style="position: absolute; top: -5px; right: 70px; font-size: 0.75rem; padding: 0.25em 0.5em;">
+                        <?php echo getCartItemCount(); ?>
+                    </span>
+                <?php endif; ?>
             </a>
+
         </div>
 
         <button class="btn menu-btn wow" onclick="location.href='menu.php'">
             <i class="fas fa-mug-hot me-2"></i> Menu
         </button>
-
     </div>
 
     <!-- Navbar -->
@@ -76,12 +253,25 @@
                     </a>
                 </div>
 
-                <!-- Right: Cart -->
-                <div class="ms-auto">
-                    <a href="cart.php" class="d-flex align-items-center text-decoration-none">
-                        <i class="bi bi-cart3 fs-5" style="color: var(--text-color-dark);"></i>
+                <!-- Mobile: Right Cart -->
+                <div class="ms-auto d-flex align-items-center">
+                    <a href="cart.php" class="d-flex align-items-center text-decoration-none position-relative">
+                        <i class="bi bi-cart3 fs-5 me-2 " style="color: var(--text-color-dark);"></i>
+                        <?php if (getCartItemCount() > 0): ?>
+                            <span class="position-absolute badge rounded-pill bg-danger" style="
+                                top: -6px;
+                                right: -6px;
+                                font-size: 0.65rem;
+                                padding: 0.25em 0.45em;
+                                line-height: 1;
+                            ">
+                                <?php echo getCartItemCount(); ?>
+                            </span>
+                        <?php endif; ?>
                     </a>
                 </div>
+
+
             </div>
 
             <!-- Desktop Layout: Logo on left -->
@@ -108,7 +298,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="v#contact">
+                        <a class="nav-link" href="index.php#contact">
                             <i class="bi bi-envelope"></i> <span>Contact</span>
                         </a>
                     </li>
@@ -116,8 +306,18 @@
 
                 <!-- Desktop: Cart + Menu -->
                 <div class="d-none d-lg-flex align-items-center">
-                    <a href="cart.php" class="nav-link me-2">
-                        <i class="bi bi-cart3"></i> <span>Cart</span>
+                    <a href="cart.php" class="nav-link position-relative me-2">
+                        <i class="bi bi-cart3 fs-4"></i> <span>Cart</span>
+                        <?php if (getCartItemCount() > 0): ?>
+                            <span class="position-absolute badge rounded-pill bg-danger" style="
+                                top: -2px;
+                                right: -2px;
+                                font-size: 0.75rem;
+                                padding: 0.25em 0.5em;
+                            ">
+                                <?php echo getCartItemCount(); ?>
+                            </span>
+                        <?php endif; ?>
                     </a>
                     <button class="btn menu-btn" onclick="location.href='menu.php'">
                         <i class="fas fa-mug-hot me-2"></i> Menu
@@ -129,86 +329,127 @@
 
     <!-- Categories + Sort Section -->
     <div class="container-fluid px-sm-2 px-md-4 px-lg-5 mt-5 mt-lg-4 pt-lg-5">
-        <!-- Top Row: Categories Label + Sort -->
-        <div
-            class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-2">
+        <!-- Header Row - Title and Sort -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mb-4 ">
 
-            <!-- Categories Label -->
-            <div class="title-category heading align-items-sm-start">Cafe Menu</div>
+            <!-- Title -->
+            <div class="title-category heading pt-2 pt-lg-2">Cafe Menu</div>
 
-        </div>
-
-        <!-- Category Pills Row -->
-        <div class="d-flex flex-column flex-md-row align-items-md-center gap-3">
-
-            <!-- Sort Dropdown -->
-            <div class="d-flex align-items-center gap-2 px-3 py-2 border rounded-pill shadow-sm mx-auto mx-md-0 order-0 order-md-1 mb-lg-2 "
-                style="background-color: var(--card-bg-color); font-family: var(--primaryFont); font-size: var(--lead); font-weight: 500; color: var(--text-color-dark); border-color: var(--primary-color);">
+            <div class="custom-select-wrapper d-flex align-items-center gap-2 gap-md-3 px-2 px-md-3 py-2 border rounded-pill mt-2 mt-md-0"
+                style="font-family: var(--primaryFont); font-size: var(--lead); font-weight: 500; color: var(--text-color-dark); border-color: var(--primary-color); min-width: fit-content; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);">
                 <i class="bi bi-funnel-fill" style="color: var(--text-color-dark); font-size: 1rem;"></i>
-                <label for="sortSelect" class="mb-0 fw-semibold">Sort by:</label>
-                <select id="sortSelect" class="form-select form-select-sm border-0 bg-transparent shadow-none"
-                    style="width: 160px; font-weight: 600; font-size: var(--lead); font-family: var(--primaryFont); color: var(--text-color-dark);">
-                    <option value="popularity">Popularity</option>
-                    <option value="price-low-high">Price: Low to High</option>
-                    <option value="price-high-low">Price: High to Low</option>
-                    <option value="newest">Newest</option>
-                </select>
-            </div>
+                <label class="mb-0 fw-semibold">Sort by:</label>
 
-            <!-- Category Pills Row -->
-            <div class="category-scroll d-flex gap-3 overflow-auto pb-3 pt-1 flex-grow-1 order-1 order-md-0">
-                <div class="category-pill text-center active" data-category="All">All</div>
-                <div class="category-pill text-center" data-category="Coffee">Coffee</div>
-                <div class="category-pill text-center" data-category="Tea">Tea</div>
-                <div class="category-pill text-center" data-category="Food">Food</div>
-            </div>
-
-        </div>
-
-
-    </div>
-
-    <div class="products-section border p-3 p-lg-5 mx-lg-3">
-        <div class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6" id="productGrid">
-            <!-- PRODUCTS -->
-
-            <div class="col">
-                <div class="menu-item text-center shadow-sm" style="
-                    height: 320px; 
-                    background-color: #fff9f2; 
-                    border-radius: 20px; 
-                    border: 1px solid #e0c9a6;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
-                    display: flex; 
-                    flex-direction: column; 
-                    justify-content: space-between; 
-                    padding: 15px;
-                    transition: transform 0.2s ease;
-                ">
-                    <div style="height: 150px; display: flex; align-items: center; justify-content: center;">
-                        <img src="assets/img/coffee.png" alt="" class="img-fluid"
-                            style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                <div class="custom-select">
+                    <!-- Selected display -->
+                    <div class="selected">
+                        <span class="selected-text">Name A-Z</span>
+                        <i class="bi bi-chevron-down dropdown-icon"></i>
                     </div>
-                    <div class="subheading menu-name" style="font-size: 1.2rem; font-weight: 500; color: #4b2e2e;margin-top: 10px;">
-                        Amerikano
+
+                    <!-- Options - Using data-sort attributes for JavaScript -->
+                    <div class="options">
+                        <div><a href="#" data-sort="name-asc">Name A-Z</a></div>
+                        <div><a href="#" data-sort="name-desc">Name Z-A</a></div>
+                        <div><a href="#" data-sort="price-low-high">Price: Low to High</a></div>
+                        <div><a href="#" data-sort="price-high-low">Price: High to Low</a></div>
                     </div>
-                    <div class="d-flex justify-content-center align-items-center text-center px-2"
-                        style="color: #6e4f3a; font-size: 0.85rem;">
-                        12oz – ₱60 | 16oz – ₱80
-                    </div>
-                    <button class="lead buy-btn mt-auto" data-bs-toggle="modal" data-bs-target="#item-customization"
-                        data-name="${prod.name}" data-price="${getPrice(prod)}"
-                        data-sizes='${JSON.stringify(prod.sizes || [])}'
-                        data-sugar='${JSON.stringify(prod.sugarLevels || [])}'
-                        data-type="${prod.sizes ? 'beverage' : 'food'}" onclick="openPopup(this)">Order Now</button>
                 </div>
             </div>
+        </div>
 
+        <?php
+        // Make sure to reset categories result for the pills
+        mysqli_data_seek($categories, 0);
+        ?>
+
+        <!-- Fixed Category Pills Row -->
+        <div class="category-scroll d-flex gap-3 overflow-auto pb-3 pt-1">
+            <!-- All category pill -->
+            <a href="#" class="category-pill text-decoration-none text-center active">
+                All
+            </a>
+
+            <?php
+            // Generate category pills
+            if (mysqli_num_rows($categories) > 0) {
+                while ($category = mysqli_fetch_assoc($categories)) {
+                    $categoryName = htmlspecialchars($category['categoryName']);
+                    ?>
+                    <a href="#" class="category-pill text-decoration-none text-center">
+                        <?php echo $categoryName; ?>
+                    </a>
+                    <?php
+                }
+            }
+            ?>
         </div>
     </div>
 
-    <!-- Confirm Item Customization Modal -->
-    <div id="modal-placeholder"></div>
+    <!-- PRODUCT -->
+    <div class="products-section border p-3 p-lg-5 mx-lg-3">
+        <div class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6" id="productGrid">
+            <?php
+            if (mysqli_num_rows($products) > 0) {
+                while ($product = mysqli_fetch_assoc($products)) {
+                    ?>
+                    <div class="col product-item"
+                        data-category="<?php echo htmlspecialchars($product['categoryName'] ?? 'Uncategorized'); ?>"
+                        data-name="<?php echo htmlspecialchars($product['productName']); ?>"
+                        data-price="<?php echo $product['price']; ?>">
+                        <div class="menu-item text-center" style="
+                            height: clamp(260px, 40vw, 320px);
+                            border-radius: 20px;
+                            background-color: var(--bg-color);
+                            border: 0.5px solid rgba(0, 0, 0, 0.2); /* very subtle border */
+                            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08); /* light shadow */
+                            display: flex;
+                            flex-direction: column;
+                            justify-content: space-between;
+                            padding: clamp(10px, 2vw, 15px);
+                            transition: transform 0.25s ease, box-shadow 0.25s ease;
+                        ">
+                            <div
+                                style="height: clamp(120px, 25vw, 150px); display: flex; align-items: center; justify-content: center;">
+                                <img src="assets/img/img-menu/<?php echo htmlspecialchars($product['image'] ?? 'coffee.png'); ?>"
+                                    alt="<?php echo htmlspecialchars($product['productName']); ?>" class="img-fluid"
+                                    style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                            </div>
+
+                            <div class="subheading menu-name"
+                                style="font-size: clamp(0.9rem, 2.5vw, 1.2rem); font-weight: 500; color: #4b2e2e; margin-top: 10px;">
+                                <?php echo htmlspecialchars($product['productName']); ?>
+                            </div>
+
+                            <div class="d-flex justify-content-center align-items-center text-center px-2"
+                                style="color: #6e4f3a; font-size: clamp(0.75rem, 2vw, 0.9rem);">
+                                ₱<?php echo number_format($product['price'], 2); ?>
+                            </div>
+
+                            <button class="lead buy-btn mt-auto" data-bs-toggle="modal" data-bs-target="#item-customization"
+                                data-product-id="<?php echo $product['productID']; ?>"
+                                data-name="<?php echo htmlspecialchars($product['productName']); ?>"
+                                data-price="<?php echo $product['price']; ?>"
+                                data-category="<?php echo htmlspecialchars($product['categoryName'] ?? 'Uncategorized'); ?>"
+                                onclick="openPopup(this)" style="
+                                    font-size: clamp(0.8rem, 2vw, 1rem);
+                                    border-radius: 12px;
+                                    padding: clamp(6px, 1.5vw, 8px) clamp(10px, 2vw, 14px);
+                                ">
+                                Order Now
+                            </button>
+                        </div>
+
+                    </div>
+                    <?php
+                }
+            }
+            ?>
+        </div>
+    </div>
+
+    <!-- Include External Modal -->
+    <?php include 'modal/item-customization.php'; ?>
 
     <!-- Footer -->
     <footer class="bg-footer text-dark pt-5 pb-3">
@@ -285,7 +526,6 @@
                                     <i class="fab fa-tiktok me-2"></i>SAISYD
                                 </a>
                             </p>
-
                         </div>
                     </div>
                 </div>
@@ -324,7 +564,6 @@
                             <i class="fab fa-tiktok me-2"></i>SAISYD
                         </a>
                     </p>
-
                 </div>
             </div>
 
@@ -341,375 +580,413 @@
         </div>
     </footer>
 
-    <script src="assets/js/main.js"></script>
-    <script src="assets/js/navbar.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
+    <!-- Bootstrap and External Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO"
         crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
 
     <script>
+        // Modal Functions
+        function openPopup(button) {
+            const modal = new bootstrap.Modal(document.getElementById('item-customization'));
+            modal.show();
 
-        // Load item customization modal
-        fetch("modal/item-customization.php")
-            .then(res => res.text())
-            .then(data => {
-                document.getElementById("modal-placeholder").innerHTML = data;
+            // Get product data
+            const productName = button.getAttribute('data-name');
+            const productPrice = button.getAttribute('data-price');
+            const productId = button.getAttribute('data-product-id');
+            const category = button.getAttribute('data-category');
 
-                // Add button listener
-                const addBtn = document.querySelector('.addbtn');
-                if (addBtn) {
-                    addBtn.addEventListener('click', function (e) {
-                        e.preventDefault();
-                        confirmOrder();
-                    });
-                }
+            // Update modal content
+            document.querySelector('.itemName').textContent = productName;
+            document.querySelector('.itemPrice').textContent = '₱' + parseFloat(productPrice).toFixed(2);
 
-                const modalEl = document.getElementById('item-customization');
-                if (modalEl) {
-                    modalEl.addEventListener('hidden.bs.modal', () => {
-                        document.body.style.overflow = '';
-                        document.body.classList.remove('modal-open');
-                        document.querySelector('.modal-backdrop')?.remove();
-                    });
-                }
-            })
-            .catch(error => {
-                console.error('Error loading item customization modal:', error);
-            });
-            function openPopup() {
-    const modal = new bootstrap.Modal(document.getElementById('item-customization'));
-    modal.show();
+            // Hidden fields
+            document.getElementById('modal_product_id').value = productId;
+            document.getElementById('modal_product_name').value = productName;
+            document.getElementById('modal_price').value = productPrice;
+            document.getElementById('modal_category').value = category;
 
-    // Static placeholder values (no data logic)
-    document.querySelector('.itemName').textContent = 'Sample Item';
-    document.querySelector('.itemPrice').textContent = '₱0.00';
-
-    // Show ice section for prototype
-    document.getElementById('ice-section').style.display = 'block';
-
-    // Show size section with static options
-    const sizeSection = document.getElementById('size-section');
-    const sizeContainer = document.getElementById('size-options');
-    sizeSection.style.display = 'block';
-    sizeContainer.innerHTML = `
-        <div class="col">
-            <div class="form-check">
-                <input class="form-check-input" type="radio" name="priceOptions" id="size16oz" checked>
-                <label class="form-check-label h6" for="size16oz">16oz</label>
-            </div>
-        </div>
-        <div class="col">
-            <div class="form-check">
-                <input class="form-check-input" type="radio" name="priceOptions" id="size18oz">
-                <label class="form-check-label h6" for="size18oz">18oz</label>
-            </div>
-        </div>
-    `;
-
-    // Show sugar section with static options
-    const sugarSection = document.getElementById('sugar-section');
-    const sugarContainer = document.getElementById('sugar-options');
-    sugarSection.style.display = 'block';
-    sugarContainer.innerHTML = `
-        <div class="col">
-            <div class="form-check">
-                <input class="form-check-input" type="radio" name="sugarOption" id="sugar25" checked>
-                <label class="form-check-label h6" for="sugar25">25%</label>
-            </div>
-        </div>
-        <div class="col">
-            <div class="form-check">
-                <input class="form-check-input" type="radio" name="sugarOption" id="sugar50">
-                <label class="form-check-label h6" for="sugar50">50%</label>
-            </div>
-        </div>
-        <div class="col">
-            <div class="form-check">
-                <input class="form-check-input" type="radio" name="sugarOption" id="sugar100">
-                <label class="form-check-label h6" for="sugar100">100%</label>
-            </div>
-        </div>
-    `;
-}
-
-
-        function updateModalPrice(sizes) {
-            const selectedSize = document.querySelector('input[name="priceOptions"]:checked')?.value;
-            const match = sizes.find(sz => sz.name === selectedSize);
-            if (match) {
-                document.querySelector('.itemPrice').textContent = `₱${match.price}`;
-            }
+            // Show/hide sugar & ice depende sa category
+            updateModalOptions(category);
         }
 
-        function confirmOrder() {
-            const name = document.querySelector('.itemName').textContent;
-            const size = document.querySelector('input[name="priceOptions"]:checked')?.value || '';
-            const sugar = document.querySelector('input[name="sugarOption"]:checked')?.value || '';
-            const ice = document.querySelector('input[name="iceOptions"]:checked')?.id || '';
-            const note = document.getElementById('customer_notes')?.value || '';
+        function updateModalOptions(category) {
+            const sugarSection = document.getElementById("sugarOption");
+            const iceSection = document.getElementById("iceOption");
 
-            const type = document.getElementById('size-section').style.display === 'none' ? 'food' : 'beverage';
+            // ✅ Categories na may sugar & ice
+            const categoriesWithSugarIce = ["Milktea", "Frappe", "Iced Coffee", "Fruit Tea", "Non-Coffee"];
 
-            // ✅ FIXED: Create better display name
-            let displayName = name;
-            let finalName = name;
-            if (type === 'beverage') {
-                finalName = `${name}_${size}_${sugar}s_${ice}`;
-                // Keep display name clean for cart
-                displayName = name;
-            }
-
-            // Get price
-            let price = 0;
-            if (type === 'beverage') {
-                const selectedSize = document.querySelector('input[name="priceOptions"]:checked')?.value;
-                const buyBtn = document.querySelector(`.buy-btn[data-name="${name}"]`);
-                if (buyBtn) {
-                    const allSizes = JSON.parse(buyBtn.getAttribute('data-sizes'));
-                    const match = allSizes.find(sz => sz.name === selectedSize);
-                    if (match) price = match.price;
-                }
+            if (categoriesWithSugarIce.includes(category)) {
+                sugarSection.style.display = "block";
+                iceSection.style.display = "block";
             } else {
-                const product = allProducts.find(p => p.name === name);
-                if (product) price = product.price;
-            }
-
-            // Get category
-            const product = allProducts.find(p => p.name === name);
-            const validCategories = ['Coffee', 'Tea', 'Food'];
-            let category = product?.category || 'Unknown';
-            if (!validCategories.includes(category)) {
-                category = 'Unknown';
-            }
-
-            // ✅ FIXED: Create consistent order object structure
-            const order = {
-                name: finalName,
-                displayName: displayName,
-                quantity: 1,
-                dataCategory: category,
-                price: price,
-                notes: note,
-                size: size,
-                sugar: sugar,
-                ice: ice.replace('ice', ''),
-                type: type,
-                addedAt: new Date().toISOString()
-            };
-
-            let currentOrders = [];
-            try {
-                const existingData = localStorage.getItem("orders");
-                currentOrders = existingData ? JSON.parse(existingData) : [];
-            } catch (error) {
-                console.error('Error parsing existing orders:', error);
-                currentOrders = [];
-            }
-
-            // Check if same item already exists in cart
-            const existingIndex = currentOrders.findIndex(item =>
-                item.displayName === order.displayName &&
-                item.size === order.size &&
-                item.sugar === order.sugar &&
-                item.ice === order.ice
-            );
-
-            if (existingIndex > -1) {
-                currentOrders[existingIndex].quantity++;
-            } else {
-                currentOrders.push(order);
-            }
-
-            localStorage.setItem("orders", JSON.stringify(currentOrders));
-
-
-            // Close modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('item-customization'));
-            if (modal) modal.hide();
-
-            // Fix scroll and backdrop
-            document.body.style.overflow = '';
-            document.body.classList.remove('modal-open');
-            document.querySelector('.modal-backdrop')?.remove();
-
-            // Show toast
-            const toast = new bootstrap.Toast(document.getElementById('orderToast'));
-            if (toast) toast.show();
-
-            // ✅ NEW: Update cart badge if function exists
-            if (typeof updateCartBadge === 'function') {
-                updateCartBadge();
-            }
-
-            console.log("Item added to cart:", order);
-            console.log("Current cart:", currentOrders);
-        }
-
-        let allProducts = [];
-
-        async function fetchProducts() {
-            try {
-                const res = await fetch('Admin/products.json');
-                const data = await res.json();
-
-                // Flatten contents
-                allProducts = [];
-                data.forEach(category => {
-                    category.contents.forEach(product => {
-                        const base = {
-                            ...product,
-                            category: category.category
-                        };
-                        allProducts.push(base);
-                    });
-                });
-                displayProducts();
-            } catch (error) {
-                console.error('Error fetching products:', error);
+                sugarSection.style.display = "none";
+                iceSection.style.display = "none";
             }
         }
 
-        function displayProducts(filterCategory = 'All', sortOption = 'popularity') {
-            let filtered = [...allProducts];
-
-            // Filter
-            if (filterCategory !== 'All') {
-                filtered = filtered.filter(p => p.category === filterCategory);
-            }
-
-            // Sort
-            switch (sortOption) {
-                case 'price-low-high':
-                    filtered.sort((a, b) => getPrice(a) - getPrice(b));
-                    break;
-                case 'price-high-low':
-                    filtered.sort((a, b) => getPrice(b) - getPrice(a));
-                    break;
-                case 'newest':
-                    filtered.sort(() => Math.random() - 0.5);
-                    break;
-                case 'popularity':
-                default:
-                    filtered.sort(() => Math.random() - 0.5);
-            }
-
-            const grid = document.getElementById('productGrid');
-            if (!grid) return;
-
-            grid.innerHTML = '';
-            filtered.forEach(prod => {
-                // Construct size+price string for display
-                let sizePriceDisplay = '';
-                if (prod.sizes && prod.sizes.length > 0) {
-                    sizePriceDisplay = prod.sizes
-                        .map(sz => `${sz.name} – ₱${sz.price}`)
-                        .join(' | ');
-                } else {
-                    sizePriceDisplay = `₱${prod.price}`;
-                }
-
-                const html = `
-            <div class="col">
-                <div class="menu-item text-center shadow-sm" style="
-                    height: 320px; 
-                    background-color: #fff9f2; 
-                    border-radius: 20px; 
-                    border: 1px solid #e0c9a6;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
-                    display: flex; 
-                    flex-direction: column; 
-                    justify-content: space-between; 
-                    padding: 15px;
-                    transition: transform 0.2s ease;
-                ">
-                    <div style="height: 150px; display: flex; align-items: center; justify-content: center;">
-                        <img src="assets/img/${prod.img}" alt="${prod.name}" class="img-fluid" 
-                            style="max-height: 100%; max-width: 100%; object-fit: contain;">    
-                    </div>
-                    <div class="subheading menu-name" style="
-                        font-size: 1.2rem; 
-                        font-weight: 500; 
-                        color: #4b2e2e;
-                        margin-top: 10px;
-                    ">
-                        ${prod.name}
-                    </div>  
-                    <div class="d-flex justify-content-center align-items-center text-center px-2" style="color: #6e4f3a; font-size: 0.85rem;">
-                        ${sizePriceDisplay}
-                    </div>
-                    <button class="lead buy-btn mt-auto" 
-                        data-bs-toggle="modal" 
-                        data-bs-target="#item-customization"
-                        data-name="${prod.name}"
-                        data-price="${getPrice(prod)}"
-                        data-sizes='${JSON.stringify(prod.sizes || [])}'
-                        data-sugar='${JSON.stringify(prod.sugarLevels || [])}'
-                        data-type="${prod.sizes ? 'beverage' : 'food'}" 
-                        onclick="openPopup(this)">Order Now</button>
-                </div>
-            </div>`;
-                grid.innerHTML += html;
-            });
+        // Quantity logic
+        function decreaseQuantity() {
+            const quantityInput = document.getElementById('quantity');
+            let currentValue = parseInt(quantityInput.value);
+            if (currentValue > 1) quantityInput.value = currentValue - 1;
         }
 
-        function getPrice(prod) {
-            if (prod.sizes && prod.sizes.length) return prod.sizes[0].price;
-            return prod.price || 0;
+        function increaseQuantity() {
+            const quantityInput = document.getElementById('quantity');
+            let currentValue = parseInt(quantityInput.value);
+            if (currentValue < 999) quantityInput.value = currentValue + 1;
         }
 
-        // Category click
-        document.querySelectorAll('.category-pill').forEach(item => {
-            item.addEventListener('click', () => {
-                document.querySelectorAll('.category-pill').forEach(el => el.classList.remove('active'));
-                item.classList.add('active');
-                const category = item.dataset.category;
-                const sort = document.getElementById('sortSelect')?.value || 'popularity';
-                displayProducts(category, sort);
-            });
+        // Reset form when modal hides
+        document.getElementById('item-customization').addEventListener('hidden.bs.modal', function () {
+            document.getElementById('quantity').value = 1;
+            document.getElementById('customer_notes').value = '';
+
+            // Reset radio buttons
+            if (document.querySelector('input[name="sugar"][value="100% Sugar"]')) {
+                document.querySelector('input[name="sugar"][value="100% Sugar"]').checked = true;
+            }
+            if (document.querySelector('input[name="ice"][value="Default"]')) {
+                document.querySelector('input[name="ice"][value="Default"]').checked = true;
+            }
         });
 
-        // Sort change
-        const sortSelect = document.getElementById('sortSelect');
-        if (sortSelect) {
-            sortSelect.addEventListener('change', e => {
-                const selectedSort = e.target.value;
-                const activeCat = document.querySelector('.category-pill.active')?.dataset.category || 'All';
-                displayProducts(activeCat, selectedSort);
+        // Prevent freeze bug when closing modal
+        document.getElementById('item-customization').addEventListener('hidden.bs.modal', function () {
+            document.body.classList.remove('modal-open');
+            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+        });
+
+        // 🚀 ENHANCED MENU SYSTEM - Preserves category scroll position during sorting
+        document.addEventListener('DOMContentLoaded', function () {
+
+            // Get elements
+            const categoryPills = document.querySelectorAll('.category-pill');
+            const productGrid = document.getElementById('productGrid');
+            const productItems = document.querySelectorAll('.product-item');
+            const categoryScroll = document.querySelector('.category-scroll');
+            const customSelect = document.querySelector('.custom-select');
+
+            // Store original product data for sorting
+            let allProductsData = [];
+            productItems.forEach(item => {
+                allProductsData.push({
+                    element: item,
+                    name: item.getAttribute('data-name'),
+                    price: parseFloat(item.getAttribute('data-price')),
+                    category: item.getAttribute('data-category')
+                });
             });
-        }
 
-        // ✅ NEW: Cart badge update function
-        function updateCartBadge() {
-            try {
-                const rawData = localStorage.getItem("orders");
-                const orderData = rawData ? JSON.parse(rawData) : [];
-                const totalItems = orderData.reduce((sum, item) => sum + item.quantity, 0);
+            // CATEGORY FILTERING - with preserved scroll position
+            categoryPills.forEach(pill => {
+                pill.addEventListener('click', function (e) {
+                    e.preventDefault();
 
-                const badge = document.querySelector('.cart-badge');
-                if (badge) {
-                    badge.textContent = totalItems;
-                    badge.style.display = totalItems > 0 ? 'inline' : 'none';
-                }
-            } catch (error) {
-                console.error('Error updating cart badge:', error);
+                    const selectedCategory = this.textContent.trim();
+
+                    // Store current scroll position
+                    const currentScrollPosition = categoryScroll.scrollLeft;
+
+                    // Update active state
+                    categoryPills.forEach(p => p.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Store selected category in sessionStorage
+                    sessionStorage.setItem('selectedCategory', selectedCategory);
+                    sessionStorage.setItem('categoryScrollPosition', currentScrollPosition);
+
+                    // Filter products smoothly
+                    smoothFilterProducts(selectedCategory);
+
+                    // Restore scroll position after filtering
+                    setTimeout(() => {
+                        categoryScroll.scrollLeft = currentScrollPosition;
+                    }, 100);
+                });
+            });
+
+            // SMOOTH SORTING SYSTEM - No page reload required
+            function handleSortChange(sortOption) {
+                // Get current active category and scroll position
+                const activeCategory = document.querySelector('.category-pill.active');
+                const selectedCategory = activeCategory ? activeCategory.textContent.trim() : 'All';
+                const currentScrollPosition = categoryScroll.scrollLeft;
+
+                // Store positions
+                sessionStorage.setItem('selectedCategory', selectedCategory);
+                sessionStorage.setItem('categoryScrollPosition', currentScrollPosition);
+                sessionStorage.setItem('currentSort', sortOption);
+
+                // Apply smooth sorting
+                smoothSortProducts(sortOption, selectedCategory);
+
+                // Update sort dropdown display
+                updateSortDropdownDisplay(sortOption);
+
+                // Maintain scroll position
+                setTimeout(() => {
+                    categoryScroll.scrollLeft = currentScrollPosition;
+                }, 200);
             }
-        }
 
-        // Initialize
-        fetchProducts();
+            // SMOOTH SORT FUNCTION
+            function smoothSortProducts(sortOption, activeCategory = 'All') {
+                // Fade out effect
+                productGrid.style.opacity = '0.5';
+                productGrid.style.transition = 'opacity 0.3s ease';
 
-        // Update cart badge on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            updateCartBadge();
+                setTimeout(() => {
+                    // Sort the products data
+                    let sortedData = [...allProductsData];
+
+                    switch (sortOption) {
+                        case 'name-asc':
+                            sortedData.sort((a, b) => a.name.localeCompare(b.name));
+                            break;
+                        case 'name-desc':
+                            sortedData.sort((a, b) => b.name.localeCompare(a.name));
+                            break;
+                        case 'price-low-high':
+                            sortedData.sort((a, b) => a.price - b.price);
+                            break;
+                        case 'price-high-low':
+                            sortedData.sort((a, b) => b.price - a.price);
+                            break;
+                        default:
+                            sortedData.sort((a, b) => a.name.localeCompare(b.name));
+                    }
+
+                    // Clear and re-append in sorted order
+                    productGrid.innerHTML = '';
+
+                    sortedData.forEach((productData, index) => {
+                        productGrid.appendChild(productData.element);
+
+                        // Apply category filter
+                        const shouldShow = activeCategory === 'All' || productData.category === activeCategory;
+
+                        if (shouldShow) {
+                            productData.element.style.display = 'block';
+                            productData.element.style.opacity = '0';
+                            productData.element.style.transform = 'translateY(30px)';
+
+                            // Staggered animation
+                            setTimeout(() => {
+                                productData.element.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+                                productData.element.style.opacity = '1';
+                                productData.element.style.transform = 'translateY(0)';
+                            }, index * 30);
+                        } else {
+                            productData.element.style.display = 'none';
+                        }
+                    });
+
+                    // Restore grid opacity
+                    setTimeout(() => {
+                        productGrid.style.opacity = '1';
+                    }, 200);
+
+                }, 150);
+            }
+
+            // SMOOTH FILTER FUNCTION - preserves current sort order
+            function smoothFilterProducts(selectedCategory) {
+                const currentScrollPosition = categoryScroll.scrollLeft;
+
+                // Fade out effect
+                productGrid.style.opacity = '0.5';
+                productGrid.style.transition = 'opacity 0.3s ease';
+
+                setTimeout(() => {
+                    let visibleCount = 0;
+
+                    // Get current sort option
+                    const currentSort = sessionStorage.getItem('currentSort') || 'name-asc';
+
+                    // Re-sort and filter
+                    let sortedData = [...allProductsData];
+                    switch (currentSort) {
+                        case 'name-asc':
+                            sortedData.sort((a, b) => a.name.localeCompare(b.name));
+                            break;
+                        case 'name-desc':
+                            sortedData.sort((a, b) => b.name.localeCompare(a.name));
+                            break;
+                        case 'price-low-high':
+                            sortedData.sort((a, b) => a.price - b.price);
+                            break;
+                        case 'price-high-low':
+                            sortedData.sort((a, b) => b.price - a.price);
+                            break;
+                    }
+
+                    // Clear and re-append in sorted order
+                    productGrid.innerHTML = '';
+
+                    sortedData.forEach((productData, index) => {
+                        productGrid.appendChild(productData.element);
+
+                        const shouldShow = selectedCategory === 'All' || productData.category === selectedCategory;
+
+                        if (shouldShow) {
+                            productData.element.style.display = 'block';
+                            productData.element.style.opacity = '0';
+                            productData.element.style.transform = 'translateY(30px)';
+
+                            setTimeout(() => {
+                                productData.element.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                                productData.element.style.opacity = '1';
+                                productData.element.style.transform = 'translateY(0)';
+                            }, visibleCount * 50);
+
+                            visibleCount++;
+                        } else {
+                            productData.element.style.display = 'none';
+                        }
+                    });
+
+                    // Restore grid opacity and scroll position
+                    setTimeout(() => {
+                        productGrid.style.opacity = '1';
+                        categoryScroll.scrollLeft = currentScrollPosition;
+                    }, 200);
+
+                }, 150);
+            }
+
+            // UPDATE SORT DROPDOWN DISPLAY
+            function updateSortDropdownDisplay(sortOption) {
+                const selectedText = document.querySelector('.selected-text');
+                if (!selectedText) return;
+
+                let displayText = "Name A-Z";
+                switch (sortOption) {
+                    case 'name-desc':
+                        displayText = "Name Z-A";
+                        break;
+                    case 'price-low-high':
+                        displayText = "Price: Low to High";
+                        break;
+                    case 'price-high-low':
+                        displayText = "Price: High to Low";
+                        break;
+                }
+
+                selectedText.textContent = displayText;
+            }
+
+            // DROPDOWN FUNCTIONALITY - Enhanced for smooth sorting
+            if (customSelect) {
+                const selected = customSelect.querySelector('.selected');
+                const options = customSelect.querySelector('.options');
+
+                // Toggle dropdown
+                selected.addEventListener('click', () => {
+                    options.classList.toggle('show');
+                    customSelect.classList.toggle('open');
+                });
+
+                // Handle option clicks - NO PAGE RELOAD
+                const optionLinks = options.querySelectorAll('a');
+                optionLinks.forEach(link => {
+                    link.addEventListener('click', function (e) {
+                        e.preventDefault(); // Prevent page reload
+
+                        // Get sort option from data attribute
+                        const sortOption = this.getAttribute('data-sort') || 'name-asc';
+
+                        // Apply smooth sorting
+                        handleSortChange(sortOption);
+
+                        // Close dropdown
+                        options.classList.remove('show');
+                        customSelect.classList.remove('open');
+                    });
+                });
+
+                // Close when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!customSelect.contains(e.target)) {
+                        options.classList.remove('show');
+                        customSelect.classList.remove('open');
+                    }
+                });
+            }
+
+            // RESTORE STATE ON PAGE LOAD
+            function restoreMenuState() {
+                // Restore selected category
+                const savedCategory = sessionStorage.getItem('selectedCategory');
+                const savedScrollPosition = sessionStorage.getItem('categoryScrollPosition');
+                const savedSort = sessionStorage.getItem('currentSort');
+
+                if (savedCategory && savedCategory !== 'All') {
+                    // Update active category pill
+                    categoryPills.forEach(pill => {
+                        pill.classList.remove('active');
+                        if (pill.textContent.trim() === savedCategory) {
+                            pill.classList.add('active');
+                        }
+                    });
+
+                    // Apply sort and filter
+                    if (savedSort) {
+                        updateSortDropdownDisplay(savedSort);
+                        smoothSortProducts(savedSort, savedCategory);
+                    } else {
+                        smoothFilterProducts(savedCategory);
+                    }
+                } else if (savedSort) {
+                    // Just apply sorting if no category filter
+                    updateSortDropdownDisplay(savedSort);
+                    smoothSortProducts(savedSort, 'All');
+                }
+
+                // Restore scroll position
+                if (savedScrollPosition) {
+                    setTimeout(() => {
+                        categoryScroll.scrollLeft = parseInt(savedScrollPosition);
+                    }, 300);
+                }
+            }
+
+            // ENHANCED MENU HOVER EFFECTS
+            const menuItems = document.querySelectorAll('.menu-item');
+            menuItems.forEach(item => {
+                item.addEventListener('mouseenter', function () {
+                    this.style.transform = 'translateY(-8px) scale(1.03)';
+                    this.style.boxShadow = '0 12px 30px rgba(0, 0, 0, 0.15)';
+                    this.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease';
+                });
+
+                item.addEventListener('mouseleave', function () {
+                    this.style.transform = 'translateY(0) scale(1)';
+                    this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+                });
+            });
+
+            // Initialize state restoration
+            setTimeout(() => {
+                restoreMenuState();
+            }, 100);
+
+            // Make functions globally accessible
+            window.smoothFilterProducts = smoothFilterProducts;
+            window.handleSortChange = handleSortChange;
+            window.smoothSortProducts = smoothSortProducts;
         });
     </script>
 
-
-
+    <!-- External Scripts -->
     <script src="assets/js/main.js"></script>
     <script src="assets/js/navbar.js"></script>
+
 </body>
 
 </html>
