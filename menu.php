@@ -464,20 +464,21 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                         </button>
                     </h2>
                     <div id="collapseSaisyd" class="accordion-collapse collapse show">
-                        <div class="accordion-body small">
-                            Donec imperdiet sit amet sem consectetur tincidunt. In pulvinar ex ut tempus tincidunt.
-                            Cras vitae orci risus. Fusce eget dictum ex, a vulputate mi. Aliquam in mattis quam,
-                            vel laoreet elit. Pellentesque nulla leo, tristique at ex eget, efficitur bibendum tortor.
+                        <div class="accordion-body small" style="text-align: justify;">
+                            Minimalist café that serves good
+                            food and coffee — perfect for slow mornings, casual catch-ups, and cozy evenings with
+                            friends and family. Whether you're here to study, unwind, or simply savor the moment,
+                            Saisyd Café welcomes you with warmth in every cup.
                         </div>
                     </div>
                 </div>
 
                 <!-- MarketPlace -->
-                <div class="accordion-item border-0">
+                <div class="accordion-item border-0" style="text-align: justify;">
                     <h2 class="accordion-header">
                         <button class="accordion-button bg-footer text-dark fw-bold collapsed" type="button"
                             data-bs-toggle="collapse" data-bs-target="#collapseMarket">
-                            MarketPlace
+                            Market Place
                         </button>
                     </h2>
                     <div id="collapseMarket" class="accordion-collapse collapse">
@@ -491,20 +492,22 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                 </div>
 
                 <!-- Company -->
-                <div class="accordion-item border-0">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button bg-footer text-dark fw-bold collapsed" type="button"
-                            data-bs-toggle="collapse" data-bs-target="#collapseCompany">
-                            Company
-                        </button>
+                <div class="accordion-item border-0" style="text-align: justify;">
+                    <button class="accordion-button bg-footer text-dark fw-bold collapsed" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#collapseCompany">
+                        Company
+                    </button>
                     </h2>
                     <div id="collapseCompany" class="accordion-collapse collapse">
-                        <div class="accordion-body">
+                        <div class="accordion-body" style="text-align: justify;">
                             <ul class="list-unstyled mb-0">
-                                <li><a href="#" class="text-dark text-decoration-none footer-link">About Servelt</a>
+                                <li><a href="#" class="text-dark text-decoration-none footer-link">About Serve
+                                        It</a>
                                 </li>
-                                <li><a href="#" class="text-dark text-decoration-none footer-link">Help Center</a></li>
-                                <li><a href="#" class="text-dark text-decoration-none footer-link">Contact Us</a></li>
+                                <li><a href="#" class="text-dark text-decoration-none footer-link">Help Center</a>
+                                </li>
+                                <li><a href="#" class="text-dark text-decoration-none footer-link">Contact Us</a>
+                                </li>
                             </ul>
                         </div>
                     </div>
@@ -521,9 +524,19 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                     <div id="collapseFollow" class="accordion-collapse collapse">
                         <div class="accordion-body">
                             <p class="mb-1">
-                                <a href="https://www.tiktok.com/@saisyd" target="_blank"
-                                    class="text-dark text-decoration-none footer-link">
+                                <a href="https://www.tiktok.com/@saisyd.cafe?is_from_webapp=1&sender_device=pc"
+                                    target="_blank" class="text-dark text-decoration-none footer-link">
                                     <i class="fab fa-tiktok me-2"></i>SAISYD
+                                </a>
+                            </p>
+                            <p class="mb-1">
+                                <a href="#" class="text-dark text-decoration-none footer-link">
+                                    <i class="fab fa-facebook-f me-2"></i>Facebook
+                                </a>
+                            </p>
+                            <p class="mb-1">
+                                <a href="#" class="text-dark text-decoration-none footer-link">
+                                    <i class="fab fa-google me-2"></i>Google
                                 </a>
                             </p>
                         </div>
@@ -533,25 +546,26 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
 
             <!-- Desktop View (visible on large screens and up) -->
             <div class="row gy-4 d-none d-lg-flex">
-                <div class="col-lg-4">
+                <div class="col-lg-4" style="text-align: justify;">
                     <h5 class="fw-bold">SAISYD</h5>
                     <p class="small">
-                        Donec imperdiet sit amet sem consectetur tincidunt. In pulvinar ex ut tempus tincidunt.
-                        Cras vitae orci risus. Fusce eget dictum ex, a vulputate mi. Aliquam in mattis quam,
-                        vel laoreet elit. Pellentesque nulla leo, tristique at ex eget, efficitur bibendum tortor.
+                        Minimalist café that serves good
+                        food and coffee — perfect for slow mornings, casual catch-ups, and cozy evenings with
+                        friends and family. Whether you're here to study, unwind, or simply savor the moment,
+                        Saisyd Café welcomes you with warmth in every cup.
                     </p>
                 </div>
-                <div class="col-lg-2">
-                    <h6 class="fw-bold">MarketPlace</h6>
+                <div class="col-lg-2" style="text-align: justify;">
+                    <h6 class="fw-bold">Market Place</h6>
                     <ul class="list-unstyled">
                         <li><a href="#" class="text-dark text-decoration-none footer-link">Services</a></li>
                         <li><a href="#" class="text-dark text-decoration-none footer-link">Products</a></li>
                     </ul>
                 </div>
-                <div class="col-lg-2">
+                <div class="col-lg-2" style="text-align: justify;">
                     <h6 class="fw-bold">Company</h6>
                     <ul class="list-unstyled">
-                        <li><a href="#" class="text-dark text-decoration-none footer-link">About Servelt</a></li>
+                        <li><a href="#" class="text-dark text-decoration-none footer-link">About Serve It</a></li>
                         <li><a href="#" class="text-dark text-decoration-none footer-link">Help Center</a></li>
                         <li><a href="#" class="text-dark text-decoration-none footer-link">Contact Us</a></li>
                     </ul>
@@ -559,20 +573,24 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                 <div class="col-lg-3 offset-lg-1">
                     <h6 class="fw-bold">FOLLOW US</h6>
                     <p class="mb-1">
-                        <a href="https://www.tiktok.com/@saisyd" target="_blank"
+                        <a href="https://www.tiktok.com/@saisyd.cafe?is_from_webapp=1&sender_device=pc" target="_blank"
                             class="text-dark text-decoration-none footer-link">
                             <i class="fab fa-tiktok me-2"></i>SAISYD
                         </a>
                     </p>
+
                 </div>
             </div>
 
             <!-- Footer Bottom -->
-            <div class="border-top mt-4 pt-3 d-flex justify-content-between align-items-center flex-wrap">
-                <p class="lead mb-0 small">© 2024 Copyright:
-                    <span class="fw-bold">SAISYD CAFE</span>
+            <div
+                class="border-top mt-4 pt-3 d-flex justify-content-between align-items-center flex-wrap flex-column flex-lg-row text-center text-lg-start">
+                <p class="lead mb-0 small">
+                    © 2024 Copyright:
+                    <span class="fw-bold d-block d-lg-inline">SAISYD CAFE</span>
                 </p>
-                <div class="d-flex gap-3 fs-5">
+
+                <div class="d-none d-lg-flex gap-3 fs-5">
                     <a href="#" class="text-dark"><i class="fab fa-facebook-f"></i></a>
                     <a href="#" class="text-dark"><i class="fab fa-google"></i></a>
                 </div>
@@ -617,7 +635,7 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
             const sugarSection = document.getElementById("sugarOption");
             const iceSection = document.getElementById("iceOption");
 
-            // ✅ Categories na may sugar & ice
+            //  Categories na may sugar & ice
             const categoriesWithSugarIce = ["Milktea", "Frappe", "Iced Coffee", "Fruit Tea", "Non-Coffee"];
 
             if (categoriesWithSugarIce.includes(category)) {
