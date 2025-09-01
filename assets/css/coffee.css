@@ -15,7 +15,6 @@
   color: var(--text-color-light);
   text-shadow: 2px 2px 4px rgba(0, 0, 3, 0.5);
   line-height: 1;
-
 }
 
 .coffee-banner-desc {
@@ -24,7 +23,6 @@
 }
 
 /* site-stats section */
-
 .site-stats-card {
   height: 210px;
   width: auto;
@@ -46,52 +44,12 @@
   line-height: 1;
 }
 
-/* cateogry-section */
+/* category-section */
 .title-category {
   font-weight: bold;
   font-family: var(--primaryFont);
   color: var(--text-color-dark);
 }
-
-/* .categories {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-start;
-    overflow-x: scroll;
-    -webkit-overflow-scrolling: touch;
-  
-    scrollbar-width: none; 
-    -ms-overflow-style: none;  
-  }
-  
-  .categories, .products-section::-webkit-scrollbar {
-    display: none;  
-  }
-
-  .category-card {
-    flex: 1 1 300px;
-    max-width: 290px;
-    border-radius: 20px;
-    /* border: 1px solid black; */
-/* background-image:
-      linear-gradient(to top, black, transparent),
-      url('../img/coffee/tea.png');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    cursor: pointer;
-    min-width: 170px;
-    max-height: 120px;
-    margin-bottom: 20px;
-  }
-   */
-
-/* .category-card:hover {
-    transform: scale(1.02);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-  }
-   */
 
 .category-scroll {
   display: flex;
@@ -108,7 +66,7 @@
 }
 
 .category-scroll::-webkit-scrollbar {
-  height: 6px; /* manipis lang */
+  height: 6px;
 }
 
 .category-scroll::-webkit-scrollbar-track {
@@ -143,7 +101,6 @@
   transform: scale(1.05);
   box-shadow: 0 6px 18px rgba(0,0,0,0.15);
 }
-
 
 .category-pill {
   min-width: 120px;
@@ -181,20 +138,56 @@
   }
 }
 
-/* product section */
+
 .products-section {
-  height: 935px;
-  overflow: scroll;
-  border-radius: 16px;
-
-  overflow: scroll;
+  
+  min-height: 400px; 
   -webkit-overflow-scrolling: touch;
-
   scrollbar-width: none;
   -ms-overflow-style: none;
   background-color: #ffffff;
   border: none !important;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  padding-bottom: 120px; 
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 576px) {
+  .products-section {
+    padding-bottom: 150px; 
+  }
+}
+
+@media (max-width: 767px) {
+  .products-section {
+    padding-bottom: 140px; 
+  }
+}
+
+/* iPad/Tablet adjustments */
+@media (min-width: 768px) and (max-width: 991px) {
+  .products-section {
+    padding-bottom: 130px; 
+  }
+}
+
+/* iPad Pro and larger tablets */
+@media (min-width: 992px) and (max-width: 1199px) {
+  .products-section {
+    padding-bottom: 120px; 
+  }
+}
+
+/* Desktop */
+@media (min-width: 1200px) {
+  .products-section {
+    padding-bottom: 100px; 
+  }
+}
+
+
+.products-section::-webkit-scrollbar {
+  display: none;
 }
 
 .cart-section {
@@ -207,7 +200,6 @@
 .cart-title {
   font-family: var(--primaryFont);
 }
-
 
 .icon {
   height: 35px;
@@ -240,14 +232,11 @@
   text-align: center;
 }
 
-
 .buy-btn:hover {
   opacity: 0.9;
   background-color: var(--btn-hover1) !important;
   color: var(--text-color-light) !important;
 }
-
-
 
 .btn-checkout {
   background-color: var(--primary-color);
@@ -286,9 +275,7 @@
 .custom-select {
   position: relative;
   display: inline-block;
-  /* behave like inline element */
   min-width: 160px;
-  /* steady minimum size */
   font-family: var(--primaryFont);
   font-weight: 600;
   color: var(--text-color-dark);
@@ -299,18 +286,15 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  /* text at left, icon at right */
   padding: 6px 10px;
   border-radius: 6px;
   background: transparent;
   line-height: 1.2;
   white-space: nowrap;
-  /* stay in one line */
 }
 
 .custom-select .dropdown-icon {
   flex-shrink: 0;
-  /* huwag mag-shrink */
   margin-left: 8px;
   font-size: 0.9rem;
   transition: transform 0.2s ease;
@@ -337,7 +321,6 @@
 }
 
 .custom-select .options div {
-
   transition: all 0.2s ease;
   white-space: nowrap;
 }
@@ -368,4 +351,23 @@
 .menu-item:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+}
+
+body {
+  scroll-padding-bottom: 100px; 
+}
+
+
+#productGrid .col:last-child .menu-item {
+  margin-bottom: 30px;
+}
+
+@media (max-width: 576px) {
+  #productGrid .col .menu-item {
+    margin-bottom: 15px;
+  }
+  
+  #productGrid .col:nth-last-child(-n+2) .menu-item {
+    margin-bottom: 40px;
+  }
 }

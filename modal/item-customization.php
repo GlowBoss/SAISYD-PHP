@@ -1,3 +1,12 @@
+<!-- Quantity -->
+<style>
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+</style>
+
 <!-- Customize Order Modal -->
 <div class="modal fade" id="item-customization" data-bs-backdrop="true" tabindex="-1"
     aria-labelledby="itemCustomizationLabel" aria-hidden="true">
@@ -87,7 +96,7 @@
                         </div>
                     </div>
 
-                    <!-- Quantity -->
+
                     <div class="mb-4 text-center" style="font-family: var(--primaryFont);">
                         <label class="form-label fw-bold d-block mb-2"
                             style="color: var(--text-color-dark); font-size: var(--subheading);">Quantity</label>
@@ -99,7 +108,7 @@
                                 −
                             </button>
                             <input type="number" name="quantity" id="quantity" value="1" min="1" max="999"
-                                style="width: 70px; height: 40px; text-align: center; font-weight: bold; font-size: 1.1rem; border: 2px solid var(--primary-color); border-radius: 10px; font-family: var(--secondaryFont); color: var(--text-color-dark); background: var(--card-bg-color); box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);">
+                                style="width: 70px; height: 40px; text-align: center; font-weight: bold; font-size: 1.1rem; border: 2px solid var(--primary-color); border-radius: 10px; font-family: var(--secondaryFont); color: var(--text-color-dark); background: var(--card-bg-color); box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); -moz-appearance: textfield; -webkit-appearance: none; margin: 0;">
                             <button type="button" onclick="increaseQuantity()"
                                 style="width: 36px; height: 36px; border-radius: 50%; background: var(--primary-color); color: var(--text-color-light); border: none; font-weight: bold; font-size: 1.2rem; transition: all 0.3s ease;"
                                 onmouseover="this.style.background='var(--btn-hover1)'; this.style.transform='translateY(-2px)';"
@@ -108,6 +117,7 @@
                             </button>
                         </div>
                     </div>
+
 
                     <!-- Notes -->
                     <div class="mb-3">

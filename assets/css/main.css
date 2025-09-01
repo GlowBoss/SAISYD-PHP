@@ -81,23 +81,29 @@ footer .fab:not(.fa-tiktok):hover {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     position: relative;
     overflow: hidden;
-
+    gap: 40px;
 }
 
 .coffee-text {
     position: relative;
     z-index: 2;
-
 }
 
 .coffee-text h1 {
     color: var(--text-color-dark);
-
 }
 
 .coffee-text p {
     margin: 15px 0;
     font-family: var(--secondaryFont);
+}
+
+/*  Coffee Buttons */
+.coffee-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+    flex-wrap: wrap;
 }
 
 .coffee-buttons .btn {
@@ -107,8 +113,15 @@ footer .fab:not(.fa-tiktok):hover {
     font-weight: 500;
     font-family: var(--primaryFont);
     font-size: var(--lead);
+    transition: all 0.3s ease;
+    transform: translateY(0);
 }
 
+.coffee-buttons .btn:hover {
+    transform: translateY(-5px) scale(1.05);
+}
+
+/* Button Styles */
 .btn-fill {
     background-color: var(--primary-color);
     color: var(--text-color-dark);
@@ -119,9 +132,7 @@ footer .fab:not(.fa-tiktok):hover {
 .btn-fill:hover {
     background-color: var(--btn-hover1);
     color: var(--text-color-light);
-    border: none;
     font-weight: 600;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
 }
 
 .btn-outline {
@@ -131,26 +142,247 @@ footer .fab:not(.fa-tiktok):hover {
     backdrop-filter: blur(4px);
 }
 
+.btn-outline:hover {
+    background-color: var(--text-color-light);
+    color: var(--primary-color);
+}
+
+/*  Coffee Image - Enhanced */
 .coffee-img {
     position: relative;
     z-index: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .coffee-img img {
-    max-width: clamp(250px, 50vw, 550px);
-    filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.3));
+    width: 380px;
+    /* Coffee-specific realistic shadows */
+    filter: drop-shadow(0 8px 25px rgba(101, 67, 33, 0.35)) 
+            drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
+    animation: coffeeFloat 5s ease-in-out infinite;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transform-origin: center bottom;
 }
 
 
+
+/* Enhanced Coffee Float Animation */
+@keyframes coffeeFloat {
+    0% {
+        transform: translateY(0px) rotate(0deg) scale(1);
+    }
+    25% {
+        transform: translateY(-12px) rotate(-1.2deg) scale(1.01);
+    }
+    50% {
+        transform: translateY(-18px) rotate(0deg) scale(1.02);
+    }
+    75% {
+        transform: translateY(-10px) rotate(1.2deg) scale(1.01);
+    }
+    100% {
+        transform: translateY(0px) rotate(0deg) scale(1);
+    }
+}
+
+
+@keyframes coffeeBreath {
+    0%, 100% {
+        transform: translateY(0px) rotate(0deg) scale(1);
+        filter: drop-shadow(0 8px 25px rgba(101, 67, 33, 0.35)) 
+                drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
+    }
+    50% {
+        transform: translateY(-16px) rotate(0.8deg) scale(1.03);
+        filter: drop-shadow(0 12px 35px rgba(101, 67, 33, 0.45)) 
+                drop-shadow(0 6px 18px rgba(0, 0, 0, 0.25))
+                drop-shadow(0 0 25px rgba(139, 69, 19, 0.3));
+    }
+}
+
+@keyframes floatWave {
+    0% {
+        transform: translateY(0px) rotate(0deg);
+    }
+    20% {
+        transform: translateY(-10px) rotate(-1.5deg);
+    }
+    40% {
+        transform: translateY(-16px) rotate(1deg);
+    }
+    60% {
+        transform: translateY(-22px) rotate(-0.5deg);
+    }
+    80% {
+        transform: translateY(-12px) rotate(1.5deg);
+    }
+    100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+}
+
+@keyframes coffeeSway {
+    0%, 100% {
+        transform: translateY(0px) rotate(0deg) scale(1);
+    }
+    33% {
+        transform: translateY(-14px) rotate(-1.8deg) scale(1.01);
+    }
+    66% {
+        transform: translateY(-20px) rotate(1.8deg) scale(0.99);
+    }
+}
+
+/* Animation Classes */
+.coffee-breath {
+    animation: coffeeBreath 4.5s ease-in-out infinite !important;
+}
+
+.coffee-sway {
+    animation: coffeeSway 6s ease-in-out infinite !important;
+}
+
+.float-wave {
+    animation: floatWave 8s ease-in-out infinite !important;
+}
+
+.coffee-glow {
+    animation: coffeeFloat 5s ease-in-out infinite;
+    filter: drop-shadow(0 8px 25px rgba(101, 67, 33, 0.4)) 
+            drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2))
+            drop-shadow(0 0 30px rgba(139, 69, 19, 0.25));
+}
+
+
+
+/* 📱 Mobile (below 768px) */
 @media (max-width: 768px) {
     .coffee-banner {
         flex-direction: column;
         text-align: center;
-        padding: 30px;
+        padding: 20px 15px;
+        height: auto;
+        gap: 25px;
+    }
+
+    .coffee-text {
+        order: 1;
+        width: 100%;
+        padding: 0 10px;
+    }
+
+    .coffee-text h1 {
+        font-size: 2rem;
+        line-height: 1.3;
+        margin-bottom: 10px;
+    }
+
+    .coffee-text p,
+    .coffee-text .lead {
+        font-size: 0.85rem;
+        line-height: 1.6;
+        text-align: justify;
+        text-justify: inter-word;
+        margin-right: -30px;
+        margin-left: -30px;
+    }
+
+    .coffee-buttons {
+        justify-content: center;
+        margin-top: 15px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .coffee-buttons .btn {
+        margin-top: 20px;
+        width: 130px;
+        height: 45px;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .coffee-buttons .btn:hover {
+        transform: translateY(-3px) scale(1.03);
     }
 
     .coffee-img {
-        margin-top: 30px;
+        order: 2;
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .coffee-img img {
+        margin-top: 15px;
+        width: 220px;
+        max-width: 90%;
+        filter: drop-shadow(0 6px 18px rgba(101, 67, 33, 0.3)) 
+                drop-shadow(0 3px 8px rgba(0, 0, 0, 0.15));
+        animation: coffeeFloat 6s ease-in-out infinite;
+        transition: none; 
+    }
+}
+
+/* 📲 Tablet/iPad (769px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .coffee-banner {
+        flex-direction: column;
+        text-align: center;
+        padding: 40px;
+        gap: 30px;
+        height: auto;
+    }
+
+    .coffee-text {
+        max-width: 80%;
+        margin: 0 auto;
+    }
+
+    .coffee-buttons {
+        justify-content: center;
+    }
+
+    .coffee-buttons .btn {
+        width: 140px;
+        height: 48px;
+    }
+
+    .coffee-img img {
+        width: 300px;
+        filter: drop-shadow(0 7px 20px rgba(101, 67, 33, 0.32)) 
+                drop-shadow(0 4px 10px rgba(0, 0, 0, 0.18));
+        animation: coffeeFloat 5.5s ease-in-out infinite;
+    }
+}
+
+/* 💻 Large Desktop (1200px and up) */
+@media (min-width: 1200px) {
+    .coffee-banner {
+        padding: 70px;
+        gap: 60px;
+    }
+
+    .coffee-img img {
+        width: 570px;
+        filter: drop-shadow(0 10px 30px rgba(101, 67, 33, 0.4)) 
+                drop-shadow(0 5px 15px rgba(0, 0, 0, 0.25))
+                drop-shadow(0 0 20px rgba(139, 69, 19, 0.2));
+        animation: coffeeFloat 4.5s ease-in-out infinite;
+    }
+
+    .coffee-buttons .btn {
+        width: 160px;
+        height: 55px;
+        font-size: 1rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .coffee-img img {
+        animation: none;
     }
 }
 
@@ -646,7 +878,7 @@ footer .fab:not(.fa-tiktok):hover {
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
 }
 
-
+/* FEEDBACK */
 .feedback-card {
     background-color: var(--gray);
     color: var(--text-color-light);
@@ -661,6 +893,29 @@ footer .fab:not(.fa-tiktok):hover {
 
 .feedback-card:hover {
     transform: translateY(-5px);
+}
+
+/* Tablet (iPad) breakpoint */
+@media (max-width: 991.98px) and (min-width: 768px) {
+    .row.justify-content-center .col-md-4 {
+        flex: 0 0 50%;
+        /* 2 per row */
+        max-width: 50%;
+    }
+
+    /* Last feedback card goes centered below */
+    .row.justify-content-center .col-md-4:last-child {
+        flex: 0 0 100%;
+        /* full width */
+        max-width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    .row.justify-content-center .col-md-4:last-child>div {
+        max-width: 70%;
+        /* adjust width so it’s centered nicely */
+    }
 }
 
 /* CART */
@@ -1365,5 +1620,55 @@ body.loading .main-content {
 
     .slide-overlay p {
         font-size: var(--h6);
+    }
+}
+
+
+/* Carousel arrows positioning with lower opacity */
+
+#welcomeCarousel .carousel-control-prev {
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    position: absolute;
+    z-index: 10;
+    width: auto;
+    opacity: 0.6;
+}
+
+#welcomeCarousel .carousel-control-next {
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    position: absolute;
+    z-index: 10;
+    width: auto;
+    opacity: 0.6;
+}
+
+/* Hover effect to make them more visible when needed */
+#welcomeCarousel .carousel-control-prev:hover,
+#welcomeCarousel .carousel-control-next:hover {
+    opacity: 0.9;
+}
+
+/* Responsive positioning */
+@media (max-width: 768px) {
+    #welcomeCarousel .carousel-control-prev {
+        left: 8px;
+    }
+
+    #welcomeCarousel .carousel-control-next {
+        right: 8px;
+    }
+}
+
+@media (max-width: 576px) {
+    #welcomeCarousel .carousel-control-prev {
+        left: 5px;
+    }
+
+    #welcomeCarousel .carousel-control-next {
+        right: 5px;
     }
 }
