@@ -47,11 +47,6 @@ html {
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.orderCard:hover {
-  transform: scale(1.01);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
-}
-
 
 .btn-dropdown {
   background-color: var(--primary-color);
