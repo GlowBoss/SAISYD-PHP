@@ -24,10 +24,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
     $productName = $_POST['product_name'];
     $price = $_POST['price'];
     $category = $_POST['category'];
-    $sugar = $_POST['sugar'] ?? '';
-    $ice = $_POST['ice'] ?? '';
     $notes = $_POST['notes'] ?? '';
     $quantity = intval($_POST['quantity'] ?? 1);
+
+    // Check if this category needs sugar/ice customization
+    $categoriesWithSugarIce = ["Milktea", "Frappe", "Iced Coffee", "Fruit Tea", "Non-Coffee"];
+
+    if (in_array($category, $categoriesWithSugarIce)) {
+        $sugar = $_POST['sugar'] ?? '';
+        $ice = $_POST['ice'] ?? '';
+    } else {
+        // For food or other categories, set to NULL
+        $sugar = null;
+        $ice = null;
+    }
 
     // Check if item with same customizations already exists in SESSION
     $itemExists = false;
@@ -58,10 +68,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
         ];
     }
 
-    // -----------------------
     // INSERT TO DATABASE
-    // -----------------------
-
+    
     // Check if may pending order (reuse) or create new
     $orderResult = executeQuery("SELECT * FROM orders WHERE status='pending' LIMIT 1");
 
@@ -78,6 +86,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
         $orderID = $orderRow['orderID'];
     }
 
+    // Prepare values for database insert -  naghahandle ng NULL values 
+    $sugarValue = ($sugar !== null) ? "'" . mysqli_real_escape_string($conn, $sugar) . "'" : "NULL";
+    $iceValue = ($ice !== null) ? "'" . mysqli_real_escape_string($conn, $ice) . "'" : "NULL";
+    $notesValue = "'" . mysqli_real_escape_string($conn, $notes) . "'";
+
     // Insert item with customizations
     $insertItem = "
         INSERT INTO orderitems (orderID, productID, quantity, sugar, ice, notes) 
@@ -85,9 +98,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
             '$orderID',
             '$productId',
             '$quantity',
-            '" . mysqli_real_escape_string($conn, $sugar) . "',
-            '" . mysqli_real_escape_string($conn, $ice) . "',
-            '" . mysqli_real_escape_string($conn, $notes) . "'
+            $sugarValue,
+            $iceValue,
+            $notesValue
         )
     ";
     executeQuery($insertItem);
@@ -103,9 +116,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
     exit();
 }
 
-// -------------------
 // FETCH PRODUCTS
-// -------------------
+
 $categoryFilter = isset($_GET['category']) ? $_GET['category'] : 'ALL';
 $sortOption = isset($_GET['sort']) ? $_GET['sort'] : 'name-asc';
 
