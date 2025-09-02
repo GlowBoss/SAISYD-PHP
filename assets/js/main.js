@@ -877,3 +877,4 @@ document.addEventListener('DOMContentLoaded', function () {
     new CafeCarousel();
 });
 
+

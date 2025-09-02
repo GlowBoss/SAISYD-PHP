@@ -1,3 +1,19 @@
+<?php
+session_start();
+
+// Function to get cart item count
+function getCartItemCount()
+{
+    $count = 0;
+    if (isset($_SESSION['cart'])) {
+        foreach ($_SESSION['cart'] as $item) {
+            $count += $item['quantity'];
+        }
+    }
+    return $count;
+}
+?>
+
 <!doctype html>
 <html lang="en">
 
@@ -89,13 +105,20 @@
                 <a href="#contact" class="nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.45s">
                     <i class="bi bi-envelope fs-5"></i> <span>Contact</span>
                 </a>
-                <a href="cart.php" class="nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.55s">
-                    <i class="bi bi-cart fs-5"></i> <span>Cart</span>
+                <a href="cart.php" class="nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.55s"
+                    style="display: flex; align-items: center; justify-content: space-between; gap: 6px; position: relative;">
+                    <i class="bi bi-cart fs-5"></i>
+                    <span>Cart</span>
+                    <?php if (getCartItemCount() > 0): ?>
+                        <span class="badge bg-danger rounded-pill"
+                            style="position: absolute; top: -5px; right: 70px; font-size: 0.75rem; padding: 0.25em 0.5em;">
+                            <?php echo getCartItemCount(); ?>
+                        </span>
+                    <?php endif; ?>
                 </a>
             </div>
 
-            <button class="btn menu-btn"
-                onclick="location.href='menu.php'">
+            <button class="btn menu-btn" onclick="location.href='menu.php'">
                 <i class="fas fa-mug-hot me-2"></i> Menu
             </button>
 
@@ -119,10 +142,21 @@
                         </a>
                     </div>
 
-                    <!-- Right: Cart -->
-                    <div class="ms-auto">
-                        <a href="cart.php" class="d-flex align-items-center text-decoration-none">
-                            <i class="bi bi-cart3 fs-5" style="color: var(--text-color-dark);"></i>
+                    <!-- Mobile: Right Cart -->
+                    <div class="ms-auto d-flex align-items-center">
+                        <a href="cart.php" class="d-flex align-items-center text-decoration-none position-relative">
+                            <i class="bi bi-cart3 fs-5 me-2" style="color: var(--text-color-dark);"></i>
+                            <?php if (getCartItemCount() > 0): ?>
+                                <span class="position-absolute badge rounded-pill bg-danger" style="
+                                    top: -6px;
+                                    right: -6px;
+                                    font-size: 0.65rem;
+                                    padding: 0.25em 0.45em;
+                                    line-height: 1;
+                                ">
+                                    <?php echo getCartItemCount(); ?>
+                                </span>
+                            <?php endif; ?>
                         </a>
                     </div>
                 </div>
@@ -159,8 +193,18 @@
 
                     <!-- Desktop: Cart + Menu -->
                     <div class="d-none d-lg-flex align-items-center">
-                        <a href="cart.php" class="nav-link me-2">
-                            <i class="bi bi-cart3"></i> <span>Cart</span>
+                        <a href="cart.php" class="nav-link position-relative me-2">
+                            <i class="bi bi-cart3 fs-4"></i> <span>Cart</span>
+                            <?php if (getCartItemCount() > 0): ?>
+                                <span class="position-absolute badge rounded-pill bg-danger" style="
+                                    top: -2px;
+                                    right: -2px;
+                                    font-size: 0.75rem;
+                                    padding: 0.25em 0.5em;
+                                ">
+                                    <?php echo getCartItemCount(); ?>
+                                </span>
+                            <?php endif; ?>
                         </a>
                         <button class="btn menu-btn" onclick="location.href='menu.php'">
                             <i class="fas fa-mug-hot me-2"></i> Menu
@@ -214,90 +258,94 @@
                 </div>
             </div>
 
-            <!-- Desktop View -->
-            <div class="container my-5 d-none d-md-block animate__animated animate__fadeIn wow" data-wow-delay="0.1s">
+            <!-- Desktop / Large Screen View -->
+            <div class="container my-5 d-none d-lg-block animate__animated animate__fadeIn wow" data-wow-delay="0.1s">
                 <div class="row align-items-center g-4">
                     <div class="col-lg-5 animate__animated animate__fadeInUp wow" data-wow-delay="0.1s">
-                        <video class="custom-img" src="assets/video/saisydVideo.mp4" autoplay muted loop
+                        <video class="custom-img w-100 rounded" src="assets/video/saisydVideo.mp4" autoplay muted loop
                             playsinline></video>
                     </div>
                     <div class="col-lg-7 animate__animated animate__fadeInUp wow" data-wow-delay="0.17s">
-                        <div class="custom-card">
+                        <div class="custom-card p-4">
                             <h1 class="title2 text-center">Welcome to Saisyd Café</h1>
                             <p class="lead mt-3 text-dark"
-                                style="text-align: justify; font-style: var(--secondaryFont);">
+                                style="text-align: justify; font-family: var(--secondaryFont);">
                                 At Saisyd Café, we believe that every great moment starts with a comforting sip, a
                                 flavorful
                                 bite, and a welcoming atmosphere. We've created more than just a place to eat and drink
                                 —
-                                we've
-                                built a cozy haven where you can slow down, breathe, and simply enjoy the present.
-                                Whether
-                                you're here to study with your favorite latte, spend time with loved ones over a hearty
-                                meal, or
-                                find a quiet escape with a slice of cake, our doors are always open to you. Each item on
-                                our
-                                menu is thoughtfully crafted using quality ingredients and a whole lot of care, because
-                                we
-                                know
-                                it's the little things that make a big difference. From early mornings to late evenings,
-                                Saisyd
-                                Café is here to serve not just food and drinks, but also warmth, community, and a sense
-                                of
-                                belonging. Come in anytime — your seat is waiting, and the experience is yours to savor.
+                                we've built a cozy haven where you can slow down, breathe, and simply enjoy the present.
+                                Whether you're here to study with your favorite latte, spend time with loved ones over a
+                                hearty
+                                meal, or find a quiet escape with a slice of cake, our doors are always open to you.
+                                Each item on
+                                our menu is thoughtfully crafted using quality ingredients and a whole lot of care,
+                                because we
+                                know it's the little things that make a big difference. From early mornings to late
+                                evenings,
+                                Saisyd Café is here to serve not just food and drinks, but also warmth, community, and a
+                                sense
+                                of belonging. Come in anytime — your seat is waiting, and the experience is yours to
+                                savor.
                             </p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Mobile Carousel View -->
-            <div id="mobileWelcomeCarousel" class="carousel slide d-md-none my-5 animate__animated animate__fadeIn wow"
+            <!-- Tablet & Mobile Carousel View -->
+            <div id="welcomeCarousel" class="carousel slide d-lg-none my-5 animate__animated animate__fadeIn wow"
                 data-wow-delay="0.1s" data-bs-ride="carousel">
                 <div class="carousel-inner">
+                    <!-- Slide 1: Video -->
                     <div class="carousel-item active" data-bs-interval="10000">
                         <video class="custom-img w-100 rounded" src="assets/video/saisydVideo.mp4" autoplay muted loop
                             playsinline></video>
                     </div>
+
+                    <!-- Slide 2: Text -->
                     <div class="carousel-item" data-bs-interval="10000">
-                        <div class="custom-card p-3" style="max-height: 100%;">
+                        <div class="custom-card p-3">
                             <h1 class="title2 text-center">Welcome to Saisyd Café</h1>
                             <p class="lead mt-3 text-dark"
-                                style="text-align: justify; font-style: var(--secondaryFont);">
+                                style="text-align: justify; font-family: var(--secondaryFont);">
                                 At Saisyd Café, we believe that every great moment starts with a comforting sip, a
                                 flavorful
                                 bite, and a welcoming atmosphere. We've created more than just a place to eat and drink
                                 —
-                                we've
-                                built a cozy haven where you can slow down, breathe, and simply enjoy the present.
-                                Whether
-                                you're here to study with your favorite latte, spend time with loved ones over a hearty
-                                meal, or
-                                find a quiet escape with a slice of cake, our doors are always open to you. Each item on
-                                our
-                                menu is thoughtfully crafted using quality ingredients and a whole lot of care, because
-                                we
-                                know
-                                it's the little things that make a big difference. From early mornings to late evenings,
-                                Saisyd
-                                Café is here to serve not just food and drinks, but also warmth, community, and a sense
-                                of
-                                belonging. Come in anytime — your seat is waiting, and the experience is yours to savor.
+                                we've built a cozy haven where you can slow down, breathe, and simply enjoy the present.
+                                Whether you're here to study with your favorite latte, spend time with loved ones over a
+                                hearty
+                                meal, or find a quiet escape with a slice of cake, our doors are always open to you.
+                                Each item on
+                                our menu is thoughtfully crafted using quality ingredients and a whole lot of care,
+                                because we
+                                know it's the little things that make a big difference. From early mornings to late
+                                evenings,
+                                Saisyd Café is here to serve not just food and drinks, but also warmth, community, and a
+                                sense
+                                of belonging. Come in anytime — your seat is waiting, and the experience is yours to
+                                savor.
                             </p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Optional controls (hidden but usable) -->
-                <button class="carousel-control-prev" type="button" data-bs-target="#mobileWelcomeCarousel"
-                    data-bs-slide="prev" style="opacity: 1; pointer-events: auto;">
-                    <span class="carousel-control-prev-icon"></span>
+                <!-- Carousel controls -->
+                <button class="carousel-control-prev" type="button" data-bs-target="#welcomeCarousel"
+                    data-bs-slide="prev"
+                    style="pointer-events: auto; background-color: var(--primary-color); border: none; border-radius: 50%; width: clamp(40px, 8vw, 55px); height: clamp(40px, 8vw, 55px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); transition: all 0.3s ease;">
+                    <span class="carousel-control-prev-icon"
+                        style="filter: brightness(0) invert(1); width: clamp(16px, 3vw, 20px); height: clamp(16px, 3vw, 20px);"></span>
                 </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#mobileWelcomeCarousel"
-                    data-bs-slide="next" style="opacity: 1; pointer-events: auto;">
-                    <span class="carousel-control-next-icon"></span>
+                <button class="carousel-control-next" type="button" data-bs-target="#welcomeCarousel"
+                    data-bs-slide="next"
+                    style=" pointer-events: auto; background-color: var(--primary-color); border: none; border-radius: 50%; width: clamp(40px, 8vw, 55px); height: clamp(40px, 8vw, 55px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); transition: all 0.3s ease;">
+                    <span class="carousel-control-next-icon"
+                        style="filter: brightness(0) invert(1); width: clamp(16px, 3vw, 20px); height: clamp(16px, 3vw, 20px);"></span>
                 </button>
             </div>
+
 
             <div class="px-5">
                 <div class="w-100"
@@ -863,7 +911,7 @@
                     </h2>
 
                     <!-- Desktop View -->
-                    <div class="row justify-content-center g-4 d-none d-md-flex">
+                    <div class="row justify-content-center g-3 d-none d-md-flex">
                         <div class="col-md-4 animate__animated animate__fadeIn wow" data-wow-delay="0.2s">
                             <div class="p-3 rounded-4 shadow"
                                 style="background-color: var(--gray); color: var(--text-color-light); height: 170px;">
@@ -898,8 +946,9 @@
                                 </div>
                                 <p class="mb-0"
                                     style="text-align: justify; font-family: var(--primaryFont); font-size: var(--h6);">
-                                    From the first sip, I knew I'd keep coming back. Their matcha and pastries are a
-                                    must-try — perfect for catching up with friends or finishing a paper.</p>
+                                    Saisyd Café makes the perfect matcha! It's my favorite spot to chill and
+                                    brainstorm
+                                    ideas with friends.</p>
                             </div>
                         </div>
 
@@ -917,9 +966,9 @@
                                 </div>
                                 <p class="mb-0"
                                     style="text-align: justify; font-family: var(--primaryFont); font-size: var(--h6);">
-                                    The calm atmosphere, friendly baristas, and great coffee make Saisyd Café feel like
-                                    a
-                                    second home. It's more than just a café — it's a campus gem.</p>
+                                    Their coffee and the vibe always help me stay focused during hectic weeks.
+                                    Highly
+                                    recommended!</p>
                             </div>
                         </div>
                     </div>
@@ -942,9 +991,8 @@
                                     </div>
                                     <p class="mb-0"
                                         style="text-align: justify; font-family: var(--primaryFont); font-size: var(--h6);">
-                                        Knowt has been a lifesaver! The learn features in flashcards let me find time
-                                        and
-                                        make studying a little more digestible.
+                                        Saisyd Café is my favorite spot to study and unwind. Their drinks never
+                                        disappoint,and the cozy vibe always helps me focus.
                                     </p>
                                 </div>
                             </div>
@@ -1038,7 +1086,7 @@
                     <h2 class="accordion-header">
                         <button class="accordion-button bg-footer text-dark fw-bold collapsed" type="button"
                             data-bs-toggle="collapse" data-bs-target="#collapseMarket">
-                            MarketPlace
+                            Market Place
                         </button>
                     </h2>
                     <div id="collapseMarket" class="accordion-collapse collapse">
@@ -1116,7 +1164,7 @@
                     </p>
                 </div>
                 <div class="col-lg-2" style="text-align: justify;">
-                    <h6 class="fw-bold">MarketPlace</h6>
+                    <h6 class="fw-bold">Market Place</h6>
                     <ul class="list-unstyled">
                         <li><a href="#" class="text-dark text-decoration-none footer-link">Services</a></li>
                         <li><a href="#" class="text-dark text-decoration-none footer-link">Products</a></li>
@@ -1158,9 +1206,9 @@
         </div>
     </footer>
 
-   <button id="backToTop" class="back-to-top-btn">
-    <i class="fas fa-arrow-up"></i>
-</button>
+    <button id="backToTop" class="back-to-top-btn">
+        <i class="fas fa-arrow-up"></i>
+    </button>
 
 
     <!-- Scripts -->
