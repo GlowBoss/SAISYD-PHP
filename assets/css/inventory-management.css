@@ -12,74 +12,27 @@ html {
   overflow-x: hidden !important;
 }
 
-.main-content {
+.cardMain {
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.125) !important;
   background-color: var(--card-bg-color);
-  margin-left: 250px;
-  transition: margin-left 0.3s ease;
-  padding: 20px;
-  width: calc(100% - 320px);
-  box-sizing: border-box;
-  overflow-y: hidden !important;
 }
 
-@media (max-width: 768px) {
-  .main-content {
-    margin-left: 0;
-    width: 100%;
-    padding: 15px;
-  }
-}
-
-.cardContent {
-  background: var(--card-bg-color);
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  padding: 1.5rem;
-  min-height: calc(100vh - 50px);
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  overflow: hidden;
-}
-/* For medium screens (769px to 980px) */
-@media (min-width: 768px) and (max-width: 810px) {
-  .cardContent {
-    width: 55%; 
-  }
-}
-
-@media (min-width: 810px) and (max-width: 890px) {
-  .cardContent {
-    width: 60%; 
-  }
-}
-
-/* For smaller screens (768px and below) */
-@media (max-width: 767px) {
-  .main-content {
-    margin-left: 0;
-    width: 100%;
-    padding: 15px;
-  }
-  
-  .cardContent {
-    width: 100%; /* Full width on mobile */
-    padding: 1rem; /* Reduce padding on mobile */
-  }
-}
-.tableCard {
+.card.tableCard {
   background: var(--bg-color);
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  overflow-y: auto;
-  overflow-x: auto;
-  width: 100%;
-  flex: 1;
 }
 
-.table-container {
+.table {
+  background: var(--bg-color);
+  border-radius: 8px;
+  border-collapse: collapse;
   width: 100%;
+}
+
+.table-responsive {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .custom-thead {
@@ -96,32 +49,36 @@ html {
   font-weight: 600;
 }
 
-.categorybtn, .btnAdd {
-  background-color: var(--primary-color);
+.categorybtn,
+.btnAdd {
+  background-color: var(--primary-color); 
   color: var(--text-color-light);
   border-radius: 12px;
   font-weight: 500;
 }
 
 .categorybtn-active {
-  background-color: var(--primary-color);
+  background-color: var(--primary-color) !important;
   color: white;
 }
 
-.categorybtn:hover, .btnAdd:hover {
-  background-color: var(--btn-hover1);
+.categorybtn:hover,
+.btnAdd:hover {
+  background-color: var(--btn-hover1) ;
   color: white;
   cursor: pointer;
 }
 
-.btnExport, .btnCancel {
+.btnExport,
+.btnCancel {
   background-color: var(--btn-hover1);
   color: var(--text-color-light);
   border-radius: 12px;
   font-weight: 500;
 }
 
-.btnExport:hover, .btnCancel:hover {
+.btnExport:hover,
+.btnCancel:hover {
   background-color: var(--primary-color);
   color: white;
   cursor: pointer;
@@ -140,13 +97,6 @@ html {
   font-size: var(--subheading);
 }
 
-/* Table styles */
-table {
-  border-collapse: collapse;
-  overflow-x: scroll;
-}
-
-/* Modal styles */
 .modal-content {
   border-radius: 12px;
   border: none;
@@ -159,24 +109,64 @@ table {
   color: var(--text-color-dark);
 }
 
-/* Responsive adjustments */
-@media (max-width: 991.98px) {
-  .main-content {
-    margin-left: 0;
-    width: 100%;
-  }
-
-  .cardContent {
-    padding: 1rem;
-  }
-
-  .table-responsive {
-    font-size: 14px;
-  }
-}
-
 .dropdown-menu .dropdown-item:hover {
-    background-color: var(--primary-color);
-    color: var(--text-color-light);
-    cursor: pointer;
+  background-color: var(--primary-color);
+  color: var(--text-color-light);
+  cursor: pointer;
 }
+
+/* Default (desktop) */
+.table {
+  width: 100%;
+  font-size: 16px; 
+}
+
+.filterStyle {
+  color: var(--text-color-light);
+    padding: 8px 12px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.filterStyle:focus {
+    border-color: #007bff; /* highlight color on focus */
+    box-shadow: 0 0 8px rgba(0,123,255,0.3);
+}
+
+.filterStyle:hover {
+    transform: scale(1.05); /* slight zoom */
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0,123,255,0.2);
+}
+
+
+/* Medium screens */
+@media (max-width: 1200px) {
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table {
+    min-width: 1000px;
+    font-size: 15px;
+  }
+}
+
+/* Tablets */
+@media (max-width: 992px) {
+  .table {
+    min-width: 900px;
+    font-size: 14px; 
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .table {
+    min-width: 800px;
+    font-size: 13px;
+  }
+}
+

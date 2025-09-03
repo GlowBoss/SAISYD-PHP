@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $order = mysqli_fetch_assoc($orderResult);
                     $orderID = $order['orderID'];
 
-                    //update quantity in database
+                    // update quantity in database
                     $productId = $_SESSION['cart'][$index]['product_id'];
                     $sugar = $_SESSION['cart'][$index]['sugar'];
                     $ice = $_SESSION['cart'][$index]['ice'];
@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     executeQuery($updateQuery);
                 }
             } else {
-                //remove item if quantity is 0
+                // remove item if quantity is 0
                 $productId = $_SESSION['cart'][$index]['product_id'];
                 $sugar = $_SESSION['cart'][$index]['sugar'];
                 $ice = $_SESSION['cart'][$index]['ice'];
@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 unset($_SESSION['cart'][$index]);
                 $_SESSION['cart'] = array_values($_SESSION['cart']);
 
-                //remove from database
+                // remove from database
                 $orderResult = executeQuery("SELECT * FROM orders WHERE status='pending' LIMIT 1");
                 if (mysqli_num_rows($orderResult) > 0) {
                     $order = mysqli_fetch_assoc($orderResult);
@@ -85,19 +85,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif (empty($_SESSION['cart'])) {
             $_SESSION['cart_error'] = 'Your cart is empty.';
         } else {
-            //calculate total
+            // calculate total
             $total = 0;
             foreach ($_SESSION['cart'] as $item) {
                 $total += $item['price'] * $item['quantity'];
             }
 
-            //update order in database
+            // update order in database
             $orderResult = executeQuery("SELECT * FROM orders WHERE status='pending' LIMIT 1");
             if (mysqli_num_rows($orderResult) > 0) {
                 $order = mysqli_fetch_assoc($orderResult);
                 $orderID = $order['orderID'];
 
-                //update order with total
+                // update order with total
                 $updateOrderQuery = "UPDATE orders SET 
                                     totalAmount = '$total',
                                     status = 'confirmed',
@@ -105,7 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     WHERE orderID = '$orderID'";
                 executeQuery($updateOrderQuery);
 
-                //insert payment record
+                // insert payment record
                 $insertPayment = "INSERT INTO payments (paymentMethod, paymentStatus, referenceNumber, orderID) 
                                  VALUES (
                                      '" . mysqli_real_escape_string($conn, $paymentMethod) . "',
@@ -115,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                  )";
                 executeQuery($insertPayment);
 
-                //clear session cart
+                // clear session cart
                 $_SESSION['cart'] = [];
                 $_SESSION['cart_message'] = 'Order placed successfully! Order ID: ' . $orderID;
 
