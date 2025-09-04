@@ -10,7 +10,7 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
 $lowStockQuery = "SELECT *
 FROM inventory p
 JOIN ingredients i ON p.ingredientID = i.ingredientID
-WHERE p.quantity < p.threshold;";
+WHERE p.quantity <= p.threshold;";
 $result = mysqli_query($conn, $lowStockQuery);
 
 $lowStockItems = [];
@@ -20,8 +20,7 @@ if ($result && mysqli_num_rows($result) > 0) {
     }
 }
 
-if (!empty($lowStockItems)) {
-  $count = count($lowStockItems);
+$count = count($lowStockItems);
 ?>
 <div class="modal fade" id="stockModal" tabindex="-1" aria-labelledby="stockModalLabel"
      aria-hidden="true" data-lowstock-count="<?= $count ?>">
@@ -32,18 +31,22 @@ if (!empty($lowStockItems)) {
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body text-center">
-        <p class="mb-3">The following items are running low on stock:</p>
-        <ul class="list-group list-group-flush">
-          <?php foreach ($lowStockItems as $item): ?>
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              <span><b>ID No. <?= htmlspecialchars($item['inventoryID']) ?></b>
-                <?= htmlspecialchars($item['ingredientName']) ?> :</span>
-              <span class="badge rounded-pill" style="background-color: var(--btn-hover1);">
-                <?= htmlspecialchars($item['quantity']) ?> <?= htmlspecialchars($item['unit']) ?>
-              </span>
-            </li>
-          <?php endforeach; ?>
-        </ul>
+        <?php if ($count > 0): ?>
+          <p class="mb-3">The following items are running low on stock:</p>
+          <ul class="list-group list-group-flush">
+            <?php foreach ($lowStockItems as $item): ?>
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span><b>Item Code <?= htmlspecialchars($item['inventoryID']) ?></b>
+                  <?= htmlspecialchars($item['ingredientName']) ?> :</span>
+                <span class="badge rounded-pill" style="background-color: var(--btn-hover1);">
+                  <?= htmlspecialchars($item['quantity']) ?> <?= htmlspecialchars($item['unit']) ?>
+                </span>
+              </li>
+            <?php endforeach; ?>
+          </ul>
+        <?php else: ?>
+          <p class="mb-3 fw-bold" style="color:var(--text-color-dark)">No items are running low</p>
+        <?php endif; ?>
       </div>
       <div class="modal-footer border-0 d-flex justify-content-center">
         <a href="../admin/inventory-management.php"
@@ -54,6 +57,3 @@ if (!empty($lowStockItems)) {
     </div>
   </div>
 </div>
-<?php
-}
-?>

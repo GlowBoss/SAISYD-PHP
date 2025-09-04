@@ -38,7 +38,8 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
             <i class="bi bi-bell fs-3"></i>
             <!-- Badge -->
             <span id="lowStockBadge"
-              class="position-absolute start-60 translate-middle badge rounded-pill d-none fs-6 px-2 py-1" style="top: 20%; background-color: var(--btn-hover1);">
+              class="position-absolute start-60 translate-middle badge rounded-pill d-none fs-6 px-2 py-1"
+              style="top: 20%; background-color: var(--btn-hover1);">
             </span>
           </a>
           <a href="../index.html" class="btn custom-visit">
@@ -94,75 +95,79 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
   <div id="stockModalContainer"></div>
 
   <script>
-    let stockModalInstance = null;
-    let modalDismissed = false;
-    let lastLowStockSignature = ""; // track last stock list
+  let stockModalInstance = null;
+  let modalDismissed = false;
+  let lastLowStockSignature = ""; // track last stock list
 
-    function checkLowStock() {
-      fetch("../modal/stock-modal.php")
-        .then(res => res.text())
-        .then(html => {
-          let badge = document.getElementById("lowStockBadge");
+  function checkLowStock() {
+    fetch("../modal/stock-modal.php")
+      .then(res => res.text())
+      .then(html => {
+        let badge = document.getElementById("lowStockBadge");
 
-          if (html.trim() !== "") {
-            let parsedDoc = new DOMParser().parseFromString(html, "text/html");
-            let modalEl = parsedDoc.querySelector("#stockModal");
-            let newBody = parsedDoc.querySelector(".modal-body");
-            let newSignature = newBody ? newBody.innerText.trim() : "";
+        if (html.trim() !== "") {
+          let parsedDoc = new DOMParser().parseFromString(html, "text/html");
+          let modalEl = parsedDoc.querySelector("#stockModal");
+          let newBody = parsedDoc.querySelector(".modal-body");
+          let newSignature = newBody ? newBody.innerText.trim() : "";
 
-            // 🔴 Get low stock count from modal attribute
-            let count = modalEl ? parseInt(modalEl.dataset.lowstockCount) || 0 : 0;
+          // 🔴 Get low stock count from modal attribute
+          let count = modalEl ? parseInt(modalEl.dataset.lowstockCount) || 0 : 0;
 
-            // Update bell badge
-            if (count > 0) {
-              badge.textContent = count;
-              badge.classList.remove("d-none");
-            } else {
-              badge.classList.add("d-none");
-            }
-
-            // If modal not created yet, inject it
-            if (!document.getElementById("stockModal")) {
-              document.getElementById("stockModalContainer").innerHTML = html;
-              let modalElNew = document.getElementById("stockModal");
-              stockModalInstance = new bootstrap.Modal(modalElNew);
-
-              modalElNew.addEventListener("hidden.bs.modal", () => {
-                modalDismissed = true;
-              });
-            } else {
-              // Update modal body if it already exists
-              document.querySelector("#stockModal .modal-body").innerHTML =
-                newBody.innerHTML;
-            }
-
-            // Reset dismissed state if new low-stock list detected
-            if (newSignature !== lastLowStockSignature) {
-              modalDismissed = false;
-            }
-
-            // Show modal if not dismissed
-            if (!modalDismissed) {
-              stockModalInstance.show();
-            }
-
-            // Save latest signature
-            lastLowStockSignature = newSignature;
+          // Update bell badge
+          if (count > 0) {
+            badge.textContent = count;
+            badge.classList.remove("d-none");
           } else {
-            // No low stock → hide badge & clear modal
             badge.classList.add("d-none");
-            lastLowStockSignature = "";
           }
-        })
-        .catch(err => console.error("Error checking stock:", err));
-    }
 
-    // Run immediately on page load
-    document.addEventListener("DOMContentLoaded", checkLowStock);
+          // If modal not created yet, inject it
+          if (!document.getElementById("stockModal")) {
+            document.getElementById("stockModalContainer").innerHTML = html;
+            let modalElNew = document.getElementById("stockModal");
+            stockModalInstance = new bootstrap.Modal(modalElNew);
 
-    // Run every 5 seconds
-    setInterval(checkLowStock, 5000);
-  </script>
+            modalElNew.addEventListener("hidden.bs.modal", () => {
+              modalDismissed = true;
+            });
+          } else {
+            // Update modal body if it already exists
+            document.querySelector("#stockModal .modal-body").innerHTML =
+              newBody.innerHTML;
+          }
+
+          // Reset dismissed state if new low-stock list detected
+          if (newSignature !== lastLowStockSignature) {
+            modalDismissed = false;
+          }
+
+          // Show modal if not dismissed
+          if (!modalDismissed) {
+            stockModalInstance.show();
+          }
+
+          // Save latest signature
+          lastLowStockSignature = newSignature;
+
+        } else {
+          // No low stock → show fallback message instead of removing modal
+          badge.classList.add("d-none");
+          lastLowStockSignature = "";
+
+        }
+      })
+      .catch(err => console.error("Error checking stock:", err));
+  }
+
+  // Run immediately on page load
+  document.addEventListener("DOMContentLoaded", checkLowStock);
+
+  // Run every 5 seconds
+  setInterval(checkLowStock, 5000);
+</script>
+
+
 
 
   <!-- Bootstrap JS -->
