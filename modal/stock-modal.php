@@ -36,7 +36,7 @@ if (!empty($lowStockItems)) {
         <ul class="list-group list-group-flush">
           <?php foreach ($lowStockItems as $item): ?>
             <li class="list-group-item d-flex justify-content-between align-items-center">
-              <span><b><?= htmlspecialchars($item['inventoryID']) ?></b>
+              <span><b>ID No. <?= htmlspecialchars($item['inventoryID']) ?></b>
                 <?= htmlspecialchars($item['ingredientName']) ?> :</span>
               <span class="badge rounded-pill" style="background-color: var(--btn-hover1);">
                 <?= htmlspecialchars($item['quantity']) ?> <?= htmlspecialchars($item['unit']) ?>
