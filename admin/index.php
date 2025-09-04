@@ -1,10 +1,11 @@
 <?php
+include '../assets/connect.php';
 session_start();
 
 // Check if user is logged in and is an admin 
 if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
-    header("Location: login.php");
-    exit();
+  header("Location: login.php");
+  exit();
 }
 ?>
 
@@ -31,10 +32,14 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
         </div>
 
         <div class="d-flex gap-3 align-items-center flex-wrap justify-content-end">
-          <!-- 🔔 Bell Icon with red dot -->
-          <a href="#" class="btn bg-transparent icon-btn notification-bell" data-bs-toggle="modal" data-bs-target="#stockModal">
-            <i class="bi bi-bell"></i>
-            <span class="notification-badge"></span>
+          <!-- Bell Icon with red dot -->
+          <a href="#" class="btn bg-transparent icon-btn position-relative notification-bell" data-bs-toggle="modal"
+            data-bs-target="#stockModal">
+            <i class="bi bi-bell fs-3"></i>
+            <!-- Badge -->
+            <span id="lowStockBadge"
+              class="position-absolute start-60 translate-middle badge rounded-pill d-none fs-6 px-2 py-1" style="top: 20%; background-color: var(--btn-hover1);">
+            </span>
           </a>
           <a href="../index.html" class="btn custom-visit">
             <i class="bi bi-globe"></i> <span class="d-none d-md-inline">Visit Site</span>
@@ -83,58 +88,85 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
     </div>
   </div>
 
-  <!-- Low Stock Alert Modal -->
-<div class="modal fade" id="stockModal" tabindex="-1" aria-labelledby="stockModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content stock-modal">
-      
-      <!-- Header -->
-      <div class="modal-header border-0">
-        <h5 class="modal-title fw-bold" id="stockModalLabel">Low Stock Alert</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      
-      <!-- Body -->
-      <div class="modal-body text-center">
-        <p class="mb-3">The following items are running low on stock:</p>
-        
-        <ul class="list-group list-group-flush">
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <span>🥤 Sugar</span>
-            <span class="badge bg-danger rounded-pill">5</span>
-          </li>
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <span>🥛 Milk</span>
-            <span class="badge bg-danger rounded-pill">2</span>
-          </li>
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <span>🧈 Butter</span>
-            <span class="badge bg-danger rounded-pill">8</span>
-          </li>
-        </ul>
-      </div>
-      
-      <!-- Footer -->
-      <div class="modal-footer border-0 d-flex justify-content-center">
-        <a href="inventory-management.php" class="btn custom-visit px-4 py-2 rounded-pill">
-          Go to Inventory
-        </a>
-        <button type="button" class="btn custom-logout px-4 py-2 rounded-pill" data-bs-dismiss="modal">
-          Dismiss
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
 
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    var stockModal = new bootstrap.Modal(document.getElementById('stockModal'));
-    stockModal.show();
-  });
-</script>
+
+  <!-- Low Stock Alert Modal -->
+  <div id="stockModalContainer"></div>
+
+  <script>
+    let stockModalInstance = null;
+    let modalDismissed = false;
+    let lastLowStockSignature = ""; // track last stock list
+
+    function checkLowStock() {
+      fetch("../modal/stock-modal.php")
+        .then(res => res.text())
+        .then(html => {
+          let badge = document.getElementById("lowStockBadge");
+
+          if (html.trim() !== "") {
+            let parsedDoc = new DOMParser().parseFromString(html, "text/html");
+            let modalEl = parsedDoc.querySelector("#stockModal");
+            let newBody = parsedDoc.querySelector(".modal-body");
+            let newSignature = newBody ? newBody.innerText.trim() : "";
+
+            // 🔴 Get low stock count from modal attribute
+            let count = modalEl ? parseInt(modalEl.dataset.lowstockCount) || 0 : 0;
+
+            // Update bell badge
+            if (count > 0) {
+              badge.textContent = count;
+              badge.classList.remove("d-none");
+            } else {
+              badge.classList.add("d-none");
+            }
+
+            // If modal not created yet, inject it
+            if (!document.getElementById("stockModal")) {
+              document.getElementById("stockModalContainer").innerHTML = html;
+              let modalElNew = document.getElementById("stockModal");
+              stockModalInstance = new bootstrap.Modal(modalElNew);
+
+              modalElNew.addEventListener("hidden.bs.modal", () => {
+                modalDismissed = true;
+              });
+            } else {
+              // Update modal body if it already exists
+              document.querySelector("#stockModal .modal-body").innerHTML =
+                newBody.innerHTML;
+            }
+
+            // Reset dismissed state if new low-stock list detected
+            if (newSignature !== lastLowStockSignature) {
+              modalDismissed = false;
+            }
+
+            // Show modal if not dismissed
+            if (!modalDismissed) {
+              stockModalInstance.show();
+            }
+
+            // Save latest signature
+            lastLowStockSignature = newSignature;
+          } else {
+            // No low stock → hide badge & clear modal
+            badge.classList.add("d-none");
+            lastLowStockSignature = "";
+          }
+        })
+        .catch(err => console.error("Error checking stock:", err));
+    }
+
+    // Run immediately on page load
+    document.addEventListener("DOMContentLoaded", checkLowStock);
+
+    // Run every 5 seconds
+    setInterval(checkLowStock, 5000);
+  </script>
+
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
