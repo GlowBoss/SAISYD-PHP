@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
     }
 
     // INSERT TO DATABASE
-    
+
     // Check if may pending order (reuse) or create new
     $orderResult = executeQuery("SELECT * FROM orders WHERE status='pending' LIMIT 1");
 
@@ -590,7 +590,6 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                             <i class="fab fa-tiktok me-2"></i>SAISYD
                         </a>
                     </p>
-
                 </div>
             </div>
 
