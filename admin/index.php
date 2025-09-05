@@ -58,7 +58,7 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
         <div class="container mt-5 mb-5">
           <div class="row g-4 justify-content-center">
             <div class="col-12 col-sm-6 col-md-4">
-              <a href="point-of-sales.html" class="dashboard-box text-decoration-none">Point of Sale
+              <a href="point-of-sales.php" class="dashboard-box text-decoration-none">Point of Sale
                 System</a>
             </div>
             <div class="col-12 col-sm-6 col-md-4">

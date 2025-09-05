@@ -36,7 +36,7 @@ $count = count($lowStockItems);
           <ul class="list-group list-group-flush">
             <?php foreach ($lowStockItems as $item): ?>
               <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span><b>Item Code <?= htmlspecialchars($item['inventoryID']) ?></b>
+                <span>Item Code <?= htmlspecialchars($item['inventoryID']) ?>
                   <?= htmlspecialchars($item['ingredientName']) ?> :</span>
                 <span class="badge rounded-pill" style="background-color: var(--btn-hover1);">
                   <?= htmlspecialchars($item['quantity']) ?> <?= htmlspecialchars($item['unit']) ?>
@@ -45,7 +45,7 @@ $count = count($lowStockItems);
             <?php endforeach; ?>
           </ul>
         <?php else: ?>
-          <p class="mb-3 fw-bold" style="color:var(--text-color-dark)">No items are running low</p>
+          <p class="mb-3" style="color:var(--text-color-dark)">No items are running low</p>
         <?php endif; ?>
       </div>
       <div class="modal-footer border-0 d-flex justify-content-center">
