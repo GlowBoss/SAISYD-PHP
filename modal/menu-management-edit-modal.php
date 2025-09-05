@@ -52,10 +52,10 @@
                         <div id="edit-ingredients-container">
                             <div class="row g-2 mb-2 ingredient-row">
                                 <div class="col-md-5">
-                                    <input type="text" class="form-control" name="ingredient_name[]" value="Espresso" required>
+                                    <input type="text" class="form-control" name="ingredient_name[]" value="Test" placeholder="Name" required>
                                 </div>
                                 <div class="col-md-3">
-                                    <input type="number" class="form-control" name="ingredient_qty[]" value="2" required>
+                                    <input type="number" class="form-control" name="ingredient_qty[]" value="test" placeholder="Quantity" required >
                                 </div>
                                 <div class="col-md-3">
                                     <input type="text" class="form-control" name="ingredient_unit[]"

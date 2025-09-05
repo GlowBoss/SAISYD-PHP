@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
       newRow.classList.add("row", "g-2", "mb-2", "ingredient-row");
       newRow.innerHTML = `
                 <div class="col-md-5">
-                    <input type="text" class="form-control" name="ingredient_name[]" placeholder="Ingredient name" required>
+                    <input type="text" class="form-control" name="ingredient_name[]" placeholder="Name" required>
                 </div>
                 <div class="col-md-3">
                     <input type="number" class="form-control" name="ingredient_qty[]" placeholder="Quantity" required>
@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
       newRow.classList.add("row", "g-2", "mb-2", "ingredient-row");
       newRow.innerHTML = `
                 <div class="col-md-5">
-                    <input type="text" class="form-control" name="ingredient_name[]" placeholder="Ingredient name" required>
+                    <input type="text" class="form-control" name="ingredient_name[]" placeholder="Name" required>
                 </div>
                 <div class="col-md-3">
                     <input type="number" class="form-control" name="ingredient_qty[]" placeholder="Quantity" required>
