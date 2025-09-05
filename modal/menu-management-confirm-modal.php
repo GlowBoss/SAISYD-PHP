@@ -51,11 +51,11 @@
                     <div id="ingredients-container">
                         <div class="row g-2 mb-2 ingredient-row">
                             <div class="col-md-5">
-                                <input type="text" class="form-control" name="ingredient_name[]" value="Espresso"
+                                <input type="text" class="form-control" name="ingredient_name[]" 
                                     required>
                             </div>
                             <div class="col-md-3">
-                                <input type="number" class="form-control" name="ingredient_qty[]" value="2" required>
+                                <input type="number" class="form-control" name="ingredient_qty[]"  required>
                             </div>
                             <div class="col-md-3">
                                 <input type="text" class="form-control" name="ingredient_unit[]"
