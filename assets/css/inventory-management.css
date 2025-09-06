@@ -97,10 +97,10 @@ html {
   font-size: var(--subheading);
 }
 
-.modal-content {
+/* .modal-content {
   border-radius: 12px;
   border: none;
-}
+} */
 
 .modal-header,
 .modal-body,
@@ -168,5 +168,31 @@ html {
     min-width: 800px;
     font-size: 13px;
   }
+}
+
+
+.modal-content {
+  border-radius: 12px;
+  font-family: var(--secondaryFont);
+}
+
+.btnExportDownload {
+  background-color: var(--primary-color);
+  border-radius: 12px;
+}
+
+.btnExportDownload:hover {
+  background-color: var(--btn-hover1) !important;
+  color: white !important;
+}
+
+.btnExportCancel {
+background-color: var(--secondary-color);
+border-radius: 12px;
+}
+
+.btnExportCancel:hover {
+  background-color: var(--btn-hover2) !important;
+  color: white !important;
 }
 

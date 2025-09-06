@@ -230,9 +230,11 @@ function toggleOrder($currentOrder)
                             <i class="bi bi-plus-circle"></i>
                             <span class="d-none d-sm-inline ms-2">Add</span>
                         </button>
-                        <button class="btn btnExport" type="button">
+                        <button class="btn btnExport" type="button" 
+                        data-bs-toggle="modal" data-bs-target="#confirmModal">
                             Export
                         </button>
+
                     </div>
                 </div>
 
@@ -319,9 +321,38 @@ function toggleOrder($currentOrder)
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
     <script src="../assets/js/admin_sidebar.js"></script>
+    <script src="../assets/js/inventory-export.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous">
         </script>
+    <script>
+        document.getElementById("downloadInventoryBtn").addEventListener("click", function () {
+            // Delay to let download start
+            setTimeout(() => {
+                const toast = new bootstrap.Toast(document.getElementById("inventoryToast"));
+                toast.show();
+            }, 1500);
+        });
+    </script>
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const downloadBtn = document.querySelector("#confirmModal .btnDownload");
+    const toastEl = document.getElementById("inventoryToast");
+
+    if (downloadBtn && toastEl) {
+        downloadBtn.addEventListener("click", function () {
+            // Bootstrap toast init
+            const toast = new bootstrap.Toast(toastEl);
+
+            // Wait a moment so download triggers first, then show toast
+            setTimeout(() => {
+                toast.show();
+            }, 1000);
+        });
+    }
+});
+</script>
+
 
 </body>
 

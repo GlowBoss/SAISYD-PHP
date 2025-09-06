@@ -203,15 +203,15 @@
                                     </div>
                                     <div class="carousel-item">
                                         <div class="d-flex flex-column align-items-center my-3">
-                                            <div class="card cardSmall m-2 fw-bolder p-3" 
-                                            style="background-color:#C4A277; color:aliceblue">
-                                               <div class="text-center">
+                                            <div class="card cardSmall m-2 fw-bolder p-3"
+                                                style="background-color:#C4A277; color:aliceblue">
+                                                <div class="text-center">
                                                     <div class="sales-label fw-semibold">Most Popular:</div>
                                                     <div class="sales-amount mt-2 fs-4">Benguet</div>
                                                     <div class="sales-period mt-2">This week</div>
                                                 </div>
                                             </div>
-                                            <div class="card cardSmall m-2 fw-bolder p-3" >
+                                            <div class="card cardSmall m-2 fw-bolder p-3">
                                                 <div class="text-center">
                                                     <div class="sales-label fw-semibold">Total Sales:</div>
                                                     <div class="sales-amount mt-2 fs-4">₱10,000</div>
@@ -265,8 +265,8 @@
                                     <!-- Dropdown 1 -->
                                     <div class="col-12 col-sm-6 col-md-4 col-lg-2">
                                         <div class="dropdown-center">
-                                            <button class="btn btn-dropdown dropdown-toggle fw-semibold"
-                                                type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <button class="btn btn-dropdown dropdown-toggle fw-semibold" type="button"
+                                                data-bs-toggle="dropdown" aria-expanded="false">
                                                 Name
                                             </button>
                                             <ul class="dropdown-menu">
@@ -282,8 +282,8 @@
                                     <!-- Dropdown 2 -->
                                     <div class="col-12 col-sm-6 col-md-4 col-lg-2">
                                         <div class="dropdown-center">
-                                            <button class="btn btn-dropdown dropdown-toggle fw-semibold"
-                                                type="button" data-bs-toggle="dropdown">
+                                            <button class="btn btn-dropdown dropdown-toggle fw-semibold" type="button"
+                                                data-bs-toggle="dropdown">
                                                 Price
                                             </button>
                                             <ul class="dropdown-menu">
@@ -298,8 +298,8 @@
                                     <!-- Dropdown 3 -->
                                     <div class="col-12 col-sm-6 col-md-4 col-lg-2">
                                         <div class="dropdown-center">
-                                            <button class="btn btn-dropdown dropdown-toggle fw-semibold"
-                                                type="button" data-bs-toggle="dropdown">
+                                            <button class="btn btn-dropdown dropdown-toggle fw-semibold" type="button"
+                                                data-bs-toggle="dropdown">
                                                 Status
                                             </button>
                                             <ul class="dropdown-menu">
@@ -312,10 +312,11 @@
 
                                     <!-- Export Button -->
                                     <div class="col-12 col-sm-6 col-md-4 col-lg-2">
-                                        <button type="button" class="btn excelBtn"onclick="openPopup()">
+                                        <button class="btn excelBtn" type="button" onclick="openPopup()">
                                             Export
                                         </button>
                                     </div>
+
                                 </div>
                             </div>
                             <div class="row align-items-center">
@@ -406,7 +407,7 @@
             XLSX.utils.book_append_sheet(wb, ws, "Order");
 
             // Trigger download
-            XLSX.writeFile(wb, "empty_order.xlsx");
+            XLSX.writeFile(wb, "sales_and_report.xlsx");
         }
     </script>
 
