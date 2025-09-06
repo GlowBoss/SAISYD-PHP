@@ -19,7 +19,6 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
   <link rel="stylesheet" href="../assets/css/admin_home.css">
-
 </head>
 
 <body>
@@ -68,7 +67,7 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
                 Management</a>
             </div>
             <div class="col-12 col-sm-6 col-md-4">
-              <a href="user_role.html" class="dashboard-box text-decoration-none">User Role</a>
+              <a href="user_role.html" class="dashboard-box text-decoration-none">User  Role</a>
             </div>
             <div class="col-12 col-sm-6 col-md-4">
               <a href="setting.php" class="dashboard-box text-decoration-none">Settings</a>
@@ -83,58 +82,16 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
     </div>
   </div>
 
-  <!-- Low Stock Alert Modal -->
-<div class="modal fade" id="stockModal" tabindex="-1" aria-labelledby="stockModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content stock-modal">
-      
-      <!-- Header -->
-      <div class="modal-header border-0">
-        <h5 class="modal-title fw-bold" id="stockModalLabel">Low Stock Alert</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      
-      <!-- Body -->
-      <div class="modal-body text-center">
-        <p class="mb-3">The following items are running low on stock:</p>
-        
-        <ul class="list-group list-group-flush">
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <span>🥤 Sugar</span>
-            <span class="badge bg-danger rounded-pill">5</span>
-          </li>
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <span>🥛 Milk</span>
-            <span class="badge bg-danger rounded-pill">2</span>
-          </li>
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <span>🧈 Butter</span>
-            <span class="badge bg-danger rounded-pill">8</span>
-          </li>
-        </ul>
-      </div>
-      
-      <!-- Footer -->
-      <div class="modal-footer border-0 d-flex justify-content-center">
-        <a href="inventory-management.php" class="btn custom-visit px-4 py-2 rounded-pill">
-          Go to Inventory
-        </a>
-        <button type="button" class="btn custom-logout px-4 py-2 rounded-pill" data-bs-dismiss="modal">
-          Dismiss
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    var stockModal = new bootstrap.Modal(document.getElementById('stockModal'));
-    stockModal.show();
-  });
-</script>
+  <?php include '../modal/low_stock_modal.php'; ?>
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var stockModal = new bootstrap.Modal(document.getElementById('stockModal'));
+      stockModal.show();
+    });
+  </script>
 </body>
 </html>
