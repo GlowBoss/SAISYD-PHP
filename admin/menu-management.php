@@ -1,3 +1,19 @@
+<?php
+include '../assets/connect.php';
+session_start();
+
+// Check if user is logged in and is an admin 
+if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
+    header("Location: login.php");
+    exit();
+}
+
+// Menu Items Query
+$menuItemsQuery = "SELECT * FROM PRODUCTS WHERE isAvailable = 'Yes'";
+$menuItemsResults = executeQuery($menuItemsQuery);
+?>
+
+
 <!doctype html>
 <html lang="en">
 
@@ -206,45 +222,64 @@
                 <!-- Menu -->
 
                 <div id="productGrid" class="row g-2 m-3 align-items-center">
+                    <?php
+                    if (mysqli_num_rows($menuItemsResults) > 0) {
+                        while ($row = mysqli_fetch_assoc($menuItemsResults)) {
+                            $id = $row['productID'];
+                            $name = $row['productName'];
+                            $image = $row['image'];
+                            $price = $row['price'];
 
-                    <!-- Products -->
-                    <div class="col-6 col-md-4 col-lg-2">
-                        <div class="menu-item border p-3 rounded shadow-sm text-center">
-                            <img src="../assets/img/coffee.png" alt="Amerikano" class="img-fluid mb-2 menu-img">
-                            <div class="lead menu-name fs-6">Amerikano (S)</div>
-                            <div class="d-flex justify-content-center align-items-center gap-2 my-2">
-                                <span class="lead fw-bold menu-price">₱140</span>
-                            </div>
-                            <div class="d-flex flex-wrap justify-content-center gap-2">
-                                <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editModal">
-                                    <i class=" bi-pencil-square"></i> Edit
-                                </button>
-                                <button class="btn btn-del">
-                                    <i class=" bi-trash"></i>Delete
-                            </div>
-                        </div>
-                    </div>
+                            echo "
+        <div class='col-6 col-md-4 col-lg-2'>
+            <div class='menu-item border p-3 rounded shadow-sm text-center'>
+                <img src='../assets/img/img-menu/" . htmlspecialchars($image) . "' 
+                     alt='" . htmlspecialchars($name) . "' 
+                     class='img-fluid mb-2 menu-img'>
 
-                    <div class="col-6 col-md-4 col-lg-2">
-                        <div class="menu-item border p-3 rounded shadow-sm text-center">
-                            <img src="../assets/img/coffee.png" class="img-fluid mb-2 menu-img">
-                            <div class="lead menu-name fs-6">Cappuccino (S)</div>
-                            <div class="d-flex justify-content-center align-items-center gap-2 my-2">
-                                <span class="lead fw-bold menu-price">₱160</span>
-                            </div>
-                            <div class="d-flex flex-wrap justify-content-center gap-2">
-                                <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editModal">
-                                    <i class=" bi-pencil-square"></i> Edit
-                                </button>
-                                <button class="btn btn-del">
-                                    <i class=" bi-trash"></i>Delete
-                            </div>
-                        </div>
-                    </div>
+                <div class='lead menu-name fs-6'>" . htmlspecialchars($name) . "</div>
+                <div class='d-flex justify-content-center align-items-center gap-2 my-2'>
+                    <span class='lead fw-bold menu-price'>₱" . number_format($price, 2) . "</span>
+                </div>
+
+                <div class='d-flex flex-wrap justify-content-center gap-2'>
+                    <button class='btn btn-sm edit-btn'
+                        data-bs-toggle='modal'
+                        data-bs-target='#editModal'
+                        data-id='$id'>
+                        <i class='bi-pencil-square'></i> Edit
+                    </button>
+                    <button class='btn btn-sm delete-btn' data-id='$id'>
+                        <i class='bi-trash'></i> Delete
+                    </button>
                 </div>
             </div>
         </div>
+        ";
+                        }
+                    } else {
+                        echo "<p class='text-center'>No products available.</p>";
+                    }
+                    ?>
+                </div>
+            </div>
+            <!-- Toast Container -->
+            <div class="position-fixed bottom-0 end-0 p-3 " style="z-index: 1100">
+                <div id="updateToast" class="toast align-items-center updateToast border-0" role="alert"
+                    aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            Product updated successfully!
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                            aria-label="Close"></button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </div>
+
     <?php include '../modal/menu-management-confirm-modal.php'; ?>
     <?php include '../modal/menu-management-edit-modal.php'; ?>
     <script src="../assets/js/menu-management.js"></script>
