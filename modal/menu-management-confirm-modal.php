@@ -35,11 +35,14 @@
                                 <label class="form-label">Price</label>
                                 <input type="text" class="form-control" name="price" placeholder="Enter price" required>
                             </div>
+
+                            <!-- (name="availableQuantity") -->
                             <div class="mb-3">
                                 <label class="form-label">Available Quantity</label>
-                                <input type="number" class="form-control" name="availableQuantity"
+                                <input type="number" class="form-control" 
                                     placeholder="Enter stock" required>
                             </div>
+
                             <div class="mb-3">
                                 <label class="form-label">Attachment</label>
                                 <input type="file" class="form-control" name="image">
