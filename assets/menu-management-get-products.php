@@ -10,7 +10,7 @@ if (!isset($_GET['id'])) {
 
 $id = intval($_GET['id']);
 
-$query = "SELECT p.productID, p.productName, p.price,
+$query = "SELECT p.productID, p.productName, p.price, p.image, p.categoryID,
                  pr.productRecipeID, pr.requiredQuantity, pr.measurementUnit,
                  i.ingredientID, i.ingredientName,
                  inv.quantity AS inventoryQuantity, inv.unit AS inventoryUnit
@@ -35,8 +35,11 @@ while ($row = mysqli_fetch_assoc($result)) {
         $product = [
             "productID" => $row['productID'],
             "productName" => $row['productName'],
-            "price" => $row['price']
+            "price" => $row['price'],
+            "image" => $row['image'],          
+            "categoryID" => $row['categoryID'] 
         ];
+
     }
 
     if ($row['ingredientID']) {

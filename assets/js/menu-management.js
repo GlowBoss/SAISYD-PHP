@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", function () {
   document.querySelectorAll(".edit-btn").forEach((button) => {
     button.addEventListener("click", () => {
       const productId = button.dataset.id;
-      currentEditingCard = button.closest(".menu-item"); // Track which card is being edited
+      currentEditingCard = button.closest(".menu-item");
 
       fetch(`../assets/menu-management-get-products.php?id=${productId}`)
         .then((res) => res.json())
@@ -62,10 +62,7 @@ document.addEventListener("DOMContentLoaded", function () {
           const product = data.product;
           const ingredients = data.ingredients;
 
-          if (!product) {
-            console.error("Invalid product data", data);
-            return;
-          }
+          if (!product) return;
 
           const modal = document.getElementById("editModal");
           const form = modal.querySelector("form");
@@ -75,11 +72,18 @@ document.addEventListener("DOMContentLoaded", function () {
           form.item_name.value = product.productName;
           form.menu_price.value = product.price;
 
+          // Set the category select
+          const categorySelect = form.querySelector("#edit_item_group");
+          if (categorySelect) categorySelect.value = product.categoryID;
+
+          const imageText = form.querySelector("#edit_current_image_text");
+          if (imageText) imageText.value = product.image; // filename from database
+
           // Fill ingredients
           const editContainer = document.getElementById(
             "edit-ingredients-container"
           );
-          editContainer.innerHTML = ""; // Clear previous
+          editContainer.innerHTML = "";
           ingredients.forEach((ing) => {
             const row = createIngredientRow(
               ing.ingredientName,
@@ -105,60 +109,66 @@ document.addEventListener("DOMContentLoaded", function () {
       const productId = form.product_id.value;
       const name = form.item_name.value.trim();
       const price = form.menu_price.value.trim();
+      const categoryID = form.item_group.value;
 
       // Collect ingredients
       const ingredientNames = Array.from(
         form.querySelectorAll('input[name="ingredient_name[]"]')
-      ).map((input) => input.value.trim());
+      ).map((i) => i.value.trim());
       const ingredientQtys = Array.from(
         form.querySelectorAll('input[name="ingredient_qty[]"]')
-      ).map((input) => input.value.trim());
+      ).map((i) => i.value.trim());
       const ingredientUnits = Array.from(
         form.querySelectorAll('input[name="ingredient_unit[]"]')
-      ).map((input) => input.value.trim());
+      ).map((i) => i.value.trim());
 
-      // Prepare payload
-      const data = {
-        productID: productId,
+      const ingredients = ingredientNames.map((name, i) => ({
         name,
-        price,
-        ingredients: ingredientNames.map((name, i) => ({
-          name,
-          qty: ingredientQtys[i],
-          unit: ingredientUnits[i],
-        })),
-      };
+        qty: ingredientQtys[i],
+        unit: ingredientUnits[i],
+      }));
 
-      // Send AJAX request
+      // FormData to include file
+      const formData = new FormData();
+      formData.append("productID", productId);
+      formData.append("name", name);
+      formData.append("price", price);
+      formData.append("categoryID", categoryID);
+      formData.append("ingredients", JSON.stringify(ingredients));
+
+      const fileInput = form.querySelector('input[name="attachment"]');
+      if (fileInput && fileInput.files[0]) {
+        formData.append("attachment", fileInput.files[0]);
+      }
+
       fetch("../assets/menu-management-update-products.php", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: formData,
       })
         .then((res) => res.json())
-        .then((response) => {
-          if (response.success) {
-            // Show toast
+        .then((resp) => {
+          if (resp.success) {
             const toastEl = document.getElementById("updateToast");
             const toast = new bootstrap.Toast(toastEl);
             toast.show();
 
-            // Optionally update the card dynamically without reloading
             if (currentEditingCard) {
               currentEditingCard.querySelector(".menu-name").textContent = name;
               currentEditingCard.querySelector(
                 ".menu-price"
               ).textContent = `₱${price}`;
+              if (fileInput && fileInput.files[0]) {
+                currentEditingCard.querySelector(".menu-img").src =
+                  URL.createObjectURL(fileInput.files[0]);
+              }
             }
 
-            // Close edit modal
             const modal = bootstrap.Modal.getInstance(
               document.getElementById("editModal")
             );
             modal.hide();
           } else {
-            // Optionally, create an error toast
-            alert("Error updating product: " + response.message);
+            alert("Error updating product: " + resp.message);
           }
         })
         .catch((err) => console.error(err));

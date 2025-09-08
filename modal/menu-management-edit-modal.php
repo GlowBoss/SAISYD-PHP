@@ -10,7 +10,7 @@
       <div class="modal-body modalText">
         <!-- required for file uploads -->
         <form id="editItemForm" method="POST" enctype="multipart/form-data">
-          
+
           <!-- Hidden Product ID -->
           <input type="hidden" name="product_id" id="edit_product_id">
 
@@ -24,12 +24,18 @@
               <div class="mb-3">
                 <label class="form-label">Select Category</label>
                 <select class="form-select" name="item_group" id="edit_item_group">
-                  <option value="coffee">Coffee</option>
-                  <option value="tea">Tea</option>
-                  <option value="food">Food</option>
-                  <option value="beverage">Beverage</option>
+                  <?php
+                  // Fetch all categories from the database
+                  $categoriesQuery = "SELECT * FROM Categories";
+                  $categoriesResult = mysqli_query($conn, $categoriesQuery);
+
+                  while ($cat = mysqli_fetch_assoc($categoriesResult)) {
+                    echo '<option value="' . $cat['categoryID'] . '">' . htmlspecialchars($cat['categoryName']) . '</option>';
+                  }
+                  ?>
                 </select>
               </div>
+
             </div>
 
             <div class="col-md-6">
@@ -41,7 +47,6 @@
               <div class="mb-3">
                 <label class="form-label">Size</label>
                 <select class="form-select" name="menu_size" id="edit_menu_size">
-                  <option value="">-- None --</option>
                   <option value="12oz">12oz</option>
                   <option value="16oz">16oz</option>
                 </select>
@@ -49,7 +54,8 @@
 
               <div class="mb-3">
                 <label class="form-label">Attachment</label>
-                <input type="file" class="form-control" name="attachment" id="edit_attachment">
+                <input type="file" class="form-control" name="attachment" id="edit_current_image">
+                <input type="text" class="form-control mt-1" id="edit_current_image_text" readonly>
               </div>
             </div>
           </div>
@@ -73,5 +79,3 @@
     </div>
   </div>
 </div>
-
-

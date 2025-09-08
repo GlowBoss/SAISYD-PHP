@@ -9,7 +9,19 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
 }
 
 // Menu Items Query
-$menuItemsQuery = "SELECT * FROM PRODUCTS WHERE isAvailable = 'Yes'";
+$menuItemsQuery = "
+    SELECT 
+        p.*, 
+        c.categoryName AS category_name
+    FROM 
+        Products p
+    JOIN 
+        Categories c ON p.categoryID = c.categoryID
+    WHERE 
+        p.isAvailable = 'Yes'
+";
+
+
 $menuItemsResults = executeQuery($menuItemsQuery);
 ?>
 
@@ -229,6 +241,7 @@ $menuItemsResults = executeQuery($menuItemsQuery);
                             $name = $row['productName'];
                             $image = $row['image'];
                             $price = $row['price'];
+                            $categoryName = $row['category_name'];
 
                             echo "
         <div class='col-6 col-md-4 col-lg-2'>
