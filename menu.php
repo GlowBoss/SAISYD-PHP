@@ -684,8 +684,8 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
             if (document.querySelector('input[name="sugar"][value="100% Sugar"]')) {
                 document.querySelector('input[name="sugar"][value="100% Sugar"]').checked = true;
             }
-            if (document.querySelector('input[name="ice"][value="Default"]')) {
-                document.querySelector('input[name="ice"][value="Default"]').checked = true;
+            if (document.querySelector('input[name="ice"][value="Default Ice"]')) {
+                document.querySelector('input[name="ice"][value="Default Ice"]').checked = true;
             }
         });
 
