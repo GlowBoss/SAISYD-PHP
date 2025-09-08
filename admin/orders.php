@@ -347,18 +347,29 @@ $statusCounts = getStatusCountsData();
     <link rel="stylesheet" href="../assets/css/orders.css">
     <link rel="stylesheet" href="../assets/css/admin_sidebar.css">
 
-    <!-- Bootstrap Icons -->
+    <!-- Bootstrap Icons (latest version so cash-register works) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-     <link rel="icon" href="../assets/img/round_logo.png" type="image/png">
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <!-- WOW.js Animation -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+
+    <!-- Remix Icon -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet" />
+
+    <!-- Favicon -->
+    <link rel="icon" href="../assets/img/round_logo.png" type="image/png">
 </head>
 
 <body>
     <!-- Mobile Menu Toggle Button -->
-    <div class="d-md-none mobile-header d-flex align-items-center p-3">
+    <div class="d-md-none mobile-header d-flex align-items-center pt-3 px-3">
         <button id="menuToggle" class="mobile-menu-toggle me-3">
             <i class="fas fa-bars"></i>
         </button>
-        <h4 class="mobile-header-title">Order Management</h4>
+        <!-- <h4 class="mobile-header-title">Order Management</h4> -->
     </div>
 
     <!-- Desktop Sidebar -->
@@ -418,6 +429,9 @@ $statusCounts = getStatusCountsData();
         </div>
     </div>
 
+      <!-- Sidebar Overlay -->
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
     <!-- Mobile Sidebar -->
     <div id="adminSidebar" class="admin-sidebar">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -471,8 +485,6 @@ $statusCounts = getStatusCountsData();
         </div>
     </div>
 
-    <!-- Sidebar Overlay -->
-    <div id="sidebarOverlay" class="sidebar-overlay"></div>
 
     <!-- Alert Container for AJAX responses -->
     <div id="alertContainer"></div>
