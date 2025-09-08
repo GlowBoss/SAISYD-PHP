@@ -34,7 +34,7 @@ if (isset($_POST['btnAddProduct'])) {
     if (!empty($_FILES['image']['name'])) {
         $image = $_FILES['image']['name'];
         $imageTemp = $_FILES['image']['tmp_name'];
-        $targetDir = "../assets/product-images/";
+        $targetDir = "../assets/img/img-menu/";
         $targetFile = $targetDir . $image;
 
         // check file type
@@ -99,7 +99,7 @@ if (isset($_POST['btnDeleteProduct'])) {
         $result = mysqli_query($conn, "SELECT image FROM products WHERE productID = '$productID'");
         $row = mysqli_fetch_assoc($result);
         if ($row && !empty($row['image'])) {
-            $imagePath = "../assets/product-images/" . $row['image'];
+            $imagePath = "../assets/img/img-menu/" . $row['image'];
             if (file_exists($imagePath)) {
                 unlink($imagePath);
             }
@@ -392,51 +392,43 @@ if (isset($_GET['categoryID']) && !empty($_GET['categoryID'])) {
                 <!-- Menu -->
                 <div id="productGrid" class="row g-2 m-3 align-items-center">
 
-                    <!-- Products Loop -->
-                    <?php while ($row = mysqli_fetch_assoc($productGetResult)): ?>
-                        <div class="col-6 col-md-4 col-lg-2">
-                            <div class="menu-item border p-3 rounded shadow-sm text-center h-100 d-flex flex-column">
-                                <img src="../assets/product-images/<?= $row['image'] ?>"
-                                    alt="<?= htmlspecialchars($row['productName']) ?>" class="img-fluid mb-2 menu-img"
-                                    style="max-height:150px; object-fit:contain;">
+                    <!-- Products Loop -->  
+                    <!--remove na yung loop  -->
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <div class="menu-item border p-3 rounded shadow-sm text-center h-100 d-flex flex-column">
+                            <img src="../assets/img/img-menu/americano.png" alt="Product Name"
+                                class="img-fluid mb-2 menu-img" style="max-height:150px; object-fit:contain;">
 
-                                <!-- Product name with ellipsis -->
-                                <div class="lead menu-name fs-6 text-truncate" style="max-width: 100%;"
-                                    title="<?= htmlspecialchars($row['productName']) ?>">
-                                    <?= htmlspecialchars($row['productName']) ?>
-                                </div>
+            
+                            <div class="lead menu-name fs-6 text-truncate" style="max-width: 100%;"
+                                title="Product Name">
+                                Product Name
+                            </div>
 
-                                <div class="d-flex justify-content-center align-items-center gap-2 my-2">
-                                    <span class="lead fw-bold menu-price">₱<?= number_format($row['price'], 2) ?></span>
-                                </div>
+                            <div class="d-flex justify-content-center align-items-center gap-2 my-2">
+                                <span class="lead fw-bold menu-price">₱100.00</span>
+                            </div>
 
-                                <div class="small text-muted mb-2">
-                                    <?= htmlspecialchars($row['categoryName']) ?> •
-                                    Stock: <?= $row['availableQuantity'] ?> •
-                                    <?= $row['isAvailable'] ? "Available" : "Out of Stock" ?>
-                                </div>
+                            <div class="small text-muted mb-2">
+                                Category • Stock: 10 • Available
+                            </div>
 
-                                <!-- Buttons pushed to bottom -->
-                                <div class="mt-auto">
-                                    <div class="d-flex flex-wrap justify-content-center gap-2">
-                                        <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editModal"
-                                            data-id="<?= $row['productID'] ?>">
-                                            <i class="bi bi-pencil-square"></i> Edit
+                            <div class="mt-auto">
+                                <div class="d-flex flex-wrap justify-content-center gap-2">
+                                    <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editModal">
+                                        <i class="bi bi-pencil-square"></i> Edit
+                                    </button>
+
+                                    <form method="POST" class="deleteProductForm">
+                                        <button type="submit" class="btn btn-del">
+                                            <i class="bi bi-trash"></i> Delete
                                         </button>
-
-                                        <form method="POST" class="deleteProductForm">
-                                            <input type="hidden" name="productID" value="<?= $row['productID'] ?>">
-                                            <input type="hidden" name="btnDeleteProduct" value="1">
-                                            <button type="submit" class="btn btn-del">
-                                                <i class="bi bi-trash"></i>Delete
-                                            </button>
-                                        </form>
-
-                                    </div>
+                                    </form>
                                 </div>
                             </div>
                         </div>
-                    <?php endwhile; ?>
+                    </div>
+
 
                 </div>
             </div>
