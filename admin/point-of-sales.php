@@ -1,3 +1,5 @@
+
+
 <!doctype html>
 <html lang="en">
 
@@ -36,8 +38,7 @@
                 <div class="offcanvas-header d-flex align-items-center justify-content-between">
                     <img src="../assets/img/saisydLogo.png" alt="Saisyd Cafe Logo" class="admin-logo"
                         style="max-height: 70px; width: auto;" />
-                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"
-                        aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                 </div>
 
                 <!-- Body with Admin Navigation Design -->
@@ -164,7 +165,8 @@
                                     <div><b id="totalValue">0</b></div>
                                 </div>
                                 <div class="d-flex flex-column flex-md-row justify-content-center gap-3 mt-4">
-                                    <button class="btn btn-dark-order w-100 w-md-auto py-2 px-3" onclick="openPopup()">Order
+                                    <button class="btn btn-dark-order w-100 w-md-auto py-2 px-3"
+                                        onclick="openPopup()">Order
                                         Now</button>
                                     <button class="btn btn-dark-cancel w-100 w-md-auto py-2 px-3"
                                         onclick="cancelOrder()">Cancel Order</button>
@@ -179,56 +181,62 @@
             <!-- Order Confirmation Modal -->
             <div id="modal-placeholder"></div>
             <script>
-                // Plus / Minus buttons
-                document.addEventListener('click', (e) => {
-                    if (e.target.closest('#plusBtn')) {
-                        const input = document.getElementById('quantityInput');
-                        input?.stepUp();
-                    }
-                    if (e.target.closest('#minusBtn')) {
-                        const input = document.getElementById('quantityInput');
-                        if (input && +input.value > 1) input.stepDown();
-                    }
-                });
-
-                // Reset input value when modal closes
-                const quantityModalEl = document.getElementById('quantityModal');
-                if (quantityModalEl) {
-                    quantityModalEl.addEventListener('hidden.bs.modal', (event) => {
-                        const input = document.getElementById('quantityInput');
-                        if (input) {
-                            input.value = 1;
-                        }
-                    });
-                }
-            </script>
-
-
-
-
-
-            <script>
+                // Global variables
                 var products = [];
                 var total = 0;
-                var orderData = [];
-                var selectedPaymentMode = "";
+                var selectedPaymentMode = "Cash";
 
-                // Fetch products from JSON file
-                fetch('products.json')
-                    .then(response => response.json())
+                // Fetch products from API
+                fetch('../assets/pos-api.php')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
                     .then(data => {
+                        // Check if API returned an error
+                        if (data.error) {
+                            console.error('API Error:', data.error);
+                            alert('Error loading products: ' + data.error);
+                            return;
+                        }
+
+                        console.log('Products loaded:', data);
                         products = data;
                         loadCategories();
+                        loadCartFromSession();
+                    })
+                    .catch(error => {
+                        console.error('Error fetching products:', error);
+                        alert('Failed to load products. Please check console for details.');
                     });
 
                 function loadCategories() {
                     var categoriesContainer = document.getElementById("categories");
+
+                    if (products.length === 0) {
+                        categoriesContainer.innerHTML = '<div class="text-center text-muted">No categories available</div>';
+                        return;
+                    }
+
+                    categoriesContainer.innerHTML = ''; // Clear previous content
+
                     products.forEach((product, index) => {
                         categoriesContainer.innerHTML += `
-            <div onclick="selectCategory(this, '${index}')" class="category-pill text-center">
+            <div onclick="selectCategory(this, ${index})" class="category-pill text-center">
                 ${product.category}
             </div>`;
                     });
+
+                    // Select first category by default
+                    if (products.length > 0) {
+                        const firstCategory = document.querySelector('.category-pill');
+                        if (firstCategory) {
+                            firstCategory.classList.add('active');
+                            loadProducts(0);
+                        }
+                    }
                 }
 
                 function selectCategory(element, index) {
@@ -241,109 +249,139 @@
                     var maincontainer = document.getElementById("maincontainer");
                     maincontainer.innerHTML = "";
 
-                    if (categoryIndex == 0 || categoryIndex == 1) {
-                        products[categoryIndex].contents.forEach((content, contentIndex) => {
-                            content.sizes.forEach((size, sizeIndex) => {
-                                const sugarSelectId = `sugar-${categoryIndex}-${contentIndex}-${sizeIndex}`;
-                                const iceSelectId = `ice-${categoryIndex}-${contentIndex}-${sizeIndex}`;
+                    // Check if category has products
+                    if (!products[categoryIndex] || !products[categoryIndex].contents || products[categoryIndex].contents.length === 0) {
+                        maincontainer.innerHTML = '<div class="col-12 text-center text-muted">No products available in this category</div>';
+                        return;
+                    }
 
-                                const sugarLevels = (content.sugarLevels && content.sugarLevels.length > 0) ? content.sugarLevels : [0, 25, 50, 75, 100];
-                                const sugarOptions = sugarLevels.map(level =>
+                    products[categoryIndex].contents.forEach((content, contentIndex) => {
+                        // Check if product has sizes
+                        if (!content.sizes || content.sizes.length === 0) {
+                            console.warn('Product has no sizes:', content);
+                            return;
+                        }
 
-                                    `<li><a class="dropdown-item" value="${level}">${level}% Sugar Level</a></li>`
+                        content.sizes.forEach((size, sizeIndex) => {
+                            const uniqueId = `${categoryIndex}-${contentIndex}-${sizeIndex}`;
+                            const sugarSelectId = `sugar-${uniqueId}`;
+                            const iceSelectId = `ice-${uniqueId}`;
+
+                            // Determine if product should have sugar/ice options (beverages)
+                            const categoryName = products[categoryIndex].category.toLowerCase();
+                            const hasSugarIce = categoryName.includes('coffee') || categoryName.includes('tea') ||
+                                categoryName.includes('frappe') || categoryName.includes('milktea') ||
+                                categoryName.includes('soda');
+
+                            let sugarIceDropdowns = '';
+                            if (hasSugarIce) {
+                                const sugarOptions = content.sugarLevels.map(level =>
+                                    `<li><a class="dropdown-item" data-value="${level}">${level}% Sugar Level</a></li>`
                                 ).join('');
 
-                                const iceOptions = ["No Ice", "Less Ice", "Regular Ice"].map(level => `<li><a class="dropdown-item" value="${level}">${level}</a></li>`).join('');
+                                const iceOptions = ["No Ice", "Less Ice", "Regular Ice"].map(level =>
+                                    `<li><a class="dropdown-item" data-value="${level}">${level}</a></li>`
+                                ).join('');
 
-                                maincontainer.innerHTML += `
-                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
-                        <div class="menu-item border p-3 rounded shadow text-center width-auto card-hover" style="cursor: pointer;">
-                            <img src="../assets/img/${content.img}" alt="${content.name}" class="img-fluid mb-2" style="max-height: 170px; min-height: 120px">
-                            <div class="lead menu-name fw-bold">${content.name}</div>
-                            <div class="d-flex justify-content-center align-items-center gap-2 my-2">
-                                <span class="lead fw-bold menu-price">₱${size.price}</span>
-                                <span class="lead menu-size">${size.name}</span>
-                            </div>
-                           
-                            <div class="dropdown mb-2">
-                                <button class="btn btn-outline-dark dropdown-toggle w-100" type="button" id="${sugarSelectId}" data-bs-toggle="dropdown" aria-expanded="false">Sugar Level</button>
-                                <ul class="dropdown-menu" aria-labelledby="${sugarSelectId}">
-                                ${sugarOptions} </ul>
-                             </div>
+                                sugarIceDropdowns = `
+                    <div class="dropdown mb-2">
+                        <button class="btn btn-outline-dark dropdown-toggle w-100" type="button" 
+                                id="${sugarSelectId}" data-bs-toggle="dropdown" aria-expanded="false">
+                            Sugar Level
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="${sugarSelectId}">
+                            ${sugarOptions}
+                        </ul>
+                    </div>
 
-                             <div class="dropdown mb-2">
-                            <button class="btn btn-outline-dark dropdown-toggle w-100" type="button" id="${iceSelectId}" data-bs-toggle="dropdown" aria-expanded="false">Ice Level</button>
-                            <ul class="dropdown-menu" aria-labelledby="${iceSelectId}">${iceOptions}</ul>
-                            </div>
-
-                            <button class="btn btn-dark btn-sm mt-1"
-                                onclick="showQuantityModal('${size.price}','${content.code + size.code}','${content.name} ${size.name}', '${sugarSelectId}', '${iceSelectId}')">
-                                Add to Order
-                            </button>
-                        </div>
+                    <div class="dropdown mb-2">
+                        <button class="btn btn-outline-dark dropdown-toggle w-100" type="button" 
+                                id="${iceSelectId}" data-bs-toggle="dropdown" aria-expanded="false">
+                            Ice Level
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="${iceSelectId}">
+                            ${iceOptions}
+                        </ul>
                     </div>`;
-                            });
-                        });
-                        document.querySelectorAll(".dropdown-menu .dropdown-item").forEach(item => {
-                            item.addEventListener("click", function () {
-                                const btn = this.closest(".dropdown").querySelector("button");
-                                btn.textContent = this.textContent;
-                                btn.setAttribute("data-value", this.getAttribute("value"));
+                            }
 
-                            });
-                        });
-
-                    } else {
-                        products[categoryIndex].contents.forEach(content => {
                             maincontainer.innerHTML += `
-                <div class="col">
-                    <div onclick="showQuantityModal('${content.price}','${content.code}','${content.name}')" 
-                         class="menu-item border p-3 rounded shadow text-center width-auto card-hover" 
-                         style="cursor: pointer; height: 230px;">
-                        <img src="../assets/img/${content.img}" alt="${content.name}" class="img-fluid mb-2" style="max-height: 150px;">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                    <div class="menu-item border p-3 rounded shadow text-center width-auto card-hover" style="cursor: pointer;">
+                        <img src="../assets/img/${content.img}" alt="${content.name}" 
+                             class="img-fluid mb-2" style="max-height: 170px; min-height: 120px"
+                             onerror="this.src='../assets/img/default-product.jpg'">
                         <div class="lead menu-name fw-bold">${content.name}</div>
                         <div class="d-flex justify-content-center align-items-center gap-2 my-2">
-                            <span class="lead fw-bold menu-price">₱${content.price}</span>
+                            <span class="lead fw-bold menu-price">₱${size.price}</span>
+                            <span class="lead menu-size">${size.name}</span>
                         </div>
+                       
+                        ${sugarIceDropdowns}
+
+                        <button class="btn btn-dark btn-sm mt-1"
+                            onclick="showQuantityModal('${content.productID}', '${content.name} ${size.name}', '${size.price}', '${size.name}', '${sugarSelectId}', '${iceSelectId}')">
+                            Add to Order
+                        </button>
                     </div>
                 </div>`;
                         });
-                    }
+                    });
+
+                    // Set up dropdown functionality after a short delay
+                    setTimeout(() => {
+                        document.querySelectorAll(".dropdown-menu .dropdown-item").forEach(item => {
+                            item.addEventListener("click", function (e) {
+                                e.preventDefault();
+                                const btn = this.closest(".dropdown").querySelector("button");
+                                btn.textContent = this.textContent;
+                                btn.setAttribute("data-value", this.getAttribute("data-value"));
+                            });
+                        });
+                    }, 100);
                 }
 
-                function showQuantityModal(price, code, name, sugarSelectId = null, iceSelectId = null) {
+                function showQuantityModal(productID, name, price, size, sugarSelectId = null, iceSelectId = null) {
                     const quantityModal = document.getElementById('quantityModal');
-                    const addButton = document.getElementById('addToReceiptButton');
+                    if (!quantityModal) {
+                        console.error('Quantity modal not found');
+                        return;
+                    }
 
+                    const addButton = document.getElementById('addToReceiptButton');
+                    if (!addButton) {
+                        console.error('Add button not found');
+                        return;
+                    }
+
+                    // Reset quantity input
+                    document.getElementById('quantityInput').value = 1;
+
+                    addButton.setAttribute('data-productid', productID);
                     addButton.setAttribute('data-price', price);
-                    addButton.setAttribute('data-code', code);
                     addButton.setAttribute('data-name', name);
-                    addButton.setAttribute('data-sugarSelectId', sugarSelectId);
-                    addButton.setAttribute('data-iceSelectId', iceSelectId);
+                    addButton.setAttribute('data-size', size);
+                    addButton.setAttribute('data-sugarSelectId', sugarSelectId || '');
+                    addButton.setAttribute('data-iceSelectId', iceSelectId || '');
 
                     const modal = new bootstrap.Modal(quantityModal);
                     modal.show();
                 }
 
-                function cancelOrder() {
-                    document.getElementById("receipt").innerHTML = "";
-                    total = 0;
-                    document.getElementById("totalValue").innerHTML = "0.00";
-                    orderData = [];
-                }
-
                 function addToReceipt() {
                     const addButton = document.getElementById('addToReceiptButton');
-                    const price = addButton.getAttribute('data-price');
-                    const code = addButton.getAttribute('data-code');
+                    if (!addButton) {
+                        console.error('Add button not found');
+                        return;
+                    }
+
+                    const productID = addButton.getAttribute('data-productid');
+                    const price = parseFloat(addButton.getAttribute('data-price'));
                     const name = addButton.getAttribute('data-name');
+                    const size = addButton.getAttribute('data-size');
                     const sugarSelectId = addButton.getAttribute('data-sugarSelectId');
                     const iceSelectId = addButton.getAttribute('data-iceSelectId');
                     const quantity = parseInt(document.getElementById('quantityInput').value) || 1;
-
-                    total += parseFloat(price) * quantity;
-                    document.getElementById("totalValue").innerHTML = total.toFixed(2);
-                    localStorage.setItem('orderTotal', total.toFixed(2));
 
                     let sugarLevel = '';
                     if (sugarSelectId) {
@@ -361,106 +399,236 @@
                         }
                     }
 
-                    const receiptContainer = document.getElementById("receipt");
-                    receiptContainer.innerHTML += `
-    <div class="d-flex flex-row justify-content-between align-items-center mb-1 receipt-item">
-        <div class="flex-grow-1 item-name">
-            <small><span style="font-weight: bold;">${name} | ${quantity}x</span> ${code} ${sugarLevel ? '| ' + sugarLevel + '% Sugar' : ''} ${iceLevel ? '| ' + iceLevel : ''}</small>
-        </div>
-        <div class="item-price">
-            <small>₱ ${(parseFloat(price) * quantity).toFixed(2)}</small>
-        </div>
-    </div>`;
+                    // Add to cart via AJAX
+                    const formData = new FormData();
+                    formData.append('action', 'add_to_cart');
+                    formData.append('productID', productID);
+                    formData.append('productName', name);
+                    formData.append('price', price);
+                    formData.append('quantity', quantity);
+                    formData.append('sugarLevel', sugarLevel);
+                    formData.append('iceLevel', iceLevel);
+                    formData.append('size', size);
 
-                    let category = '';
-                    for (const product of products) {
-                        const foundContent = product.contents.find(content => content.code === code);
-                        if (foundContent) {
-                            category = product.category;
-                            break;
-                        }
-                    }
+                    fetch('../assets/pos-order-handler.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                loadCartFromSession();
+                                const quantityModal = bootstrap.Modal.getInstance(document.getElementById('quantityModal'));
+                                if (quantityModal) {
+                                    quantityModal.hide();
+                                }
+                            } else {
+                                alert('Error adding item to cart: ' + (data.error || 'Unknown error'));
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Failed to add item to cart');
+                        });
+                }
 
-                    orderData.push({
-                        name: name,
-                        price: parseFloat(price),
-                        category: category,
-                        quantity: quantity,
-                        sugarLevel: sugarLevel,
-                        iceLevel: iceLevel,
-                        totalPrice: (parseFloat(price) * quantity).toFixed(2)
-                    });
+                function loadCartFromSession() {
+                    fetch('../assets/pos-order-handler.php', {
+                        method: 'POST',
+                        body: new URLSearchParams({ action: 'get_cart' })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            const receiptContainer = document.getElementById("receipt");
+                            receiptContainer.innerHTML = '';
 
-                    const quantityModal = bootstrap.Modal.getInstance(document.getElementById('quantityModal'));
-                    quantityModal.hide();
+                            total = data.total || 0;
+                            document.getElementById("totalValue").innerHTML = total.toFixed(2);
 
+                            if (data.cart && data.cart.length > 0) {
+                                data.cart.forEach(item => {
+                                    const sugarText = item.sugarLevel ? ` | ${item.sugarLevel}% Sugar` : '';
+                                    const iceText = item.iceLevel ? ` | ${item.iceLevel}` : '';
+
+                                    receiptContainer.innerHTML += `
+                    <div class="d-flex flex-row justify-content-between align-items-center mb-1 receipt-item">
+                        <div class="flex-grow-1 item-name">
+                            <small><span style="font-weight: bold;">${item.productName} | ${item.quantity}x</span>${sugarText}${iceText}</small>
+                        </div>
+                        <div class="item-price">
+                            <small>₱ ${item.totalPrice.toFixed(2)}</small>
+                        </div>
+                    </div>`;
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error loading cart:', error);
+                        });
+                }
+
+                function cancelOrder() {
+                    fetch('../assets/pos-order-handler.php', {
+                        method: 'POST',
+                        body: new URLSearchParams({ action: 'clear_cart' })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                loadCartFromSession();
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error clearing cart:', error);
+                        });
                 }
 
                 function openPopup() {
-                    const receiptItems = document.querySelectorAll('#receipt .receipt-item');
-                    const summaryList = document.getElementById('orderSummaryList');
-                    summaryList.innerHTML = '';
+                    // Check if cart has items
+                    fetch('../assets/pos-order-handler.php', {
+                        method: 'POST',
+                        body: new URLSearchParams({ action: 'get_cart' })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (!data.cart || data.cart.length === 0) {
+                                alert("Please add items to your order first.");
+                                return;
+                            }
 
-                    const currentOrder = [];
-                    let totalPrice = 0;
+                            const summaryList = document.getElementById('orderSummaryList');
+                            if (!summaryList) {
+                                console.error('Order summary list not found');
+                                return;
+                            }
 
-                    receiptItems.forEach(item => {
-                        const name = item.querySelector('.item-name')?.textContent || '';
-                        const price = parseFloat(item.querySelector('.item-price')?.textContent.replace('₱ ', '')) || 0;
-                        if (name) {
-                            summaryList.innerHTML += `<li>${name}</li>`;
-                            currentOrder.push({ name, price });
-                            totalPrice += price;
-                        }
-                    });
+                            summaryList.innerHTML = '';
 
-                    const paymentModeElement = document.getElementById('paymentMode');
-                    selectedPaymentMode = paymentModeElement ? paymentModeElement.value : 'N/A';
+                            data.cart.forEach(item => {
+                                const sugarText = item.sugarLevel ? ` (${item.sugarLevel}% Sugar)` : '';
+                                const iceText = item.iceLevel ? ` (${item.iceLevel})` : '';
+                                summaryList.innerHTML += `<li>${item.productName} (${item.quantity}x)${sugarText}${iceText} - ₱${item.totalPrice.toFixed(2)}</li>`;
+                            });
 
-                    summaryList.innerHTML += `<li class="fw-bold">Total: ₱${totalPrice.toFixed(2)}</li>`;
-                    summaryList.innerHTML += `<li class="fw-bold">Payment Mode: ${selectedPaymentMode}</li>`;
+                            const paymentModeElement = document.getElementById('paymentMode');
+                            selectedPaymentMode = paymentModeElement ? paymentModeElement.value : 'Cash';
 
-                    document.getElementById('confirmModal').dataset.currentOrder = JSON.stringify(currentOrder);
-                    const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
-                    modal.show();
+                            summaryList.innerHTML += `<li class="fw-bold">Total: ₱${data.total.toFixed(2)}</li>`;
+                            summaryList.innerHTML += `<li class="fw-bold">Payment Mode: ${selectedPaymentMode}</li>`;
+
+                            const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+                            modal.show();
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Failed to load cart');
+                        });
                 }
 
                 function confirmOrder() {
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('confirmModal'));
-                    modal.hide();
+                    const paymentMethod = document.getElementById('paymentMode')?.value || 'Cash';
 
-                    const toastElement = document.getElementById('orderToast');
-                    const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
-                    toast.show();
+                    const formData = new FormData();
+                    formData.append('action', 'checkout');
+                    formData.append('paymentMethod', paymentMethod);
+                    formData.append('customerName', '');
+                    formData.append('orderType', 'dine-in');
+                    formData.append('contactNumber', '');
 
-                    let existingOrders = JSON.parse(localStorage.getItem('orderData')) || [];
-                    existingOrders.push({
-                        items: [...orderData],
-                        total: total.toFixed(2),
-                        paymentMode: selectedPaymentMode,
-                        timestamp: new Date().toISOString()
-                    });
-                    localStorage.setItem('orderData', JSON.stringify(existingOrders));
+                    fetch('../assets/pos-order-handler.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                const modal = bootstrap.Modal.getInstance(document.getElementById('confirmModal'));
+                                if (modal) {
+                                    modal.hide();
+                                }
 
-                    orderData = [];
-                    document.getElementById("receipt").innerHTML = "";
-                    total = 0;
-                    document.getElementById("totalValue").innerHTML = "0.00";
+                                // Update receipt number in toast
+                                const receiptSpan = document.getElementById('receiptNumber');
+                                if (receiptSpan) {
+                                    receiptSpan.textContent = data.orderNumber;
+                                }
+
+                                const toastElement = document.getElementById('orderToast');
+                                if (toastElement) {
+                                    const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
+                                    toast.show();
+                                }
+
+                                // Clear the cart display
+                                loadCartFromSession();
+                            } else {
+                                alert('Error placing order: ' + (data.error || 'Unknown error'));
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Failed to place order');
+                        });
                 }
 
+                // Quantity modal controls
                 document.addEventListener("DOMContentLoaded", function () {
                     // Initialize WOW.js
-                    new WOW().init();
+                    if (typeof WOW !== 'undefined') {
+                        new WOW().init();
+                    }
 
                     // Load modal from PHP file
                     fetch("../modal/pos-modal.php")
-                        .then(res => res.text())
+                        .then(res => {
+                            if (!res.ok) {
+                                throw new Error('Failed to load modal');
+                            }
+                            return res.text();
+                        })
                         .then(data => {
                             document.getElementById("modal-placeholder").innerHTML = data;
-                            document.querySelector('.btnConfirm').addEventListener('click', confirmOrder);
+
+                            // Add event listener to confirm button if it exists
+                            const confirmBtn = document.querySelector('.btnConfirm');
+                            if (confirmBtn) {
+                                confirmBtn.addEventListener('click', confirmOrder);
+                            }
+
+                            // Quantity controls
+                            const plusBtn = document.getElementById('plusBtn');
+                            const minusBtn = document.getElementById('minusBtn');
+                            const quantityInput = document.getElementById('quantityInput');
+
+                            if (plusBtn) {
+                                plusBtn.addEventListener('click', function () {
+                                    quantityInput.value = parseInt(quantityInput.value) + 1;
+                                });
+                            }
+
+                            if (minusBtn) {
+                                minusBtn.addEventListener('click', function () {
+                                    const currentValue = parseInt(quantityInput.value);
+                                    if (currentValue > 1) {
+                                        quantityInput.value = currentValue - 1;
+                                    }
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error loading modal:', error);
                         });
+
+                    // Load cart on page load
+                    setTimeout(loadCartFromSession, 1000);
                 });
 
+                // Update payment mode when changed
+                document.addEventListener('change', function (e) {
+                    if (e.target.id === 'paymentMode') {
+                        selectedPaymentMode = e.target.value;
+                    }
+                });
             </script>
 
             <script src="../assets/js/admin_sidebar.js"></script>
