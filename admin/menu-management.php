@@ -44,8 +44,6 @@ if (isset($_POST['btnAddProduct'])) {
         if (!in_array($fileType, $allowedTypes)) {
             $_SESSION['alertMessage'] = "Invalid file type. Please upload only JPG, PNG, GIF, or WEBP images.";
             $_SESSION['alertType'] = "error";
-            header("Location: menu-management.php");
-            exit();
         }
         // don't move yet only after insert
     }
@@ -57,8 +55,7 @@ if (isset($_POST['btnAddProduct'])) {
     if (mysqli_num_rows($checkResult) > 0) {
         $_SESSION['alertMessage'] = "This product already exists.";
         $_SESSION['alertType'] = "error";
-        header("Location: menu-management.php");
-        exit();
+
     }
     // insert into products
     $insertProduct = "INSERT INTO products (productName, categoryID, price, availableQuantity, image, isAvailable) 
@@ -87,8 +84,7 @@ if (isset($_POST['btnAddProduct'])) {
 
     $_SESSION['alertMessage'] = "Product added successfully with ingredients!";
     $_SESSION['alertType'] = "success";
-    header("Location: menu-management.php");
-    exit();
+
 }
 
 // DELETEEEE
@@ -113,8 +109,6 @@ if (isset($_POST['btnDeleteProduct'])) {
         $_SESSION['alertMessage'] = "Invalid product ID!";
         $_SESSION['alertType'] = "error";
     }
-    header("Location: menu-management.php");
-    exit();
 }
 
 
