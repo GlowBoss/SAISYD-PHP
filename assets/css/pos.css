@@ -27,6 +27,28 @@ html {
     background-color: var(--card-bg-color)
 }
 
+.maincontainer::-webkit-scrollbar {
+    width: 6px;
+}
+
+.maincontainer::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 3px;
+}
+
+.maincontainer::-webkit-scrollbar-thumb {
+    background: var(--primary-color); 
+    border-radius: 3px;
+}
+
+.maincontainer::-webkit-scrollbar-thumb:hover {
+    background: var(--btn-hover1);
+}
+
+.maincontainer {
+    scroll-behavior: smooth;
+}
+
 .menu-item {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
@@ -52,9 +74,25 @@ html {
     line-height: .5;
 }
 
+.flex-fill {
+    min-width: 0 !important;
+}
+
+.d-flex.flex-column.flex-lg-row {
+    min-width: 0 !important;
+}
+
 .category-scroll {
+    overflow-x: auto;
+    overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     scroll-snap-type: x mandatory;
+    -ms-overflow-style: none;
+
+}
+
+.category-scroll::-webkit-scrollbar {
+    display: none;
 }
 
 .category-pill {
@@ -72,6 +110,8 @@ html {
     transition: all 0.3s ease;
     scroll-snap-align: start;
     flex-shrink: 0;
+    flex: 0 0 auto;
+    scroll-snap-align: start;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
@@ -85,6 +125,27 @@ html {
     color: var(--text-color-light);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
     border: 0px solid var(--primary-color);
+}
+
+.menu-item {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.menu-item.no-options {
+    justify-content: center;
+}
+
+.menu-item.has-options {
+    justify-content: space-between;
+}
+
+
+.menu-item img {
+    max-height: 170px;
+    min-height: 120px;
+    align-self: center;
 }
 
 .btnOrder {
@@ -246,6 +307,26 @@ select option:hover {
     background-color: var(--primary-color);
     color: var(--text-color-light);
     cursor: pointer;
+}
+
+.swal2-icon.swal2-success {
+  border-color: var(--primary-color) !important; /* Outer circle color */
+  color: var(--primary-color) !important;        /* Tick mark color */
+}
+
+.swal2-icon.swal2-success .swal2-success-ring {
+  border-color: var(--primary-color) !important; /* Success ring color */
+}
+
+.swal2-icon.swal2-success [class^='swal2-success-line'] {
+  background-color: var(--primary-color) !important; /* Tick line color */
+}
+
+/* Remove arrows in Chrome, Edge, Safari */
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 
