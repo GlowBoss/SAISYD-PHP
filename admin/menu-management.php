@@ -4,7 +4,6 @@ session_start();
 
 // Prevent unauthorized access
 if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
-    // Redirect non-admin users to login page or a "no access" page
     header("Location: login.php");
     exit();
 }
@@ -12,7 +11,6 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
 $searchProductTerm = '';
 $categoryFilter = '';
 
-// dito kona nilagay sa taas tong pag 
 $ingredients = [];
 $result = mysqli_query($conn, "SELECT ingredientID, ingredientName FROM ingredients ORDER BY ingredientName ASC");
 while ($row = mysqli_fetch_assoc($result)) {
@@ -23,7 +21,7 @@ while ($row = mysqli_fetch_assoc($result)) {
     ];
 }
 
-// ADDDDDD PRODUCT
+// ADD PRODUCT
 if (isset($_POST['btnAddProduct'])) {
     $productName = mysqli_real_escape_string($conn, $_POST['productName']);
     $price = $_POST['price'];
@@ -31,63 +29,68 @@ if (isset($_POST['btnAddProduct'])) {
     $categoryID = $_POST['categoryID'];
     $isAvailable = 1;
     $image = NULL;
-    if (!empty($_FILES['image']['name'])) {
+
+    $hasError = false; // Track errors
+
+    // Check duplicate first
+    $checkQuery = "SELECT * FROM products WHERE productName = '$productName'";
+    $checkResult = mysqli_query($conn, $checkQuery);
+    if (mysqli_num_rows($checkResult) > 0) {
+        $_SESSION['alertMessage'] = "This product already exists.";
+        $_SESSION['alertType'] = "error";
+        $hasError = true;
+    }
+
+    // Validate image only if no previous errors
+    if (!$hasError && !empty($_FILES['image']['name'])) {
         $image = $_FILES['image']['name'];
         $imageTemp = $_FILES['image']['tmp_name'];
         $targetDir = "../assets/img/img-menu/";
         $targetFile = $targetDir . $image;
 
-        // check file type
         $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/jpg'];
         $fileType = mime_content_type($imageTemp);
 
         if (!in_array($fileType, $allowedTypes)) {
             $_SESSION['alertMessage'] = "Invalid file type. Please upload only JPG, PNG, GIF, or WEBP images.";
             $_SESSION['alertType'] = "error";
+            $hasError = true;
         }
-        // don't move yet only after insert
     }
-    // check duplicate 
-    $checkQuery = "SELECT * FROM products 
-                   WHERE productName = '$productName' ";
-    $checkResult = mysqli_query($conn, $checkQuery);
+    if (!$hasError) {
+        $insertProduct = "INSERT INTO products (productName, categoryID, price, availableQuantity, image, isAvailable) 
+                          VALUES ('$productName', '$categoryID', '$price', '$availableQuantity', '$image', '$isAvailable')";
+        if (mysqli_query($conn, $insertProduct)) {
+            $productID = mysqli_insert_id($conn);
 
-    if (mysqli_num_rows($checkResult) > 0) {
-        $_SESSION['alertMessage'] = "This product already exists.";
-        $_SESSION['alertType'] = "error";
-
-    }
-    // insert into products
-    $insertProduct = "INSERT INTO products (productName, categoryID, price, availableQuantity, image, isAvailable) 
-                      VALUES ('$productName', '$categoryID', '$price', '$availableQuantity', '$image', '$isAvailable')";
-    if (mysqli_query($conn, $insertProduct)) {
-        $productID = mysqli_insert_id($conn);
-
-        // only move image the file if insert is successful
-        if (!empty($_FILES['image']['name'])) {
-            move_uploaded_file($imageTemp, $targetFile);
-        }
-
-        // insert into productrecipe
-        if (!empty($_POST['ingredientID'])) {
-            foreach ($_POST['ingredientID'] as $index => $ingredientID) {
-                $ingredientID = intval($ingredientID);
-                $qty = $_POST['requiredQuantity'][$index];
-                $unit = mysqli_real_escape_string($conn, $_POST['measurementUnit'][$index]);
-
-                $insertRecipe = "INSERT INTO productrecipe (ingredientID, productID, measurementUnit, requiredQuantity)
-                                 VALUES ('$ingredientID', '$productID', '$unit', '$qty')";
-                mysqli_query($conn, $insertRecipe);
+            // move image after insert
+            if (!empty($_FILES['image']['name'])) {
+                move_uploaded_file($imageTemp, $targetFile);
             }
+
+            // insert into productrecipe
+            if (!empty($_POST['ingredientID'])) {
+                foreach ($_POST['ingredientID'] as $index => $ingredientID) {
+                    $ingredientID = intval($ingredientID);
+                    $qty = $_POST['requiredQuantity'][$index];
+                    $unit = mysqli_real_escape_string($conn, $_POST['measurementUnit'][$index]);
+
+                    $insertRecipe = "INSERT INTO productrecipe (ingredientID, productID, measurementUnit, requiredQuantity)
+                                     VALUES ('$ingredientID', '$productID', '$unit', '$qty')";
+                    mysqli_query($conn, $insertRecipe);
+                }
+            }
+
+            $_SESSION['alertMessage'] = "Product added successfully with ingredients!";
+            $_SESSION['alertType'] = "success";
+        } else {
+            $_SESSION['alertMessage'] = "Failed to add product.";
+            $_SESSION['alertType'] = "error";
         }
     }
-
-    $_SESSION['alertMessage'] = "Product added successfully with ingredients!";
-    $_SESSION['alertType'] = "success";
-
 }
 
-// DELETEEEE
+// DELETE PRODUCT
 if (isset($_POST['btnDeleteProduct'])) {
     $productID = intval($_POST['productID']);
 
@@ -111,9 +114,7 @@ if (isset($_POST['btnDeleteProduct'])) {
     }
 }
 
-
-
-// fetch lahat 
+// Fetch products
 $productGetQuery = "
     SELECT products.productID, products.productName, products.image, 
            products.availableQuantity, products.price, products.isAvailable, 
@@ -131,18 +132,16 @@ if (isset($_GET['searchProduct']) && !empty($_GET['searchProduct'])) {
                           OR categories.categoryName LIKE '%$searchProductTerm%')";
 }
 
-// Category Filter 
+// Category Filter
 if (isset($_GET['categoryID']) && !empty($_GET['categoryID'])) {
     $categoryID = (int) $_GET['categoryID'];
     $productGetQuery .= " AND products.categoryID = $categoryID";
 }
 
-// Order
 $productGetQuery .= " ORDER BY products.productID DESC";
-
 $productGetResult = executeQuery($productGetQuery);
 
-// Current Category Label 
+
 $currentCategory = "Sort by Category";
 if (isset($_GET['categoryID']) && !empty($_GET['categoryID'])) {
     $catID = (int) $_GET['categoryID'];
@@ -152,6 +151,7 @@ if (isset($_GET['categoryID']) && !empty($_GET['categoryID'])) {
     }
 }
 ?>
+
 
 
 <!doctype html>
