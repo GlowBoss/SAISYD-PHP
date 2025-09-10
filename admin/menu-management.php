@@ -4,6 +4,7 @@ session_start();
 
 // Prevent unauthorized access
 if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
+    // Redirect non-admin users to login page or a "no access" page
     header("Location: login.php");
     exit();
 }
@@ -11,6 +12,7 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
 $searchProductTerm = '';
 $categoryFilter = '';
 
+// dito kona nilagay sa taas tong pag 
 $ingredients = [];
 $result = mysqli_query($conn, "SELECT ingredientID, ingredientName FROM ingredients ORDER BY ingredientName ASC");
 while ($row = mysqli_fetch_assoc($result)) {
@@ -21,7 +23,7 @@ while ($row = mysqli_fetch_assoc($result)) {
     ];
 }
 
-// ADD PRODUCT
+// ADDDDDD PRODUCT
 if (isset($_POST['btnAddProduct'])) {
     $productName = mysqli_real_escape_string($conn, $_POST['productName']);
     $price = $_POST['price'];
@@ -29,68 +31,67 @@ if (isset($_POST['btnAddProduct'])) {
     $categoryID = $_POST['categoryID'];
     $isAvailable = 1;
     $image = NULL;
-
-    $hasError = false; // Track errors
-
-    // Check duplicate first
-    $checkQuery = "SELECT * FROM products WHERE productName = '$productName'";
-    $checkResult = mysqli_query($conn, $checkQuery);
-    if (mysqli_num_rows($checkResult) > 0) {
-        $_SESSION['alertMessage'] = "This product already exists.";
-        $_SESSION['alertType'] = "error";
-        $hasError = true;
-    }
-
-    // Validate image only if no previous errors
-    if (!$hasError && !empty($_FILES['image']['name'])) {
+    if (!empty($_FILES['image']['name'])) {
         $image = $_FILES['image']['name'];
         $imageTemp = $_FILES['image']['tmp_name'];
-        $targetDir = "../assets/img/img-menu/";
+        $targetDir = "../assets/product-images/";
         $targetFile = $targetDir . $image;
 
+        // check file type
         $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/jpg'];
         $fileType = mime_content_type($imageTemp);
 
         if (!in_array($fileType, $allowedTypes)) {
             $_SESSION['alertMessage'] = "Invalid file type. Please upload only JPG, PNG, GIF, or WEBP images.";
             $_SESSION['alertType'] = "error";
-            $hasError = true;
+            header("Location: menu-management.php");
+            exit();
+        }
+        // don't move yet only after insert
+    }
+    // check duplicate 
+    $checkQuery = "SELECT * FROM products 
+                   WHERE productName = '$productName' ";
+    $checkResult = mysqli_query($conn, $checkQuery);
+
+    if (mysqli_num_rows($checkResult) > 0) {
+        $_SESSION['alertMessage'] = "This product already exists.";
+        $_SESSION['alertType'] = "error";
+        header("Location: menu-management.php");
+        exit();
+    }
+    // insert into products
+    $insertProduct = "INSERT INTO products (productName, categoryID, price, availableQuantity, image, isAvailable) 
+                      VALUES ('$productName', '$categoryID', '$price', '$availableQuantity', '$image', '$isAvailable')";
+    if (mysqli_query($conn, $insertProduct)) {
+        $productID = mysqli_insert_id($conn);
+
+        // only move image the file if insert is successful
+        if (!empty($_FILES['image']['name'])) {
+            move_uploaded_file($imageTemp, $targetFile);
+        }
+
+        // insert into productrecipe
+        if (!empty($_POST['ingredientID'])) {
+            foreach ($_POST['ingredientID'] as $index => $ingredientID) {
+                $ingredientID = intval($ingredientID);
+                $qty = $_POST['requiredQuantity'][$index];
+                $unit = mysqli_real_escape_string($conn, $_POST['measurementUnit'][$index]);
+
+                $insertRecipe = "INSERT INTO productrecipe (ingredientID, productID, measurementUnit, requiredQuantity)
+                                 VALUES ('$ingredientID', '$productID', '$unit', '$qty')";
+                mysqli_query($conn, $insertRecipe);
+            }
         }
     }
-    if (!$hasError) {
-        $insertProduct = "INSERT INTO products (productName, categoryID, price, availableQuantity, image, isAvailable) 
-                          VALUES ('$productName', '$categoryID', '$price', '$availableQuantity', '$image', '$isAvailable')";
-        if (mysqli_query($conn, $insertProduct)) {
-            $productID = mysqli_insert_id($conn);
 
-            // move image after insert
-            if (!empty($_FILES['image']['name'])) {
-                move_uploaded_file($imageTemp, $targetFile);
-            }
-
-            // insert into productrecipe
-            if (!empty($_POST['ingredientID'])) {
-                foreach ($_POST['ingredientID'] as $index => $ingredientID) {
-                    $ingredientID = intval($ingredientID);
-                    $qty = $_POST['requiredQuantity'][$index];
-                    $unit = mysqli_real_escape_string($conn, $_POST['measurementUnit'][$index]);
-
-                    $insertRecipe = "INSERT INTO productrecipe (ingredientID, productID, measurementUnit, requiredQuantity)
-                                     VALUES ('$ingredientID', '$productID', '$unit', '$qty')";
-                    mysqli_query($conn, $insertRecipe);
-                }
-            }
-
-            $_SESSION['alertMessage'] = "Product added successfully with ingredients!";
-            $_SESSION['alertType'] = "success";
-        } else {
-            $_SESSION['alertMessage'] = "Failed to add product.";
-            $_SESSION['alertType'] = "error";
-        }
-    }
+    $_SESSION['alertMessage'] = "Product added successfully with ingredients!";
+    $_SESSION['alertType'] = "success";
+    header("Location: menu-management.php");
+    exit();
 }
 
-// DELETE PRODUCT
+// DELETEEEE
 if (isset($_POST['btnDeleteProduct'])) {
     $productID = intval($_POST['productID']);
 
@@ -98,7 +99,7 @@ if (isset($_POST['btnDeleteProduct'])) {
         $result = mysqli_query($conn, "SELECT image FROM products WHERE productID = '$productID'");
         $row = mysqli_fetch_assoc($result);
         if ($row && !empty($row['image'])) {
-            $imagePath = "../assets/img/img-menu/" . $row['image'];
+            $imagePath = "../assets/product-images/" . $row['image'];
             if (file_exists($imagePath)) {
                 unlink($imagePath);
             }
@@ -112,9 +113,13 @@ if (isset($_POST['btnDeleteProduct'])) {
         $_SESSION['alertMessage'] = "Invalid product ID!";
         $_SESSION['alertType'] = "error";
     }
+    header("Location: menu-management.php");
+    exit();
 }
 
-// Fetch products
+
+
+// fetch lahat 
 $productGetQuery = "
     SELECT products.productID, products.productName, products.image, 
            products.availableQuantity, products.price, products.isAvailable, 
@@ -132,16 +137,18 @@ if (isset($_GET['searchProduct']) && !empty($_GET['searchProduct'])) {
                           OR categories.categoryName LIKE '%$searchProductTerm%')";
 }
 
-// Category Filter
+// Category Filter 
 if (isset($_GET['categoryID']) && !empty($_GET['categoryID'])) {
     $categoryID = (int) $_GET['categoryID'];
     $productGetQuery .= " AND products.categoryID = $categoryID";
 }
 
+// Order
 $productGetQuery .= " ORDER BY products.productID DESC";
+
 $productGetResult = executeQuery($productGetQuery);
 
-
+// Current Category Label 
 $currentCategory = "Sort by Category";
 if (isset($_GET['categoryID']) && !empty($_GET['categoryID'])) {
     $catID = (int) $_GET['categoryID'];
@@ -386,14 +393,14 @@ if (isset($_GET['categoryID']) && !empty($_GET['categoryID'])) {
                 <!-- Menu -->
                 <div id="productGrid" class="row g-2 m-3 align-items-center">
 
-                    <!-- Products Loop -->  
+                    <!-- Products Loop -->
                     <!--remove na yung loop  -->
                     <div class="col-6 col-md-4 col-lg-2">
                         <div class="menu-item border p-3 rounded shadow-sm text-center h-100 d-flex flex-column">
                             <img src="../assets/img/img-menu/americano.png" alt="Product Name"
                                 class="img-fluid mb-2 menu-img" style="max-height:150px; object-fit:contain;">
 
-            
+
                             <div class="lead menu-name fs-6 text-truncate" style="max-width: 100%;"
                                 title="Product Name">
                                 Product Name
