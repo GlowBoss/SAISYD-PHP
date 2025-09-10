@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const productId = button.dataset.id;
       currentEditingCard = button.closest(".menu-item");
 
-      fetch(`../assets/menu-management-get-products.php?id=${productId}`)
+      fetch(`../assets/menu-management-get-products-ingredients.php?id=${productId}`)
         .then((res) => res.json())
         .then((data) => {
           const product = data.product;
