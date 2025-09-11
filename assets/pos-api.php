@@ -86,7 +86,7 @@ try {
                 "productID"   => $prod['productID'],
                 "name"        => $displayName,
                 "code"        => "P" . $prod['productID'],
-                "img"         => $prod['image'] ?: 'default-product.jpg',
+                "img"         => $prod['image'],
                 "quantity"    => (int) $prod['availableQuantity'],
                 "sizes"       => $sizes,
                 "sugarLevels" => [0, 25, 50, 75, 100] // Default sugar levels

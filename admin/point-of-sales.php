@@ -1,5 +1,3 @@
-
-
 <!doctype html>
 <html lang="en">
 
@@ -308,9 +306,8 @@
                             maincontainer.innerHTML += `
                 <div class="col-12 col-sm-6 col-md-4 col-lg-2">
                     <div class="menu-item border p-3 rounded shadow text-center width-auto card-hover" style="cursor: pointer;">
-                        <img src="../assets/img/${content.img}" alt="${content.name}" 
-                             class="img-fluid mb-2" style="max-height: 170px; min-height: 120px"
-                             onerror="this.src='../assets/img/default-product.jpg'">
+                        <img src="../assets/img/img-menu/${content.img}" alt="${content.name}" 
+                             class="img-fluid mb-2" style="max-height: 170px; min-height: 120px">
                         <div class="lead menu-name fw-bold">${content.name}</div>
                         <div class="d-flex justify-content-center align-items-center gap-2 my-2">
                             <span class="lead fw-bold menu-price">₱${size.price}</span>
@@ -341,33 +338,86 @@
                     }, 100);
                 }
 
+                // Fixed function to work with your modal structure
                 function showQuantityModal(productID, name, price, size, sugarSelectId = null, iceSelectId = null) {
+                    // Check if modal exists, if not wait for it to load
                     const quantityModal = document.getElementById('quantityModal');
                     if (!quantityModal) {
-                        console.error('Quantity modal not found');
+                        console.log('Modal not ready, waiting...');
+                        // Wait a bit and try again
+                        setTimeout(() => {
+                            showQuantityModal(productID, name, price, size, sugarSelectId, iceSelectId);
+                        }, 100);
                         return;
                     }
 
-                    const addButton = document.getElementById('addToReceiptButton');
-                    if (!addButton) {
-                        console.error('Add button not found');
-                        return;
+                    // Set modal data using your modal's element IDs
+                    const modalProductId = document.getElementById('modal-product-id');
+                    const modalProductName = document.getElementById('modal-product-name');
+                    const modalProductPrice = document.getElementById('modal-product-price');
+                    const modalQuantityInput = document.getElementById('modal-quantity-input');
+                    const quantityInput = document.getElementById('quantity');
+
+                    if (modalProductId) modalProductId.value = productID;
+                    if (modalProductName) modalProductName.value = name;
+                    if (modalProductPrice) modalProductPrice.value = price;
+                    if (modalQuantityInput) modalQuantityInput.value = 1;
+                    if (quantityInput) quantityInput.value = 1;
+
+                    // Get sugar and ice levels if applicable
+                    let sugarLevel = '';
+                    if (sugarSelectId) {
+                        const sugarDropdown = document.getElementById(sugarSelectId);
+                        if (sugarDropdown) {
+                            sugarLevel = sugarDropdown.getAttribute('data-value') || '';
+                        }
                     }
 
-                    // Reset quantity input
-                    document.getElementById('quantityInput').value = 1;
+                    let iceLevel = '';
+                    if (iceSelectId) {
+                        const iceDropdown = document.getElementById(iceSelectId);
+                        if (iceDropdown) {
+                            iceLevel = iceDropdown.getAttribute('data-value') || '';
+                        }
+                    }
 
-                    addButton.setAttribute('data-productid', productID);
-                    addButton.setAttribute('data-price', price);
-                    addButton.setAttribute('data-name', name);
-                    addButton.setAttribute('data-size', size);
-                    addButton.setAttribute('data-sugarSelectId', sugarSelectId || '');
-                    addButton.setAttribute('data-iceSelectId', iceSelectId || '');
+                    const modalSugarInput = document.getElementById('modal-sugar-input');
+                    const modalIceInput = document.getElementById('modal-ice-input');
 
+                    if (modalSugarInput) modalSugarInput.value = sugarLevel;
+                    if (modalIceInput) modalIceInput.value = iceLevel;
+
+                    // Show modal
                     const modal = new bootstrap.Modal(quantityModal);
                     modal.show();
                 }
 
+                // Add these quantity control functions for your modal
+                function increaseQuantity() {
+                    const quantityInput = document.getElementById('quantity');
+                    const modalQuantityInput = document.getElementById('modal-quantity-input');
+                    if (quantityInput && modalQuantityInput) {
+                        const currentValue = parseInt(quantityInput.value);
+                        const newValue = currentValue + 1;
+                        quantityInput.value = newValue;
+                        modalQuantityInput.value = newValue;
+                    }
+                }
+
+                function decreaseQuantity() {
+                    const quantityInput = document.getElementById('quantity');
+                    const modalQuantityInput = document.getElementById('modal-quantity-input');
+                    if (quantityInput && modalQuantityInput) {
+                        const currentValue = parseInt(quantityInput.value);
+                        if (currentValue > 1) {
+                            const newValue = currentValue - 1;
+                            quantityInput.value = newValue;
+                            modalQuantityInput.value = newValue;
+                        }
+                    }
+                }
+
+                // Keep your existing addToReceipt function as backup
                 function addToReceipt() {
                     const addButton = document.getElementById('addToReceiptButton');
                     if (!addButton) {
@@ -510,7 +560,7 @@
                                 summaryList.innerHTML += `<li>${item.productName} (${item.quantity}x)${sugarText}${iceText} - ₱${item.totalPrice.toFixed(2)}</li>`;
                             });
 
-                            const paymentModeElement = document.getElementById('paymentMode');
+                            const paymentModeElement = document.getElementById('paymentModeInput');
                             selectedPaymentMode = paymentModeElement ? paymentModeElement.value : 'Cash';
 
                             summaryList.innerHTML += `<li class="fw-bold">Total: ₱${data.total.toFixed(2)}</li>`;
@@ -526,13 +576,14 @@
                 }
 
                 function confirmOrder() {
-                    const paymentMethod = document.getElementById('paymentMode')?.value || 'Cash';
+                    const paymentMethod = document.getElementById('paymentModeInput')?.value || 'Cash';
+                    const orderType = document.getElementById('orderTypeInput')?.value || 'Dine-In';
 
                     const formData = new FormData();
                     formData.append('action', 'checkout');
                     formData.append('paymentMethod', paymentMethod);
                     formData.append('customerName', '');
-                    formData.append('orderType', 'dine-in');
+                    formData.append('orderType', orderType);
                     formData.append('contactNumber', '');
 
                     fetch('../assets/pos-order-handler.php', {
@@ -571,7 +622,25 @@
                         });
                 }
 
-                // Quantity modal controls
+                // Function to set up dropdown handlers
+                function setupDropdownHandlers() {
+                    // Handle dropdown selections for order type and payment method
+                    document.querySelectorAll('#confirmModal .dropdown-item').forEach(item => {
+                        item.addEventListener('click', function (e) {
+                            e.preventDefault();
+                            const dropdown = this.closest('.dropdown');
+                            const button = dropdown.querySelector('button');
+                            const hiddenInput = dropdown.querySelector('input[type="hidden"]');
+
+                            button.textContent = this.textContent;
+                            if (hiddenInput) {
+                                hiddenInput.value = this.getAttribute('data-value');
+                            }
+                        });
+                    });
+                }
+
+                // Updated DOMContentLoaded section
                 document.addEventListener("DOMContentLoaded", function () {
                     // Initialize WOW.js
                     if (typeof WOW !== 'undefined') {
@@ -588,6 +657,62 @@
                         })
                         .then(data => {
                             document.getElementById("modal-placeholder").innerHTML = data;
+                            console.log('Modal loaded successfully');
+
+                            // Set up form submission handler for your modal
+                            const addToOrderForm = document.getElementById('addToOrderForm');
+                            if (addToOrderForm) {
+                                addToOrderForm.addEventListener('submit', function (e) {
+                                    e.preventDefault(); // Prevent default form submission
+
+                                    // Get form data
+                                    const productID = document.getElementById('modal-product-id').value;
+                                    const productName = document.getElementById('modal-product-name').value;
+                                    const price = parseFloat(document.getElementById('modal-product-price').value);
+                                    const quantity = parseInt(document.getElementById('modal-quantity-input').value);
+                                    const sugarLevel = document.getElementById('modal-sugar-input').value;
+                                    const iceLevel = document.getElementById('modal-ice-input').value;
+
+                                    // Get the modal instance before hiding it
+                                    const quantityModal = document.getElementById('quantityModal');
+                                    const modalInstance = bootstrap.Modal.getInstance(quantityModal);
+
+                                    // Hide modal first to avoid focus issues
+                                    if (modalInstance) {
+                                        modalInstance.hide();
+                                    }
+
+                                    // Add to cart via AJAX
+                                    const formData = new FormData();
+                                    formData.append('action', 'add_to_cart');
+                                    formData.append('productID', productID);
+                                    formData.append('productName', productName);
+                                    formData.append('price', price);
+                                    formData.append('quantity', quantity);
+                                    formData.append('sugarLevel', sugarLevel);
+                                    formData.append('iceLevel', iceLevel);
+                                    formData.append('size', 'Regular');
+
+                                    fetch('../assets/pos-order-handler.php', {
+                                        method: 'POST',
+                                        body: formData
+                                    })
+                                        .then(response => response.json())
+                                        .then(data => {
+                                            if (data.success) {
+                                                loadCartFromSession();
+                                                // Modal is already hidden, no need to hide again
+                                                console.log('Item added to cart successfully');
+                                            } else {
+                                                alert('Error adding item to cart: ' + (data.error || 'Unknown error'));
+                                            }
+                                        })
+                                        .catch(error => {
+                                            console.error('Error:', error);
+                                            alert('Failed to add item to cart');
+                                        });
+                                });
+                            }
 
                             // Add event listener to confirm button if it exists
                             const confirmBtn = document.querySelector('.btnConfirm');
@@ -595,25 +720,8 @@
                                 confirmBtn.addEventListener('click', confirmOrder);
                             }
 
-                            // Quantity controls
-                            const plusBtn = document.getElementById('plusBtn');
-                            const minusBtn = document.getElementById('minusBtn');
-                            const quantityInput = document.getElementById('quantityInput');
-
-                            if (plusBtn) {
-                                plusBtn.addEventListener('click', function () {
-                                    quantityInput.value = parseInt(quantityInput.value) + 1;
-                                });
-                            }
-
-                            if (minusBtn) {
-                                minusBtn.addEventListener('click', function () {
-                                    const currentValue = parseInt(quantityInput.value);
-                                    if (currentValue > 1) {
-                                        quantityInput.value = currentValue - 1;
-                                    }
-                                });
-                            }
+                            // Set up dropdown handlers
+                            setupDropdownHandlers();
                         })
                         .catch(error => {
                             console.error('Error loading modal:', error);
@@ -625,7 +733,7 @@
 
                 // Update payment mode when changed
                 document.addEventListener('change', function (e) {
-                    if (e.target.id === 'paymentMode') {
+                    if (e.target.id === 'paymentModeInput') {
                         selectedPaymentMode = e.target.value;
                     }
                 });
