@@ -1,190 +1,259 @@
 let currentEditingCard = null;
 
 document.addEventListener("DOMContentLoaded", function () {
-  // ADD MODAL INGREDIENT HANDLING
-  const addContainer = document.getElementById("ingredients-container");
-  const addBtn = document.getElementById("add-ingredient");
-
-  if (addBtn && addContainer) {
-    addBtn.addEventListener("click", function () {
-      const newRow = document.createElement("div");
-      newRow.classList.add("row", "g-2", "mb-2", "ingredient-row");
-      newRow.innerHTML = `
-                <div class="col-md-5">
-                    <input type="text" class="form-control" name="ingredient_name[]" placeholder="Name" required>
-                </div>
-                <div class="col-md-3">
-                    <input type="number" class="form-control" name="ingredient_qty[]" placeholder="Quantity" required>
-                </div>
-                <div class="col-md-3">
-                    <input type="text" class="form-control" name="ingredient_unit[]"
-                    placeholder="Unit (pcs, kg, ml)" required>  
-                </div>
-                <div class="col-md-1 d-flex align-items-center">
-                    <button type="button" class="btn btn-sm remove-ingredient">&times;</button>
-                </div>
-            `;
-      addContainer.appendChild(newRow);
-    });
-
-    addContainer.addEventListener("click", function (e) {
-      if (e.target.classList.contains("remove-ingredient")) {
-        e.target.closest(".ingredient-row").remove();
-      }
-    });
+  // -----------------------------
+  // HELPER: CREATE INGREDIENT ROW
+  // -----------------------------
+  function createIngredientRow(name = "", qty = "", unit = "") {
+    const row = document.createElement("div");
+    row.classList.add("row", "g-2", "mb-2", "ingredient-row");
+    row.innerHTML = `
+      <div class="col-md-5">
+        <input type="text" class="form-control" name="ingredient_name[]" value="${name}" placeholder="Name" required>
+      </div>
+      <div class="col-md-3">
+        <input type="number" class="form-control" name="ingredient_qty[]" value="${qty}" placeholder="Quantity" required>
+      </div>
+      <div class="col-md-3">
+        <input type="text" class="form-control" name="ingredient_unit[]" value="${unit}" placeholder="Unit (pcs, kg, ml)" required>
+      </div>
+      <div class="col-md-1 d-flex align-items-center">
+        <button type="button" class="btn btn-sm remove-ingredient">&times;</button>
+      </div>
+    `;
+    return row;
   }
 
-  // EDIT MODAL INGREDIENT HANDLING
-  const editContainer = document.getElementById("edit-ingredients-container");
-  const editAddBtn = document.getElementById("edit-add-ingredient");
+  // -----------------------------
+  // ADD NEW INGREDIENT (Add / Edit Modal)
+  // -----------------------------
+  function initIngredientContainer(containerId, addBtnId) {
+    const container = document.getElementById(containerId);
+    const addBtn = document.getElementById(addBtnId);
 
-  if (editAddBtn && editContainer) {
-    editAddBtn.addEventListener("click", function () {
-      const newRow = document.createElement("div");
-      newRow.classList.add("row", "g-2", "mb-2", "ingredient-row");
-      newRow.innerHTML = `
-                <div class="col-md-5">
-                    <input type="text" class="form-control" name="ingredient_name[]" placeholder="Name" required>
-                </div>
-                <div class="col-md-3">
-                    <input type="number" class="form-control" name="ingredient_qty[]" placeholder="Quantity" required>
-                </div>
-                <div class="col-md-3">
-                    <input type="text" class="form-control" name="ingredient_unit[]"
-                    placeholder="Unit (pcs, kg, ml)" required>    
-                </div>
-                <div class="col-md-1 d-flex align-items-center">
-                    <button type="button" class="btn btn-sm remove-ingredient">&times;</button>
-                </div>
-            `;
-      editContainer.appendChild(newRow);
-    });
+    if (addBtn && container) {
+      addBtn.addEventListener("click", () => {
+        const newRow = createIngredientRow();
+        container.appendChild(newRow);
+      });
 
-    editContainer.addEventListener("click", function (e) {
-      if (e.target.classList.contains("remove-ingredient")) {
-        e.target.closest(".ingredient-row").remove();
-      }
-    });
-  }
-
-  // EDIT BUTTON (fills form)
-  document.addEventListener("click", function (e) {
-    if (e.target.closest(".btn-warning")) {
-      const card = e.target.closest(".menu-item");
-      currentEditingCard = card;
-
-      const name = card.querySelector(".menu-name").textContent;
-      const price = card
-        .querySelector(".menu-price")
-        .textContent.replace("₱", "");
-      const size = card.querySelector(".menu-size").textContent;
-      const category = "coffee";
-
-      const editForm = document.querySelector("#editModal form");
-      editForm.item_name.value = name;
-      editForm.menu_price.value = price;
-      editForm.menu_size.value = size;
-      editForm.item_group.value = category;
+      container.addEventListener("click", (e) => {
+        if (e.target.classList.contains("remove-ingredient")) {
+          e.target.closest(".ingredient-row").remove();
+        }
+      });
     }
+  }
+
+  initIngredientContainer("ingredients-container", "add-ingredient"); // Add Modal
+  initIngredientContainer("edit-ingredients-container", "edit-add-ingredient"); // Edit Modal
+
+  // -----------------------------
+  // EDIT BUTTONS (All Cards)
+  // -----------------------------
+  document.querySelectorAll(".edit-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+      const productId = button.dataset.id;
+      currentEditingCard = button.closest(".menu-item");
+
+      fetch(`../assets/menu-management-get-products-ingredients.php?id=${productId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          const product = data.product;
+          const ingredients = data.ingredients;
+
+          if (!product) return;
+
+          const modal = document.getElementById("editModal");
+          const form = modal.querySelector("form");
+
+          // Fill product info
+          form.product_id.value = product.productID;
+          form.item_name.value = product.productName;
+          form.menu_price.value = product.price;
+
+          // Set the category select
+          const categorySelect = form.querySelector("#edit_item_group");
+          if (categorySelect) categorySelect.value = product.categoryID;
+
+          const imageText = form.querySelector("#edit_current_image_text");
+          if (imageText) imageText.value = product.image; // filename from database
+
+          // Fill ingredients
+          const editContainer = document.getElementById(
+            "edit-ingredients-container"
+          );
+          editContainer.innerHTML = "";
+          ingredients.forEach((ing) => {
+            const row = createIngredientRow(
+              ing.ingredientName,
+              ing.requiredQuantity,
+              ing.measurementUnit
+            );
+            editContainer.appendChild(row);
+          });
+        })
+        .catch((err) => console.error("Fetch error:", err));
+    });
   });
 
+  // -----------------------------
   // EDIT FORM SUBMIT
+  // -----------------------------
   document
     .querySelector("#editModal form")
     .addEventListener("submit", function (e) {
       e.preventDefault();
-      if (!currentEditingCard) return;
 
-      const name = this.item_name.value.trim();
-      const price = this.menu_price.value.trim();
-      const size = this.menu_size.value.trim();
+      const form = this;
+      const productId = form.product_id.value;
+      const name = form.item_name.value.trim();
+      const price = form.menu_price.value.trim();
+      const categoryID = form.item_group.value;
 
-      currentEditingCard.querySelector(".menu-name").textContent = name;
-      currentEditingCard.querySelector(".menu-price").textContent = `₱${price}`;
-      currentEditingCard.querySelector(".menu-size").textContent = size;
+      // Collect ingredients
+      const ingredientNames = Array.from(
+        form.querySelectorAll('input[name="ingredient_name[]"]')
+      ).map((i) => i.value.trim());
+      const ingredientQtys = Array.from(
+        form.querySelectorAll('input[name="ingredient_qty[]"]')
+      ).map((i) => i.value.trim());
+      const ingredientUnits = Array.from(
+        form.querySelectorAll('input[name="ingredient_unit[]"]')
+      ).map((i) => i.value.trim());
 
-      const modal = bootstrap.Modal.getInstance(
-        document.getElementById("editModal")
-      );
-      modal.hide();
+      const ingredients = ingredientNames.map((name, i) => ({
+        name,
+        qty: ingredientQtys[i],
+        unit: ingredientUnits[i],
+      }));
+
+      // FormData to include file
+      const formData = new FormData();
+      formData.append("productID", productId);
+      formData.append("name", name);
+      formData.append("price", price);
+      formData.append("categoryID", categoryID);
+      formData.append("ingredients", JSON.stringify(ingredients));
+
+      const fileInput = form.querySelector('input[name="attachment"]');
+      if (fileInput && fileInput.files[0]) {
+        formData.append("attachment", fileInput.files[0]);
+      }
+
+      fetch("../assets/menu-management-update-products.php", {
+        method: "POST",
+        body: formData,
+      })
+        .then((res) => res.json())
+        .then((resp) => {
+          if (resp.success) {
+            const toastEl = document.getElementById("updateToast");
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+
+            if (currentEditingCard) {
+              currentEditingCard.querySelector(".menu-name").textContent = name;
+              currentEditingCard.querySelector(
+                ".menu-price"
+              ).textContent = `₱${price}`;
+              if (fileInput && fileInput.files[0]) {
+                currentEditingCard.querySelector(".menu-img").src =
+                  URL.createObjectURL(fileInput.files[0]);
+              }
+            }
+
+            const modal = bootstrap.Modal.getInstance(
+              document.getElementById("editModal")
+            );
+            modal.hide();
+          } else {
+            alert("Error updating product: " + resp.message);
+          }
+        })
+        .catch((err) => console.error(err));
     });
 
-  // ADD FORM SUBMIT (confirmModal)
+  // -----------------------------
+  // DELETE BUTTONS
+  // -----------------------------
+  document.querySelectorAll(".delete-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+      const card = button.closest(".col");
+      if (confirm("Are you sure you want to delete this item?")) {
+        card.remove();
+      }
+    });
+  });
+
+  // -----------------------------
+  // ADD FORM SUBMIT (New Product)
+  // -----------------------------
   document
-    .querySelector("#confirmModal form")
-    .addEventListener("submit", function (e) {
+    .getElementById("addItemForm")
+    ?.addEventListener("submit", function (e) {
       e.preventDefault();
 
-      const name = this.item_name.value.trim();
-      const category = this.item_group.value;
-      const price = this.menu_price.value.trim();
-      const size = this.menu_size.value.trim();
-
-      if (!name || !category || !price || !size) {
-        alert("Please fill in all required fields.");
+      if (!this.checkValidity()) {
+        this.reportValidity();
         return;
       }
 
+      const form = this;
+      const name = form.item_name.value.trim();
+      const price = form.menu_price.value.trim();
+
       const productHTML = `
-            <div class="col">
-                <div class="menu-item border p-3 rounded shadow-sm text-center width-auto">
-                    <img src="../assets/img/coffee.png" alt="${name}" class="img-fluid mb-2" style="max-height: 150px;">
-                    <div class="lead menu-name fw-bold">${name}</div>
-                    <div class="d-flex justify-content-center align-items-center gap-2 my-2">
-                        <span class="lead fw-bold menu-price">₱${price}</span>
-                        <span class="lead menu-size">${size}</span>
-                    </div>
-                    <div class="d-flex flex-wrap justify-content-center gap-2">
-                        <button class="btn btn-warning btn-sm rounded-4 flex-grow-1 flex-sm-grow-0" data-bs-toggle="modal"
-                            data-bs-target="#editModal">
-                            <i class="bi bi-pencil-square"></i> Edit
-                        </button>
-                        <button class="btn btn-danger btn-sm rounded-4 flex-grow-1 flex-sm-grow-0 delete-btn">
-                            <i class="bi bi-trash"></i> Delete
-                        </button>
-                    </div>
-                </div>
-            </div>`;
+      <div class="col-6 col-md-4 col-lg-2">
+        <div class="menu-item border p-3 rounded shadow-sm text-center">
+          <img src="../assets/img/coffee.png" alt="${name}" class="img-fluid mb-2 menu-img">
+          <div class="lead menu-name fs-6">${name}</div>
+          <div class="d-flex justify-content-center align-items-center gap-2 my-2">
+            <span class="lead fw-bold menu-price">₱${price}</span>
+          </div>
+          <div class="d-flex flex-wrap justify-content-center gap-2">
+            <button class="btn btn-sm edit-btn" data-bs-toggle="modal" data-bs-target="#editModal" data-id="">
+              <i class="bi-pencil-square"></i> Edit
+            </button>
+            <button class="btn btn-sm delete-btn">
+              <i class="bi-trash"></i> Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
 
       document
         .getElementById("productGrid")
         .insertAdjacentHTML("beforeend", productHTML);
 
-      // reattach delete event
+      // Reattach edit/delete handlers for the new card
+      document.querySelectorAll(".edit-btn").forEach((button) => {
+        button.addEventListener("click", editButtonHandler);
+      });
       document.querySelectorAll(".delete-btn").forEach((button) => {
-        button.onclick = function () {
-          const card = this.closest(".col");
-          if (confirm("Are you sure you want to delete this item?")) {
-            card.remove();
-          }
-        };
+        button.addEventListener("click", deleteButtonHandler);
       });
 
-      // close modal
+      // Close modal and reset form
       const modal = bootstrap.Modal.getInstance(
         document.getElementById("confirmModal")
       );
       modal.hide();
-
-      // clear form
-      this.reset();
+      form.reset();
     });
-});
 
-document.getElementById("addItemForm").addEventListener("submit", function (e) {
-  e.preventDefault(); // prevent normal form submit
+  // -----------------------------
+  // HANDLERS FOR NEWLY ADDED ELEMENTS
+  // -----------------------------
+  function editButtonHandler() {
+    const productId = this.dataset.id;
+    currentEditingCard = this.closest(".menu-item");
+    // Fetch and populate modal (same as above)
+  }
 
-  // run built-in validation
-  if (this.checkValidity()) {
-    // ✅ form is valid → close modal
-    const modal = bootstrap.Modal.getInstance(
-      document.getElementById("confirmModal")
-    );
-    modal.hide();
-
-    // 👉 you can also add AJAX here to save the data
-  } else {
-    // ❌ invalid → let browser show validation errors
-    this.reportValidity();
+  function deleteButtonHandler() {
+    const card = this.closest(".col");
+    if (confirm("Are you sure you want to delete this item?")) card.remove();
   }
 });
