@@ -551,9 +551,15 @@ $userResult = executeQuery("
                 </div>
                 <div class="card rounded-3 mx-3 mb-4">
                     <div class="card-body">
+                        <!-- Toggle Switch -->
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" role="switch" id="customerMenuSwitch">
-                            <label class="form-check-label" for="switchCheckChecked">Enable Customer Menu</label>
+                            <input class="form-check-input" type="checkbox" role="switch" id="customerMenuSwitch" <?php
+                            $settingResult = executeQuery("SELECT settingValue FROM menusettings WHERE settingName='customer_menu_enabled'");
+                            $row = mysqli_fetch_assoc($settingResult);
+                            if ($row && $row['settingValue'] == '1')
+                                echo "checked";
+                            ?>>
+                            <label class="form-check-label" for="customerMenuSwitch">Enable Customer Menu</label>
                         </div>
                     </div>
                 </div>
@@ -629,7 +635,7 @@ $userResult = executeQuery("
     </div>
 
 
-
+    <?php include '../modal/confirm-toggle-modal.php'; ?>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         // Toggle password visibility
@@ -691,13 +697,69 @@ $userResult = executeQuery("
                 ?>
             <?php endif; ?>
         });
-    </script>
 
+        document.getElementById('customerMenuSwitch').addEventListener('change', function () {
+            let status = this.checked ? 1 : 0;
+
+            fetch('toggle-config.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'status=' + status
+            })
+                .then(res => res.text())
+                .then(data => console.log(data));
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const switchInput = document.getElementById('customerMenuSwitch');
+            const confirmModal = new bootstrap.Modal(document.getElementById('confirmToggleModal'));
+            const confirmBtn = document.getElementById('confirmToggle');
+            const cancelBtn = document.getElementById('cancelToggle');
+            const confirmText = document.getElementById('confirmToggleText');
+
+            let intendedState = switchInput.checked; // current state
+
+            switchInput.addEventListener('change', function (e) {
+                e.preventDefault(); // stop instant toggle
+                intendedState = switchInput.checked;
+                switchInput.checked = !intendedState; // revert until confirmed
+
+                confirmText.textContent = intendedState
+                    ? "Are you sure you want to ENABLE the Customer Menu?"
+                    : "Are you sure you want to DISABLE the Customer Menu?";
+
+                confirmModal.show();
+            });
+
+            confirmBtn.addEventListener('click', function () {
+                switchInput.checked = intendedState;
+
+                let status = intendedState ? 1 : 0;
+                fetch('toggle-config.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'status=' + status
+                })
+                    .then(res => res.text())
+                    .then(data => console.log(data));
+
+                confirmModal.hide();
+            });
+
+            cancelBtn.addEventListener('click', function () {
+                switchInput.checked = !intendedState;
+            });
+        });
+    </script>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
     <script src="../assets/js/admin_sidebar.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous">
         </script>
+
+
 </body>
 
 </html>

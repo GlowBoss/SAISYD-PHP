@@ -18,6 +18,10 @@ if (time() > $_SESSION['cart_timeout']) {
     $_SESSION['cart_timeout'] = time() + (30 * 60);
 }
 
+$result = executeQuery("SELECT settingValue FROM menusettings WHERE settingName='customer_menu_enabled'");
+$row = mysqli_fetch_assoc($result);
+$customerMenuEnabled = ($row && $row['settingValue'] == '1') ? true : false;
+
 // Handle Add to Cart via POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
     $productId = $_POST['product_id'];
@@ -1012,6 +1016,14 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
         });
     </script>
 
+    <?php if (!$customerMenuEnabled): ?>
+        <?php include 'modal/ordering-unavailable-modal.php'; ?>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                showOrderingUnavailableModal();
+            });
+        </script>
+    <?php endif; ?>
     <!-- External Scripts -->
     <script src="assets/js/main.js"></script>
     <script src="assets/js/navbar.js"></script>
