@@ -94,8 +94,8 @@ function toggleOrder($currentOrder)
                     <span>Dashboard</span>
                 </a>
                 <a href="notification.php" class="admin-nav-link">
-                    <i class="bi bi-bell"></i>
-                    <span>Notifications</span>
+                    <i class="bi bi-clipboard-check"></i>
+                    <span>Order Management</span>
                 </a>
                 <a href="point-of-sales.php" class="admin-nav-link">
                     <i class="bi bi-shop-window"></i>
@@ -156,8 +156,8 @@ function toggleOrder($currentOrder)
             </a>
             <a href="notification.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
                 data-wow-delay="0.15s">
-                <i class="bi bi-bell"></i>
-                <span>Notifications</span>
+                <i class="bi bi-clipboard-check"></i>
+                <span>Order Management</span>
             </a>
             <a href="point-of-sales.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
                 data-wow-delay="0.2s">
