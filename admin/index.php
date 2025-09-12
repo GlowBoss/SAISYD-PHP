@@ -20,7 +20,6 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
   <link rel="stylesheet" href="../assets/css/admin_home.css">
-
 </head>
 
 <body>
@@ -74,7 +73,7 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
                 Management</a>
             </div>
             <div class="col-12 col-sm-6 col-md-4">
-              <a href="user_role.html" class="dashboard-box text-decoration-none">User Role</a>
+              <a href="user_role.html" class="dashboard-box text-decoration-none">User  Role</a>
             </div>
             <div class="col-12 col-sm-6 col-md-4">
               <a href="setting.php" class="dashboard-box text-decoration-none">Settings</a>
@@ -89,6 +88,7 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
     </div>
   </div>
 
+  <?php include '../modal/low_stock_modal.php'; ?>
 
 
   <!-- Low Stock Alert Modal -->
@@ -169,9 +169,15 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
 
 
 
-
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var stockModal = new bootstrap.Modal(document.getElementById('stockModal'));
+      stockModal.show();
+    });
+  </script>
 </body>
 
 </html>
