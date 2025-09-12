@@ -15,15 +15,16 @@
           <input type="hidden" name="product_id" id="edit_product_id">
 
           <div class="row">
+            <!-- Left Column -->
             <div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">Item name</label>
-                <input type="text" class="form-control" name="item_name" id="edit_item_name">
+                <label class="form-label">Item Name</label>
+                <input type="text" class="form-control" name="item_name" id="edit_item_name" required>
               </div>
 
               <div class="mb-3">
-                <label class="form-label">Select Category</label>
-                <select class="form-select" name="item_group" id="edit_item_group">
+                <label class="form-label">Item Group</label>
+                <select class="form-select" name="item_group" id="edit_item_group" required>
                   <?php
                   // Fetch all categories from the database
                   $categoriesQuery = "SELECT * FROM Categories";
@@ -35,13 +36,13 @@
                   ?>
                 </select>
               </div>
-
             </div>
 
+            <!-- Right Column -->
             <div class="col-md-6">
               <div class="mb-3">
                 <label class="form-label">Price</label>
-                <input type="text" class="form-control" name="menu_price" id="edit_menu_price">
+                <input type="text" class="form-control" name="menu_price" id="edit_menu_price" required>
               </div>
 
               <div class="mb-3">
@@ -60,18 +61,18 @@
             </div>
           </div>
 
+          <hr>
           <!-- Ingredients Section -->
-          <div class="mt-4">
-            <h6 class="text-start">Ingredients</h6>
-            <div id="edit-ingredients-container">
-              <!-- JS will populate rows here -->
-            </div>
-            <button type="button" id="edit-add-ingredient" class="btn btn-outline-primary btn-sm mt-2">+</button>
+          <h6 class="text-start mb-3">Ingredients</h6>
+          <div id="edit-ingredients-container">
+            <!-- JS will populate rows here -->
           </div>
+
+          <button type="button" class="btn btn-outline-primary btn-sm mb-3" id="edit-add-ingredient">+</button>
 
           <!-- Modal Actions -->
           <div class="d-flex justify-content-end mt-3">
-            <button type="button" class="btn btn-sm me-2" data-bs-dismiss="modal">CANCEL</button>
+            <button type="button" class="btn btn-de btn-del me-2" data-bs-dismiss="modal">CANCEL</button>
             <button type="submit" class="btn btn-sm">SAVE</button>
           </div>
         </form>

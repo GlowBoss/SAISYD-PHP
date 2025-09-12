@@ -176,3 +176,30 @@ button.btn.btn-del:hover {
     padding: 0.4rem 1rem;
   }
 }
+
+
+.swal2-border-radius {
+  border-radius: 12px; 
+}
+
+ /* option.option-hover:hover {
+  background-color: var(--primary-color);
+  color: #fff;
+} */
+
+.swal2-confirm-radius, .swal2-cancel-radius{
+  border-radius: 12px;
+}
+.ui-autocomplete {
+  z-index: 2000; 
+  max-height: 200px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.ui-menu-item-wrapper.ui-state-active {
+  background: var(--primary-color)!important;
+  color: #fff;
+}
