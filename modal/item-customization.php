@@ -78,20 +78,20 @@
                         <div class="d-flex flex-wrap gap-3">
                             <div class="form-check"><input class="form-check-input" type="radio" name="ice"
                                     value="Extra Ice">
-                                <label class="form-check-label" style="font-family: var(--secondaryFont);">Extra</label>
+                                <label class="form-check-label" style="font-family: var(--secondaryFont);">Extra Ice</label>
                             </div>
                             <div class="form-check"><input class="form-check-input" type="radio" name="ice"
                                     value="Less Ice">
-                                <label class="form-check-label" style="font-family: var(--secondaryFont);">Less</label>
+                                <label class="form-check-label" style="font-family: var(--secondaryFont);">Less Ice</label>
                             </div>
                             <div class="form-check"><input class="form-check-input" type="radio" name="ice"
-                                    value="Default" checked>
+                                    value="Default Ice" checked>
                                 <label class="form-check-label"
-                                    style="font-family: var(--secondaryFont);">Default</label>
+                                    style="font-family: var(--secondaryFont);">Default Ice</label>
                             </div>
                             <div class="form-check"><input class="form-check-input" type="radio" name="ice"
                                     value="No Ice">
-                                <label class="form-check-label" style="font-family: var(--secondaryFont);">None</label>
+                                <label class="form-check-label" style="font-family: var(--secondaryFont);">None Ice</label>
                             </div>
                         </div>
                     </div>

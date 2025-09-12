@@ -1,13 +1,17 @@
 <?php
+
 include('../assets/connect.php');
 session_start();
 
 // Prevent unauthorized access
 if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
     // Redirect non-admin users to login page or a "no access" page
+
+
     header("Location: login.php");
     exit();
 }
+
 
 $searchProductTerm = '';
 $categoryFilter = '';
@@ -157,9 +161,23 @@ if (isset($_GET['categoryID']) && !empty($_GET['categoryID'])) {
         $currentCategory = htmlspecialchars($rowCat['categoryName']);
     }
 }
+
+
+$menuItemsQuery = "
+    SELECT 
+        p.*, 
+        c.categoryName AS category_name
+    FROM 
+        Products p
+    JOIN 
+        Categories c ON p.categoryID = c.categoryID
+    WHERE 
+        p.isAvailable = 'Yes'
+";
+
+
+$menuItemsResults = executeQuery($menuItemsQuery);
 ?>
-
-
 
 <!doctype html>
 <html lang="en">
@@ -226,9 +244,9 @@ if (isset($_GET['categoryID']) && !empty($_GET['categoryID'])) {
                     <i class="bi bi-speedometer2"></i>
                     <span>Dashboard</span>
                 </a>
-                <a href="notification.php" class="admin-nav-link">
-                    <i class="bi bi-bell"></i>
-                    <span>Notifications</span>
+                <a href="orders.php" class="admin-nav-link">
+                    <i class="bi bi-clipboard-check"></i>
+                    <span>Order Management</span>
                 </a>
                 <a href="point-of-sales.php" class="admin-nav-link">
                     <i class="bi bi-shop-window"></i>
@@ -287,10 +305,10 @@ if (isset($_GET['categoryID']) && !empty($_GET['categoryID'])) {
                 <i class="bi bi-speedometer2"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="notification.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
+            <a href="orders.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
                 data-wow-delay="0.15s">
-                <i class="bi bi-bell"></i>
-                <span>Notifications</span>
+                <i class="bi bi-clipboard-check"></i>
+                <span>Order Management</span>
             </a>
             <a href="point-of-sales.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
                 data-wow-delay="0.2s">
@@ -392,51 +410,66 @@ if (isset($_GET['categoryID']) && !empty($_GET['categoryID'])) {
 
                 <!-- Menu -->
                 <div id="productGrid" class="row g-2 m-3 align-items-center">
+                    <?php
+                    if (mysqli_num_rows($menuItemsResults) > 0) {
+                        while ($row = mysqli_fetch_assoc($menuItemsResults)) {
+                            $id = $row['productID'];
+                            $name = $row['productName'];
+                            $image = $row['image'];
+                            $price = $row['price'];
+                            $categoryName = $row['category_name'];
+                            echo "
+        <div class='col-6 col-md-4 col-lg-2'>
+            <div class='menu-item border p-3 rounded shadow-sm text-center'>
+                <img src='../assets/img/img-menu/" . htmlspecialchars($image) . "' 
+                     alt='" . htmlspecialchars($name) . "' 
+                     class='img-fluid mb-2 menu-img'>
 
-                    <!-- Products Loop -->
-                    <!--remove na yung loop  -->
-                    <div class="col-6 col-md-4 col-lg-2">
-                        <div class="menu-item border p-3 rounded shadow-sm text-center h-100 d-flex flex-column">
-                            <img src="../assets/img/img-menu/americano.png" alt="Product Name"
-                                class="img-fluid mb-2 menu-img" style="max-height:150px; object-fit:contain;">
+                <div class='lead menu-name fs-6'>" . htmlspecialchars($name) . "</div>
+                <div class='d-flex justify-content-center align-items-center gap-2 my-2'>
+                    <span class='lead fw-bold menu-price'>₱" . number_format($price, 2) . "</span>
+                </div>
 
-
-                            <div class="lead menu-name fs-6 text-truncate" style="max-width: 100%;"
-                                title="Product Name">
-                                Product Name
-                            </div>
-
-                            <div class="d-flex justify-content-center align-items-center gap-2 my-2">
-                                <span class="lead fw-bold menu-price">₱100.00</span>
-                            </div>
-
-                            <div class="small text-muted mb-2">
-                                Category • Stock: 10 • Available
-                            </div>
-
-                            <div class="mt-auto">
-                                <div class="d-flex flex-wrap justify-content-center gap-2">
-                                    <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editModal">
-                                        <i class="bi bi-pencil-square"></i> Edit
-                                    </button>
-
-                                    <form method="POST" class="deleteProductForm">
-                                        <button type="submit" class="btn btn-del">
-                                            <i class="bi bi-trash"></i> Delete
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-
+                <div class='d-flex flex-wrap justify-content-center gap-2'>
+                    <button class='btn btn-sm edit-btn'
+                        data-bs-toggle='modal'
+                        data-bs-target='#editModal'
+                        data-id='$id'>
+                        <i class='bi-pencil-square'></i> Edit
+                    </button>
+                    <button class='btn btn-sm delete-btn' data-id='$id'>
+                        <i class='bi-trash'></i> Delete
+                    </button>
                 </div>
             </div>
         </div>
+        ";
+                        }
+                    } else {
+                        echo "<p class='text-center'>No products available.</p>";
+                    }
+                    ?>
+                </div>
+            </div>
+            <!-- Toast Container -->
+            <div class="position-fixed bottom-0 end-0 p-3 " style="z-index: 1100">
+                <div id="updateToast" class="toast align-items-center updateToast border-0" role="alert"
+                    aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            Product updated successfully!
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                            aria-label="Close"></button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
     </div>
 
-    </div>
+
     <?php include '../modal/menu-management-confirm-modal.php'; ?>
     <?php include '../modal/menu-management-edit-modal.php'; ?>
 
