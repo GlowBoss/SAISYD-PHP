@@ -38,7 +38,7 @@ if (isset($_POST['btnAddProduct'])) {
     if (!empty($_FILES['image']['name'])) {
         $image = $_FILES['image']['name'];
         $imageTemp = $_FILES['image']['tmp_name'];
-        $targetDir = "../assets/product-images/";
+        $targetDir = "../assets/img/img-menu/";
         $targetFile = $targetDir . $image;
 
         // check file type
@@ -103,7 +103,7 @@ if (isset($_POST['btnDeleteProduct'])) {
         $result = mysqli_query($conn, "SELECT image FROM products WHERE productID = '$productID'");
         $row = mysqli_fetch_assoc($result);
         if ($row && !empty($row['image'])) {
-            $imagePath = "../assets/product-images/" . $row['image'];
+            $imagePath = "../assets/img/img-menu/" . $row['image'];
             if (file_exists($imagePath)) {
                 unlink($imagePath);
             }
@@ -123,60 +123,45 @@ if (isset($_POST['btnDeleteProduct'])) {
 
 
 
-// fetch lahat 
-$productGetQuery = "
-    SELECT products.productID, products.productName, products.image, 
-           products.availableQuantity, products.price, products.isAvailable, 
-           categories.categoryName
-    FROM products
-    LEFT JOIN categories ON products.categoryID = categories.categoryID
-    WHERE 1=1
-";
-
-// Search product
-if (isset($_GET['searchProduct']) && !empty($_GET['searchProduct'])) {
-    $searchProductTerm = $_GET['searchProduct'];
-    $searchProductTerm = str_replace("'", "", $searchProductTerm);
-    $productGetQuery .= " AND (products.productName LIKE '%$searchProductTerm%' 
-                          OR categories.categoryName LIKE '%$searchProductTerm%')";
-}
-
-// Category Filter 
-if (isset($_GET['categoryID']) && !empty($_GET['categoryID'])) {
-    $categoryID = (int) $_GET['categoryID'];
-    $productGetQuery .= " AND products.categoryID = $categoryID";
-}
-
-// Order
-$productGetQuery .= " ORDER BY products.productID DESC";
-
-$productGetResult = executeQuery($productGetQuery);
-
-// Current Category Label 
-$currentCategory = "Sort by Category";
-if (isset($_GET['categoryID']) && !empty($_GET['categoryID'])) {
-    $catID = (int) $_GET['categoryID'];
-    $catResult = executeQuery("SELECT categoryName FROM categories WHERE categoryID = $catID LIMIT 1");
-    if ($rowCat = mysqli_fetch_assoc($catResult)) {
-        $currentCategory = htmlspecialchars($rowCat['categoryName']);
-    }
-}
-
-
 $menuItemsQuery = "
     SELECT 
         p.*, 
         c.categoryName AS category_name
     FROM 
-        Products p
+        products p
     JOIN 
-        Categories c ON p.categoryID = c.categoryID
+        categories c ON p.categoryID = c.categoryID
     WHERE 
-        p.isAvailable = 'Yes'
+        p.isAvailable = 1
 ";
 
+// Search filter
+if (!empty($_GET['searchProduct'])) {
+    $searchProductTerm = mysqli_real_escape_string($conn, $_GET['searchProduct']);
+    $menuItemsQuery .= " AND (p.productName LIKE '%$searchProductTerm%' 
+                          OR c.categoryName LIKE '%$searchProductTerm%')";
+}
 
-$menuItemsResults = executeQuery($menuItemsQuery);
+// Category filter
+if (!empty($_GET['categoryID'])) {
+    $categoryID = (int) $_GET['categoryID'];
+    $menuItemsQuery .= " AND p.categoryID = $categoryID";
+}
+
+$currentCategory = "All"; // default
+
+if (isset($_GET['categoryID'])) {
+    $catID = (int) $_GET['categoryID'];
+    $catQuery = executeQuery("SELECT categoryName FROM categories WHERE categoryID = $catID LIMIT 1");
+    if ($catRow = mysqli_fetch_assoc($catQuery)) {
+        $currentCategory = $catRow['categoryName'];
+    }
+}
+
+// Order
+$menuItemsQuery .= " ORDER BY p.productID DESC";
+
+$menuItemsResults = mysqli_query($conn, $menuItemsQuery);
 ?>
 
 <!doctype html>
@@ -385,11 +370,14 @@ $menuItemsResults = executeQuery($menuItemsQuery);
                         <div class="dropdown">
                             <button class="btn btn-dropdown dropdown-toggle w-100" type="button" id="categoryDropdown"
                                 data-bs-toggle="dropdown" aria-expanded="false">
-                                <?= $currentCategory ?>
+                                <?= htmlspecialchars($currentCategory) ?>
                             </button>
                             <ul class="dropdown-menu w-100" aria-labelledby="categoryDropdown">
-                                <li><a class="dropdown-item"
-                                        href="menu-management.php?<?= !empty($searchProductTerm) ? 'searchProduct=' . urlencode($searchProductTerm) : '' ?>">All</a>
+                                <li>
+                                    <a class="dropdown-item <?= !isset($_GET['categoryID']) ? 'active' : '' ?>"
+                                        href="menu-management.php<?= !empty($searchProductTerm) ? '?searchProduct=' . urlencode($searchProductTerm) : '' ?>">
+                                        All
+                                    </a>
                                 </li>
                                 <?php
                                 $categories = executeQuery("SELECT * FROM categories ORDER BY categoryName ASC");
@@ -435,11 +423,15 @@ $menuItemsResults = executeQuery($menuItemsQuery);
                         data-bs-toggle='modal'
                         data-bs-target='#editModal'
                         data-id='$id'>
-                        <i class='bi-pencil-square'></i> Edit
-                    </button>
-                    <button class='btn btn-sm delete-btn' data-id='$id'>
-                        <i class='bi-trash'></i> Delete
-                    </button>
+                        <i class='bi bi-pencil-square'></i> Edit
+                     </button>
+                         <form method='POST' class='deleteProductForm'>
+                                <input type='hidden' name='productID' value='$id'>
+                                <input type='hidden' name='btnDeleteProduct' value='1'>
+                                <button type='submit' class='btn btn-del'>
+                                    <i class='bi bi-trash'></i> Delete
+                                </button>
+                            </form>
                 </div>
             </div>
         </div>
@@ -505,29 +497,21 @@ $menuItemsResults = executeQuery($menuItemsQuery);
                 });
             });
 
-            // para sa search product
+            // para sa search product (ADD modal only)
             $(document).ready(function () {
-                // kukunin nito lahat ng ingredients galing PHP (ingredients table) which is yung nasa taas
                 var ingredients = <?php echo json_encode($ingredients); ?>;
 
                 function initAutocomplete(selector) {
                     $(selector).autocomplete({
-                        source: ingredients,  // user gets suggestions habang nagta-type
-                        minLength: 1, // kahit 1 char lang lalabas na agad ang list
-                        appendTo: "#confirmModal", // para gumana sa loob ng modal
+                        source: ingredients,
+                        minLength: 1,
+                        appendTo: "#confirmModal", // scoped sa Add modal
                         select: function (event, ui) {
                             $(this).val(ui.item.label);
                             $(this).siblings(".ingredient-id").val(ui.item.id);
                             return false;
-
-                            //  Without autocomplete: 
-                            //  plain text input lang
-                            //  pwedeng mali spelling halimbawa "sugarr"
-                            //  pwedeng mag-enter ng ingredient na wala sa database
-                            //  walang hidden ID  mahirap i-link sa tamang ingredient record
                         },
                         change: function (event, ui) {
-                            // kapag walang match sa database
                             if (!ui.item) {
                                 Swal.fire({
                                     icon: 'error',
@@ -543,50 +527,54 @@ $menuItemsResults = executeQuery($menuItemsQuery);
                                 });
                                 $(this).val("");
                                 $(this).siblings(".ingredient-id").val("");
-
                             }
                         }
                     });
                 }
-                initAutocomplete(".ingredient-search");
-                // Add new ingredient row using jquery
-                $("#add-ingredient").click(function () {
-                    var row = `
-                        <div class="row g-2 mb-2 ingredient-row">
-                        <div class="col-md-5">
-                <input type="text" class="form-control ingredient-search" placeholder="Search Ingredient" required>
-                <input type="hidden" name="ingredientID[]" class="ingredient-id">
-                     </div>
-                     <div class="col-md-3">
-                <input type="number" class="form-control" name="requiredQuantity[]" placeholder="Quantity" required>
-                     </div>
-                 <div class="col-md-3">
-                <select class="form-select measurement-select" name="measurementUnit[]" required>
-                    <option value="" disabled selected>Select Unit</option>
-                    <option value="pcs">pcs</option>
-                    <option value="kg">kg</option>
-                    <option value="g">g</option>
-                    <option value="ml">ml</option>
-                    <option value="L">L</option>
-                    <option value="oz">oz</option>
-                    <option value="pack">pack</option>
-                    <option value="box">box</option>
-                </select>
-                 </div>
-                  <div class="col-md-1 d-flex align-items-center">
-                <button type="button" class="btn btn-sm remove-ingredient">&times;</button>
-                     </div>
-                      </div>`;
-                    $("#ingredients-container").append(row);
 
-                    //  autocomplete: bagong row may suggestions pa rin
-                    // kapag walang autocomplete: bagong row magiging plain input lang
-                    initAutocomplete($("#ingredients-container .ingredient-search").last());
+                // initialize autocomplete for inputs inside Add Product modal only
+                initAutocomplete("#confirmModal .ingredient-search");
+
+                // Add new ingredient row inside Add modal
+                $("#confirmModal #add-modal-ingredient").click(function () {
+                    var row = `
+            <div class="row g-2 mb-2 ingredient-row">
+                <div class="col-md-5">
+                    <input type="text" class="form-control ingredient-search" placeholder="Search Ingredient" required>
+                    <input type="hidden" name="ingredientID[]" class="ingredient-id">
+                </div>
+                <div class="col-md-3">
+                    <input type="number" class="form-control" name="requiredQuantity[]" placeholder="Quantity" required>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select measurement-select" name="measurementUnit[]" required>
+                        <option value="" disabled selected>Select Unit</option>
+                        <option value="pcs">pcs</option>
+                        <option value="kg">kg</option>
+                        <option value="g">g</option>
+                        <option value="ml">ml</option>
+                        <option value="L">L</option>
+                        <option value="oz">oz</option>
+                        <option value="pack">pack</option>
+                        <option value="box">box</option>
+                    </select>
+                </div>
+                <div class="col-md-1 d-flex align-items-center">
+                    <button type="button" class="btn btn-sm remove-ingredient">&times;</button>
+                </div>
+            </div>`;
+                    $("#confirmModal #ingredients-container").append(row);
+
+                    // autocomplete for newly added row (scoped to Add modal)
+                    initAutocomplete($("#confirmModal #ingredients-container .ingredient-search").last());
                 });
-                $(document).on("click", ".remove-ingredient", function () {
+
+                // remove ingredient row (scoped to Add modal)
+                $(document).on("click", "#confirmModal .remove-ingredient", function () {
                     $(this).closest(".ingredient-row").remove();
                 });
             });
+
 
             // Session Alerts
             <?php if (isset($_SESSION['alertMessage'])): ?>

@@ -36,13 +36,6 @@
                                 <input type="text" class="form-control" name="price" placeholder="Enter price" required>
                             </div>
 
-                            <!-- (name="availableQuantity") -->
-                            <div class="mb-3">
-                                <label class="form-label">Available Quantity</label>
-                                <input type="number" class="form-control" 
-                                    placeholder="Enter stock" required>
-                            </div>
-
                             <div class="mb-3">
                                 <label class="form-label">Attachment</label>
                                 <input type="file" class="form-control" name="image">
@@ -86,7 +79,7 @@
                         </div>
                     </div>
 
-                    <button type="button" class="btn btn-outline-primary btn-sm mb-3" id="add-ingredient">+</button>
+                    <button type="button" class="btn btn-outline-primary btn-sm mb-3" id="add-modal-ingredient">+</button>
 
                     <div class="d-flex justify-content-end mt-3">
                         <button type="button" class="btn btn-de btn-del me-2" data-bs-dismiss="modal">CANCEL</button>

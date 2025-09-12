@@ -1,11 +1,6 @@
 let currentEditingCard = null;
 
-
-
 document.addEventListener("DOMContentLoaded", function () {
-  // EDIT MODAL INGREDIENT HANDLING
-  const editContainer = document.getElementById("edit-ingredients-container");
-  const editAddBtn = document.getElementById("edit-add-ingredient");
   // -----------------------------
   // HELPER: CREATE INGREDIENT ROW
   // -----------------------------
@@ -167,15 +162,6 @@ document.addEventListener("DOMContentLoaded", function () {
                   URL.createObjectURL(fileInput.files[0]);
               }
             }
-
-      const modal = bootstrap.Modal.getInstance(
-        document.getElementById("editModal")
-      );
-      modal.hide();
-    });
-});
-
-
 
             const modal = bootstrap.Modal.getInstance(
               document.getElementById("editModal")
