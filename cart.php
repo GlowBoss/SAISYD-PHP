@@ -14,69 +14,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_SESSION['cart'][$index])) {
             if ($newQuantity > 0) {
                 $_SESSION['cart'][$index]['quantity'] = $newQuantity;
-
-                $orderResult = executeQuery("SELECT * FROM orders WHERE status='pending' LIMIT 1");
-                if (mysqli_num_rows($orderResult) > 0) {
-                    $order = mysqli_fetch_assoc($orderResult);
-                    $orderID = $order['orderID'];
-
-                    // update quantity in database
-                    $productId = $_SESSION['cart'][$index]['product_id'];
-                    $sugar = $_SESSION['cart'][$index]['sugar'];
-                    $ice = $_SESSION['cart'][$index]['ice'];
-                    $notes = $_SESSION['cart'][$index]['notes'];
-
-                    $updateQuery = "UPDATE orderitems SET quantity = '$newQuantity' 
-                                   WHERE orderID = '$orderID' AND productID = '$productId' 
-                                   AND sugar = '" . mysqli_real_escape_string($conn, $sugar) . "' 
-                                   AND ice = '" . mysqli_real_escape_string($conn, $ice) . "' 
-                                   AND notes = '" . mysqli_real_escape_string($conn, $notes) . "'";
-                    executeQuery($updateQuery);
-                }
             } else {
-                // remove item if quantity is 0
-                $productId = $_SESSION['cart'][$index]['product_id'];
-                $sugar = $_SESSION['cart'][$index]['sugar'];
-                $ice = $_SESSION['cart'][$index]['ice'];
-                $notes = $_SESSION['cart'][$index]['notes'];
-
+                // Remove item if quantity is 0
                 unset($_SESSION['cart'][$index]);
                 $_SESSION['cart'] = array_values($_SESSION['cart']);
-
-                // remove from database
-                $orderResult = executeQuery("SELECT * FROM orders WHERE status='pending' LIMIT 1");
-                if (mysqli_num_rows($orderResult) > 0) {
-                    $order = mysqli_fetch_assoc($orderResult);
-                    $orderID = $order['orderID'];
-
-                    $deleteQuery = "DELETE FROM orderitems 
-                                   WHERE orderID = '$orderID' AND productID = '$productId' 
-                                   AND sugar = '" . mysqli_real_escape_string($conn, $sugar) . "' 
-                                   AND ice = '" . mysqli_real_escape_string($conn, $ice) . "' 
-                                   AND notes = '" . mysqli_real_escape_string($conn, $notes) . "'";
-                    executeQuery($deleteQuery);
-                }
             }
         }
     }
 
     if (isset($_POST['clear_cart'])) {
         $_SESSION['cart'] = [];
-
-        // Clear database
-        $orderResult = executeQuery("SELECT * FROM orders WHERE status='pending' LIMIT 1");
-        if (mysqli_num_rows($orderResult) > 0) {
-            $order = mysqli_fetch_assoc($orderResult);
-            $orderID = $order['orderID'];
-            executeQuery("DELETE FROM orderitems WHERE orderID = '$orderID'");
-            executeQuery("DELETE FROM orders WHERE orderID = '$orderID'");
-        }
     }
 
     if (isset($_POST['checkout'])) {
         $orderType = $_POST['order_type'] ?? '';
         $paymentMethod = $_POST['payment_method'] ?? '';
         $refNumber = $_POST['ref_number'] ?? '';
+        $customerName = $_POST['customer_name'] ?? '';
 
         if (empty($orderType) || empty($paymentMethod)) {
             $_SESSION['cart_error'] = 'Please select both order method and payment method.';
@@ -84,44 +38,74 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['cart_error'] = 'Please enter a GCash reference number.';
         } elseif (empty($_SESSION['cart'])) {
             $_SESSION['cart_error'] = 'Your cart is empty.';
+        } elseif ($orderType === 'pickup' && empty($customerName)) {
+            $_SESSION['cart_error'] = 'Please enter your name for pickup orders.';
         } else {
-            // calculate total
+            // Calculate total
             $total = 0;
             foreach ($_SESSION['cart'] as $item) {
                 $total += $item['price'] * $item['quantity'];
             }
 
-            // update order in database
-            $orderResult = executeQuery("SELECT * FROM orders WHERE status='pending' LIMIT 1");
-            if (mysqli_num_rows($orderResult) > 0) {
-                $order = mysqli_fetch_assoc($orderResult);
-                $orderID = $order['orderID'];
+            // ✅ Generate new order number
+            $result = executeQuery("SELECT orderNumber FROM orders ORDER BY orderID DESC LIMIT 1");
+            if ($result && mysqli_num_rows($result) > 0) {
+                $row = mysqli_fetch_assoc($result);
+                $lastOrderNumber = $row['orderNumber'];
 
-                // update order with total
-                $updateOrderQuery = "UPDATE orders SET 
-                                    totalAmount = '$total',
-                                    status = 'confirmed',
-                                    orderType = '" . mysqli_real_escape_string($conn, $orderType) . "'
-                                    WHERE orderID = '$orderID'";
-                executeQuery($updateOrderQuery);
-
-                // insert payment record
-                $insertPayment = "INSERT INTO payments (paymentMethod, paymentStatus, referenceNumber, orderID) 
-                                 VALUES (
-                                     '" . mysqli_real_escape_string($conn, $paymentMethod) . "',
-                                     'completed',
-                                     '" . mysqli_real_escape_string($conn, $refNumber) . "',
-                                     '$orderID'
-                                 )";
-                executeQuery($insertPayment);
-
-                // clear session cart
-                $_SESSION['cart'] = [];
-                $_SESSION['cart_message'] = 'Order placed successfully! Order ID: ' . $orderID;
-
-                header('Location: ' . $_SERVER['PHP_SELF']);
-                exit();
+                $lastNumber = intval(substr($lastOrderNumber, 4));
+                $newNumber = str_pad($lastNumber + 1, 4, "0", STR_PAD_LEFT);
+                $orderNumber = "ORD-" . $newNumber;
+            } else {
+                $orderNumber = "ORD-0001";
             }
+
+            $customerName = $_POST['customer_name'] ?? '';
+            $customerPhone = $_POST['customer_phone'] ?? '';
+
+            if ($orderType === 'pickup' && empty($customerName)) {
+                $_SESSION['cart_error'] = 'Please enter your name for pickup orders.';
+            } elseif ($orderType === 'pickup' && empty($customerPhone)) {
+                $_SESSION['cart_error'] = 'Please enter your phone number for pickup orders.';
+            }
+
+            // ...
+
+            if ($orderType === 'pickup') {
+                $customerName = mysqli_real_escape_string($conn, $customerName);
+                $customerPhone = mysqli_real_escape_string($conn, $customerPhone);
+            } else {
+                $customerName = null;
+                $customerPhone = null;
+            }
+
+            // Insert order with phone
+            $insertOrderQuery = "INSERT INTO orders (orderDate, orderNumber, customerName, orderContactNumber, address, totalAmount, status, orderType) 
+                     VALUES (NOW(), '$orderNumber', " .
+                ($customerName ? "'$customerName'" : "NULL") . ", " .
+                ($customerPhone ? "'$customerPhone'" : "NULL") . ",
+                     '', '$total', 'pending', '" . mysqli_real_escape_string($conn, $orderType) . "')";
+            executeQuery($insertOrderQuery);
+
+            // Get the new order ID
+            $orderID = mysqli_insert_id($conn);
+
+            // Insert payment record
+            $insertPayment = "INSERT INTO payments (paymentMethod, paymentStatus, referenceNumber, orderID) 
+                              VALUES (
+                                  '" . mysqli_real_escape_string($conn, $paymentMethod) . "',
+                                  'pending',
+                                  '" . mysqli_real_escape_string($conn, $refNumber) . "',
+                                  '$orderID'
+                              )";
+            executeQuery($insertPayment);
+
+            // Clear session cart
+            $_SESSION['cart'] = [];
+            $_SESSION['cart_message'] = 'Order placed successfully! Order ID: ' . $orderID;
+
+            header('Location: ' . $_SERVER['PHP_SELF']);
+            exit();
         }
     }
 }
@@ -148,6 +132,7 @@ function getCartTotal()
     return $total;
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -333,7 +318,8 @@ function getCartTotal()
                                     <div class="d-flex align-items-center">
                                         <form method="POST">
                                             <input type="hidden" name="cart_index" value="<?= $i ?>">
-                                            <input type="hidden" name="new_quantity" value="<?= max(0, $item['quantity'] - 1) ?>">
+                                            <input type="hidden" name="new_quantity"
+                                                value="<?= max(0, $item['quantity'] - 1) ?>">
                                             <button type="submit" name="update_quantity"
                                                 class="btn btn-sm btn-outline-dark fw-bold">-</button>
                                         </form>
@@ -396,6 +382,8 @@ function getCartTotal()
                                             <input class="form-check-input me-2" type="radio" name="order_type"
                                                 value="pickup" required>
                                             <label class="form-check-label">Pickup</label>
+                                            <input type="hidden" name="customer_name" id="hiddenCustomerName">
+                                            <input type="hidden" name="customer_phone" id="hiddenCustomerPhone">
                                         </div>
                                     </div>
                                 </div>
@@ -419,10 +407,11 @@ function getCartTotal()
                                     </div>
                                 </div>
                                 <div class="col">
-                                    <div class="mb-3">
-                                        <label for="refNumber" class="form-label">Enter Reference Number</label>
+                                    <div class="mb-3" id="gcashField" style="display:none;">
                                         <input type="text" class="form-control" name="ref_number" id="refNumber"
-                                            placeholder="1234-5678-910 (Required)">
+                                            placeholder="Enter 13-digit GCash Ref No." pattern="\d{13}" maxlength="13"
+                                            inputmode="numeric"
+                                            oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,13);">
                                     </div>
                                 </div>
                             </div>
@@ -443,6 +432,58 @@ function getCartTotal()
         </div>
     </div>
 
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const pickupRadio = document.querySelector('input[name="order_type"][value="pickup"]');
+            const modalEl = document.getElementById('confirmModal');
+            if (!modalEl) return;
+
+            const confirmModal = new bootstrap.Modal(modalEl);
+            const orderSummaryList = document.getElementById("orderSummaryList");
+            const confirmBtn = modalEl.querySelector(".confirm-order-btn");
+            const checkoutForm = document.querySelector("form"); // Main checkout form
+            const toastEl = document.getElementById('orderToast');
+            const orderToast = new bootstrap.Toast(toastEl);
+
+            if (pickupRadio) {
+                pickupRadio.addEventListener("change", () => {
+                    if (pickupRadio.checked) {
+                        // Populate order summary
+                        orderSummaryList.innerHTML = "";
+                        <?php if (!empty($_SESSION['cart'])): ?>
+                            <?php foreach ($_SESSION['cart'] as $item): ?>
+                                orderSummaryList.innerHTML += `<li><?= $item['quantity'] ?>x <?= htmlspecialchars($item['product_name']) ?></li>`;
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+
+                        // Show modal
+                        confirmModal.show();
+                    }
+                });
+            }
+
+            if (confirmBtn && checkoutForm) {
+                confirmBtn.addEventListener("click", () => {
+                    const customerNameInput = document.getElementById('pickupCustomerName');
+                    let hiddenInput = checkoutForm.querySelector('input[name="customer_name"]');
+
+                    if (!hiddenInput) {
+                        hiddenInput = document.createElement('input');
+                        hiddenInput.type = 'hidden';
+                        hiddenInput.name = 'customer_name';
+                        checkoutForm.appendChild(hiddenInput);
+                    }
+
+                    hiddenInput.value = customerNameInput.value.trim();
+
+                    confirmModal.hide();
+                    checkoutForm.querySelector("button[name='checkout']").click();
+                    orderToast.show();
+                });
+            }
+        });
+    </script>
     <script src="assets/js/main.js"></script>
     <script src="assets/js/navbar.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -450,6 +491,55 @@ function getCartTotal()
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO"
         crossorigin="anonymous"></script>
+    <?php include 'modal/cart-modal.php'; ?>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const pickupRadio = document.querySelector('input[name="order_type"][value="pickup"]');
+            const modalEl = document.getElementById('confirmModal');
+            if (!modalEl) return;
+
+            const confirmModal = new bootstrap.Modal(modalEl);
+            const orderSummaryList = document.getElementById("orderSummaryList");
+            const confirmBtn = modalEl.querySelector(".confirm-order-btn");
+            const checkoutForm = document.querySelector("form"); // Main checkout form
+
+            // When Pickup is selected, show modal
+            if (pickupRadio) {
+                pickupRadio.addEventListener("change", () => {
+                    if (pickupRadio.checked) {
+                        // Populate order summary
+                        orderSummaryList.innerHTML = "";
+                        <?php if (!empty($_SESSION['cart'])): ?>
+                            <?php foreach ($_SESSION['cart'] as $item): ?>
+                                orderSummaryList.innerHTML += `<li><?= $item['quantity'] ?>x <?= htmlspecialchars($item['product_name']) ?></li>`;
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+
+                        // Show modal
+                        confirmModal.show();
+                    }
+                });
+            }
+
+            // When Confirm is clicked in modal, save customer name only
+            if (confirmBtn && checkoutForm) {
+                confirmBtn.addEventListener("click", () => {
+                    const customerNameInput = document.getElementById('pickupCustomerName');
+                    let hiddenInput = checkoutForm.querySelector('input[name="customer_name"]');
+
+                    if (!hiddenInput) {
+                        hiddenInput = document.createElement('input');
+                        hiddenInput.type = 'hidden';
+                        hiddenInput.name = 'customer_name';
+                        checkoutForm.appendChild(hiddenInput);
+                    }
+
+                    hiddenInput.value = customerNameInput.value.trim();
+                    confirmModal.hide();
+                });
+            }
+        });
+    </script>
 </body>
 
 </html>

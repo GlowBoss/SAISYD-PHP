@@ -18,10 +18,6 @@ if (time() > $_SESSION['cart_timeout']) {
     $_SESSION['cart_timeout'] = time() + (30 * 60);
 }
 
-$result = executeQuery("SELECT settingValue FROM menusettings WHERE settingName='customer_menu_enabled'");
-$row = mysqli_fetch_assoc($result);
-$customerMenuEnabled = ($row && $row['settingValue'] == '1') ? true : false;
-
 // Handle Add to Cart via POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
     $productId = $_POST['product_id'];
@@ -75,20 +71,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
     // INSERT TO DATABASE
 
     // Check if may pending order (reuse) or create new
-    $orderResult = executeQuery("SELECT * FROM orders WHERE status='pending' LIMIT 1");
+    // $orderResult = executeQuery("SELECT * FROM orders WHERE status='pending' LIMIT 1");
 
-    if (mysqli_num_rows($orderResult) > 0) {
-        $order = mysqli_fetch_assoc($orderResult);
-        $orderID = $order['orderID'];
-    } else {
-        $today = date("Y-m-d");
-        $insertOrder = "INSERT INTO orders (orderDate, status, totalAmount) VALUES ('$today','pending',0)";
-        executeQuery($insertOrder);
+    // if (mysqli_num_rows($orderResult) > 0) {
+    //     $order = mysqli_fetch_assoc($orderResult);
+    //     $orderID = $order['orderID'];
+    // } else {
+    //     $today = date("Y-m-d");
+    //     $insertOrder = "INSERT INTO orders (orderDate, status, totalAmount) VALUES ('$today','pending',0)";
+    //     executeQuery($insertOrder);
 
-        $newOrder = executeQuery("SELECT orderID FROM orders ORDER BY orderID DESC LIMIT 1");
-        $orderRow = mysqli_fetch_assoc($newOrder);
-        $orderID = $orderRow['orderID'];
-    }
+    //     $newOrder = executeQuery("SELECT orderID FROM orders ORDER BY orderID DESC LIMIT 1");
+    //     $orderRow = mysqli_fetch_assoc($newOrder);
+    //     $orderID = $orderRow['orderID'];
+    // }
 
     // Prepare values for database insert -  naghahandle ng NULL values 
     $sugarValue = ($sugar !== null) ? "'" . mysqli_real_escape_string($conn, $sugar) . "'" : "NULL";
@@ -684,8 +680,8 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
             if (document.querySelector('input[name="sugar"][value="100% Sugar"]')) {
                 document.querySelector('input[name="sugar"][value="100% Sugar"]').checked = true;
             }
-            if (document.querySelector('input[name="ice"][value="Default"]')) {
-                document.querySelector('input[name="ice"][value="Default"]').checked = true;
+            if (document.querySelector('input[name="ice"][value="Default Ice"]')) {
+                document.querySelector('input[name="ice"][value="Default Ice"]').checked = true;
             }
         });
 
@@ -1016,14 +1012,6 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
         });
     </script>
 
-    <?php if (!$customerMenuEnabled): ?>
-        <?php include 'modal/ordering-unavailable-modal.php'; ?>
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                showOrderingUnavailableModal();
-            });
-        </script>
-    <?php endif; ?>
     <!-- External Scripts -->
     <script src="assets/js/main.js"></script>
     <script src="assets/js/navbar.js"></script>

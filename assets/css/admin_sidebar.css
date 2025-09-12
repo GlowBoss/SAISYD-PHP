@@ -213,7 +213,7 @@ body {
 
 /* Mobile burger menu styling */
 .mobile-header {
-    background: transparent !important;
+    background: var(--card-bg-color);
 }
 
 .mobile-menu-toggle {

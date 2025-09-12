@@ -66,7 +66,6 @@ select.form-select {
   font-family: var(--secondaryFont);
   font-size: var(--lead);
   color: var(--text-color-dark);
-  
 }
 
 .menu-item:hover {
@@ -159,6 +158,12 @@ button.btn.btn-del:hover {
   font-family: var(--secondaryFont);
   color: var(--text-color-dark);
 }
+
+#updateToast.updateToast {
+  background-color: var(--text-color-dark) !important;
+  color: var(--text-color-light) !important;
+}
+
 @media (max-width: 576px) {
   .btnAdd {
     display: block;
