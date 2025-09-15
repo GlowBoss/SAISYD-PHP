@@ -41,6 +41,12 @@ function toggleOrder($currentOrder)
 {
     return $currentOrder === 'ASC' ? 'desc' : 'asc';
 }
+
+// Check if user is logged in and is an admin 
+if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
+  header("Location: login.php");
+  exit();
+}
 ?>
 
 
