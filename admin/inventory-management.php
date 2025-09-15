@@ -230,8 +230,8 @@ function toggleOrder($currentOrder)
                             <i class="bi bi-plus-circle"></i>
                             <span class="d-none d-sm-inline ms-2">Add</span>
                         </button>
-                        <button class="btn btnExport" type="button" 
-                        data-bs-toggle="modal" data-bs-target="#confirmModal">
+                        <button class="btn btnExport" type="button" data-bs-toggle="modal"
+                            data-bs-target="#confirmModal">
                             Export
                         </button>
 
@@ -327,7 +327,6 @@ function toggleOrder($currentOrder)
         </script>
     <script>
         document.getElementById("downloadInventoryBtn").addEventListener("click", function () {
-            // Delay to let download start
             setTimeout(() => {
                 const toast = new bootstrap.Toast(document.getElementById("inventoryToast"));
                 toast.show();
@@ -335,23 +334,31 @@ function toggleOrder($currentOrder)
         });
     </script>
     <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const downloadBtn = document.querySelector("#confirmModal .btnDownload");
-    const toastEl = document.getElementById("inventoryToast");
+        document.addEventListener("DOMContentLoaded", function () {
+            const downloadBtn = document.getElementById("downloadInventoryBtn");
+            const confirmModalEl = document.getElementById("confirmModal");
+            const inventoryToastEl = document.getElementById("inventoryToast");
 
-    if (downloadBtn && toastEl) {
-        downloadBtn.addEventListener("click", function () {
-            // Bootstrap toast init
-            const toast = new bootstrap.Toast(toastEl);
+            if (downloadBtn && confirmModalEl && inventoryToastEl) {
+                downloadBtn.addEventListener("click", function () {
+                    setTimeout(() => {
+                        const confirmModal = bootstrap.Modal.getInstance(confirmModalEl);
+                        if (confirmModal) {
+                            confirmModal.hide();
 
-            // Wait a moment so download triggers first, then show toast
-            setTimeout(() => {
-                toast.show();
-            }, 1000);
+                            document.querySelectorAll(".modal-backdrop").forEach(el => el.remove());
+                            document.body.classList.remove("modal-open");
+                            document.body.style.removeProperty("padding-right");
+                        }
+
+                        const inventoryToast = new bootstrap.Toast(inventoryToastEl);
+                        inventoryToast.show();
+                    }, 1000);
+
+                });
+            }
         });
-    }
-});
-</script>
+    </script>
 
 
 </body>

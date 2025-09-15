@@ -180,8 +180,11 @@
                                         class="active"></button>
                                     <button type="button" data-bs-target="#smallCardCarousel"
                                         data-bs-slide-to="1"></button>
+                                    <button type="button" data-bs-target="#smallCardCarousel"
+                                        data-bs-slide-to="2"></button>
                                 </div>
                                 <div class="carousel-inner">
+                                    <!-- First Slide -->
                                     <div class="carousel-item active">
                                         <div class="d-flex flex-column align-items-center my-3">
                                             <div class="card cardSmall m-2 fw-bolder p-3"
@@ -201,6 +204,8 @@
                                             </div>
                                         </div>
                                     </div>
+
+                                    <!-- Second Slide -->
                                     <div class="carousel-item">
                                         <div class="d-flex flex-column align-items-center my-3">
                                             <div class="card cardSmall m-2 fw-bolder p-3"
@@ -220,7 +225,19 @@
                                             </div>
                                         </div>
                                     </div>
+
+                                    <div class="carousel-item">
+                                        <div class="d-flex justify-content-center my-3">
+                                            <div class="card cardSmall p-3 text-center fw-bolder">
+                                                <h5>Average Order Value</h5>
+                                                <p class="fs-4"><strong>₱520</strong></p>
+                                                <small>This week</small>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
+
+                                <!-- Carousel controls -->
                                 <button class="carousel-control-prev" type="button" data-bs-target="#smallCardCarousel"
                                     data-bs-slide="prev">
                                     <span class="carousel-control-prev-icon"></span>
@@ -231,7 +248,7 @@
                                 </button>
                             </div>
                         </div>
-
+                        <!-- Right Column -->
                         <div class="col-12 col-lg-8">
                             <div class="row d-flex flex-wrap justify-content-center">
                                 <div class="card cardBig flex-grow-1 m-2">
@@ -240,16 +257,55 @@
                                         <span class="text-muted">Track product sales</span>
                                         <div class="cardStats mt-3">
                                             <div class="card-body">
-                                                <p class="text-center p-5">Graph or something</p>
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-4">
+                                                        <canvas id="salesTrendsChart" height="200"></canvas>
+                                                    </div>
+                                                    <div class="col-md-6 mb-4">
+                                                        <canvas id="topProductsChart" height="200"></canvas>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        <div class="card cardOrders p-4 mt-3">
+                            <h4>Recent Transactions</h4>
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Order ID</th>
+                                        <th>Customer</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Sept 10, 2025</td>
+                                        <td>#12345</td>
+                                        <td>Juan Dela Cruz</td>
+                                        <td>₱750</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Sept 11, 2025</td>
+                                        <td>#12346</td>
+                                        <td>Maria Santos</td>
+                                        <td>₱1,250</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Sept 12, 2025</td>
+                                        <td>#12347</td>
+                                        <td>Carlos Reyes</td>
+                                        <td>₱980</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-
                 <div class="row align-items-center">
                     <div class="col-12">
                         <div class="card cardContainer m-2">
@@ -417,6 +473,52 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous">
         </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Get CSS variables from :root
+        const rootStyles = getComputedStyle(document.documentElement);
+        const chartLineColor = rootStyles.getPropertyValue("--chart-line-color").trim() || "#4a2800";
+        const chartLineFill = rootStyles.getPropertyValue("--chart-line-fill").trim() || "rgba(74,40,0,0.2)";
+        const chartBar1 = rootStyles.getPropertyValue("--chart-bar1").trim() || "#4a2800";
+        const chartBar2 = rootStyles.getPropertyValue("--chart-bar2").trim() || "#a35c00";
+        const chartBar3 = rootStyles.getPropertyValue("--chart-bar3").trim() || "#d98e00";
+
+        console.log("Chart colors:", chartLineColor, chartLineFill, chartBar1, chartBar2, chartBar3);
+
+        // Sales Trends Chart
+        new Chart(document.getElementById('salesTrendsChart').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Sales (₱)',
+                    data: [1200, 1900, 3000, 2500, 2200, 2800, 3500],
+                    borderColor: chartLineColor,
+                    backgroundColor: chartLineFill,
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: { responsive: true }
+        });
+
+        // Top Products Chart
+        new Chart(document.getElementById('topProductsChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['Product A', 'Product B', 'Product C'],
+                datasets: [{
+                    label: 'Sales',
+                    data: [120, 95, 80],
+                    backgroundColor: [chartBar1, chartBar2, chartBar3]
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { display: false } } }
+        });
+    </script>
+
+
 </body>
 
 </html>
