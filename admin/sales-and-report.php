@@ -249,7 +249,7 @@
                             </div>
                         </div>
                         <!-- Right Column -->
-                        <div class="col-12 col-lg-8">
+                         <div class="col-12 col-lg-8">
                             <div class="row d-flex flex-wrap justify-content-center">
                                 <div class="card cardBig flex-grow-1 m-2">
                                     <div class="card-body text-start ms-2">
@@ -259,10 +259,14 @@
                                             <div class="card-body">
                                                 <div class="row">
                                                     <div class="col-md-6 mb-4">
-                                                        <canvas id="salesTrendsChart" height="200"></canvas>
+                                                        <div style="height:300px;">
+                                                            <canvas id="salesTrendsChart"></canvas>
+                                                        </div>
                                                     </div>
                                                     <div class="col-md-6 mb-4">
-                                                        <canvas id="topProductsChart" height="200"></canvas>
+                                                        <div style="height:300px;">
+                                                            <canvas id="topProductsChart"></canvas>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
