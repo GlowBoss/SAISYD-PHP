@@ -942,7 +942,7 @@ foreach ($rows as $row) {
                                 <div class="no-records-content">
                                     <i class="bi bi-search"></i>
                                     <p>No items match the current filters</p>
-                                    <button class="btn action-btn" onclick="window.inventoryManager.clearAllFilters()">
+                                    <button class="btn btn-clear" onclick="window.inventoryManager.clearAllFilters()">
                                         <i class="bi bi-x-circle"></i> Clear Filters
                                     </button>
                                 </div>

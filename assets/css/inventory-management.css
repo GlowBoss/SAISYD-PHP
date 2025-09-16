@@ -219,7 +219,7 @@ body {
     background: var(--primary-color);
     border: 2px solid var(--primary-color);
     color: var(--text-color-light);
-    padding: 0.75rem 1.25rem;
+    /* padding: 0.75rem 1.25rem; */
     border-radius: 8px;
     font-weight: 500;
     transition: all 0.3s ease;
@@ -243,6 +243,34 @@ body {
     color: var(--text-color-light);
     transform: translateY(-1px);
 }
+
+/* Clear Button - Small Compact */
+.btn-clear {
+    background: transparent;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    padding: 0.2rem 0.5rem;   
+    border-radius: 6px;       
+    font-size: 0.75rem;      
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;            
+    font-family: var(--primaryFont);
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-clear i {
+    font-size: 0.8rem;       
+}
+
+.btn-clear:hover {
+    background: var(--btn-hover1);
+    color: var(--text-color-light);
+    transform: translateY(-1px);
+}
+
+
 
 .add-btn {
     background: var(--primary-color);
@@ -695,8 +723,7 @@ body {
 }
 
 .no-records-content i {
-    font-size: 3rem;
-    margin-bottom: 1rem;
+    font-size: 1.5rem;
     opacity: 0.5;
     color: var(--primary-color);
 }
