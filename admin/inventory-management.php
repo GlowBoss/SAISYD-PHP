@@ -651,7 +651,7 @@ foreach ($rows as $row) {
     </div>
 
     <!-- MODALS -->
-    <?php include '../modal/inventory-management-modal.php'; ?>
+    <?php include '../modal/add-item-inventory-modal.php'; ?>
     <?php include '../modal/delete-confirm-modal.php'; ?>
     <?php include '../modal/export-modal.php'; ?>
 
@@ -695,7 +695,7 @@ foreach ($rows as $row) {
             showToast('<?= addslashes($message) ?>', '<?= $messageType ?>');
         <?php endif; ?>
 
-        // Enhanced Inventory Management System
+        // Enhanced Inventory Management System with Individual Filter Removal
         class InventoryManager {
             constructor() {
                 this.originalRows = Array.from(document.querySelectorAll('#inventoryTableBody tr:not(#noRecordsRow)'));
@@ -782,12 +782,27 @@ foreach ($rows as $row) {
                 const filters = {
                     stockStatus: document.getElementById('filterStockStatus').value,
                     expiryStatus: document.getElementById('filterExpiryStatus').value,
-                    sortOrder: document.getElementById('filterSortOrder').value
+                    sortOrder: document.getElementById('filterSortOrder').value,
+                    search: document.getElementById('searchInput').value.trim()
                 };
 
                 this.activeFilters = filters;
 
-                this.filteredRows = this.originalRows.filter(row => {
+                // Start with original rows
+                this.filteredRows = [...this.originalRows];
+
+                // Apply search filter first
+                if (filters.search) {
+                    const searchLower = filters.search.toLowerCase();
+                    this.filteredRows = this.filteredRows.filter(row => {
+                        const itemName = row.querySelector('.item-name').textContent.toLowerCase();
+                        const itemCode = row.dataset.itemCode.toLowerCase();
+                        return itemName.includes(searchLower) || itemCode.includes(searchLower);
+                    });
+                }
+
+                // Apply other filters
+                this.filteredRows = this.filteredRows.filter(row => {
                     const quantity = parseInt(row.dataset.quantity);
                     const expiryDate = row.dataset.expiryDate;
                     const threshold = parseInt(row.dataset.threshold);
@@ -850,6 +865,74 @@ foreach ($rows as $row) {
                 showToast(`Filters applied. Showing ${this.filteredRows.length} of ${this.originalRows.length} items.`);
             }
 
+            // NEW: Remove individual filter
+            removeFilter(filterType) {
+                switch (filterType) {
+                    case 'search':
+                        document.getElementById('searchInput').value = '';
+                        this.activeFilters.search = '';
+                        break;
+                    case 'stockStatus':
+                        document.getElementById('filterStockStatus').value = '';
+                        this.activeFilters.stockStatus = '';
+                        break;
+                    case 'expiryStatus':
+                        document.getElementById('filterExpiryStatus').value = '';
+                        this.activeFilters.expiryStatus = '';
+                        break;
+                    case 'sortOrder':
+                        document.getElementById('filterSortOrder').value = 'desc';
+                        this.activeFilters.sortOrder = 'desc';
+                        break;
+                }
+
+                // Re-apply filters
+                this.applyFilters();
+
+                showToast(`${this.getFilterDisplayName(filterType)} filter removed.`, 'success');
+            }
+
+            // NEW: Get display name for filter types
+            getFilterDisplayName(filterType) {
+                const displayNames = {
+                    'search': 'Search',
+                    'stockStatus': 'Stock Status',
+                    'expiryStatus': 'Expiry Status',
+                    'sortOrder': 'Sort Order'
+                };
+                return displayNames[filterType] || filterType;
+            }
+
+            // NEW: Get display value for filter
+            getFilterDisplayValue(filterType, value) {
+                switch (filterType) {
+                    case 'stockStatus':
+                        const stockDisplays = {
+                            'low': 'Low Stock',
+                            'normal': 'Normal Stock',
+                            'out': 'Out of Stock'
+                        };
+                        return stockDisplays[value] || value;
+
+                    case 'expiryStatus':
+                        const expiryDisplays = {
+                            'expired': 'Expired',
+                            'expiring': 'Expiring Soon',
+                            'fresh': 'Fresh'
+                        };
+                        return expiryDisplays[value] || value;
+
+                    case 'sortOrder':
+                        return value === 'asc' ? 'Oldest First' : 'Newest First';
+
+                    case 'search':
+                        return `"${value}"`;
+
+                    default:
+                        return value;
+                }
+            }
+
             clearAllFilters() {
                 // Clear all filter inputs
                 document.getElementById('filterStockStatus').value = '';
@@ -883,36 +966,63 @@ foreach ($rows as $row) {
 
             getActiveFilterCount() {
                 let count = 0;
-                const inputs = document.querySelectorAll('.filter-input, .filter-select');
-                inputs.forEach(input => {
-                    if (input.value.trim() !== '' && input.id !== 'filterSortOrder') count++;
-                });
 
-                const searchValue = document.getElementById('searchInput').value.trim();
-                if (searchValue !== '') count++;
+                // Count non-empty filters
+                if (this.activeFilters.search) count++;
+                if (this.activeFilters.stockStatus) count++;
+                if (this.activeFilters.expiryStatus) count++;
+                if (this.activeFilters.sortOrder && this.activeFilters.sortOrder !== 'desc') count++;
 
                 return count;
             }
 
+            // UPDATED: Enhanced active filters display with individual remove buttons
             updateActiveFiltersDisplay() {
                 const activeFiltersDiv = document.getElementById('activeFilters');
                 const activeFilterTags = document.getElementById('activeFilterTags');
                 const tags = [];
 
-                // Build filter tags (removed itemCode)
+                // Build filter tags with remove buttons
+                if (this.activeFilters.search) {
+                    tags.push({
+                        type: 'search',
+                        label: 'Search',
+                        value: this.getFilterDisplayValue('search', this.activeFilters.search)
+                    });
+                }
+
                 if (this.activeFilters.stockStatus) {
-                    tags.push({ label: 'Stock Status', value: this.activeFilters.stockStatus });
+                    tags.push({
+                        type: 'stockStatus',
+                        label: 'Stock Status',
+                        value: this.getFilterDisplayValue('stockStatus', this.activeFilters.stockStatus)
+                    });
                 }
+
                 if (this.activeFilters.expiryStatus) {
-                    tags.push({ label: 'Expiry Status', value: this.activeFilters.expiryStatus });
+                    tags.push({
+                        type: 'expiryStatus',
+                        label: 'Expiry Status',
+                        value: this.getFilterDisplayValue('expiryStatus', this.activeFilters.expiryStatus)
+                    });
                 }
+
                 if (this.activeFilters.sortOrder && this.activeFilters.sortOrder !== 'desc') {
-                    tags.push({ label: 'Sort', value: this.activeFilters.sortOrder === 'asc' ? 'Ascending' : 'Descending' });
+                    tags.push({
+                        type: 'sortOrder',
+                        label: 'Sort',
+                        value: this.getFilterDisplayValue('sortOrder', this.activeFilters.sortOrder)
+                    });
                 }
 
                 if (tags.length > 0) {
                     activeFilterTags.innerHTML = tags.map(tag =>
-                        `<span class="filter-tag">${tag.label}: ${tag.value}</span>`
+                        `<span class="filter-tag" data-filter-type="${tag.type}">
+                    ${tag.label}: ${tag.value}
+                    <button class="filter-tag-remove" onclick="window.inventoryManager.removeFilter('${tag.type}')" title="Remove this filter">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </span>`
                     ).join('');
                     activeFiltersDiv.classList.remove('d-none');
                 } else {
@@ -937,18 +1047,18 @@ foreach ($rows as $row) {
                         noRecordsRow.querySelector('.no-records-content p').textContent = 'No items match the current filters';
                     } else {
                         tbody.innerHTML = `
-                        <tr id="noRecordsRow">
-                            <td colspan="6" class="no-records">
-                                <div class="no-records-content">
-                                    <i class="bi bi-search"></i>
-                                    <p>No items match the current filters</p>
-                                    <button class="btn btn-clear" onclick="window.inventoryManager.clearAllFilters()">
-                                        <i class="bi bi-x-circle"></i> Clear Filters
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
+                <tr id="noRecordsRow">
+                    <td colspan="6" class="no-records">
+                        <div class="no-records-content">
+                            <i class="bi bi-search"></i>
+                            <p>No items match the current filters</p>
+                            <button class="btn btn-clear" onclick="window.inventoryManager.clearAllFilters()">
+                                <i class="bi bi-x-circle"></i> Clear Filters
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
                     }
                 } else {
                     if (noRecordsRow) {

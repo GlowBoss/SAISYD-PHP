@@ -1,5 +1,5 @@
 <?php
-// Get ingredients for autocomplete (this should be included in your main inventory-management.php)
+// Get ingredients for autocomplete 
 if (!isset($ingredients)) {
     $ingredientsQuery = "SELECT ingredientID, ingredientName FROM ingredients ORDER BY ingredientName";
     $ingredientsResult = executeQuery($ingredientsQuery);
@@ -11,6 +11,65 @@ if (!isset($ingredients)) {
     }
 }
 ?>
+
+<style>
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--btn-hover1) !important;
+    box-shadow: 0 0 0 0.2rem rgba(46, 26, 0, 0.15) !important;
+}
+
+.form-select option {
+    background: var(--card-bg-color);
+    color: var(--text-color-dark);
+}
+
+.autocomplete-dropdown {
+    border-top: none !important;
+}
+
+.autocomplete-item {
+    padding: 12px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(196, 162, 119, 0.2);
+    font-family: var(--secondaryFont);
+    color: var(--text-color-dark);
+    transition: background-color 0.2s ease;
+}
+
+.autocomplete-item:hover,
+.autocomplete-item.selected {
+    background-color: var(--primary-color);
+    color: var(--text-color-light);
+}
+
+.autocomplete-item:last-child {
+    border-bottom: none;
+    border-radius: 0 0 10px 10px;
+}
+
+.new-ingredient-item {
+    font-style: italic;
+    color: var(--text-color-dark);
+    font-weight: bold;
+}
+
+.new-ingredient-item:hover {
+    background-color: var(--primary-color);
+    color: var(--text-color-light);
+}
+</style>
 
 <!-- Add Item Modal -->
 <div class="modal fade" id="addItemModal" data-bs-backdrop="true" tabindex="-1" 
@@ -195,71 +254,9 @@ if (!isset($ingredients)) {
     </div>
 </div>
 
-<style>
-/* Remove number input spinners */
-input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
-input[type=number] {
-    -moz-appearance: textfield;
-}
-
-/* Focus states */
-.form-control:focus,
-.form-select:focus {
-    border-color: var(--btn-hover1) !important;
-    box-shadow: 0 0 0 0.2rem rgba(46, 26, 0, 0.15) !important;
-}
-
-/* Dropdown styling */
-.form-select option {
-    background: var(--card-bg-color);
-    color: var(--text-color-dark);
-}
-
-/* Autocomplete dropdown styling */
-.autocomplete-dropdown {
-    border-top: none !important;
-}
-
-.autocomplete-item {
-    padding: 12px 15px;
-    cursor: pointer;
-    border-bottom: 1px solid rgba(196, 162, 119, 0.2);
-    font-family: var(--secondaryFont);
-    color: var(--text-color-dark);
-    transition: background-color 0.2s ease;
-}
-
-.autocomplete-item:hover,
-.autocomplete-item.selected {
-    background-color: var(--primary-color);
-    color: var(--text-color-light);
-}
-
-.autocomplete-item:last-child {
-    border-bottom: none;
-    border-radius: 0 0 10px 10px;
-}
-
-.new-ingredient-item {
-    font-style: italic;
-    color: var(--text-color-dark);
-    font-weight: bold;
-}
-
-.new-ingredient-item:hover {
-    background-color: var(--primary-color);
-    color: var(--text-color-light);
-}
-</style>
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Existing ingredients data - no JSON needed, direct PHP array
+    // Existing ingredients data 
     const ingredients = [
         <?php foreach ($ingredients as $ingredient): ?>
         {
