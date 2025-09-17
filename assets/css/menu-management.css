@@ -74,15 +74,27 @@ select.form-select {
 }
 
 .menu-img {
-  max-height: 150px;
+  /* max-height: 150px;
   object-fit: contain;
+  width: 100%; */
+
   width: 100%;
+  height: 200px;      
+   object-fit: contain;; 
 }
 
-.menu-name,
+
 .menu-price {
   word-wrap: break-word;
   text-align: center;
+}
+
+.menu-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  max-width: 100%;
 }
 
 .btn-dropdown {
@@ -103,6 +115,7 @@ button.btn.btn-dropdown:hover {
   background-color: var(--btn-hover1) !important;
   color: white !important;
 }
+
 .dropdown-item {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
@@ -170,28 +183,39 @@ button.btn.btn-del:hover {
     width: 100%;
   }
 }
+
 @media (max-width: 992px) and (min-width: 768px) {
   .btnAdd {
     font-size: 0.9rem;
     padding: 0.4rem 1rem;
   }
+
+  .menu-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    max-width: 100%;
+  }
 }
 
 
 .swal2-border-radius {
-  border-radius: 12px; 
+  border-radius: 12px;
 }
 
- /* option.option-hover:hover {
+/* option.option-hover:hover {
   background-color: var(--primary-color);
   color: #fff;
 } */
 
-.swal2-confirm-radius, .swal2-cancel-radius{
+.swal2-confirm-radius,
+.swal2-cancel-radius {
   border-radius: 12px;
 }
+
 .ui-autocomplete {
-  z-index: 2000; 
+  z-index: 2000;
   max-height: 200px;
   overflow-y: auto;
   background: #fff;
@@ -199,7 +223,8 @@ button.btn.btn-del:hover {
   border-radius: 6px;
   overflow: hidden;
 }
+
 .ui-menu-item-wrapper.ui-state-active {
-  background: var(--primary-color)!important;
+  background: var(--primary-color) !important;
   color: #fff;
 }

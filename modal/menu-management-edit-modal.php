@@ -1,35 +1,47 @@
 <!-- EDIT MODAL -->
 <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content text-center">
-      <div class="modal-header">
-        <h5 class="modal-title modalText" id="editModalLabel">Edit Product</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-content rounded-4 shadow-lg border-0" style="background: var(--bg-color);">
+      
+      <!-- Header -->
+      <div class="modal-header border-0 pb-0">
+        <h1 class="modal-title fs-4 fw-bold" id="editModalLabel"
+            style="font-family: var(--primaryFont); color: var(--primary-color); letter-spacing: 1px;">
+          Edit Product
+        </h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                style="filter: invert(50%);"></button>
       </div>
 
-      <div class="modal-body modalText">
-        <!-- required for file uploads -->
+      <!-- Body -->
+      <div class="modal-body modalText text-start">
         <form id="editItemForm" method="POST" enctype="multipart/form-data">
-
-          <!-- Hidden Product ID -->
           <input type="hidden" name="product_id" id="edit_product_id">
 
-          <div class="row">
+          <div class="row g-4">
             <!-- Left Column -->
             <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label">Item Name</label>
-                <input type="text" class="form-control" name="item_name" id="edit_item_name" required>
+              <div class="mb-4">
+                <label class="form-label fw-bold mb-2" style="font-family: var(--primaryFont); color: var(--text-color-dark);">
+                  Item Name <span style="color: #dc3545;">*</span>
+                </label>
+                <input type="text" class="form-control" name="item_name" id="edit_item_name" required
+                       style="border: 2px solid var(--primary-color); border-radius: 10px;
+                              font-family: var(--secondaryFont); background: var(--card-bg-color);
+                              color: var(--text-color-dark); padding: 12px;">
               </div>
 
-              <div class="mb-3">
-                <label class="form-label">Item Group</label>
-                <select class="form-select" name="item_group" id="edit_item_group" required>
+              <div class="mb-4">
+                <label class="form-label fw-bold mb-2" style="font-family: var(--primaryFont); color: var(--text-color-dark);">
+                  Item Group <span style="color: #dc3545;">*</span>
+                </label>
+                <select class="form-select" name="item_group" id="edit_item_group" required
+                        style="border: 2px solid var(--primary-color); border-radius: 10px;
+                               font-family: var(--secondaryFont); background: var(--card-bg-color);
+                               color: var(--text-color-dark); padding: 12px;">
                   <?php
-                  // Fetch all categories from the database
                   $categoriesQuery = "SELECT * FROM Categories";
                   $categoriesResult = mysqli_query($conn, $categoriesQuery);
-
                   while ($cat = mysqli_fetch_assoc($categoriesResult)) {
                     echo '<option value="' . $cat['categoryID'] . '">' . htmlspecialchars($cat['categoryName']) . '</option>';
                   }
@@ -40,43 +52,141 @@
 
             <!-- Right Column -->
             <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label">Price</label>
-                <input type="text" class="form-control" name="menu_price" id="edit_menu_price" required>
+              <div class="mb-4">
+                <label class="form-label fw-bold mb-2" style="font-family: var(--primaryFont); color: var(--text-color-dark);">
+                  Price <span style="color: #dc3545;">*</span>
+                </label>
+                <input type="text" class="form-control" name="menu_price" id="edit_menu_price" required
+                       style="border: 2px solid var(--primary-color); border-radius: 10px;
+                              font-family: var(--secondaryFont); background: var(--card-bg-color);
+                              color: var(--text-color-dark); padding: 12px;">
               </div>
 
-              <div class="mb-3">
-                <label class="form-label">Size</label>
-                <select class="form-select" name="menu_size" id="edit_menu_size">
+              <div class="mb-4">
+                <label class="form-label fw-bold mb-2" style="font-family: var(--primaryFont); color: var(--text-color-dark);">
+                  Size
+                </label>
+                <select class="form-select" name="menu_size" id="edit_menu_size"
+                        style="border: 2px solid var(--primary-color); border-radius: 10px;
+                               font-family: var(--secondaryFont); background: var(--card-bg-color);
+                               color: var(--text-color-dark); padding: 12px;">
                   <option value="12oz">12oz</option>
                   <option value="16oz">16oz</option>
                 </select>
               </div>
 
-              <div class="mb-3">
-                <label class="form-label">Attachment</label>
-                <input type="file" class="form-control" name="attachment" id="edit_current_image">
-                <input type="text" class="form-control mt-1" id="edit_current_image_text" readonly>
+              <div class="mb-4">
+                <label class="form-label fw-bold mb-2" style="font-family: var(--primaryFont); color: var(--text-color-dark);">
+                  Attachment
+                </label>
+                <input type="file" class="form-control" name="attachment" id="edit_current_image"
+                       style="border: 2px solid var(--primary-color); border-radius: 10px;
+                              font-family: var(--secondaryFont); background: var(--card-bg-color);
+                              color: var(--text-color-dark); padding: 12px;">
+                <input type="text" class="form-control mt-2" id="edit_current_image_text" readonly
+                       style="border: 2px solid var(--primary-color); border-radius: 10px;
+                              font-family: var(--secondaryFont); background: var(--card-bg-color);
+                              color: var(--text-color-dark); padding: 12px;">
               </div>
             </div>
           </div>
 
           <hr>
-          <!-- Ingredients Section -->
-          <h6 class="text-start mb-3">Ingredients</h6>
-          <div id="edit-ingredients-container">
+          <h6 class="text-start mb-3 fw-bold" style="font-family: var(--primaryFont); color: var(--text-color-dark);">
+            Ingredients
+          </h6>
+          <div id="edit-ingredients-container" style="max-height: 250px; overflow-y: auto; padding-right: 5px;">
             <!-- JS will populate rows here -->
           </div>
 
-          <button type="button" class="btn btn-outline-primary btn-sm mb-3" id="edit-add-ingredient">+</button>
+          <button type="button" class="btn fw-bold px-3 py-1 mb-3" id="edit-add-ingredient"
+                  style="background: var(--text-color-dark); 
+                         color: var(--text-color-light); 
+                         border-radius: 8px; font-family: var(--primaryFont); 
+                         transition: all 0.3s ease;">
+            +
+          </button>
 
-          <!-- Modal Actions -->
-          <div class="d-flex justify-content-end mt-3">
-            <button type="button" class="btn btn-de btn-del me-2" data-bs-dismiss="modal">CANCEL</button>
-            <button type="submit" class="btn btn-sm">SAVE</button>
+          <div class="d-flex gap-3 justify-content-end mt-4">
+            <button type="button" class="btn fw-bold px-4 py-2" data-bs-dismiss="modal" style="
+                        background: var(--card-bg-color); 
+                        color: var(--text-color-dark); 
+                        border: 2px solid var(--primary-color);
+                        border-radius: 10px; 
+                        font-family: var(--primaryFont); 
+                        letter-spacing: 1px; 
+                        transition: all 0.3s ease;
+                        min-width: 120px;
+                    " onmouseover="
+                        this.style.background='var(--primary-color)'; 
+                        this.style.color='var(--text-color-light)';
+                        this.style.transform='translateY(-2px)';
+                        this.style.boxShadow='0 4px 8px rgba(0,0,0,0.2)';
+                    " onmouseout="
+                        this.style.background='var(--card-bg-color)'; 
+                        this.style.color='var(--text-color-dark)';
+                        this.style.transform='translateY(0)';
+                        this.style.boxShadow='none';
+                    ">
+              CANCEL
+            </button>
+
+            <button type="submit" class="btn fw-bold px-4 py-2" style="
+                        background: var(--text-color-dark); 
+                        color: var(--text-color-light); 
+                        border: none;
+                        border-radius: 10px; 
+                        font-family: var(--primaryFont); 
+                        letter-spacing: 1px; 
+                        box-shadow: 0 4px 8px rgba(196, 162, 119, 0.3); 
+                        transition: all 0.3s ease;
+                        min-width: 120px;
+                    " onmouseover="
+                        this.style.background='var(--primary-color)'; 
+                        this.style.transform='translateY(-2px)';
+                        this.style.boxShadow='0 6px 12px rgba(196, 162, 119, 0.4)';
+                    " onmouseout="
+                        this.style.background='var(--text-color-dark)'; 
+                        this.style.transform='translateY(0)';
+                        this.style.boxShadow='0 4px 8px rgba(196, 162, 119, 0.3)';
+                    ">
+              <i class="bi bi-save-fill me-2"></i>SAVE
+            </button>
           </div>
         </form>
       </div>
     </div>
   </div>
 </div>
+
+
+<style>
+  #edit-ingredients-container {
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 5px;
+  scrollbar-width: thin;        
+  scrollbar-color: var(--primary-color) var(--card-bg-color);
+}
+
+/* For Chrome, Edge, Safari */
+#edit-ingredients-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+#edit-ingredients-container::-webkit-scrollbar-track {
+  background: var(--card-bg-color);
+  border-radius: 10px;
+}
+
+#edit-ingredients-container::-webkit-scrollbar-thumb {
+  background-color: var(--primary-color);
+  border-radius: 10px;
+  border: 2px solid var(--card-bg-color);
+}
+
+#edit-ingredients-container::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-color-dark);
+}
+
+</style>

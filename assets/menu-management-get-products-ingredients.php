@@ -17,8 +17,9 @@ $query = "SELECT p.productID, p.productName, p.price, p.image, p.categoryID,
           FROM products p
           LEFT JOIN productRecipe pr ON p.productID = pr.productID
           LEFT JOIN ingredients i ON pr.ingredientID = i.ingredientID
-          LEFT JOIN inventory inv ON pr.productRecipeID = inv.productRecipeID
+          LEFT JOIN inventory inv ON i.ingredientID = inv.ingredientID
           WHERE p.productID = $id";
+
 
 $result = mysqli_query($conn, $query);
 
