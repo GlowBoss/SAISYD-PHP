@@ -527,148 +527,152 @@ if ($categoryFilterId !== null) {
                 });
             });
 
-            // para sa search product (ADD modal only)
             $(document).ready(function () {
                 var ingredients = <?php echo json_encode($ingredients); ?>;
+                let skipAutocompleteChange = false; // flag to skip alert
 
                 function initAutocomplete(selector) {
                     $(selector).autocomplete({
                         source: ingredients,
                         minLength: 1,
-                        appendTo: "#confirmModal", // scoped sa Add modal
+                        appendTo: "#confirmModal",
                         select: function (event, ui) {
                             $(this).val(ui.item.label);
                             $(this).siblings(".ingredient-id").val(ui.item.id);
-
-                            // attach correct unit for this ingredient
                             $(this).closest(".ingredient-row")
                                 .find(".measurement-select")
                                 .data("correct-unit", ui.item.unit);
-
                             return false;
                         },
                         change: function (event, ui) {
+                            if (skipAutocompleteChange) return; // skip when cleared manually
                             if (!ui.item) {
                                 Swal.fire({
                                     icon: 'error',
                                     title: 'Ingredient Not Found',
                                     text: 'The ingredient you entered is not on the Inventory.',
-                                    confirmButtonColor: 'var(--primary-color)',
-                                    confirmButtonText: 'OK',
-                                    customClass: {
-                                        popup: 'swal2-border-radius',
-                                        confirmButton: 'swal2-confirm-radius',
-                                        cancelButton: 'swal2-cancel-radius'
-                                    }
+                                    confirmButtonColor: 'var(--primary-color)'
                                 });
                                 $(this).val("");
                                 $(this).siblings(".ingredient-id").val("");
+                                $(this).siblings(".cancel-search").hide();
                             }
                         }
                     });
                 }
 
-                // initialize autocomplete for inputs inside Add Product modal only
+                // initialize autocomplete for existing inputs
                 initAutocomplete("#confirmModal .ingredient-search");
 
-                // Add new ingredient row inside Add modal
+                // Add new ingredient row
                 $("#confirmModal #add-modal-ingredient").click(function () {
                     var row = `
-                    <div class="row g-2 mb-2 ingredient-row">
-                            <div class="col-md-5">
-                                <input type="text" class="form-control ingredient-search"
-                                    placeholder="Search Ingredient" required
-                                    style="border: 2px solid var(--primary-color); border-radius: 10px; 
-                                          font-family: var(--secondaryFont); background: var(--card-bg-color);
-                                          color: var(--text-color-dark); padding: 12px;">
-                                <input type="hidden" name="ingredientID[]" class="ingredient-id">
-                            </div>
-                            <div class="col-md-3">
-                                <input type="number" class="form-control" name="requiredQuantity[]"
-                                    placeholder="Quantity" step="any" required
-                                    style="border: 2px solid var(--primary-color); border-radius: 10px; 
-                                          font-family: var(--secondaryFont); background: var(--card-bg-color);
-                                          color: var(--text-color-dark); padding: 12px;">
-                            </div>
-                            <div class="col-md-3">
-                                <select class="form-select measurement-select" name="measurementUnit[]" required
-                                    style="border: 2px solid var(--primary-color); border-radius: 10px; 
-                                          font-family: var(--secondaryFont); background: var(--card-bg-color);
-                                          color: var(--text-color-dark); padding: 12px;">
-                                    <option value="" disabled selected>Select Unit</option>
-                                    <option value="pcs">pcs</option>
-                                    <option value="box">box</option>
-                                    <option value="pack">pack</option>
-                                    <option value="g">g</option>
-                                    <option value="kg">kg</option>
-                                    <option value="oz">oz</option>
-                                    <option value="ml">ml</option>
-                                    <option value="L">L</option>
-                                    <option value="pump">pump</option>
-                                    <option value="tbsp">tbsp</option>
-                                    <option value="tsp">tsp</option>
-                                </select>
-                                <input type="text" class="form-control mt-2 d-none custom-unit" name="customUnit[]"
-                                    placeholder="Enter custom unit"
-                                    style="border: 2px solid var(--primary-color); border-radius: 10px; 
-                                          font-family: var(--secondaryFont); background: var(--card-bg-color);
-                                          color: var(--text-color-dark); padding: 12px;">
-                            </div>
-                            <div class="col-md-1 d-flex align-items-center">
-                                <button type="button" class="btn btn-sm remove-ingredient"
-                                    style="background: var(--card-bg-color); 
-                                           color: var(--text-color-dark); 
-                                           border: 2px solid var(--primary-color);
-                                           border-radius: 8px; font-family: var(--primaryFont);">
-                                    &times;
-                                </button>
-                            </div>
-                        </div>`;
+        <div class="row g-2 mb-2 ingredient-row">
+            <div class="col-md-5 position-relative">
+                <input type="text" class="form-control ingredient-search"
+                    placeholder="Search Ingredient" required
+                    style="border: 2px solid var(--primary-color); border-radius: 10px; 
+                           font-family: var(--secondaryFont); background: var(--card-bg-color);
+                           color: var(--text-color-dark); padding: 12px;">
+                <input type="hidden" name="ingredientID[]" class="ingredient-id">
+                <button type="button" class="cancel-search"
+                    style="position:absolute; right:8px; top:50%; transform:translateY(-50%);
+                           border:none; background:none; color:#333; font-size:18px; display:none; cursor:pointer;">&times;</button>
+            </div>
+            <div class="col-md-3">
+                <input type="number" class="form-control" name="requiredQuantity[]"
+                    placeholder="Quantity" step="any" required
+                    style="border: 2px solid var(--primary-color); border-radius: 10px; 
+                           font-family: var(--secondaryFont); background: var(--card-bg-color);
+                           color: var(--text-color-dark); padding: 12px;">
+            </div>
+            <div class="col-md-3">
+                <select class="form-select measurement-select" name="measurementUnit[]" required
+                    style="border: 2px solid var(--primary-color); border-radius: 10px; 
+                           font-family: var(--secondaryFont); background: var(--card-bg-color);
+                           color: var(--text-color-dark); padding: 12px;">
+                    <option value="" disabled selected>Select Unit</option>
+                    <option value="pcs">pcs</option>
+                    <option value="box">box</option>
+                    <option value="pack">pack</option>
+                    <option value="g">g</option>
+                    <option value="kg">kg</option>
+                    <option value="oz">oz</option>
+                    <option value="ml">ml</option>
+                    <option value="L">L</option>
+                    <option value="pump">pump</option>
+                    <option value="tbsp">tbsp</option>
+                    <option value="tsp">tsp</option>
+                </select>
+            </div>
+            <div class="col-md-1 d-flex align-items-center">
+                <button type="button" class="btn btn-sm remove-ingredient"
+                    style="background: var(--card-bg-color); 
+                           color: var(--text-color-dark); 
+                           border: 2px solid var(--primary-color);
+                           border-radius: 8px; font-family: var(--primaryFont);">
+                    &times;
+                </button>
+            </div>
+        </div>`;
                     $("#confirmModal #ingredients-container").append(row);
 
-                    // autocomplete for newly added row (scoped to Add modal)
+                    // autocomplete for new row
                     initAutocomplete($("#confirmModal #ingredients-container .ingredient-search").last());
                 });
-                // remove ingredient row (scoped to Add modal)
+
+                // remove ingredient row
                 $(document).on("click", "#confirmModal .remove-ingredient", function () {
                     $(this).closest(".ingredient-row").remove();
                 });
+
+                // cancel search button click
+                $(document).on("click", "#confirmModal .cancel-search", function () {
+                    skipAutocompleteChange = true; // skip alert
+                    const input = $(this).siblings(".ingredient-search");
+                    input.val("");
+                    input.siblings(".ingredient-id").val("");
+                    $(this).hide();
+                    setTimeout(() => skipAutocompleteChange = false, 10);
+                });
+
+                // show/hide cancel search button on input
+                $(document).on("input", "#confirmModal .ingredient-search", function () {
+                    $(this).siblings(".cancel-search").toggle($(this).val().trim() !== "");
+                });
+
                 // Unit mismatch validation
-                // Unit mismatch validation (mirrors SQL CASE conversions)
                 $(document).on("change", "#confirmModal .measurement-select", function () {
-                    const correctUnit = $(this).data("correct-unit"); // from ingredient
-                    const chosenUnit = $(this).val(); // from user
+                    const correctUnit = $(this).data("correct-unit");
+                    const chosenUnit = $(this).val();
+                    if (!correctUnit) return;
 
-                    if (correctUnit) {
-                        // allowed conversions (same as SQL)
-                        const allowedUnits = {
-                            "g": ["g", "kg", "oz"],
-                            "kg": ["kg", "g"],
-                            "oz": ["oz", "g"],
-                            "ml": ["ml", "L", "pump", "tbsp", "tsp"],
-                            "L": ["L", "ml"],
-                            "pump": ["pump", "ml"],
-                            "tbsp": ["tbsp", "ml"],
-                            "tsp": ["tsp", "ml"],
-                            "pcs": ["pcs", "box", "pack"],
-                            "box": ["box", "pcs"],
-                            "pack": ["pack", "pcs"]
-                        };
+                    const allowedUnits = {
+                        "g": ["g", "kg", "oz"],
+                        "kg": ["kg", "g"],
+                        "oz": ["oz", "g"],
+                        "ml": ["ml", "L", "pump", "tbsp", "tsp"],
+                        "L": ["L", "ml"],
+                        "pump": ["pump", "ml"],
+                        "tbsp": ["tbsp", "ml"],
+                        "tsp": ["tsp", "ml"],
+                        "pcs": ["pcs", "box", "pack"],
+                        "box": ["box", "pcs"],
+                        "pack": ["pack", "pcs"]
+                    };
 
-                        const validUnits = allowedUnits[correctUnit] || [correctUnit];
-
-                        if (!validUnits.includes(chosenUnit)) {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Unit Mismatch',
-                                text: `This ingredient requires "${correctUnit}" (allowed: ${validUnits.join(", ")}), not "${chosenUnit}".`,
-                                confirmButtonColor: 'var(--primary-color)'
-                            });
-                            $(this).val(""); // reset invalid unit
-                        }
+                    if (!allowedUnits[correctUnit].includes(chosenUnit)) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Unit Mismatch',
+                            text: `This ingredient requires "${correctUnit}" (allowed: ${allowedUnits[correctUnit].join(", ")}), not "${chosenUnit}".`,
+                            confirmButtonColor: 'var(--primary-color)'
+                        });
+                        $(this).val("");
                     }
                 });
             });
+
 
             // Session Alerts
             <?php if (isset($_SESSION['alertMessage'])): ?>
@@ -691,6 +695,8 @@ if ($categoryFilterId !== null) {
 
 
         window.ingredients = <?php echo json_encode($ingredients); ?>;
+
+        const ingredientsData = <?php echo json_encode($ingredients); ?>;
     </script>
 
 

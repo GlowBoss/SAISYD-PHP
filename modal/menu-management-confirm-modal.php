@@ -2,7 +2,7 @@
 <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content rounded-4 shadow-lg border-0" style="background: var(--bg-color);">
-            
+
             <!-- Header -->
             <div class="modal-header border-0 pb-0">
                 <h1 class="modal-title fs-4 fw-bold" id="confirmModalLabel"
@@ -56,8 +56,8 @@
                                     style="font-family: var(--primaryFont); color: var(--text-color-dark);">
                                     Price <span style="color: #dc3545;">*</span>
                                 </label>
-                                <input type="text" class="form-control" name="price" required
-                                    placeholder="Enter price" style="border: 2px solid var(--primary-color); border-radius: 10px; 
+                                <input type="text" class="form-control" name="price" required placeholder="Enter price"
+                                    style="border: 2px solid var(--primary-color); border-radius: 10px; 
                                           font-family: var(--secondaryFont); background: var(--card-bg-color);
                                           color: var(--text-color-dark); padding: 12px;">
                             </div>
@@ -76,29 +76,30 @@
                     </div>
 
                     <hr>
-                    <h6 class="text-start mb-3 fw-bold" style="font-family: var(--primaryFont); color: var(--text-color-dark);">
+                    <h6 class="text-start mb-3 fw-bold"
+                        style="font-family: var(--primaryFont); color: var(--text-color-dark);">
                         Ingredients
                     </h6>
                     <div id="ingredients-container" style="max-height: 250px; overflow-y: auto; padding-right: 5px;">
                         <div class="row g-2 mb-2 ingredient-row">
-                            <div class="col-md-5">
+                            <div class="col-md-5 position-relative">
                                 <input type="text" class="form-control ingredient-search"
-                                    placeholder="Search Ingredient" required
-                                    style="border: 2px solid var(--primary-color); border-radius: 10px; 
-                                          font-family: var(--secondaryFont); background: var(--card-bg-color);
-                                          color: var(--text-color-dark); padding: 12px;">
+                                    placeholder="Search Ingredient" required style="border: 2px solid var(--primary-color); border-radius: 10px; 
+                           font-family: var(--secondaryFont); background: var(--card-bg-color);
+                           color: var(--text-color-dark); padding: 12px;">
                                 <input type="hidden" name="ingredientID[]" class="ingredient-id">
+                                <button type="button" class="cancel-search"
+                                    style="position:absolute; right:8px; top:50%; transform:translateY(-50%);
+                           border:none; background:none; color:#333; font-size:18px; display:none; cursor:pointer;">&times;</button>
                             </div>
                             <div class="col-md-3">
                                 <input type="number" class="form-control" name="requiredQuantity[]"
-                                    placeholder="Quantity" step="any" required
-                                    style="border: 2px solid var(--primary-color); border-radius: 10px; 
+                                    placeholder="Quantity" step="any" required style="border: 2px solid var(--primary-color); border-radius: 10px; 
                                           font-family: var(--secondaryFont); background: var(--card-bg-color);
                                           color: var(--text-color-dark); padding: 12px;">
                             </div>
                             <div class="col-md-3">
-                                <select class="form-select measurement-select" name="measurementUnit[]" required
-                                    style="border: 2px solid var(--primary-color); border-radius: 10px; 
+                                <select class="form-select measurement-select" name="measurementUnit[]" required style="border: 2px solid var(--primary-color); border-radius: 10px; 
                                           font-family: var(--secondaryFont); background: var(--card-bg-color);
                                           color: var(--text-color-dark); padding: 12px;">
                                     <option value="" disabled selected>Select Unit</option>
@@ -115,8 +116,7 @@
                                     <option value="tsp">tsp</option>
                                 </select>
                                 <input type="text" class="form-control mt-2 d-none custom-unit" name="customUnit[]"
-                                    placeholder="Enter custom unit"
-                                    style="border: 2px solid var(--primary-color); border-radius: 10px; 
+                                    placeholder="Enter custom unit" style="border: 2px solid var(--primary-color); border-radius: 10px; 
                                           font-family: var(--secondaryFont); background: var(--card-bg-color);
                                           color: var(--text-color-dark); padding: 12px;">
                             </div>
@@ -132,8 +132,7 @@
                         </div>
                     </div>
 
-                    <button type="button" class="btn fw-bold px-3 py-1 mb-3" id="add-modal-ingredient"
-                        style="background: var(--text-color-dark); 
+                    <button type="button" class="btn fw-bold px-3 py-1 mb-3" id="add-modal-ingredient" style="background: var(--text-color-dark); 
                                color: var(--text-color-light); 
                                border-radius: 8px; font-family: var(--primaryFont); 
                                transition: all 0.3s ease;">
@@ -194,32 +193,31 @@
 </div>
 
 <style>
-  #ingredients-container {
-  max-height: 250px;
-  overflow-y: auto;
-  padding-right: 5px;
-  scrollbar-width: thin;        
-  scrollbar-color: var(--primary-color) var(--card-bg-color);
-}
+    #ingredients-container {
+        max-height: 250px;
+        overflow-y: auto;
+        padding-right: 5px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--primary-color) var(--card-bg-color);
+    }
 
-/* For Chrome, Edge, Safari */
-#ingredients-container::-webkit-scrollbar {
-  width: 8px;
-}
+    /* For Chrome, Edge, Safari */
+    #ingredients-container::-webkit-scrollbar {
+        width: 8px;
+    }
 
-#ingredients-container::-webkit-scrollbar-track {
-  background: var(--card-bg-color);
-  border-radius: 10px;
-}
+    #ingredients-container::-webkit-scrollbar-track {
+        background: var(--card-bg-color);
+        border-radius: 10px;
+    }
 
-#ingredients-container::-webkit-scrollbar-thumb {
-  background-color: var(--primary-color);
-  border-radius: 10px;
-  border: 2px solid var(--card-bg-color);
-}
+    #ingredients-container::-webkit-scrollbar-thumb {
+        background-color: var(--primary-color);
+        border-radius: 10px;
+        border: 2px solid var(--card-bg-color);
+    }
 
-#ingredients-container::-webkit-scrollbar-thumb:hover {
-  background-color: var(--text-color-dark);
-}
-
+    #ingredients-container::-webkit-scrollbar-thumb:hover {
+        background-color: var(--text-color-dark);
+    }
 </style>
