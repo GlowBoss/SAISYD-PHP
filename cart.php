@@ -14,16 +14,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_SESSION['cart'][$index])) {
             if ($newQuantity > 0) {
                 $_SESSION['cart'][$index]['quantity'] = $newQuantity;
+
+                $orderResult = executeQuery("SELECT * FROM orders WHERE status='pending' LIMIT 1");
+                if (mysqli_num_rows($orderResult) > 0) {
+                    $order = mysqli_fetch_assoc($orderResult);
+                    $orderID = $order['orderID'];
+
+                    // update quantity in database
+                    $productId = $_SESSION['cart'][$index]['product_id'];
+                    $sugar = $_SESSION['cart'][$index]['sugar'];
+                    $ice = $_SESSION['cart'][$index]['ice'];
+                    $notes = $_SESSION['cart'][$index]['notes'];
+
+                    $updateQuery = "UPDATE orderitems SET quantity = '$newQuantity' 
+                                   WHERE orderID = '$orderID' AND productID = '$productId' 
+                                   AND sugar = '" . mysqli_real_escape_string($conn, $sugar) . "' 
+                                   AND ice = '" . mysqli_real_escape_string($conn, $ice) . "' 
+                                   AND notes = '" . mysqli_real_escape_string($conn, $notes) . "'";
+                    executeQuery($updateQuery);
+                }
             } else {
-                // Remove item if quantity is 0
+                // remove item if quantity is 0
+                $productId = $_SESSION['cart'][$index]['product_id'];
+                $sugar = $_SESSION['cart'][$index]['sugar'];
+                $ice = $_SESSION['cart'][$index]['ice'];
+                $notes = $_SESSION['cart'][$index]['notes'];
+
                 unset($_SESSION['cart'][$index]);
                 $_SESSION['cart'] = array_values($_SESSION['cart']);
+
+                // remove from database
+                $orderResult = executeQuery("SELECT * FROM orders WHERE status='pending' LIMIT 1");
+                if (mysqli_num_rows($orderResult) > 0) {
+                    $order = mysqli_fetch_assoc($orderResult);
+                    $orderID = $order['orderID'];
+
+                    $deleteQuery = "DELETE FROM orderitems 
+                                   WHERE orderID = '$orderID' AND productID = '$productId' 
+                                   AND sugar = '" . mysqli_real_escape_string($conn, $sugar) . "' 
+                                   AND ice = '" . mysqli_real_escape_string($conn, $ice) . "' 
+                                   AND notes = '" . mysqli_real_escape_string($conn, $notes) . "'";
+                    executeQuery($deleteQuery);
+                }
             }
         }
     }
 
     if (isset($_POST['clear_cart'])) {
         $_SESSION['cart'] = [];
+
+        // Clear database
+        $orderResult = executeQuery("SELECT * FROM orders WHERE status='pending' LIMIT 1");
+        if (mysqli_num_rows($orderResult) > 0) {
+            $order = mysqli_fetch_assoc($orderResult);
+            $orderID = $order['orderID'];
+            executeQuery("DELETE FROM orderitems WHERE orderID = '$orderID'");
+            executeQuery("DELETE FROM orders WHERE orderID = '$orderID'");
+        }
     }
 
     if (isset($_POST['checkout'])) {
@@ -46,6 +93,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             foreach ($_SESSION['cart'] as $item) {
                 $total += $item['price'] * $item['quantity'];
             }
+
+            
 
             // ✅ Generate new order number
             $result = executeQuery("SELECT orderNumber FROM orders ORDER BY orderID DESC LIMIT 1");
@@ -538,6 +587,32 @@ function getCartTotal()
                     confirmModal.hide();
                 });
             }
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const gcashRadio = document.querySelector('input[name="payment_method"][value="gcash"]');
+            const cashRadio = document.querySelector('input[name="payment_method"][value="cash"]');
+            const gcashField = document.getElementById("gcashField");
+            const refNumberInput = document.getElementById("refNumber");
+
+            function toggleGCashField() {
+                if (gcashRadio.checked) {
+                    gcashField.style.display = "block";
+                    refNumberInput.setAttribute("required", "true"); // make it required only for GCash
+                } else {
+                    gcashField.style.display = "none";
+                    refNumberInput.removeAttribute("required");
+                    refNumberInput.value = ""; // clear if switching back
+                }
+            }
+
+            // Run on page load
+            toggleGCashField();
+
+            // Attach listeners
+            gcashRadio.addEventListener("change", toggleGCashField);
+            cashRadio.addEventListener("change", toggleGCashField);
         });
     </script>
 </body>

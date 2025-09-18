@@ -200,9 +200,9 @@ $userResult = executeQuery("
                     <i class="bi bi-speedometer2"></i>
                     <span>Dashboard</span>
                 </a>
-                <a href="orders.php" class="admin-nav-link">
-                    <i class="bi bi-clipboard-check"></i>
-                    <span>Order Management</span>
+                <a href="notification.php" class="admin-nav-link">
+                    <i class="bi bi-bell"></i>
+                    <span>Notifications</span>
                 </a>
                 <a href="point-of-sales.php" class="admin-nav-link">
                     <i class="bi bi-shop-window"></i>
@@ -261,10 +261,10 @@ $userResult = executeQuery("
                 <i class="bi bi-speedometer2"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="orders.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
+            <a href="notification.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
                 data-wow-delay="0.15s">
-                <i class="bi bi-clipboard-check"></i>
-                <span>Order Managements</span>
+                <i class="bi bi-bell"></i>
+                <span>Notifications</span>
             </a>
             <a href="point-of-sales.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
                 data-wow-delay="0.2s">
