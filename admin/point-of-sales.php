@@ -277,8 +277,13 @@
                                     `<li><a class="dropdown-item" data-value="${level}">${level}% Sugar Level</a></li>`
                                 ).join('');
 
-                                const iceOptions = ["No Ice", "Less Ice", "Regular Ice"].map(level =>
-                                    `<li><a class="dropdown-item" data-value="${level}">${level}</a></li>`
+                                // Ice options that map to database enum values
+                                const iceOptions = [
+                                    { display: "Less Ice", value: "Less" },
+                                    { display: "Normal Ice", value: "Normal" }, 
+                                    { display: "Extra Ice", value: "Extra" }
+                                ].map(ice =>
+                                    `<li><a class="dropdown-item" data-value="${ice.value}">${ice.display}</a></li>`
                                 ).join('');
 
                                 sugarIceDropdowns = `
@@ -373,11 +378,11 @@
                         }
                     }
 
-                    let iceLevel = '';
+                    let iceLevel = 'Normal'; // Default to Normal
                     if (iceSelectId) {
                         const iceDropdown = document.getElementById(iceSelectId);
                         if (iceDropdown) {
-                            iceLevel = iceDropdown.getAttribute('data-value') || '';
+                            iceLevel = iceDropdown.getAttribute('data-value') || 'Normal';
                         }
                     }
 
@@ -415,71 +420,6 @@
                             modalQuantityInput.value = newValue;
                         }
                     }
-                }
-
-                // Keep your existing addToReceipt function as backup
-                function addToReceipt() {
-                    const addButton = document.getElementById('addToReceiptButton');
-                    if (!addButton) {
-                        console.error('Add button not found');
-                        return;
-                    }
-
-                    const productID = addButton.getAttribute('data-productid');
-                    const price = parseFloat(addButton.getAttribute('data-price'));
-                    const name = addButton.getAttribute('data-name');
-                    const size = addButton.getAttribute('data-size');
-                    const sugarSelectId = addButton.getAttribute('data-sugarSelectId');
-                    const iceSelectId = addButton.getAttribute('data-iceSelectId');
-                    const quantity = parseInt(document.getElementById('quantityInput').value) || 1;
-
-                    let sugarLevel = '';
-                    if (sugarSelectId) {
-                        const sugarDropdown = document.getElementById(sugarSelectId);
-                        if (sugarDropdown) {
-                            sugarLevel = sugarDropdown.getAttribute('data-value') || '';
-                        }
-                    }
-
-                    let iceLevel = '';
-                    if (iceSelectId) {
-                        const iceDropdown = document.getElementById(iceSelectId);
-                        if (iceDropdown) {
-                            iceLevel = iceDropdown.getAttribute('data-value') || '';
-                        }
-                    }
-
-                    // Add to cart via AJAX
-                    const formData = new FormData();
-                    formData.append('action', 'add_to_cart');
-                    formData.append('productID', productID);
-                    formData.append('productName', name);
-                    formData.append('price', price);
-                    formData.append('quantity', quantity);
-                    formData.append('sugarLevel', sugarLevel);
-                    formData.append('iceLevel', iceLevel);
-                    formData.append('size', size);
-
-                    fetch('../assets/pos-order-handler.php', {
-                        method: 'POST',
-                        body: formData
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                loadCartFromSession();
-                                const quantityModal = bootstrap.Modal.getInstance(document.getElementById('quantityModal'));
-                                if (quantityModal) {
-                                    quantityModal.hide();
-                                }
-                            } else {
-                                alert('Error adding item to cart: ' + (data.error || 'Unknown error'));
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('Failed to add item to cart');
-                        });
                 }
 
                 function loadCartFromSession() {
@@ -577,12 +517,12 @@
 
                 function confirmOrder() {
                     const paymentMethod = document.getElementById('paymentModeInput')?.value || 'Cash';
-                    const orderType = document.getElementById('orderTypeInput')?.value || 'Dine-In';
+                    const orderType = document.getElementById('orderTypeInput')?.value || 'dine-in';
 
                     const formData = new FormData();
                     formData.append('action', 'checkout');
                     formData.append('paymentMethod', paymentMethod);
-                    formData.append('customerName', '');
+                    formData.append('customerName', 'Walk-in Customer');
                     formData.append('orderType', orderType);
                     formData.append('contactNumber', '');
 
@@ -671,7 +611,7 @@
                                     const price = parseFloat(document.getElementById('modal-product-price').value);
                                     const quantity = parseInt(document.getElementById('modal-quantity-input').value);
                                     const sugarLevel = document.getElementById('modal-sugar-input').value;
-                                    const iceLevel = document.getElementById('modal-ice-input').value;
+                                    const iceLevel = document.getElementById('modal-ice-input').value || 'Normal';
 
                                     // Get the modal instance before hiding it
                                     const quantityModal = document.getElementById('quantityModal');
@@ -701,7 +641,6 @@
                                         .then(data => {
                                             if (data.success) {
                                                 loadCartFromSession();
-                                                // Modal is already hidden, no need to hide again
                                                 console.log('Item added to cart successfully');
                                             } else {
                                                 alert('Error adding item to cart: ' + (data.error || 'Unknown error'));
