@@ -126,10 +126,10 @@ function checkout()
 {
     global $conn;
 
-    $paymentMethod = $_POST['paymentMethod'] ?? 'cash';
-    $customerName = $_POST['customerName'] ?? '';
+    $paymentMethod = $_POST['paymentMethod'] ?? 'Cash';
+    $customerName = $_POST['customerName'] ?? 'Walk-in Customer';
     $orderType = $_POST['orderType'] ?? 'dine-in';
-    $contactNumber = $_POST['contactNumber'] ?? '';
+    $contactNumber = $_POST['contactNumber'] ?? null;
 
     if (empty($_SESSION['cart'])) {
         echo json_encode(['error' => 'Cart is empty']);
@@ -138,7 +138,7 @@ function checkout()
 
     try {
         // Start transaction
-        $conn->autocommit(false);
+        mysqli_autocommit($conn, false);
 
         // Calculate total
         $total = 0;
@@ -146,45 +146,85 @@ function checkout()
             $total += $item['totalPrice'];
         }
 
-        // Generate order number
-        $orderResult = executeQuery("SELECT COUNT(*) as count FROM orders");
-        $orderCount = $orderResult->fetch_assoc()['count'];
-        $orderNumber = 'ORD-' . str_pad($orderCount + 1, 4, '0', STR_PAD_LEFT);
+        // Generate order number - using the orderNumber column as integer
+        $orderResult = executeQuery("SELECT orderNumber FROM orders ORDER BY orderID DESC LIMIT 1");
+        $orderNumber = 1; // Default starting number
 
-        // Insert order
-        $insertOrderQuery = "INSERT INTO orders (orderDate, customerName, totalAmount, orderType, orderNumber, status, orderContactNumber, address) 
-                           VALUES (NOW(), ?, ?, ?, ?, 'pending', ?, '')";
-        $stmt = $conn->prepare($insertOrderQuery);
-        $stmt->bind_param('sdsss', $customerName, $total, $orderType, $orderNumber, $contactNumber);
-
-        if (!$stmt->execute()) {
-            throw new Exception('Failed to create order');
+        if ($orderResult && mysqli_num_rows($orderResult) > 0) {
+            $row = mysqli_fetch_assoc($orderResult);
+            $lastOrderNumber = $row['orderNumber'];
+            $orderNumber = $lastOrderNumber + 1;
         }
 
-        $orderID = $conn->insert_id;
+        // Escape string values for security
+        $customerName = mysqli_real_escape_string($conn, $customerName);
+        $orderType = mysqli_real_escape_string($conn, $orderType);
+        $paymentMethod = mysqli_real_escape_string($conn, $paymentMethod);
 
-        // Insert order items
-        $insertItemQuery = "INSERT INTO orderitems (orderID, productID, quantity, sugar, ice, notes) VALUES (?, ?, ?, ?, ?, '')";
-        $itemStmt = $conn->prepare($insertItemQuery);
+        if ($contactNumber) {
+            $contactNumber = mysqli_real_escape_string($conn, $contactNumber);
+        }
 
+        // Insert order - matching your database schema exactly
+        $insertOrderQuery = "INSERT INTO orders (orderDate, customerName, orderContactNumber, totalAmount, orderType, orderNumber, status, isDone, userID) 
+                           VALUES (NOW(), '$customerName', " .
+            ($contactNumber ? "'$contactNumber'" : "NULL") . ", 
+                           '$total', '$orderType', '$orderNumber', 'pending', 0, 1)";
+
+        $orderResult = executeQuery($insertOrderQuery);
+
+        if (!$orderResult) {
+            throw new Exception('Failed to create order: ' . mysqli_error($conn));
+        }
+
+        $orderID = mysqli_insert_id($conn);
+
+        // Insert order items - matching your orderitems table structure
         foreach ($_SESSION['cart'] as $item) {
-            $itemStmt->bind_param('iiiss', $orderID, $item['productID'], $item['quantity'], $item['sugarLevel'], $item['iceLevel']);
-            if (!$itemStmt->execute()) {
-                throw new Exception('Failed to add order item');
+            $productID = (int) $item['productID'];
+            $quantity = (int) $item['quantity'];
+
+            // Convert sugar level to boolean (1 or 0) - assuming it's stored as tinyint(1)
+            $sugar = 0;
+            if (!empty($item['sugarLevel']) && $item['sugarLevel'] !== '0' && $item['sugarLevel'] !== '0%') {
+                $sugar = 1;
+            }
+
+            // Ice level - matching enum('Less','Normal','Extra') - convert from display text to DB values
+            $ice = 'Normal'; // default
+            if (!empty($item['iceLevel'])) {
+                $iceLevel = strtolower($item['iceLevel']);
+                if (strpos($iceLevel, 'less') !== false || strpos($iceLevel, 'no') !== false) {
+                    $ice = 'Less';
+                } elseif (strpos($iceLevel, 'extra') !== false) {
+                    $ice = 'Extra';
+                } else {
+                    $ice = 'Normal';
+                }
+            }
+
+            $notes = !empty($item['size']) ? mysqli_real_escape_string($conn, $item['size']) : '';
+
+            $insertItemQuery = "INSERT INTO orderitems (orderID, productID, quantity, sugar, ice, notes) 
+                               VALUES ('$orderID', '$productID', '$quantity', '$sugar', '$ice', '$notes')";
+
+            $itemResult = executeQuery($insertItemQuery);
+            if (!$itemResult) {
+                throw new Exception('Failed to add order item: ' . mysqli_error($conn));
             }
         }
 
-        // Insert payment
-        $insertPaymentQuery = "INSERT INTO payments (paymentMethod, paymentStatus, referenceNumber, orderID) VALUES (?, 'pending', '', ?)";
-        $paymentStmt = $conn->prepare($insertPaymentQuery);
-        $paymentStmt->bind_param('si', $paymentMethod, $orderID);
+        // Insert payment - matching your payments table structure
+        $insertPaymentQuery = "INSERT INTO payments (orderID, paymentMethod, paymentStatus, referenceNumber) 
+                              VALUES ('$orderID', '$paymentMethod', 'Paid', NULL)";
 
-        if (!$paymentStmt->execute()) {
-            throw new Exception('Failed to create payment record');
+        $paymentResult = executeQuery($insertPaymentQuery);
+        if (!$paymentResult) {
+            throw new Exception('Failed to create payment record: ' . mysqli_error($conn));
         }
 
         // Commit transaction
-        $conn->commit();
+        mysqli_commit($conn);
 
         // Clear cart
         $_SESSION['cart'] = [];
@@ -199,10 +239,10 @@ function checkout()
 
     } catch (Exception $e) {
         // Rollback transaction
-        $conn->rollback();
+        mysqli_rollback($conn);
         echo json_encode(['error' => $e->getMessage()]);
     } finally {
-        $conn->autocommit(true);
+        mysqli_autocommit($conn, true);
     }
 }
 ?>
