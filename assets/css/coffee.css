@@ -56,12 +56,12 @@
   overflow-x: auto;
   gap: clamp(0.75rem, 2vw, 1.25rem);
   padding: clamp(0.5rem, 2vw, 1rem);
-  
-  -webkit-overflow-scrolling: touch; 
-  scroll-behavior: smooth;           
-  scroll-snap-type: x mandatory;     
 
-  scrollbar-width: thin; 
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+
+  scrollbar-width: thin;
   scrollbar-color: var(--primary-color) transparent;
 }
 
@@ -80,12 +80,12 @@
 }
 
 .category-scroll::-webkit-scrollbar-thumb:hover {
-  background: var(--btn-hover1); 
+  background: var(--btn-hover1);
 }
 
-.category-scroll > * {
+.category-scroll>* {
   flex: 0 0 auto;
-  scroll-snap-align: center; 
+  scroll-snap-align: center;
   font-family: var(--secondaryFont);
   font-size: var(--lead);
   font-weight: 500;
@@ -93,13 +93,13 @@
   border: 1px solid var(--primary-color);
   border-radius: 16px;
   padding: clamp(0.75rem, 2vw, 1.25rem);
-  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
-.category-scroll > *:hover {
+.category-scroll>*:hover {
   transform: scale(1.05);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
 }
 
 .category-pill {
@@ -140,48 +140,48 @@
 
 
 .products-section {
-  
-  min-height: 400px; 
+
+  min-height: 400px;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   -ms-overflow-style: none;
   background-color: #ffffff;
   border: none !important;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  padding-bottom: 120px; 
+  padding-bottom: 120px;
 }
 
 /* Mobile-specific adjustments */
 @media (max-width: 576px) {
   .products-section {
-    padding-bottom: 150px; 
+    padding-bottom: 150px;
   }
 }
 
 @media (max-width: 767px) {
   .products-section {
-    padding-bottom: 140px; 
+    padding-bottom: 140px;
   }
 }
 
 /* iPad/Tablet adjustments */
 @media (min-width: 768px) and (max-width: 991px) {
   .products-section {
-    padding-bottom: 130px; 
+    padding-bottom: 130px;
   }
 }
 
 /* iPad Pro and larger tablets */
 @media (min-width: 992px) and (max-width: 1199px) {
   .products-section {
-    padding-bottom: 120px; 
+    padding-bottom: 120px;
   }
 }
 
 /* Desktop */
 @media (min-width: 1200px) {
   .products-section {
-    padding-bottom: 100px; 
+    padding-bottom: 100px;
   }
 }
 
@@ -354,7 +354,7 @@
 }
 
 body {
-  scroll-padding-bottom: 100px; 
+  scroll-padding-bottom: 100px;
 }
 
 
@@ -366,7 +366,7 @@ body {
   #productGrid .col .menu-item {
     margin-bottom: 15px;
   }
-  
+
   #productGrid .col:nth-last-child(-n+2) .menu-item {
     margin-bottom: 40px;
   }
