@@ -20,10 +20,10 @@ if (isset($_GET['editUser'])) {
 
 // ADD USER
 if (isset($_POST['btnAddUser'])) {
-    $fullname = $_POST['fullname'];
+    $fullName = $_POST['fullName'];
     $email = $_POST['email'];
     $username = $_POST['username'];
-    $phonenumber = $_POST['phonenumber'];
+    $accNumber = $_POST['accNumber'];
     $password = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
     $role = $_POST['role'];
@@ -40,8 +40,8 @@ if (isset($_POST['btnAddUser'])) {
             $_SESSION['alertType'] = "error";
         } else {
             $insertQuery = "
-                INSERT INTO users (fullname, email, username, phonenumber, password, role) 
-                VALUES ('$fullname', '$email', '$username', '$phonenumber', '$password', '$role')";
+                INSERT INTO users (fullName, email, username, accNumber, password, role) 
+                VALUES ('$fullName', '$email', '$username', '$accNumber', '$password', '$role')";
             executeQuery($insertQuery);
             $_SESSION['alertMessage'] = "User added successfully!";
             $_SESSION['alertType'] = "success";
@@ -56,7 +56,7 @@ if (isset($_POST['btnUpdateUser'])) {
     $id = $_POST['userID'];
     $email = $_POST['email'];
     $username = $_POST['username'];
-    $phonenumber = $_POST['phonenumber'];
+    $accNumber = $_POST['accNumber'];
     $old_password = $_POST['old_password'];
     $new_password = $_POST['new_password'];
     $confirm_password = $_POST['confirm_password'];
@@ -84,7 +84,7 @@ if (isset($_POST['btnUpdateUser'])) {
                 UPDATE users SET
                 email='$email',
                 username='$username',
-                phonenumber='$phonenumber',
+                accNumber='$accNumber',
                 password='$finalPassword'
                 WHERE userID=$id";
             executeQuery($updateQuery);
@@ -340,7 +340,7 @@ $userResult = executeQuery("
                             <!-- Name + Email -->
                             <div class="col-12 col-md-auto p-3">
                                 <h5 class="card-title">
-                                    <?= $userToEdit['fullname'] ?> | <i><?= $userToEdit['email'] ?></i>
+                                    <?= $userToEdit['fullName'] ?> | <i><?= $userToEdit['email'] ?></i>
                                 </h5>
                             </div>
 
@@ -411,8 +411,8 @@ $userResult = executeQuery("
                                 <div class="col-12 col-md-6">
                                     <div class="mb-2">
                                         <label class="form-label">Change Phone Number</label>
-                                        <input type="text" class="form-control" name="phonenumber"
-                                            value="<?= $userToEdit['phonenumber'] ?>" placeholder="Enter new phone number"
+                                        <input type="text" class="form-control" name="accNumber"
+                                            value="<?= $userToEdit['accNumber'] ?>" placeholder="Enter new phone number"
                                             required>
                                     </div>
                                 </div>
@@ -465,7 +465,7 @@ $userResult = executeQuery("
 
                                                         <h6 class="lead fst-italic d-flex align-items-center">
                                                             <i class="bi bi-person-fill me-2 fw-bold"></i>
-                                                            <?= htmlspecialchars($row['fullname']); ?>
+                                                            <?= htmlspecialchars($row['fullName']); ?>
                                                         </h6>
 
                                                         <h6 class="lead fst-italic d-flex align-items-center">
@@ -475,7 +475,7 @@ $userResult = executeQuery("
 
                                                         <h6 class="lead fst-italic d-flex align-items-center">
                                                             <i class="bi bi-telephone-fill me-2 fw-bold"></i>
-                                                            <?= htmlspecialchars($row['phonenumber']); ?>
+                                                            <?= htmlspecialchars($row['accNumber']); ?>
                                                         </h6>
 
                                                     </td>
@@ -571,68 +571,7 @@ $userResult = executeQuery("
     </div>
 
     <!-- add user modal -->
-    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content text-center modalText">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="confirmModalLabel">Add New User</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="addUserForm" method="POST">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Full Name</label>
-                                    <input type="text" class="form-control" name="fullname"
-                                        placeholder="Enter full name" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Email</label>
-                                    <input type="email" class="form-control" name="email" placeholder="Enter email"
-                                        required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Password</label>
-                                    <input type="password" class="form-control" name="password"
-                                        placeholder="Enter password" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Phone Number</label>
-                                    <input type="text" class="form-control" name="phonenumber"
-                                        placeholder="Enter phone number">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Username</label>
-                                    <input type="text" class="form-control" name="username" placeholder="Enter username"
-                                        required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Confirm Password</label>
-                                    <input type="password" class="form-control" name="confirm_password"
-                                        placeholder="Confirm password" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Role</label>
-                                    <select class="form-control custom-select" name="role" required>
-                                        <option value="" disabled selected>Select role</option>
-                                        <option class="option" value="Admin">Admin</option>
-                                        <option class="option" value="Staff">Staff</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="d-flex justify-content-end mt-3">
-                            <button type="button" class="btn btn-del me-2" data-bs-dismiss="modal">CANCEL</button>
-                            <button type="submit" class="btn btn-add" name="btnAddUser">CONFIRM</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+    <?php include '../modal/add-user-modal.php'; ?>
 
 
     <?php include '../modal/confirm-toggle-modal.php'; ?>

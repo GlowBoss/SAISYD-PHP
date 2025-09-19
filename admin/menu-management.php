@@ -135,31 +135,77 @@ if (!empty($_GET['categoryID'])) {
     $categoryFilterId = (int) $_GET['categoryID'];
 }
 
+// TOGGLE AVAILABILITY
+if (isset($_POST['btnToggleAvailability'])) {
+    $productID = intval($_POST['productID']);
+    $newAvailability = intval($_POST['newAvailability']);
+    $response = [];
+
+    if ($productID > 0) {
+        $updateQuery = "UPDATE products SET isAvailable = '$newAvailability' WHERE productID = '$productID'";
+
+        if (mysqli_query($conn, $updateQuery)) {
+            $statusText = $newAvailability ? 'enabled' : 'disabled';
+            $response['success'] = true;
+            $response['message'] = "Product availability has been $statusText successfully!";
+        } else {
+            $response['success'] = false;
+            $response['message'] = "Failed to update product availability!";
+        }
+    } else {
+        $response['success'] = false;
+        $response['message'] = "Invalid product ID!";
+    }
+
+    // Return JSON instead of redirecting
+    header('Content-Type: application/json');
+    echo json_encode($response);
+    exit();
+}
+
+
+
+// Fetch menu items
 $menuItemsQuery = "
-    SELECT p.*, c.categoryName AS category_name,COALESCE(pc.possible_count, 0) AS possible_count
-    FROM products p
-    JOIN categories c ON p.categoryID = c.categoryID
-    LEFT JOIN (SELECT pr.productID,MIN(FLOOR(inv.total_quantity /NULLIF(
-                    CASE 
-                        WHEN pr.measurementUnit = 'g' AND inv.unit = 'kg' THEN pr.requiredQuantity / 1000
-                        WHEN pr.measurementUnit = 'kg' AND inv.unit = 'g' THEN pr.requiredQuantity * 1000
-                        WHEN pr.measurementUnit = 'oz' AND inv.unit = 'g' THEN pr.requiredQuantity * 28.35
-                        WHEN pr.measurementUnit = 'g' AND inv.unit = 'oz' THEN pr.requiredQuantity / 28.35
-                        WHEN pr.measurementUnit = 'ml' AND inv.unit = 'L' THEN pr.requiredQuantity / 1000
-                        WHEN pr.measurementUnit = 'L' AND inv.unit = 'ml' THEN pr.requiredQuantity * 1000
-                        WHEN pr.measurementUnit = 'pump' AND inv.unit = 'ml' THEN pr.requiredQuantity * 10   -- 1 pump = 10ml
-                        WHEN pr.measurementUnit = 'tbsp' AND inv.unit = 'ml' THEN pr.requiredQuantity * 15  -- 1 tbsp = 15ml
-                        WHEN pr.measurementUnit = 'tsp' AND inv.unit = 'ml' THEN pr.requiredQuantity * 5    -- 1 tsp = 5ml
-                        WHEN pr.measurementUnit = 'pcs' AND inv.unit = 'box' THEN pr.requiredQuantity / 12  -- 1 box = 12 pcs
-                        WHEN pr.measurementUnit = 'box' AND inv.unit = 'pcs' THEN pr.requiredQuantity * 12
-                        WHEN pr.measurementUnit = 'pack' AND inv.unit = 'pcs' THEN pr.requiredQuantity * 6  -- 1 pack = 6 pcs
-                        WHEN pr.measurementUnit = 'pcs' AND inv.unit = 'pack' THEN pr.requiredQuantity / 6
-                        WHEN pr.measurementUnit = inv.unit THEN pr.requiredQuantity ELSE pr.requiredQuantity 
-                    END, 0))) AS possible_count FROM productrecipe pr JOIN (
+    SELECT 
+        p.*, 
+        c.categoryName AS category_name,
+        COALESCE(pc.possible_count, 0) AS possible_count
+    FROM 
+        products p
+    JOIN 
+        categories c ON p.categoryID = c.categoryID
+    LEFT JOIN (
+        SELECT 
+            pr.productID,
+            MIN(FLOOR(inv.total_quantity / NULLIF(
+                CASE 
+                    WHEN pr.measurementUnit = 'g' AND inv.unit = 'kg' THEN pr.requiredQuantity / 1000
+                    WHEN pr.measurementUnit = 'kg' AND inv.unit = 'g' THEN pr.requiredQuantity * 1000
+                    WHEN pr.measurementUnit = 'oz' AND inv.unit = 'g' THEN pr.requiredQuantity * 28.35
+                    WHEN pr.measurementUnit = 'g' AND inv.unit = 'oz' THEN pr.requiredQuantity / 28.35
+                    WHEN pr.measurementUnit = 'ml' AND inv.unit = 'L' THEN pr.requiredQuantity / 1000
+                    WHEN pr.measurementUnit = 'L' AND inv.unit = 'ml' THEN pr.requiredQuantity * 1000
+                    WHEN pr.measurementUnit = 'pump' AND inv.unit = 'ml' THEN pr.requiredQuantity * 10
+                    WHEN pr.measurementUnit = 'tbsp' AND inv.unit = 'ml' THEN pr.requiredQuantity * 15
+                    WHEN pr.measurementUnit = 'tsp' AND inv.unit = 'ml' THEN pr.requiredQuantity * 5
+                    WHEN pr.measurementUnit = 'pcs' AND inv.unit = 'box' THEN pr.requiredQuantity / 12
+                    WHEN pr.measurementUnit = 'box' AND inv.unit = 'pcs' THEN pr.requiredQuantity * 12
+                    WHEN pr.measurementUnit = 'pack' AND inv.unit = 'pcs' THEN pr.requiredQuantity * 6
+                    WHEN pr.measurementUnit = 'pcs' AND inv.unit = 'pack' THEN pr.requiredQuantity / 6
+                    WHEN pr.measurementUnit = inv.unit THEN pr.requiredQuantity
+                    ELSE pr.requiredQuantity 
+                END, 0
+            ))) AS possible_count
+        FROM productrecipe pr
+        JOIN (
             SELECT ingredientID, SUM(quantity) AS total_quantity, MAX(unit) AS unit
             FROM inventory
-            GROUP BY ingredientID) inv ON pr.ingredientID = inv.ingredientID GROUP BY pr.productID) pc ON p.productID = pc.productID
-    WHERE p.isAvailable = 'Yes'
+            GROUP BY ingredientID
+        ) inv ON pr.ingredientID = inv.ingredientID
+        GROUP BY pr.productID
+    ) pc ON p.productID = pc.productID
+    WHERE 1=1
 ";
 
 if ($searchProductTerm !== '') {
@@ -172,14 +218,26 @@ if ($categoryFilterId !== null) {
 $menuItemsQuery .= " ORDER BY p.productID DESC";
 $menuItemsResults = mysqli_query($conn, $menuItemsQuery);
 
-// Categories for dropdown
-$categories = mysqli_query($conn, "SELECT * FROM categories ORDER BY categoryName ASC");
-$currentCategory = "All";
+$menuItems = [];
+
+// Update availability if possible_count is 0
+while ($row = mysqli_fetch_assoc($menuItemsResults)) {
+    $productID = $row['productID'];
+    $possibleCount = $row['possible_count'] ?? 0;
+
+    if ($possibleCount == 0 && $row['isAvailable'] == 1) {
+        mysqli_query($conn, "UPDATE products SET isAvailable = 0 WHERE productID = $productID");
+        $row['isAvailable'] = 0; // update for display
+    }
+
+    $menuItems[] = $row;
+}
+
+$currentCategory = 'All'; // default
 if ($categoryFilterId !== null) {
-    $catQuery = mysqli_query($conn, "SELECT categoryName FROM categories WHERE categoryID = $categoryFilterId LIMIT 1");
-    if ($catQuery && mysqli_num_rows($catQuery) > 0) {
-        $catRow = mysqli_fetch_assoc($catQuery);
-        $currentCategory = $catRow['categoryName'];
+    $categoryData = mysqli_query($conn, "SELECT categoryName FROM categories WHERE categoryID = $categoryFilterId");
+    if ($row = mysqli_fetch_assoc($categoryData)) {
+        $currentCategory = $row['categoryName'];
     }
 }
 
@@ -420,10 +478,11 @@ if ($categoryFilterId !== null) {
                     </div>
                 </div>
 
+                <!-- Update your menu grid section to include availability status -->
                 <div id="productGrid" class="row g-2 m-3 align-items-center">
                     <?php
-                    if (mysqli_num_rows($menuItemsResults) > 0) {
-                        while ($row = mysqli_fetch_assoc($menuItemsResults)) {
+                    if (!empty($menuItems)) {
+                        foreach ($menuItems as $row) {
                             $id = $row['productID'];
                             $name = $row['productName'];
                             $image = $row['image'];
@@ -431,64 +490,73 @@ if ($categoryFilterId !== null) {
                             $categoryName = $row['category_name'];
                             $possibleCount = $row['possible_count'] ?? 0;
 
+                            // Determine availability based on possible_count
+                            $isAvailable = $possibleCount > 0 ? 1 : 0;
+
+                            $unavailableClass = $isAvailable ? '' : ' unavailable';
+                            $statusBadgeClass = $isAvailable ? 'status-available' : 'status-unavailable';
+                            $statusText = $isAvailable ? 'Available' : 'Unavailable';
+
                             echo "
-        <div class='col-6 col-md-4 col-lg-2'>
-            <div class='menu-item border p-3 rounded shadow-sm text-center m-lg-2'>
-                <img src='../assets/img/img-menu/" . htmlspecialchars($image) . "' 
-                     alt='" . htmlspecialchars($name) . "' 
-                     class='img-fluid mb-2 menu-img'>
+            <div class='col-6 col-md-4 col-lg-2'>
+                <div class='menu-item border p-3 rounded shadow-sm text-center$unavailableClass'>
+                    <div class='mb-2'>
+                        <span class='status-badge $statusBadgeClass'>$statusText</span>
+                    </div>
 
-                <div class='lead menu-name fs-6'>" . htmlspecialchars($name) . "</div>
-                <div class='d-flex justify-content-center align-items-center gap-2 my-2'>
-                    <span class='lead fw-bold menu-price'>₱" . number_format($price, 2) . "</span>
-                </div>
-                <div class='text-muted' >
-                    Available: " . (int) $possibleCount . " pcs
-                </div>
-                
+                    <img src='../assets/img/img-menu/" . htmlspecialchars($image) . "' 
+                         alt='" . htmlspecialchars($name) . "' 
+                         class='img-fluid mb-2 menu-img'>
 
-                <div class='d-flex flex-wrap justify-content-center gap-2 mt-2'>
-                    <button class='btn btn-sm edit-btn'
-                        data-bs-toggle='modal'
-                        data-bs-target='#editModal'
-                        data-id='$id'>
-                        <i class='bi bi-pencil-square'></i> Edit
-                     </button>
-                    <form method='POST' class='deleteProductForm'>
-                        <input type='hidden' name='productID' value='$id'>
-                        <input type='hidden' name='btnDeleteProduct' value='1'>
-                        <button type='submit' class='btn btn-del'>
-                            <i class='bi bi-trash'></i> Delete
+                    <div class='lead menu-name fs-6'>" . htmlspecialchars($name) . "</div>
+                    <div class='d-flex justify-content-center align-items-center gap-2 my-2'>
+                        <span class='lead fw-bold menu-price'>₱" . number_format($price, 2) . "</span>
+                    </div>
+                    <div class='text-muted'>
+                        Available: " . (int) $possibleCount . " pcs
+                    </div>
+
+                    <div class='d-flex flex-wrap justify-content-center gap-2'>
+                        <button class='btn btn-sm edit-btn'
+                            data-bs-toggle='modal'
+                            data-bs-target='#editModal'
+                            data-id='$id'
+                            data-available='" . ($isAvailable ? "1" : "0") . "'>
+                            <i class='bi bi-pencil-square'></i> Edit
                         </button>
-                    </form>
+                        <form method='POST' class='deleteProductForm'>
+                            <input type='hidden' name='productID' value='$id'>
+                            <input type='hidden' name='btnDeleteProduct' value='1'>
+                            <button type='submit' class='btn btn-del'>
+                                <i class='bi bi-trash'></i> Delete
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
-        </div>
-        ";
+            ";
                         }
                     } else {
                         echo "<p class='text-center'>No products available.</p>";
                     }
                     ?>
                 </div>
-                <!-- Toast Container -->
-                <div class="position-fixed bottom-0 end-0 p-3 " style="z-index: 1100">
-                    <div id="updateToast" class="toast align-items-center updateToast border-0" role="alert"
-                        aria-live="assertive" aria-atomic="true">
-                        <div class="d-flex">
-                            <div class="toast-body">
-                                Product updated successfully!
-                            </div>
-                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
-                                aria-label="Close"></button>
+            </div>
+            <!-- Toast Container -->
+            <div class="position-fixed bottom-0 end-0 p-3 " style="z-index: 1100">
+                <div id="updateToast" class="toast align-items-center updateToast border-0" role="alert"
+                    aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            Product updated successfully!
                         </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                            aria-label="Close"></button>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
-
     </div>
 
 
@@ -673,6 +741,81 @@ if ($categoryFilterId !== null) {
                 });
             });
 
+            document.addEventListener('DOMContentLoaded', function () {
+                const availabilityToggle = document.getElementById('availabilityToggle');
+                const availabilityStatus = document.getElementById('availabilityStatus');
+                let currentProductId = null;
+
+                // Update modal toggle with product data
+                document.querySelectorAll('.edit-btn').forEach(button => {
+                    button.addEventListener('click', function () {
+                        currentProductId = this.getAttribute('data-id');
+                        const isAvailable = this.getAttribute('data-available') === '1';
+
+                        // Set toggle state properly
+                        availabilityToggle.checked = isAvailable;
+                        updateAvailabilityStatus(isAvailable);
+                    });
+                });
+
+
+                // Handle toggle change
+                if (availabilityToggle) {
+                    availabilityToggle.addEventListener('change', function () {
+                        const isChecked = this.checked;
+                        updateAvailabilityStatus(isChecked);
+
+                        if (currentProductId) {
+                            updateProductAvailability(currentProductId, isChecked ? 1 : 0);
+                        }
+                    });
+                }
+
+                // Update text + badge inside modal
+                function updateAvailabilityStatus(isAvailable) {
+                    if (availabilityStatus) {
+                        availabilityStatus.textContent = isAvailable ? 'Available' : 'Unavailable';
+                        availabilityStatus.className = 'status-badge ' +
+                            (isAvailable ? 'status-available' : 'status-unavailable');
+                    }
+                }
+
+                // AJAX request to update availability
+                function updateProductAvailability(productId, newAvailability) {
+                    fetch('menu-management.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: `btnToggleAvailability=1&productID=${productId}&newAvailability=${newAvailability}`
+                    })
+                        .then(response => response.text())
+                        .then(() => {
+                            // Update product card without reloading
+                            const productCard = document.querySelector(`.edit-btn[data-id="${productId}"]`).closest('.menu-item');
+                            const badge = productCard.querySelector('.status-badge');
+
+                            if (newAvailability == 1) {
+                                productCard.classList.remove('unavailable');
+                                badge.textContent = 'Available';
+                                badge.className = 'status-badge status-available';
+                            } else {
+                                productCard.classList.add('unavailable');
+                                badge.textContent = 'Unavailable';
+                                badge.className = 'status-badge status-unavailable';
+                            }
+
+                            // Show toast
+                            const toast = document.getElementById('updateToast');
+                            if (toast) {
+                                const bsToast = new bootstrap.Toast(toast);
+                                bsToast.show();
+                            }
+                        })
+                        .catch(err => console.error('Error updating product availability:', err));
+                }
+            });
+
 
             // Session Alerts
             <?php if (isset($_SESSION['alertMessage'])): ?>
@@ -697,10 +840,43 @@ if ($categoryFilterId !== null) {
         window.ingredients = <?php echo json_encode($ingredients); ?>;
 
         const ingredientsData = <?php echo json_encode($ingredients); ?>;
+
+        // Polling interval in milliseconds
+        const POLL_INTERVAL = 5000; // every 5 seconds
+
+        function fetchProductAvailability() {
+            fetch('fetch-availability.php') // new endpoint that returns JSON of productID -> possible_count
+                .then(res => res.json())
+                .then(data => {
+                    data.forEach(item => {
+                        const productCard = document.querySelector(`.edit-btn[data-id="${item.productID}"]`)?.closest('.menu-item');
+                        if (!productCard) return;
+
+                        const badge = productCard.querySelector('.status-badge');
+                        const newAvailable = item.possible_count > 0 ? 1 : 0;
+
+                        // Only update if changed
+                        const isCurrentlyAvailable = badge.classList.contains('status-available');
+                        if ((newAvailable && !isCurrentlyAvailable) || (!newAvailable && isCurrentlyAvailable)) {
+                            if (newAvailable) {
+                                productCard.classList.remove('unavailable');
+                                badge.textContent = 'Available';
+                                badge.className = 'status-badge status-available';
+                            } else {
+                                productCard.classList.add('unavailable');
+                                badge.textContent = 'Unavailable';
+                                badge.className = 'status-badge status-unavailable';
+                            }
+                        }
+                    });
+                })
+                .catch(err => console.error('Error fetching availability:', err));
+        }
+
+        // Start polling
+        setInterval(fetchProductAvailability, POLL_INTERVAL);
+
     </script>
-
-
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous">
         </script>
