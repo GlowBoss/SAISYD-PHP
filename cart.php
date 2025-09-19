@@ -14,16 +14,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_SESSION['cart'][$index])) {
             if ($newQuantity > 0) {
                 $_SESSION['cart'][$index]['quantity'] = $newQuantity;
+
+                // Find pending order - note: status column doesn't exist in schema
+                $orderResult = executeQuery("SELECT * FROM orders WHERE isDone = 0 ORDER BY orderID DESC LIMIT 1");
+                if (mysqli_num_rows($orderResult) > 0) {
+                    $order = mysqli_fetch_assoc($orderResult);
+                    $orderID = $order['orderID'];
+
+                    // Update quantity in database
+                    $productId = $_SESSION['cart'][$index]['product_id'];
+                    $sugar = $_SESSION['cart'][$index]['sugar'] ?? 0;
+                    $ice = $_SESSION['cart'][$index]['ice'] ?? 'Normal';
+                    $notes = $_SESSION['cart'][$index]['notes'] ?? '';
+
+                    $updateQuery = "UPDATE orderitems SET quantity = '$newQuantity' 
+                                   WHERE orderID = '$orderID' AND productID = '$productId' 
+                                   AND sugar = '" . mysqli_real_escape_string($conn, $sugar) . "' 
+                                   AND ice = '" . mysqli_real_escape_string($conn, $ice) . "' 
+                                   AND notes = '" . mysqli_real_escape_string($conn, $notes) . "'";
+                    executeQuery($updateQuery);
+                }
             } else {
                 // Remove item if quantity is 0
+                $productId = $_SESSION['cart'][$index]['product_id'];
+                $sugar = $_SESSION['cart'][$index]['sugar'] ?? 0;
+                $ice = $_SESSION['cart'][$index]['ice'] ?? 'Normal';
+                $notes = $_SESSION['cart'][$index]['notes'] ?? '';
+
                 unset($_SESSION['cart'][$index]);
                 $_SESSION['cart'] = array_values($_SESSION['cart']);
+
+                // Remove from database
+                $orderResult = executeQuery("SELECT * FROM orders WHERE isDone = 0 ORDER BY orderID DESC LIMIT 1");
+                if (mysqli_num_rows($orderResult) > 0) {
+                    $order = mysqli_fetch_assoc($orderResult);
+                    $orderID = $order['orderID'];
+
+                    $deleteQuery = "DELETE FROM orderitems 
+                                   WHERE orderID = '$orderID' AND productID = '$productId' 
+                                   AND sugar = '" . mysqli_real_escape_string($conn, $sugar) . "' 
+                                   AND ice = '" . mysqli_real_escape_string($conn, $ice) . "' 
+                                   AND notes = '" . mysqli_real_escape_string($conn, $notes) . "'";
+                    executeQuery($deleteQuery);
+                }
             }
         }
     }
 
     if (isset($_POST['clear_cart'])) {
         $_SESSION['cart'] = [];
+
+        // Clear database - using isDone instead of status
+        $orderResult = executeQuery("SELECT * FROM orders WHERE isDone = 0 ORDER BY orderID DESC LIMIT 1");
+        if (mysqli_num_rows($orderResult) > 0) {
+            $order = mysqli_fetch_assoc($orderResult);
+            $orderID = $order['orderID'];
+            executeQuery("DELETE FROM orderitems WHERE orderID = '$orderID'");
+            executeQuery("DELETE FROM orders WHERE orderID = '$orderID'");
+            executeQuery("DELETE FROM payments WHERE orderID = '$orderID'");
+        }
     }
 
     if (isset($_POST['checkout'])) {
@@ -31,6 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $paymentMethod = $_POST['payment_method'] ?? '';
         $refNumber = $_POST['ref_number'] ?? '';
         $customerName = $_POST['customer_name'] ?? '';
+        $customerPhone = $_POST['customer_phone'] ?? '';
 
         if (empty($orderType) || empty($paymentMethod)) {
             $_SESSION['cart_error'] = 'Please select both order method and payment method.';
@@ -40,6 +90,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['cart_error'] = 'Your cart is empty.';
         } elseif ($orderType === 'pickup' && empty($customerName)) {
             $_SESSION['cart_error'] = 'Please enter your name for pickup orders.';
+        } elseif ($orderType === 'pickup' && empty($customerPhone)) {
+            $_SESSION['cart_error'] = 'Please enter your phone number for pickup orders.';
         } else {
             // Calculate total
             $total = 0;
@@ -47,65 +99,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $total += $item['price'] * $item['quantity'];
             }
 
-            // ✅ Generate new order number
+            // Generate new order number - using orderNumber column correctly
             $result = executeQuery("SELECT orderNumber FROM orders ORDER BY orderID DESC LIMIT 1");
+            $orderNumber = 1; // Default starting number
+            
             if ($result && mysqli_num_rows($result) > 0) {
                 $row = mysqli_fetch_assoc($result);
                 $lastOrderNumber = $row['orderNumber'];
-
-                $lastNumber = intval(substr($lastOrderNumber, 4));
-                $newNumber = str_pad($lastNumber + 1, 4, "0", STR_PAD_LEFT);
-                $orderNumber = "ORD-" . $newNumber;
-            } else {
-                $orderNumber = "ORD-0001";
+                $orderNumber = $lastOrderNumber + 1;
             }
 
-            $customerName = $_POST['customer_name'] ?? '';
-            $customerPhone = $_POST['customer_phone'] ?? '';
-
-            if ($orderType === 'pickup' && empty($customerName)) {
-                $_SESSION['cart_error'] = 'Please enter your name for pickup orders.';
-            } elseif ($orderType === 'pickup' && empty($customerPhone)) {
-                $_SESSION['cart_error'] = 'Please enter your phone number for pickup orders.';
-            }
-
-            // ...
-
+            // Handle customer info based on order type
             if ($orderType === 'pickup') {
                 $customerName = mysqli_real_escape_string($conn, $customerName);
                 $customerPhone = mysqli_real_escape_string($conn, $customerPhone);
             } else {
-                $customerName = null;
+                $customerName = 'Walk-in Customer';
                 $customerPhone = null;
             }
 
-            // Insert order with phone
-            $insertOrderQuery = "INSERT INTO orders (orderDate, orderNumber, customerName, orderContactNumber, address, totalAmount, status, orderType) 
-                     VALUES (NOW(), '$orderNumber', " .
-                ($customerName ? "'$customerName'" : "NULL") . ", " .
-                ($customerPhone ? "'$customerPhone'" : "NULL") . ",
-                     '', '$total', 'pending', '" . mysqli_real_escape_string($conn, $orderType) . "')";
-            executeQuery($insertOrderQuery);
+            // Insert order - matching the actual table structure
+            $insertOrderQuery = "INSERT INTO orders (orderDate, customerName, orderContactNumber, totalAmount, orderType, orderNumber, status, isDone, userID) 
+                                VALUES (NOW(), '$customerName', " . 
+                                ($customerPhone ? "'$customerPhone'" : "NULL") . ", 
+                                '$total', '$orderType', '$orderNumber', 'pending', 0, 1)";
+            
+            $orderResult = executeQuery($insertOrderQuery);
+            
+            if ($orderResult) {
+                // Get the new order ID
+                $orderID = mysqli_insert_id($conn);
 
-            // Get the new order ID
-            $orderID = mysqli_insert_id($conn);
+                // Insert order items
+                foreach ($_SESSION['cart'] as $item) {
+                    $productID = $item['product_id'];
+                    $quantity = $item['quantity'];
+                    $sugar = isset($item['sugar']) ? $item['sugar'] : 0;
+                    $ice = isset($item['ice']) ? $item['ice'] : 'Normal';
+                    $notes = isset($item['notes']) ? mysqli_real_escape_string($conn, $item['notes']) : '';
 
-            // Insert payment record
-            $insertPayment = "INSERT INTO payments (paymentMethod, paymentStatus, referenceNumber, orderID) 
-                              VALUES (
-                                  '" . mysqli_real_escape_string($conn, $paymentMethod) . "',
-                                  'pending',
-                                  '" . mysqli_real_escape_string($conn, $refNumber) . "',
-                                  '$orderID'
-                              )";
-            executeQuery($insertPayment);
+                    $insertItemQuery = "INSERT INTO orderitems (orderID, productID, quantity, sugar, ice, notes) 
+                                       VALUES ('$orderID', '$productID', '$quantity', '$sugar', '$ice', '$notes')";
+                    executeQuery($insertItemQuery);
+                }
 
-            // Clear session cart
-            $_SESSION['cart'] = [];
-            $_SESSION['cart_message'] = 'Order placed successfully! Order ID: ' . $orderID;
+                // Insert payment record
+                $paymentStatus = 'pending';
+                $insertPaymentQuery = "INSERT INTO payments (orderID, paymentMethod, paymentStatus, referenceNumber) 
+                                      VALUES ('$orderID', '$paymentMethod', '$paymentStatus', " . 
+                                      ($refNumber ? "'$refNumber'" : "NULL") . ")";
+                executeQuery($insertPaymentQuery);
 
-            header('Location: ' . $_SERVER['PHP_SELF']);
-            exit();
+                // Clear session cart
+                $_SESSION['cart'] = [];
+                $_SESSION['cart_message'] = 'Order placed successfully! Order Number: ' . $orderNumber;
+
+                header('Location: ' . $_SERVER['PHP_SELF']);
+                exit();
+            } else {
+                $_SESSION['cart_error'] = 'Failed to place order. Please try again.';
+            }
         }
     }
 }
@@ -132,6 +185,7 @@ function getCartTotal()
     return $total;
 }
 ?>
+
 
 
 <!DOCTYPE html>
@@ -538,6 +592,32 @@ function getCartTotal()
                     confirmModal.hide();
                 });
             }
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const gcashRadio = document.querySelector('input[name="payment_method"][value="gcash"]');
+            const cashRadio = document.querySelector('input[name="payment_method"][value="cash"]');
+            const gcashField = document.getElementById("gcashField");
+            const refNumberInput = document.getElementById("refNumber");
+
+            function toggleGCashField() {
+                if (gcashRadio.checked) {
+                    gcashField.style.display = "block";
+                    refNumberInput.setAttribute("required", "true"); // make it required only for GCash
+                } else {
+                    gcashField.style.display = "none";
+                    refNumberInput.removeAttribute("required");
+                    refNumberInput.value = ""; // clear if switching back
+                }
+            }
+
+            // Run on page load
+            toggleGCashField();
+
+            // Attach listeners
+            gcashRadio.addEventListener("change", toggleGCashField);
+            cashRadio.addEventListener("change", toggleGCashField);
         });
     </script>
 </body>

@@ -132,7 +132,7 @@ $menuItemsQuery = "
     JOIN 
         categories c ON p.categoryID = c.categoryID
     WHERE 
-        p.isAvailable = 1
+        1=1
 ";
 
 // Search filter
@@ -162,6 +162,10 @@ if (isset($_GET['categoryID'])) {
 $menuItemsQuery .= " ORDER BY p.productID DESC";
 
 $menuItemsResults = mysqli_query($conn, $menuItemsQuery);
+
+// edittt toggle
+
+
 ?>
 
 <!doctype html>
@@ -397,6 +401,48 @@ $menuItemsResults = mysqli_query($conn, $menuItemsQuery);
                 </div>
 
                 <!-- Menu -->
+                <?php
+                // Add this new section after the DELETE section and before the menu query
+                
+                // TOGGLE AVAILABILITY
+                if (isset($_POST['btnToggleAvailability'])) {
+                    $productID = intval($_POST['productID']);
+                    $newAvailability = intval($_POST['newAvailability']);
+
+                    if ($productID > 0) {
+                        $updateQuery = "UPDATE products SET isAvailable = '$newAvailability' WHERE productID = '$productID'";
+
+                        if (mysqli_query($conn, $updateQuery)) {
+                            $statusText = $newAvailability ? 'enabled' : 'disabled';
+                            $_SESSION['alertMessage'] = "Product availability has been $statusText successfully!";
+                            $_SESSION['alertType'] = "success";
+                        } else {
+                            $_SESSION['alertMessage'] = "Failed to update product availability!";
+                            $_SESSION['alertType'] = "error";
+                        }
+                    }
+
+                    header("Location: menu-management.php");
+                    exit();
+                }
+
+                // UPDATE the menu items query to show all products regardless of availability
+                $menuItemsQuery = "
+    SELECT 
+        p.*, 
+        c.categoryName AS category_name
+    FROM 
+        products p
+    JOIN 
+        categories c ON p.categoryID = c.categoryID
+    WHERE 
+        1=1
+";
+                ?>
+
+                  
+
+                <!-- Update your menu grid section to include availability status -->
                 <div id="productGrid" class="row g-2 m-3 align-items-center">
                     <?php
                     if (mysqli_num_rows($menuItemsResults) > 0) {
@@ -406,36 +452,49 @@ $menuItemsResults = mysqli_query($conn, $menuItemsQuery);
                             $image = $row['image'];
                             $price = $row['price'];
                             $categoryName = $row['category_name'];
+                            $isAvailable = $row['isAvailable'];
+
+                            $unavailableClass = $isAvailable ? '' : ' unavailable';
+                            $statusBadgeClass = $isAvailable ? 'status-available' : 'status-unavailable';
+                            $statusText = $isAvailable ? 'Available' : 'Unavailable';
+
                             echo "
-        <div class='col-6 col-md-4 col-lg-2'>
-            <div class='menu-item border p-3 rounded shadow-sm text-center'>
-                <img src='../assets/img/img-menu/" . htmlspecialchars($image) . "' 
-                     alt='" . htmlspecialchars($name) . "' 
-                     class='img-fluid mb-2 menu-img'>
-
-                <div class='lead menu-name fs-6'>" . htmlspecialchars($name) . "</div>
-                <div class='d-flex justify-content-center align-items-center gap-2 my-2'>
-                    <span class='lead fw-bold menu-price'>₱" . number_format($price, 2) . "</span>
-                </div>
-
-                <div class='d-flex flex-wrap justify-content-center gap-2'>
-                    <button class='btn btn-sm edit-btn'
-                        data-bs-toggle='modal'
-                        data-bs-target='#editModal'
-                        data-id='$id'>
-                        <i class='bi bi-pencil-square'></i> Edit
-                     </button>
-                         <form method='POST' class='deleteProductForm'>
-                                <input type='hidden' name='productID' value='$id'>
-                                <input type='hidden' name='btnDeleteProduct' value='1'>
-                                <button type='submit' class='btn btn-del'>
-                                    <i class='bi bi-trash'></i> Delete
-                                </button>
-                            </form>
-                </div>
-            </div>
+<div class='col-6 col-md-4 col-lg-2'>
+    <div class='menu-item border p-3 rounded shadow-sm text-center$unavailableClass'>
+        <!-- Status Badge -->
+        <div class='mb-2'>
+            <span class='status-badge $statusBadgeClass'>$statusText</span>
         </div>
-        ";
+        
+        <img src='../assets/img/img-menu/" . htmlspecialchars($image) . "' 
+             alt='" . htmlspecialchars($name) . "' 
+             class='img-fluid mb-2 menu-img'>
+
+        <div class='lead menu-name fs-6'>" . htmlspecialchars($name) . "</div>
+        <div class='d-flex justify-content-center align-items-center gap-2 my-2'>
+            <span class='lead fw-bold menu-price'>₱" . number_format($price, 2) . "</span>
+        </div>
+
+        <div class='d-flex flex-wrap justify-content-center gap-2'>
+            <button class='btn btn-sm edit-btn'
+                data-bs-toggle='modal'
+                data-bs-target='#editModal'
+                data-id='$id'
+                data-available='" . ($isAvailable ? "1" : "0") . "'>
+                <i class='bi bi-pencil-square'></i> Edit
+             </button>
+             <form method='POST' class='deleteProductForm'>
+                <input type='hidden' name='productID' value='$id'>
+                <input type='hidden' name='btnDeleteProduct' value='1'>
+                <button type='submit' class='btn btn-del'>
+                    <i class='bi bi-trash'></i> Delete
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+";
+
                         }
                     } else {
                         echo "<p class='text-center'>No products available.</p>";
@@ -575,7 +634,80 @@ $menuItemsResults = mysqli_query($conn, $menuItemsQuery);
                 });
             });
 
+            document.addEventListener('DOMContentLoaded', function () {
+                const availabilityToggle = document.getElementById('availabilityToggle');
+                const availabilityStatus = document.getElementById('availabilityStatus');
+                let currentProductId = null;
 
+                // Update modal toggle with product data
+                document.querySelectorAll('.edit-btn').forEach(button => {
+                    button.addEventListener('click', function () {
+                        currentProductId = this.getAttribute('data-id');
+                        const isAvailable = this.getAttribute('data-available') === '1';
+
+                        // Set toggle state properly
+                        availabilityToggle.checked = isAvailable;
+                        updateAvailabilityStatus(isAvailable);
+                    });
+                });
+
+
+                // Handle toggle change
+                if (availabilityToggle) {
+                    availabilityToggle.addEventListener('change', function () {
+                        const isChecked = this.checked;
+                        updateAvailabilityStatus(isChecked);
+
+                        if (currentProductId) {
+                            updateProductAvailability(currentProductId, isChecked ? 1 : 0);
+                        }
+                    });
+                }
+
+                // Update text + badge inside modal
+                function updateAvailabilityStatus(isAvailable) {
+                    if (availabilityStatus) {
+                        availabilityStatus.textContent = isAvailable ? 'Available' : 'Unavailable';
+                        availabilityStatus.className = 'status-badge ' +
+                            (isAvailable ? 'status-available' : 'status-unavailable');
+                    }
+                }
+
+                // AJAX request to update availability
+                function updateProductAvailability(productId, newAvailability) {
+                    fetch('menu-management.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: `btnToggleAvailability=1&productID=${productId}&newAvailability=${newAvailability}`
+                    })
+                        .then(response => response.text())
+                        .then(() => {
+                            // Update product card without reloading
+                            const productCard = document.querySelector(`.edit-btn[data-id="${productId}"]`).closest('.menu-item');
+                            const badge = productCard.querySelector('.status-badge');
+
+                            if (newAvailability == 1) {
+                                productCard.classList.remove('unavailable');
+                                badge.textContent = 'Available';
+                                badge.className = 'status-badge status-available';
+                            } else {
+                                productCard.classList.add('unavailable');
+                                badge.textContent = 'Unavailable';
+                                badge.className = 'status-badge status-unavailable';
+                            }
+
+                            // Show toast
+                            const toast = document.getElementById('updateToast');
+                            if (toast) {
+                                const bsToast = new bootstrap.Toast(toast);
+                                bsToast.show();
+                            }
+                        })
+                        .catch(err => console.error('Error updating product availability:', err));
+                }
+            });
             // Session Alerts
             <?php if (isset($_SESSION['alertMessage'])): ?>
                 Swal.fire({
