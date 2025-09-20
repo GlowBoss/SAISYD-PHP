@@ -41,7 +41,7 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
               style="top: 20%; background-color: var(--btn-hover1);">
             </span>
           </a>
-          <a href="../index.html" class="btn custom-visit">
+          <a href="../index.php" class="btn custom-visit">
             <i class="bi bi-globe"></i> <span class="d-none d-md-inline">Visit Site</span>
           </a>
           <a class="btn custom-logout" href="login.php">
@@ -73,10 +73,10 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
                 Management</a>
             </div>
             <div class="col-12 col-sm-6 col-md-4">
-              <a href="user_role.html" class="dashboard-box text-decoration-none">User  Role</a>
+              <a href="orders.php" class="dashboard-box text-decoration-none">Order Management</a>
             </div>
             <div class="col-12 col-sm-6 col-md-4">
-              <a href="setting.php" class="dashboard-box text-decoration-none">Settings</a>
+              <a href="settings.php" class="dashboard-box text-decoration-none">Settings</a>
             </div>
           </div>
         </div>
