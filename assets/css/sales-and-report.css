@@ -201,3 +201,13 @@ button.btn.btnCancel:hover {
   color: var(--text-color-dark);
 }
 
+/* 🎨 Chart Theme */
+:root {
+  --chart-line-color: #4a2800;
+  --chart-line-fill: rgba(74, 40, 0, 0.2);
+
+  --chart-bar1: #4a2800;
+  --chart-bar2: #a35c00;
+  --chart-bar3: #d98e00;
+}
+

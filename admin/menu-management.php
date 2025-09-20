@@ -1,30 +1,172 @@
 <?php
-include '../assets/connect.php';
+
+include('../assets/connect.php');
 session_start();
 
-// Check if user is logged in and is an admin 
+// Prevent unauthorized access
 if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
+    // Redirect non-admin users to login page or a "no access" page
+
+
     header("Location: login.php");
     exit();
 }
 
-// Menu Items Query
+
+$searchProductTerm = '';
+$categoryFilter = '';
+
+// dito kona nilagay sa taas tong pag 
+$ingredients = [];
+$result = mysqli_query($conn, "SELECT ingredientID, ingredientName FROM ingredients ORDER BY ingredientName ASC");
+while ($row = mysqli_fetch_assoc($result)) {
+    $ingredients[] = [
+        "id" => $row['ingredientID'],
+        "label" => $row['ingredientName'],
+        "value" => $row['ingredientName']
+    ];
+}
+
+// ADDDDDD PRODUCT
+if (isset($_POST['btnAddProduct'])) {
+    $productName = mysqli_real_escape_string($conn, $_POST['productName']);
+    $price = $_POST['price'];
+    $availableQuantity = $_POST['availableQuantity'];
+    $categoryID = $_POST['categoryID'];
+    $isAvailable = 1;
+    $image = NULL;
+    if (!empty($_FILES['image']['name'])) {
+        $image = $_FILES['image']['name'];
+        $imageTemp = $_FILES['image']['tmp_name'];
+        $targetDir = "../assets/img/img-menu/";
+        $targetFile = $targetDir . $image;
+
+        // check file type
+        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/jpg'];
+        $fileType = mime_content_type($imageTemp);
+
+        if (!in_array($fileType, $allowedTypes)) {
+            $_SESSION['alertMessage'] = "Invalid file type. Please upload only JPG, PNG, GIF, or WEBP images.";
+            $_SESSION['alertType'] = "error";
+            header("Location: menu-management.php");
+            exit();
+        }
+        // don't move yet only after insert
+    }
+    // check duplicate 
+    $checkQuery = "SELECT * FROM products 
+                   WHERE productName = '$productName' ";
+    $checkResult = mysqli_query($conn, $checkQuery);
+
+    if (mysqli_num_rows($checkResult) > 0) {
+        $_SESSION['alertMessage'] = "This product already exists.";
+        $_SESSION['alertType'] = "error";
+        header("Location: menu-management.php");
+        exit();
+    }
+    // insert into products
+    $insertProduct = "INSERT INTO products (productName, categoryID, price, availableQuantity, image, isAvailable) 
+                      VALUES ('$productName', '$categoryID', '$price', '$availableQuantity', '$image', '$isAvailable')";
+    if (mysqli_query($conn, $insertProduct)) {
+        $productID = mysqli_insert_id($conn);
+
+        // only move image the file if insert is successful
+        if (!empty($_FILES['image']['name'])) {
+            move_uploaded_file($imageTemp, $targetFile);
+        }
+
+        // insert into productrecipe
+        if (!empty($_POST['ingredientID'])) {
+            foreach ($_POST['ingredientID'] as $index => $ingredientID) {
+                $ingredientID = intval($ingredientID);
+                $qty = $_POST['requiredQuantity'][$index];
+                $unit = mysqli_real_escape_string($conn, $_POST['measurementUnit'][$index]);
+
+                $insertRecipe = "INSERT INTO productrecipe (ingredientID, productID, measurementUnit, requiredQuantity)
+                                 VALUES ('$ingredientID', '$productID', '$unit', '$qty')";
+                mysqli_query($conn, $insertRecipe);
+            }
+        }
+    }
+
+    $_SESSION['alertMessage'] = "Product added successfully with ingredients!";
+    $_SESSION['alertType'] = "success";
+    header("Location: menu-management.php");
+    exit();
+}
+
+// DELETEEEE
+if (isset($_POST['btnDeleteProduct'])) {
+    $productID = intval($_POST['productID']);
+
+    if ($productID > 0) {
+        $result = mysqli_query($conn, "SELECT image FROM products WHERE productID = '$productID'");
+        $row = mysqli_fetch_assoc($result);
+        if ($row && !empty($row['image'])) {
+            $imagePath = "../assets/img/img-menu/" . $row['image'];
+            if (file_exists($imagePath)) {
+                unlink($imagePath);
+            }
+        }
+        mysqli_query($conn, "DELETE FROM productrecipe WHERE productID = '$productID'");
+        mysqli_query($conn, "DELETE FROM products WHERE productID = '$productID'");
+
+        $_SESSION['alertMessage'] = "Product deleted successfully!";
+        $_SESSION['alertType'] = "success";
+    } else {
+        $_SESSION['alertMessage'] = "Invalid product ID!";
+        $_SESSION['alertType'] = "error";
+    }
+    header("Location: menu-management.php");
+    exit();
+}
+
+
+
 $menuItemsQuery = "
     SELECT 
         p.*, 
         c.categoryName AS category_name
     FROM 
-        Products p
+        products p
     JOIN 
-        Categories c ON p.categoryID = c.categoryID
+        categories c ON p.categoryID = c.categoryID
     WHERE 
-        p.isAvailable = 'Yes'
+        1=1
 ";
 
+// Search filter
+if (!empty($_GET['searchProduct'])) {
+    $searchProductTerm = mysqli_real_escape_string($conn, $_GET['searchProduct']);
+    $menuItemsQuery .= " AND (p.productName LIKE '%$searchProductTerm%' 
+                          OR c.categoryName LIKE '%$searchProductTerm%')";
+}
 
-$menuItemsResults = executeQuery($menuItemsQuery);
+// Category filter
+if (!empty($_GET['categoryID'])) {
+    $categoryID = (int) $_GET['categoryID'];
+    $menuItemsQuery .= " AND p.categoryID = $categoryID";
+}
+
+$currentCategory = "All"; // default
+
+if (isset($_GET['categoryID'])) {
+    $catID = (int) $_GET['categoryID'];
+    $catQuery = executeQuery("SELECT categoryName FROM categories WHERE categoryID = $catID LIMIT 1");
+    if ($catRow = mysqli_fetch_assoc($catQuery)) {
+        $currentCategory = $catRow['categoryName'];
+    }
+}
+
+// Order
+$menuItemsQuery .= " ORDER BY p.productID DESC";
+
+$menuItemsResults = mysqli_query($conn, $menuItemsQuery);
+
+// edittt toggle
+
+
 ?>
-
 
 <!doctype html>
 <html lang="en">
@@ -57,6 +199,13 @@ $menuItemsResults = executeQuery($menuItemsQuery);
 
     <!-- Favicon -->
     <link rel="icon" href="../assets/img/round_logo.png" type="image/png">
+
+    <!-- jquery import ginamit ko ito para sa bagong js ng search at pag add ng row sa ingredient (nagpatulong nako kay bro dito kung pano gamitin) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+
+
 </head>
 
 
@@ -84,9 +233,9 @@ $menuItemsResults = executeQuery($menuItemsQuery);
                     <i class="bi bi-speedometer2"></i>
                     <span>Dashboard</span>
                 </a>
-                <a href="notification.php" class="admin-nav-link">
-                    <i class="bi bi-bell"></i>
-                    <span>Notifications</span>
+                <a href="orders.php" class="admin-nav-link">
+                    <i class="bi bi-clipboard-check"></i>
+                    <span>Order Management</span>
                 </a>
                 <a href="point-of-sales.php" class="admin-nav-link">
                     <i class="bi bi-shop-window"></i>
@@ -114,7 +263,7 @@ $menuItemsResults = executeQuery($menuItemsQuery);
             <!-- TOOLS Section -->
             <div class="section-header">Tools</div>
             <div>
-                <a href="#" class="admin-nav-link">
+                <a href="settings.php" class="admin-nav-link">
                     <i class="bi bi-gear"></i>
                     <span>Settings</span>
                 </a>
@@ -145,10 +294,10 @@ $menuItemsResults = executeQuery($menuItemsQuery);
                 <i class="bi bi-speedometer2"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="notification.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
+            <a href="orders.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
                 data-wow-delay="0.15s">
-                <i class="bi bi-bell"></i>
-                <span>Notifications</span>
+                <i class="bi bi-clipboard-check"></i>
+                <span>Order Management</span>
             </a>
             <a href="point-of-sales.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
                 data-wow-delay="0.2s">
@@ -176,7 +325,8 @@ $menuItemsResults = executeQuery($menuItemsQuery);
 
             <!-- TOOLS Section -->
             <div class="section-header">Tools</div>
-            <a href="#" class="admin-nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.4s">
+            <a href="settings.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
+                data-wow-delay="0.4s">
                 <i class="bi bi-gear"></i>
                 <span>Settings</span>
             </a>
@@ -192,7 +342,7 @@ $menuItemsResults = executeQuery($menuItemsQuery);
         <div class="container-fluid">
             <div class="cardMain shadow-sm">
 
-                <!-- Header Row  -->
+                <!-- Header Row -->
                 <div class="d-none d-md-block align-items-center py-4 px-lg-3 px-2">
                     <div class="subheading fw-bold m-1 d-flex align-items-center">
                         <span style="color: var(--text-color-dark);">Menu Management</span>
@@ -202,9 +352,15 @@ $menuItemsResults = executeQuery($menuItemsQuery);
                 <div class="row g-2 align-items-center mb-3 px-2 px-lg-3 m-3">
                     <!-- search -->
                     <div class="col">
-                        <input type="text" class="form-control search ms-lg-2" placeholder="Search"
-                            aria-label="search-bar" id="item-input">
+                        <form method="get" class="d-flex">
+                            <input type="text" class="form-control search ms-lg-2" name="searchProduct"
+                                placeholder="Search" value="<?= htmlspecialchars($searchProductTerm) ?>">
+                            <?php if (isset($_GET['categoryID'])): ?>
+                                <input type="hidden" name="categoryID" value="<?= (int) $_GET['categoryID'] ?>">
+                            <?php endif; ?>
+                        </form>
                     </div>
+
                     <!-- add button -->
                     <div class="col-auto ps-0 ps-sm-3">
                         <button class="btn btnAdd" type="button" data-bs-toggle="modal" data-bs-target="#confirmModal">
@@ -213,26 +369,80 @@ $menuItemsResults = executeQuery($menuItemsQuery);
                         </button>
                     </div>
 
-                    <!-- category part  -->
+                    <!-- category part -->
                     <div class="col-12 col-sm-auto">
                         <div class="dropdown">
                             <button class="btn btn-dropdown dropdown-toggle w-100" type="button" id="categoryDropdown"
                                 data-bs-toggle="dropdown" aria-expanded="false">
-                                Sort by Category
+                                <?= htmlspecialchars($currentCategory) ?>
                             </button>
                             <ul class="dropdown-menu w-100" aria-labelledby="categoryDropdown">
-                                <li><a class="dropdown-item" data-value="coffee">Coffee</a></li>
-                                <li><a class="dropdown-item" data-value="tea">Tea</a></li>
-                                <li><a class="dropdown-item" data-value="food">Food</a></li>
-                                <li><a class="dropdown-item" data-value="beverage">Beverage</a></li>
+                                <li>
+                                    <a class="dropdown-item <?= !isset($_GET['categoryID']) ? 'active' : '' ?>"
+                                        href="menu-management.php<?= !empty($searchProductTerm) ? '?searchProduct=' . urlencode($searchProductTerm) : '' ?>">
+                                        All
+                                    </a>
+                                </li>
+                                <?php
+                                $categories = executeQuery("SELECT * FROM categories ORDER BY categoryName ASC");
+                                while ($category = mysqli_fetch_assoc($categories)) {
+                                    $isActive = (isset($_GET['categoryID']) && $_GET['categoryID'] == $category['categoryID']) ? 'active' : '';
+                                    $url = "menu-management.php?categoryID=" . $category['categoryID'];
+                                    if (!empty($searchProductTerm)) {
+                                        $url .= "&searchProduct=" . urlencode($searchProductTerm);
+                                    }
+                                    echo '<li><a class="dropdown-item ' . $isActive . '" href="' . $url . '">'
+                                        . htmlspecialchars($category['categoryName']) . '</a></li>';
+                                }
+                                ?>
                             </ul>
                         </div>
                     </div>
                 </div>
 
-
                 <!-- Menu -->
+                <?php
+                // Add this new section after the DELETE section and before the menu query
+                
+                // TOGGLE AVAILABILITY
+                if (isset($_POST['btnToggleAvailability'])) {
+                    $productID = intval($_POST['productID']);
+                    $newAvailability = intval($_POST['newAvailability']);
 
+                    if ($productID > 0) {
+                        $updateQuery = "UPDATE products SET isAvailable = '$newAvailability' WHERE productID = '$productID'";
+
+                        if (mysqli_query($conn, $updateQuery)) {
+                            $statusText = $newAvailability ? 'enabled' : 'disabled';
+                            $_SESSION['alertMessage'] = "Product availability has been $statusText successfully!";
+                            $_SESSION['alertType'] = "success";
+                        } else {
+                            $_SESSION['alertMessage'] = "Failed to update product availability!";
+                            $_SESSION['alertType'] = "error";
+                        }
+                    }
+
+                    header("Location: menu-management.php");
+                    exit();
+                }
+
+                // UPDATE the menu items query to show all products regardless of availability
+                $menuItemsQuery = "
+    SELECT 
+        p.*, 
+        c.categoryName AS category_name
+    FROM 
+        products p
+    JOIN 
+        categories c ON p.categoryID = c.categoryID
+    WHERE 
+        1=1
+";
+                ?>
+
+                  
+
+                <!-- Update your menu grid section to include availability status -->
                 <div id="productGrid" class="row g-2 m-3 align-items-center">
                     <?php
                     if (mysqli_num_rows($menuItemsResults) > 0) {
@@ -242,33 +452,49 @@ $menuItemsResults = executeQuery($menuItemsQuery);
                             $image = $row['image'];
                             $price = $row['price'];
                             $categoryName = $row['category_name'];
+                            $isAvailable = $row['isAvailable'];
+
+                            $unavailableClass = $isAvailable ? '' : ' unavailable';
+                            $statusBadgeClass = $isAvailable ? 'status-available' : 'status-unavailable';
+                            $statusText = $isAvailable ? 'Available' : 'Unavailable';
 
                             echo "
-        <div class='col-6 col-md-4 col-lg-2'>
-            <div class='menu-item border p-3 rounded shadow-sm text-center'>
-                <img src='../assets/img/img-menu/" . htmlspecialchars($image) . "' 
-                     alt='" . htmlspecialchars($name) . "' 
-                     class='img-fluid mb-2 menu-img'>
-
-                <div class='lead menu-name fs-6'>" . htmlspecialchars($name) . "</div>
-                <div class='d-flex justify-content-center align-items-center gap-2 my-2'>
-                    <span class='lead fw-bold menu-price'>₱" . number_format($price, 2) . "</span>
-                </div>
-
-                <div class='d-flex flex-wrap justify-content-center gap-2'>
-                    <button class='btn btn-sm edit-btn'
-                        data-bs-toggle='modal'
-                        data-bs-target='#editModal'
-                        data-id='$id'>
-                        <i class='bi-pencil-square'></i> Edit
-                    </button>
-                    <button class='btn btn-sm delete-btn' data-id='$id'>
-                        <i class='bi-trash'></i> Delete
-                    </button>
-                </div>
-            </div>
+<div class='col-6 col-md-4 col-lg-2'>
+    <div class='menu-item border p-3 rounded shadow-sm text-center$unavailableClass'>
+        <!-- Status Badge -->
+        <div class='mb-2'>
+            <span class='status-badge $statusBadgeClass'>$statusText</span>
         </div>
-        ";
+        
+        <img src='../assets/img/img-menu/" . htmlspecialchars($image) . "' 
+             alt='" . htmlspecialchars($name) . "' 
+             class='img-fluid mb-2 menu-img'>
+
+        <div class='lead menu-name fs-6'>" . htmlspecialchars($name) . "</div>
+        <div class='d-flex justify-content-center align-items-center gap-2 my-2'>
+            <span class='lead fw-bold menu-price'>₱" . number_format($price, 2) . "</span>
+        </div>
+
+        <div class='d-flex flex-wrap justify-content-center gap-2'>
+            <button class='btn btn-sm edit-btn'
+                data-bs-toggle='modal'
+                data-bs-target='#editModal'
+                data-id='$id'
+                data-available='" . ($isAvailable ? "1" : "0") . "'>
+                <i class='bi bi-pencil-square'></i> Edit
+             </button>
+             <form method='POST' class='deleteProductForm'>
+                <input type='hidden' name='productID' value='$id'>
+                <input type='hidden' name='btnDeleteProduct' value='1'>
+                <button type='submit' class='btn btn-del'>
+                    <i class='bi bi-trash'></i> Delete
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+";
+
                         }
                     } else {
                         echo "<p class='text-center'>No products available.</p>";
@@ -292,18 +518,217 @@ $menuItemsResults = executeQuery($menuItemsQuery);
 
         </div>
     </div>
+    </div>
+
 
     <?php include '../modal/menu-management-confirm-modal.php'; ?>
     <?php include '../modal/menu-management-edit-modal.php'; ?>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min js"></script>
     <script src="../assets/js/menu-management.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
     <script src="../assets/js/admin_sidebar.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Delete Product Confirmation
+            document.querySelectorAll('.deleteProductForm').forEach(form => {
+                form.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: "This product will be deleted!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Yes, delete it!',
+                        cancelButtonText: 'Cancel',
+                        confirmButtonColor: 'var(--primary-color)',
+                        cancelButtonColor: 'var(--btn-hover2)',
+                        customClass: {
+                            popup: 'swal2-border-radius',
+                            confirmButton: 'swal2-confirm-radius',
+                            cancelButton: 'swal2-cancel-radius'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                });
+            });
+
+            // para sa search product (ADD modal only)
+            $(document).ready(function () {
+                var ingredients = <?php echo json_encode($ingredients); ?>;
+
+                function initAutocomplete(selector) {
+                    $(selector).autocomplete({
+                        source: ingredients,
+                        minLength: 1,
+                        appendTo: "#confirmModal", // scoped sa Add modal
+                        select: function (event, ui) {
+                            $(this).val(ui.item.label);
+                            $(this).siblings(".ingredient-id").val(ui.item.id);
+                            return false;
+                        },
+                        change: function (event, ui) {
+                            if (!ui.item) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Ingredient Not Found',
+                                    text: 'The ingredient you entered is not on the Inventory.',
+                                    confirmButtonColor: 'var(--primary-color)',
+                                    confirmButtonText: 'OK',
+                                    customClass: {
+                                        popup: 'swal2-border-radius',
+                                        confirmButton: 'swal2-confirm-radius',
+                                        cancelButton: 'swal2-cancel-radius'
+                                    }
+                                });
+                                $(this).val("");
+                                $(this).siblings(".ingredient-id").val("");
+                            }
+                        }
+                    });
+                }
+
+                // initialize autocomplete for inputs inside Add Product modal only
+                initAutocomplete("#confirmModal .ingredient-search");
+
+                // Add new ingredient row inside Add modal
+                $("#confirmModal #add-modal-ingredient").click(function () {
+                    var row = `
+            <div class="row g-2 mb-2 ingredient-row">
+                <div class="col-md-5">
+                    <input type="text" class="form-control ingredient-search" placeholder="Search Ingredient" required>
+                    <input type="hidden" name="ingredientID[]" class="ingredient-id">
+                </div>
+                <div class="col-md-3">
+                    <input type="number" class="form-control" name="requiredQuantity[]" placeholder="Quantity" required>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select measurement-select" name="measurementUnit[]" required>
+                        <option value="" disabled selected>Select Unit</option>
+                        <option value="pcs">pcs</option>
+                        <option value="kg">kg</option>
+                        <option value="g">g</option>
+                        <option value="ml">ml</option>
+                        <option value="L">L</option>
+                        <option value="oz">oz</option>
+                        <option value="pack">pack</option>
+                        <option value="box">box</option>
+                    </select>
+                </div>
+                <div class="col-md-1 d-flex align-items-center">
+                    <button type="button" class="btn btn-sm remove-ingredient">&times;</button>
+                </div>
+            </div>`;
+                    $("#confirmModal #ingredients-container").append(row);
+
+                    // autocomplete for newly added row (scoped to Add modal)
+                    initAutocomplete($("#confirmModal #ingredients-container .ingredient-search").last());
+                });
+
+                // remove ingredient row (scoped to Add modal)
+                $(document).on("click", "#confirmModal .remove-ingredient", function () {
+                    $(this).closest(".ingredient-row").remove();
+                });
+            });
+
+            document.addEventListener('DOMContentLoaded', function () {
+                const availabilityToggle = document.getElementById('availabilityToggle');
+                const availabilityStatus = document.getElementById('availabilityStatus');
+                let currentProductId = null;
+
+                // Update modal toggle with product data
+                document.querySelectorAll('.edit-btn').forEach(button => {
+                    button.addEventListener('click', function () {
+                        currentProductId = this.getAttribute('data-id');
+                        const isAvailable = this.getAttribute('data-available') === '1';
+
+                        // Set toggle state properly
+                        availabilityToggle.checked = isAvailable;
+                        updateAvailabilityStatus(isAvailable);
+                    });
+                });
+
+
+                // Handle toggle change
+                if (availabilityToggle) {
+                    availabilityToggle.addEventListener('change', function () {
+                        const isChecked = this.checked;
+                        updateAvailabilityStatus(isChecked);
+
+                        if (currentProductId) {
+                            updateProductAvailability(currentProductId, isChecked ? 1 : 0);
+                        }
+                    });
+                }
+
+                // Update text + badge inside modal
+                function updateAvailabilityStatus(isAvailable) {
+                    if (availabilityStatus) {
+                        availabilityStatus.textContent = isAvailable ? 'Available' : 'Unavailable';
+                        availabilityStatus.className = 'status-badge ' +
+                            (isAvailable ? 'status-available' : 'status-unavailable');
+                    }
+                }
+
+                // AJAX request to update availability
+                function updateProductAvailability(productId, newAvailability) {
+                    fetch('menu-management.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: `btnToggleAvailability=1&productID=${productId}&newAvailability=${newAvailability}`
+                    })
+                        .then(response => response.text())
+                        .then(() => {
+                            // Update product card without reloading
+                            const productCard = document.querySelector(`.edit-btn[data-id="${productId}"]`).closest('.menu-item');
+                            const badge = productCard.querySelector('.status-badge');
+
+                            if (newAvailability == 1) {
+                                productCard.classList.remove('unavailable');
+                                badge.textContent = 'Available';
+                                badge.className = 'status-badge status-available';
+                            } else {
+                                productCard.classList.add('unavailable');
+                                badge.textContent = 'Unavailable';
+                                badge.className = 'status-badge status-unavailable';
+                            }
+
+                            // Show toast
+                            const toast = document.getElementById('updateToast');
+                            if (toast) {
+                                const bsToast = new bootstrap.Toast(toast);
+                                bsToast.show();
+                            }
+                        })
+                        .catch(err => console.error('Error updating product availability:', err));
+                }
+            });
+            // Session Alerts
+            <?php if (isset($_SESSION['alertMessage'])): ?>
+                Swal.fire({
+                    icon: '<?= $_SESSION['alertType'] ?>', // success, error, warning, info, question
+                    title: '<?= $_SESSION['alertMessage'] ?>',
+                    showConfirmButton: false,
+                    timer: 2500,
+                    timerProgressBar: true,
+                    toast: true,
+                    position: 'top-end'
+                });
+                <?php
+                unset($_SESSION['alertMessage']);
+                unset($_SESSION['alertType']);
+                ?>
+            <?php endif; ?>
+        });
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous">
         </script>
-   
-
-
 </body>
 
 </html>

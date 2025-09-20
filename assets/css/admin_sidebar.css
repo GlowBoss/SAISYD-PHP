@@ -161,7 +161,7 @@ body {
 
     .main-content {
         margin-left: 0;
-        padding: 1rem;
+        padding: 0;
     }
 }
 
@@ -213,7 +213,7 @@ body {
 
 /* Mobile burger menu styling */
 .mobile-header {
-    background: transparent !important;
+    background: var(--card-bg-color);
 }
 
 .mobile-menu-toggle {

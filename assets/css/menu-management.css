@@ -103,6 +103,7 @@ button.btn.btn-dropdown:hover {
   background-color: var(--btn-hover1) !important;
   color: white !important;
 }
+
 .dropdown-item {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
@@ -170,9 +171,123 @@ button.btn.btn-del:hover {
     width: 100%;
   }
 }
+
 @media (max-width: 992px) and (min-width: 768px) {
   .btnAdd {
     font-size: 0.9rem;
     padding: 0.4rem 1rem;
   }
+}
+
+
+.swal2-border-radius {
+  border-radius: 12px;
+}
+
+/* option.option-hover:hover {
+  background-color: var(--primary-color);
+  color: #fff;
+} */
+
+.swal2-confirm-radius,
+.swal2-cancel-radius {
+  border-radius: 12px;
+}
+
+.ui-autocomplete {
+  z-index: 2000;
+  max-height: 200px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.ui-menu-item-wrapper.ui-state-active {
+  background: var(--primary-color) !important;
+  color: #fff;
+}
+
+/* AAAAAAAAAAAAAAAAA */
+/* Custom toggle switch styles */
+.availability-toggle {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.availability-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--text-color-dark);
+  transition: .3s;
+  border-radius: 24px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: var(--text-color-light);
+  transition: .3s;
+  border-radius: 50%;
+}
+
+input:checked+.toggle-slider {
+  background-color: var(--primary-color);
+}
+
+input:checked+.toggle-slider:before {
+  transform: translateX(26px);
+}
+
+/* Status badge styles */
+.status-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-available {
+  background-color: var(--primary-color);
+  color: var(--text-color-light);
+  border: 1px solid var(--primary-color);
+}
+
+.status-unavailable {
+  background-color: var(--text-color-dark);
+  color: var(--text-color-light);
+  border: 1px solid var(--text-color-dark);
+}
+
+/* Only apply grayscale to the image when unavailable */
+.menu-item.unavailable .menu-img {
+  filter: grayscale(100%);
+}
+
+/* Ensure buttons stay fully opaque and clickable */
+.menu-item.unavailable .btn,
+.menu-item.unavailable button {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 2;
+  /* Ensure buttons are above any overlay */
 }

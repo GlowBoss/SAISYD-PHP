@@ -1,230 +1,3 @@
-<?php
-include '../assets/connect.php';
-session_start();
-
-// Check if user is logged in and is an admin 
-if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
-    header("Location: login.php");
-    exit();
-}
-
-// Initialize cart session if it doesn't exist
-if (!isset($_SESSION['pos_cart'])) {
-    $_SESSION['pos_cart'] = [];
-}
-
-$categoriesWithSugarIce = ["Milktea", "Frappe", "Iced Coffee", "Fruit Tea", "Non-Coffee"];
-
-// CANCEL ORDER - clear cart session
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_order'])) {
-    $_SESSION['pos_cart'] = [];
-    exit(); // Optional: stop further processing
-}
-
-
-// ADD TO CART
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_order'])) {
-    $userID = $_SESSION['userID'];
-    $productId = $_POST['product_id'];
-    $productName = $_POST['product_name'];
-    $price = $_POST['price'];
-    $category = $_POST['category'];
-    $notes = $_POST['notes'] ?? '';
-    $quantity = intval($_POST['quantity'] ?? 1);
-
-    $sugar = in_array($category, $categoriesWithSugarIce) ? ($_POST['sugar'] ?? '') : null;
-    $ice = in_array($category, $categoriesWithSugarIce) ? ($_POST['ice'] ?? '') : null;
-
-    // Merge if same item already exists
-    $itemExists = false;
-    foreach ($_SESSION['pos_cart'] as $index => $item) {
-        if (
-            $item['product_id'] == $productId &&
-            $item['sugar'] == $sugar &&
-            $item['ice'] == $ice &&
-            $item['notes'] == $notes
-        ) {
-            $_SESSION['pos_cart'][$index]['quantity'] += $quantity;
-            $itemExists = true;
-            break;
-        }
-    }
-
-    if (!$itemExists) {
-        $_SESSION['pos_cart'][] = [
-            'product_id' => $productId,
-            'product_name' => $productName,
-            'price' => $price,
-            'category' => $category,
-            'sugar' => $sugar,
-            'ice' => $ice,
-            'notes' => $notes,
-            'quantity' => $quantity
-        ];
-    }
-}
-
-// REMOVE ITEM
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['remove_item'])) {
-    $index = intval($_POST['remove_item']);
-    if (isset($_SESSION['pos_cart'][$index])) {
-        unset($_SESSION['pos_cart'][$index]);
-        $_SESSION['pos_cart'] = array_values($_SESSION['pos_cart']); // Reindex
-    }
-}
-
-
-// CONFIRM ORDER
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_order'])) {
-    $userID = $_SESSION['userID'];
-    $orderType = $_POST['orderType'];
-    $paymentMode = $_POST['paymentMode'];
-    $refNumber = isset($_POST['refNumber']) ? mysqli_real_escape_string($conn, $_POST['refNumber']) : null;
-    $today = date("Y-m-d H:i:s");
-
-    // Calculate total
-    $totalAmount = 0;
-    foreach ($_SESSION['pos_cart'] as $item) {
-        $totalAmount += $item['price'] * $item['quantity'];
-    }
-
-    // -----------------------------
-    // Generate orderNumber: MMDD + daily increment
-    // -----------------------------
-    $prefix = date('md'); // MMDD
-    $todayDate = date('Y-m-d');
-
-    $query = "SELECT orderNumber 
-              FROM orders 
-              WHERE DATE(orderDate) = '$todayDate' 
-              ORDER BY orderNumber DESC 
-              LIMIT 1";
-    $result = mysqli_query($conn, $query);
-
-    if ($result && mysqli_num_rows($result) > 0) {
-        $row = mysqli_fetch_assoc($result);
-        $lastNumber = intval(substr($row['orderNumber'], 4)); // last 2 digits
-        $increment = str_pad($lastNumber + 1, 2, '0', STR_PAD_LEFT);
-    } else {
-        $increment = '01';
-    }
-
-    $orderNumber = $prefix . $increment; // MMDDXX
-
-    // -----------------------------
-    // Insert into orders
-    // -----------------------------
-    $insertOrder = "INSERT INTO orders 
-        (orderDate, status, totalAmount, orderType, userID, orderNumber)
-        VALUES ('$today', 'pending', '$totalAmount', '$orderType', '$userID', '$orderNumber')";
-    executeQuery($insertOrder);
-
-    // Get new orderID
-    $newOrder = executeQuery("SELECT orderID FROM orders ORDER BY orderID DESC LIMIT 1");
-    $orderRow = mysqli_fetch_assoc($newOrder);
-    $orderID = $orderRow['orderID'];
-
-    // Insert order items
-    foreach ($_SESSION['pos_cart'] as $item) {
-        $sugarValue = ($item['sugar'] !== null) ? "'" . mysqli_real_escape_string($conn, $item['sugar']) . "'" : "NULL";
-        $iceValue = ($item['ice'] !== null) ? "'" . mysqli_real_escape_string($conn, $item['ice']) . "'" : "NULL";
-        $notesValue = "'" . mysqli_real_escape_string($conn, $item['notes']) . "'";
-
-        $insertItem = "
-            INSERT INTO orderitems (orderID, productID, quantity, sugar, ice, notes) 
-            VALUES (
-                '$orderID',
-                '{$item['product_id']}',
-                '{$item['quantity']}',
-                $sugarValue,
-                $iceValue,
-                $notesValue
-            )
-        ";
-        executeQuery($insertItem);
-    }
-
-    // Insert payment info
-    $paymentRef = $refNumber ? "'$refNumber'" : "NULL";
-    $insertPayment = "
-        INSERT INTO payments (orderID, paymentMethod, referenceNumber, paymentStatus, userID)
-        VALUES ('$orderID', '$paymentMode', $paymentRef, 'completed', '$userID')
-    ";
-    executeQuery($insertPayment);
-
-    // Clear cart
-    $_SESSION['pos_cart'] = [];
-    $_SESSION['cart_message'] = "Order placed successfully!";
-    header('Location: ' . $_SERVER['PHP_SELF'] . '?' . http_build_query($_GET));
-    exit();
-}
-
-
-// FETCH PRODUCTS
-
-$categoryFilter = isset($_GET['category']) ? $_GET['category'] : 'ALL';
-$sortOption = isset($_GET['sort']) ? $_GET['sort'] : 'name-asc';
-
-// Decide ORDER BY clause
-switch ($sortOption) {
-    case 'name-asc':
-        $orderBy = "p.productName ASC";
-        break;
-    case 'name-desc':
-        $orderBy = "p.productName DESC";
-        break;
-    case 'price-low-high':
-        $orderBy = "p.price ASC";
-        break;
-    case 'price-high-low':
-        $orderBy = "p.price DESC";
-        break;
-    default:
-        $orderBy = "p.productName ASC";
-}
-
-// Build product query with filter + sort
-if ($categoryFilter === 'ALL') {
-    $productQuery = "
-        SELECT p.*, c.categoryName 
-        FROM products p 
-        LEFT JOIN categories c ON p.categoryID = c.categoryID 
-        WHERE p.isAvailable = 'Yes'
-        ORDER BY $orderBy
-    ";
-} else {
-    $safeCategory = mysqli_real_escape_string($conn, $categoryFilter);
-    $productQuery = "
-        SELECT p.*, c.categoryName 
-        FROM products p 
-        LEFT JOIN categories c ON p.categoryID = c.categoryID 
-        WHERE p.isAvailable = 'Yes' AND c.categoryName = '$safeCategory'
-        ORDER BY $orderBy
-    ";
-}
-
-$products = executeQuery($productQuery);
-
-// Fetch categories
-$categoryQuery = "SELECT * FROM categories ORDER BY categoryName";
-$categories = executeQuery($categoryQuery);
-
-// Function to get cart item count
-function getCartItemCount()
-{
-    $count = 0;
-    if (isset($_SESSION['pos_cart'])) {
-        foreach ($_SESSION['pos_cart'] as $item) {
-            $count += $item['quantity'];
-        }
-    }
-    return $count;
-}
-
-// Get current category from cookie if using JS filtering
-$currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_category'] : 'ALL';
-?>
-
 <!doctype html>
 <html lang="en">
 
@@ -347,165 +120,30 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                                         <i class="bi bi-bell-fill"></i>
                                         <span
                                             class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                            <!-- 3 -->
                                             <span class="visually-hidden">unread messages</span>
                                         </span>
                                     </a>
                                 </div>
                                 <div class="subheading py-3 px-2">Category</div>
 
-
-                                <?php
-                                // Make sure to reset categories result for the pills
-                                mysqli_data_seek($categories, 0);
-                                ?>
                                 <div class="category-scroll d-flex gap-3 overflow-auto pb-3" id="categories">
                                     <!-- Categories -->
-                                    <a href="#" class="category-pill text-decoration-none text-center active">
-                                        All
-                                    </a>
-                                    <?php
-                                    // Generate category pills
-                                    if (mysqli_num_rows($categories) > 0) {
-                                        while ($category = mysqli_fetch_assoc($categories)) {
-                                            $categoryName = htmlspecialchars($category['categoryName']);
-                                            ?>
-                                            <a href="#" class="category-pill text-decoration-none text-center">
-                                                <?php echo $categoryName; ?>
-                                            </a>
-                                            <?php
-                                        }
-                                    }
-                                    ?>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="card overflow-auto p-3 maincontainer" style="height: 70vh; ">
-                            <div class="subheading px-2 mb-3">Items</div>
+                        <div class="card overflow-auto p-3 maincontainer" style="height: 70vh">
+                            <div class="subheading px-2 mb-3">
+                                Items
+                            </div>
                             <div class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6"
                                 id="maincontainer">
-                                <!-- Product Loop -->
-                                <?php if (!empty($products)): ?>
-                                    <?php foreach ($products as $product): ?>
-                                        <div class="col-12 col-sm-6 col-md-4 col-lg-2">
-                                            <div class="menu-item border p-3 rounded shadow text-center width-auto card-hover 
-                                            <?php echo (in_array($product['categoryName'], $categoriesWithSugarIce)) ? 'has-options' : 'no-options'; ?>"
-                                                style="cursor: pointer; height: 100%;">
-                                                <!-- Card content wrapper -->
-                                                <div class="card-content">
-                                                    <!-- Image -->
-                                                    <div class="card-img">
-                                                        <img src="../assets/img/img-menu/<?php echo htmlspecialchars($product['image']); ?>"
-                                                            alt="<?php echo htmlspecialchars($product['productName']); ?>"
-                                                            class="img-fluid" style="max-height: 170px; min-height: 120px">
-                                                    </div>
-                                                    <form method="post">
-                                                        <!-- Product info -->
-                                                        <div class="product-info">
-                                                            <!-- Product name -->
-                                                            <div class="lead menu-name alin"
-                                                                style="font-size: clamp(0.8rem, 2vw, 1rem);">
-                                                                <?php echo htmlspecialchars($product['productName']); ?>
-                                                            </div>
-
-                                                            <!-- Price + Size -->
-                                                            <div class="d-flex justify-content-center align-items-center gap-2">
-                                                                <span class="lead fw-bold menu-price"
-                                                                    style="font-size: clamp(0.85rem, 1.5vw, 0.95rem);">
-                                                                    ₱<?php echo number_format($product['price'], 2); ?>
-                                                                </span>
-                                                            </div>
-
-                                                            <?php if (in_array($product['categoryName'], $categoriesWithSugarIce)): ?>
-                                                                <!-- Sugar -->
-                                                                <div class="dropdown mb-2">
-                                                                    <button class="btn btn-outline-dark dropdown-toggle w-100"
-                                                                        type="button"
-                                                                        id="sugarDropdown<?php echo $product['productID']; ?>"
-                                                                        data-bs-toggle="dropdown" aria-expanded="false">
-                                                                        Sugar Level
-                                                                    </button>
-                                                                    <ul class="dropdown-menu"
-                                                                        aria-labelledby="sugarDropdown<?php echo $product['productID']; ?>">
-                                                                        <li><a class="dropdown-item" href="#"
-                                                                                data-value="25% Sugar">25%
-                                                                                Sugar Level</a></li>
-                                                                        <li><a class="dropdown-item" href="#"
-                                                                                data-value="50% Sugar">50%
-                                                                                Sugar Level</a></li>
-                                                                        <li><a class="dropdown-item" href="#"
-                                                                                data-value="75% Sugar">75%
-                                                                                Sugar Level</a></li>
-                                                                        <li><a class="dropdown-item" href="#"
-                                                                                data-value="100% Sugar">100% Sugar Level</a></li>
-                                                                    </ul>
-                                                                    <input type="hidden" name="sugar"
-                                                                        id="sugarInput<?php echo $product['productID']; ?>"
-                                                                        value="100% Sugar">
-                                                                </div>
-
-                                                                <!-- Ice -->
-                                                                <div class="dropdown mb-2">
-                                                                    <button class="btn btn-outline-dark dropdown-toggle w-100"
-                                                                        type="button"
-                                                                        id="iceDropdown<?php echo $product['productID']; ?>"
-                                                                        data-bs-toggle="dropdown" aria-expanded="false">
-                                                                        Ice Level
-                                                                    </button>
-                                                                    <ul class="dropdown-menu"
-                                                                        aria-labelledby="iceDropdown<?php echo $product['productID']; ?>">
-                                                                        <li><a class="dropdown-item" href="#" data-value="No Ice">No
-                                                                                Ice</a></li>
-                                                                        <li><a class="dropdown-item" href="#"
-                                                                                data-value="Less Ice">Less
-                                                                                Ice</a></li>
-                                                                        <li><a class="dropdown-item" href="#"
-                                                                                data-value="Regular Ice">Regular Ice</a></li>
-                                                                        <li><a class="dropdown-item" href="#"
-                                                                                data-value="Extra Ice">Extra Ice</a></li>
-                                                                    </ul>
-                                                                    <input type="hidden" name="ice"
-                                                                        id="iceInput<?php echo $product['productID']; ?>"
-                                                                        value="Regular Ice">
-                                                                </div>
-                                                            <?php endif; ?>
-
-                                                            <!-- Hidden product info -->
-                                                            <input type="hidden" name="product_id"
-                                                                value="<?php echo $product['productID']; ?>">
-                                                            <input type="hidden" name="product_name"
-                                                                value="<?php echo htmlspecialchars($product['productName']); ?>">
-                                                            <input type="hidden" name="price"
-                                                                value="<?php echo $product['price']; ?>">
-                                                            <input type="hidden" name="category"
-                                                                value="<?php echo htmlspecialchars($product['categoryName']); ?>">
-                                                        </div>
-                                                    </form>
-                                                </div>
-
-                                                <!-- Add to Order button at the bottom -->
-                                                <div class="add-to-order p-0">
-                                                    <button type="button" class="btn btn-dark btn-sm w-100 add-to-order-btn"
-                                                        data-id="<?php echo $product['productID']; ?>"
-                                                        data-name="<?php echo htmlspecialchars($product['productName']); ?>"
-                                                        data-price="<?php echo $product['price']; ?>"
-                                                        data-category="<?php echo htmlspecialchars($product['categoryName']); ?>">
-                                                        Add to Order
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <p class="text-center">No products found.</p>
-                                <?php endif; ?>
-
+                                <!-- Menu items -->
                             </div>
                         </div>
-
                     </div>
 
-                    <!-- Receipt section -->
                     <div class="flex-lg-shrink-0 ms-0 ms-lg-3 mt-3 mt-lg-0 receipt-container">
                         <div class="card p-3 receiptCard" style="height: 100%;">
                             <div class="category-title">Receipt</div>
@@ -515,62 +153,21 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
 
                             <!-- Scrollable receipt list -->
                             <div id="receipt" style="max-height: 600px; overflow-y: auto;">
-                                <?php foreach ($_SESSION['pos_cart'] as $index => $item): ?>
-                                    <div class="receipt-item d-flex justify-content-between align-items-center mb-1"
-                                        data-index="<?= $index ?>">
-                                        <div class="flex-grow-1 d-flex flex-column">
-                                            <span class="item-qty"
-                                                style="font-weight: bold;"><?= $item['quantity'] ?>x</span>
-                                            <span class="item-name"
-                                                style="font-weight: bold;"><?= htmlspecialchars($item['product_name']) ?></span>
-                                            <?php if (!empty($item['sugar']) || !empty($item['ice'])): ?>
-                                                <span
-                                                    class="item-sugar text-muted"><?= $item['sugar'] ? htmlspecialchars($item['sugar']) : '' ?></span>
-                                                <span
-                                                    class="item-ice text-muted"><?= $item['ice'] ? htmlspecialchars($item['ice']) : '' ?></span>
-                                            <?php endif; ?>
-                                        </div>
-                                        <div class="d-flex align-items-center">
-                                            <span class="item-price">₱
-                                                <?= number_format($item['price'] * $item['quantity'], 2) ?></span>
-                                            <button class="btn btn-sm btn-danger ms-2 remove-item-btn"
-                                                data-index="<?= $index ?>">✕</button>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
+                                <!-- receipt items -->
                             </div>
 
                             <div class="container-fluid">
-                                <!-- Notes -->
-                                <!-- <div class="line-divider" style="height: 1px;"></div> -->
-                                <div class="mb-3">
-                                    <!-- <label for="orderNotes" class="form-label fw-bold"
-                                        style="font-family: var(--primaryFont); color: var(--text-color-dark);">Customer
-                                        Notes</label>
-
-                                    <form method="POST" id="orderForm">
-                                        <textarea class="form-control" name="notes" id="orderNotes" rows="3"
-                                            placeholder="Add any notes..."
-                                            style="resize: none; border-radius: 10px; border: 1.5px solid var(--primary-color); font-family: var(--secondaryFont);"></textarea>
-                                        <input type="hidden" name="confirm_order" value="1">
-                                    </form> -->
-
-                                    <div class="line-divider" style="height: 1px;"></div>
-                                        <div class="mt-4 d-flex flex-row justify-content-between">
-                                            <div><b>TOTAL</b></div>
-                                            <div id="totalValue">₱
-                                                <?= number_format(array_sum(array_map(fn($i) => $i['price'] * $i['quantity'], $_SESSION['pos_cart'])), 2) ?>
-                                            </div>
-                                        </div>
-                                        <div class="d-flex flex-column flex-md-row justify-content-center gap-3 mt-4">
-                                            <button id="orderNowBtn"
-                                                class="btn btn-dark-order w-100 w-md-auto py-2 px-3" type="button" form="orderForm">Order
-                                                Now</button>
-                                            <button id="cancelOrderBtn"
-                                                class="btn btn-dark-cancel w-100 w-md-auto py-2 px-3">Cancel
-                                                Order</button>
-                                        </div>
-
+                                <div class="line-divider" style="height: 1px;"></div>
+                                <div class="mt-4 d-flex flex-row justify-content-between">
+                                    <div><b>TOTAL</b></div>
+                                    <div><b id="totalValue">0</b></div>
+                                </div>
+                                <div class="d-flex flex-column flex-md-row justify-content-center gap-3 mt-4">
+                                    <button class="btn btn-dark-order w-100 w-md-auto py-2 px-3"
+                                        onclick="openPopup()">Order
+                                        Now</button>
+                                    <button class="btn btn-dark-cancel w-100 w-md-auto py-2 px-3"
+                                        onclick="cancelOrder()">Cancel Order</button>
                                 </div>
                             </div>
                         </div>
@@ -579,14 +176,509 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                 </div>
             </div>
 
-            <!-- Modal Placeholder -->
-            <div id="modal-placeholder">
-                <?php include '../modal/pos-modal.php'; ?>
-            </div>
+            <!-- Order Confirmation Modal -->
+            <div id="modal-placeholder"></div>
+            <script>
+                // Global variables
+                var products = [];
+                var total = 0;
+                var selectedPaymentMode = "Cash";
 
-            <script src="../assets/js/pos.js"></script>
+                // Fetch products from API
+                fetch('../assets/pos-api.php')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Check if API returned an error
+                        if (data.error) {
+                            console.error('API Error:', data.error);
+                            alert('Error loading products: ' + data.error);
+                            return;
+                        }
+
+                        console.log('Products loaded:', data);
+                        products = data;
+                        loadCategories();
+                        loadCartFromSession();
+                    })
+                    .catch(error => {
+                        console.error('Error fetching products:', error);
+                        alert('Failed to load products. Please check console for details.');
+                    });
+
+                function loadCategories() {
+                    var categoriesContainer = document.getElementById("categories");
+
+                    if (products.length === 0) {
+                        categoriesContainer.innerHTML = '<div class="text-center text-muted">No categories available</div>';
+                        return;
+                    }
+
+                    categoriesContainer.innerHTML = ''; // Clear previous content
+
+                    products.forEach((product, index) => {
+                        categoriesContainer.innerHTML += `
+            <div onclick="selectCategory(this, ${index})" class="category-pill text-center">
+                ${product.category}
+            </div>`;
+                    });
+
+                    // Select first category by default
+                    if (products.length > 0) {
+                        const firstCategory = document.querySelector('.category-pill');
+                        if (firstCategory) {
+                            firstCategory.classList.add('active');
+                            loadProducts(0);
+                        }
+                    }
+                }
+
+                function selectCategory(element, index) {
+                    document.querySelectorAll('.category-pill').forEach(pill => pill.classList.remove('active'));
+                    element.classList.add('active');
+                    loadProducts(index);
+                }
+
+                function loadProducts(categoryIndex) {
+                    var maincontainer = document.getElementById("maincontainer");
+                    maincontainer.innerHTML = "";
+
+                    // Check if category has products
+                    if (!products[categoryIndex] || !products[categoryIndex].contents || products[categoryIndex].contents.length === 0) {
+                        maincontainer.innerHTML = '<div class="col-12 text-center text-muted">No products available in this category</div>';
+                        return;
+                    }
+
+                    products[categoryIndex].contents.forEach((content, contentIndex) => {
+                        // Check if product has sizes
+                        if (!content.sizes || content.sizes.length === 0) {
+                            console.warn('Product has no sizes:', content);
+                            return;
+                        }
+
+                        content.sizes.forEach((size, sizeIndex) => {
+                            const uniqueId = `${categoryIndex}-${contentIndex}-${sizeIndex}`;
+                            const sugarSelectId = `sugar-${uniqueId}`;
+                            const iceSelectId = `ice-${uniqueId}`;
+
+                            // Determine if product should have sugar/ice options (beverages)
+                            const categoryName = products[categoryIndex].category.toLowerCase();
+                            const hasSugarIce = categoryName.includes('coffee') || categoryName.includes('tea') ||
+                                categoryName.includes('frappe') || categoryName.includes('milktea') ||
+                                categoryName.includes('soda');
+
+                            let sugarIceDropdowns = '';
+                            if (hasSugarIce) {
+                                const sugarOptions = content.sugarLevels.map(level =>
+                                    `<li><a class="dropdown-item" data-value="${level}">${level}% Sugar Level</a></li>`
+                                ).join('');
+
+                                // Ice options that map to database enum values
+                                const iceOptions = [
+                                    { display: "Less Ice", value: "Less" },
+                                    { display: "Normal Ice", value: "Normal" }, 
+                                    { display: "Extra Ice", value: "Extra" }
+                                ].map(ice =>
+                                    `<li><a class="dropdown-item" data-value="${ice.value}">${ice.display}</a></li>`
+                                ).join('');
+
+                                sugarIceDropdowns = `
+                    <div class="dropdown mb-2">
+                        <button class="btn btn-outline-dark dropdown-toggle w-100" type="button" 
+                                id="${sugarSelectId}" data-bs-toggle="dropdown" aria-expanded="false">
+                            Sugar Level
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="${sugarSelectId}">
+                            ${sugarOptions}
+                        </ul>
+                    </div>
+
+                    <div class="dropdown mb-2">
+                        <button class="btn btn-outline-dark dropdown-toggle w-100" type="button" 
+                                id="${iceSelectId}" data-bs-toggle="dropdown" aria-expanded="false">
+                            Ice Level
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="${iceSelectId}">
+                            ${iceOptions}
+                        </ul>
+                    </div>`;
+                            }
+
+                            maincontainer.innerHTML += `
+                <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                    <div class="menu-item border p-3 rounded shadow text-center width-auto card-hover" style="cursor: pointer;">
+                        <img src="../assets/img/img-menu/${content.img}" alt="${content.name}" 
+                             class="img-fluid mb-2" style="max-height: 170px; min-height: 120px">
+                        <div class="lead menu-name fw-bold">${content.name}</div>
+                        <div class="d-flex justify-content-center align-items-center gap-2 my-2">
+                            <span class="lead fw-bold menu-price">₱${size.price}</span>
+                            <span class="lead menu-size">${size.name}</span>
+                        </div>
+                       
+                        ${sugarIceDropdowns}
+
+                        <button class="btn btn-dark btn-sm mt-1"
+                            onclick="showQuantityModal('${content.productID}', '${content.name} ${size.name}', '${size.price}', '${size.name}', '${sugarSelectId}', '${iceSelectId}')">
+                            Add to Order
+                        </button>
+                    </div>
+                </div>`;
+                        });
+                    });
+
+                    // Set up dropdown functionality after a short delay
+                    setTimeout(() => {
+                        document.querySelectorAll(".dropdown-menu .dropdown-item").forEach(item => {
+                            item.addEventListener("click", function (e) {
+                                e.preventDefault();
+                                const btn = this.closest(".dropdown").querySelector("button");
+                                btn.textContent = this.textContent;
+                                btn.setAttribute("data-value", this.getAttribute("data-value"));
+                            });
+                        });
+                    }, 100);
+                }
+
+                // Fixed function to work with your modal structure
+                function showQuantityModal(productID, name, price, size, sugarSelectId = null, iceSelectId = null) {
+                    // Check if modal exists, if not wait for it to load
+                    const quantityModal = document.getElementById('quantityModal');
+                    if (!quantityModal) {
+                        console.log('Modal not ready, waiting...');
+                        // Wait a bit and try again
+                        setTimeout(() => {
+                            showQuantityModal(productID, name, price, size, sugarSelectId, iceSelectId);
+                        }, 100);
+                        return;
+                    }
+
+                    // Set modal data using your modal's element IDs
+                    const modalProductId = document.getElementById('modal-product-id');
+                    const modalProductName = document.getElementById('modal-product-name');
+                    const modalProductPrice = document.getElementById('modal-product-price');
+                    const modalQuantityInput = document.getElementById('modal-quantity-input');
+                    const quantityInput = document.getElementById('quantity');
+
+                    if (modalProductId) modalProductId.value = productID;
+                    if (modalProductName) modalProductName.value = name;
+                    if (modalProductPrice) modalProductPrice.value = price;
+                    if (modalQuantityInput) modalQuantityInput.value = 1;
+                    if (quantityInput) quantityInput.value = 1;
+
+                    // Get sugar and ice levels if applicable
+                    let sugarLevel = '';
+                    if (sugarSelectId) {
+                        const sugarDropdown = document.getElementById(sugarSelectId);
+                        if (sugarDropdown) {
+                            sugarLevel = sugarDropdown.getAttribute('data-value') || '';
+                        }
+                    }
+
+                    let iceLevel = 'Normal'; // Default to Normal
+                    if (iceSelectId) {
+                        const iceDropdown = document.getElementById(iceSelectId);
+                        if (iceDropdown) {
+                            iceLevel = iceDropdown.getAttribute('data-value') || 'Normal';
+                        }
+                    }
+
+                    const modalSugarInput = document.getElementById('modal-sugar-input');
+                    const modalIceInput = document.getElementById('modal-ice-input');
+
+                    if (modalSugarInput) modalSugarInput.value = sugarLevel;
+                    if (modalIceInput) modalIceInput.value = iceLevel;
+
+                    // Show modal
+                    const modal = new bootstrap.Modal(quantityModal);
+                    modal.show();
+                }
+
+                // Add these quantity control functions for your modal
+                function increaseQuantity() {
+                    const quantityInput = document.getElementById('quantity');
+                    const modalQuantityInput = document.getElementById('modal-quantity-input');
+                    if (quantityInput && modalQuantityInput) {
+                        const currentValue = parseInt(quantityInput.value);
+                        const newValue = currentValue + 1;
+                        quantityInput.value = newValue;
+                        modalQuantityInput.value = newValue;
+                    }
+                }
+
+                function decreaseQuantity() {
+                    const quantityInput = document.getElementById('quantity');
+                    const modalQuantityInput = document.getElementById('modal-quantity-input');
+                    if (quantityInput && modalQuantityInput) {
+                        const currentValue = parseInt(quantityInput.value);
+                        if (currentValue > 1) {
+                            const newValue = currentValue - 1;
+                            quantityInput.value = newValue;
+                            modalQuantityInput.value = newValue;
+                        }
+                    }
+                }
+
+                function loadCartFromSession() {
+                    fetch('../assets/pos-order-handler.php', {
+                        method: 'POST',
+                        body: new URLSearchParams({ action: 'get_cart' })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            const receiptContainer = document.getElementById("receipt");
+                            receiptContainer.innerHTML = '';
+
+                            total = data.total || 0;
+                            document.getElementById("totalValue").innerHTML = total.toFixed(2);
+
+                            if (data.cart && data.cart.length > 0) {
+                                data.cart.forEach(item => {
+                                    const sugarText = item.sugarLevel ? ` | ${item.sugarLevel}% Sugar` : '';
+                                    const iceText = item.iceLevel ? ` | ${item.iceLevel}` : '';
+
+                                    receiptContainer.innerHTML += `
+                    <div class="d-flex flex-row justify-content-between align-items-center mb-1 receipt-item">
+                        <div class="flex-grow-1 item-name">
+                            <small><span style="font-weight: bold;">${item.productName} | ${item.quantity}x</span>${sugarText}${iceText}</small>
+                        </div>
+                        <div class="item-price">
+                            <small>₱ ${item.totalPrice.toFixed(2)}</small>
+                        </div>
+                    </div>`;
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error loading cart:', error);
+                        });
+                }
+
+                function cancelOrder() {
+                    fetch('../assets/pos-order-handler.php', {
+                        method: 'POST',
+                        body: new URLSearchParams({ action: 'clear_cart' })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                loadCartFromSession();
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error clearing cart:', error);
+                        });
+                }
+
+                function openPopup() {
+                    // Check if cart has items
+                    fetch('../assets/pos-order-handler.php', {
+                        method: 'POST',
+                        body: new URLSearchParams({ action: 'get_cart' })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (!data.cart || data.cart.length === 0) {
+                                alert("Please add items to your order first.");
+                                return;
+                            }
+
+                            const summaryList = document.getElementById('orderSummaryList');
+                            if (!summaryList) {
+                                console.error('Order summary list not found');
+                                return;
+                            }
+
+                            summaryList.innerHTML = '';
+
+                            data.cart.forEach(item => {
+                                const sugarText = item.sugarLevel ? ` (${item.sugarLevel}% Sugar)` : '';
+                                const iceText = item.iceLevel ? ` (${item.iceLevel})` : '';
+                                summaryList.innerHTML += `<li>${item.productName} (${item.quantity}x)${sugarText}${iceText} - ₱${item.totalPrice.toFixed(2)}</li>`;
+                            });
+
+                            const paymentModeElement = document.getElementById('paymentModeInput');
+                            selectedPaymentMode = paymentModeElement ? paymentModeElement.value : 'Cash';
+
+                            summaryList.innerHTML += `<li class="fw-bold">Total: ₱${data.total.toFixed(2)}</li>`;
+                            summaryList.innerHTML += `<li class="fw-bold">Payment Mode: ${selectedPaymentMode}</li>`;
+
+                            const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+                            modal.show();
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Failed to load cart');
+                        });
+                }
+
+                function confirmOrder() {
+                    const paymentMethod = document.getElementById('paymentModeInput')?.value || 'Cash';
+                    const orderType = document.getElementById('orderTypeInput')?.value || 'dine-in';
+
+                    const formData = new FormData();
+                    formData.append('action', 'checkout');
+                    formData.append('paymentMethod', paymentMethod);
+                    formData.append('customerName', 'Walk-in Customer');
+                    formData.append('orderType', orderType);
+                    formData.append('contactNumber', '');
+
+                    fetch('../assets/pos-order-handler.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                const modal = bootstrap.Modal.getInstance(document.getElementById('confirmModal'));
+                                if (modal) {
+                                    modal.hide();
+                                }
+
+                                // Update receipt number in toast
+                                const receiptSpan = document.getElementById('receiptNumber');
+                                if (receiptSpan) {
+                                    receiptSpan.textContent = data.orderNumber;
+                                }
+
+                                const toastElement = document.getElementById('orderToast');
+                                if (toastElement) {
+                                    const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
+                                    toast.show();
+                                }
+
+                                // Clear the cart display
+                                loadCartFromSession();
+                            } else {
+                                alert('Error placing order: ' + (data.error || 'Unknown error'));
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Failed to place order');
+                        });
+                }
+
+                // Function to set up dropdown handlers
+                function setupDropdownHandlers() {
+                    // Handle dropdown selections for order type and payment method
+                    document.querySelectorAll('#confirmModal .dropdown-item').forEach(item => {
+                        item.addEventListener('click', function (e) {
+                            e.preventDefault();
+                            const dropdown = this.closest('.dropdown');
+                            const button = dropdown.querySelector('button');
+                            const hiddenInput = dropdown.querySelector('input[type="hidden"]');
+
+                            button.textContent = this.textContent;
+                            if (hiddenInput) {
+                                hiddenInput.value = this.getAttribute('data-value');
+                            }
+                        });
+                    });
+                }
+
+                // Updated DOMContentLoaded section
+                document.addEventListener("DOMContentLoaded", function () {
+                    // Initialize WOW.js
+                    if (typeof WOW !== 'undefined') {
+                        new WOW().init();
+                    }
+
+                    // Load modal from PHP file
+                    fetch("../modal/pos-modal.php")
+                        .then(res => {
+                            if (!res.ok) {
+                                throw new Error('Failed to load modal');
+                            }
+                            return res.text();
+                        })
+                        .then(data => {
+                            document.getElementById("modal-placeholder").innerHTML = data;
+                            console.log('Modal loaded successfully');
+
+                            // Set up form submission handler for your modal
+                            const addToOrderForm = document.getElementById('addToOrderForm');
+                            if (addToOrderForm) {
+                                addToOrderForm.addEventListener('submit', function (e) {
+                                    e.preventDefault(); // Prevent default form submission
+
+                                    // Get form data
+                                    const productID = document.getElementById('modal-product-id').value;
+                                    const productName = document.getElementById('modal-product-name').value;
+                                    const price = parseFloat(document.getElementById('modal-product-price').value);
+                                    const quantity = parseInt(document.getElementById('modal-quantity-input').value);
+                                    const sugarLevel = document.getElementById('modal-sugar-input').value;
+                                    const iceLevel = document.getElementById('modal-ice-input').value || 'Normal';
+
+                                    // Get the modal instance before hiding it
+                                    const quantityModal = document.getElementById('quantityModal');
+                                    const modalInstance = bootstrap.Modal.getInstance(quantityModal);
+
+                                    // Hide modal first to avoid focus issues
+                                    if (modalInstance) {
+                                        modalInstance.hide();
+                                    }
+
+                                    // Add to cart via AJAX
+                                    const formData = new FormData();
+                                    formData.append('action', 'add_to_cart');
+                                    formData.append('productID', productID);
+                                    formData.append('productName', productName);
+                                    formData.append('price', price);
+                                    formData.append('quantity', quantity);
+                                    formData.append('sugarLevel', sugarLevel);
+                                    formData.append('iceLevel', iceLevel);
+                                    formData.append('size', 'Regular');
+
+                                    fetch('../assets/pos-order-handler.php', {
+                                        method: 'POST',
+                                        body: formData
+                                    })
+                                        .then(response => response.json())
+                                        .then(data => {
+                                            if (data.success) {
+                                                loadCartFromSession();
+                                                console.log('Item added to cart successfully');
+                                            } else {
+                                                alert('Error adding item to cart: ' + (data.error || 'Unknown error'));
+                                            }
+                                        })
+                                        .catch(error => {
+                                            console.error('Error:', error);
+                                            alert('Failed to add item to cart');
+                                        });
+                                });
+                            }
+
+                            // Add event listener to confirm button if it exists
+                            const confirmBtn = document.querySelector('.btnConfirm');
+                            if (confirmBtn) {
+                                confirmBtn.addEventListener('click', confirmOrder);
+                            }
+
+                            // Set up dropdown handlers
+                            setupDropdownHandlers();
+                        })
+                        .catch(error => {
+                            console.error('Error loading modal:', error);
+                        });
+
+                    // Load cart on page load
+                    setTimeout(loadCartFromSession, 1000);
+                });
+
+                // Update payment mode when changed
+                document.addEventListener('change', function (e) {
+                    if (e.target.id === 'paymentModeInput') {
+                        selectedPaymentMode = e.target.value;
+                    }
+                });
+            </script>
+
             <script src="../assets/js/admin_sidebar.js"></script>
-            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
                 integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO"
                 crossorigin="anonymous"></script>

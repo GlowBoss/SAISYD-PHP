@@ -71,25 +71,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
             'quantity' => $quantity
         ];
     }
-
-    // INSERT TO DATABASE
+// INSERT TO DATABASE
 
     // Check if may pending order (reuse) or create new
-    $orderResult = executeQuery("SELECT * FROM orders WHERE status='pending' LIMIT 1");
+    // $orderResult = executeQuery("SELECT * FROM orders WHERE status='pending' LIMIT 1");
 
-    if (mysqli_num_rows($orderResult) > 0) {
-        $order = mysqli_fetch_assoc($orderResult);
-        $orderID = $order['orderID'];
-    } else {
-        $today = date("Y-m-d");
-        $insertOrder = "INSERT INTO orders (orderDate, status, totalAmount) VALUES ('$today','pending',0)";
-        executeQuery($insertOrder);
+    // if (mysqli_num_rows($orderResult) > 0) {
+    //     $order = mysqli_fetch_assoc($orderResult);
+    //     $orderID = $order['orderID'];
+    // } else {
+    //     $today = date("Y-m-d");
+    //     $insertOrder = "INSERT INTO orders (orderDate, status, totalAmount) VALUES ('$today','pending',0)";
+    //     executeQuery($insertOrder);
 
-        $newOrder = executeQuery("SELECT orderID FROM orders ORDER BY orderID DESC LIMIT 1");
-        $orderRow = mysqli_fetch_assoc($newOrder);
-        $orderID = $orderRow['orderID'];
-    }
-
+    //     $newOrder = executeQuery("SELECT orderID FROM orders ORDER BY orderID DESC LIMIT 1");
+    //     $orderRow = mysqli_fetch_assoc($newOrder);
+    //     $orderID = $orderRow['orderID'];
+    // }
     // Prepare values for database insert -  naghahandle ng NULL values 
     $sugarValue = ($sugar !== null) ? "'" . mysqli_real_escape_string($conn, $sugar) . "'" : "NULL";
     $iceValue = ($ice !== null) ? "'" . mysqli_real_escape_string($conn, $ice) . "'" : "NULL";
@@ -149,7 +147,6 @@ if ($categoryFilter === 'ALL') {
         SELECT p.*, c.categoryName 
         FROM products p 
         LEFT JOIN categories c ON p.categoryID = c.categoryID 
-        WHERE p.isAvailable = 'Yes'
         ORDER BY $orderBy
     ";
 } else {
@@ -158,7 +155,7 @@ if ($categoryFilter === 'ALL') {
         SELECT p.*, c.categoryName 
         FROM products p 
         LEFT JOIN categories c ON p.categoryID = c.categoryID 
-        WHERE p.isAvailable = 'Yes' AND c.categoryName = '$safeCategory'
+        WHERE c.categoryName = '$safeCategory'
         ORDER BY $orderBy
     ";
 }
@@ -408,28 +405,30 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
             <?php
             if (mysqli_num_rows($products) > 0) {
                 while ($product = mysqli_fetch_assoc($products)) {
+                    $isAvailable = ($product['isAvailable'] === 'Yes');
                     ?>
-                    <div class="col product-item"
+                    <div class="col product-item<?php echo $isAvailable ? '' : ' unavailable'; ?>"
                         data-category="<?php echo htmlspecialchars($product['categoryName'] ?? 'Uncategorized'); ?>"
                         data-name="<?php echo htmlspecialchars($product['productName']); ?>"
                         data-price="<?php echo $product['price']; ?>">
+
                         <div class="menu-item text-center" style="
-                            height: clamp(260px, 40vw, 320px);
-                            border-radius: 20px;
-                            background-color: var(--bg-color);
-                            border: 0.5px solid rgba(0, 0, 0, 0.2); /* very subtle border */
-                            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08); /* light shadow */
-                            display: flex;
-                            flex-direction: column;
-                            justify-content: space-between;
-                            padding: clamp(10px, 2vw, 15px);
-                            transition: transform 0.25s ease, box-shadow 0.25s ease;
-                        ">
+                height: clamp(260px, 40vw, 320px);
+                border-radius: 20px;
+                background-color: var(--bg-color);
+                border: 0.5px solid rgba(0, 0, 0, 0.2); /* very subtle border */
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08); /* light shadow */
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                padding: clamp(10px, 2vw, 15px);
+                transition: transform 0.25s ease, box-shadow 0.25s ease;
+            ">
                             <div
                                 style="height: clamp(120px, 25vw, 150px); display: flex; align-items: center; justify-content: center;">
                                 <img src="assets/img/img-menu/<?php echo htmlspecialchars($product['image'] ?? 'coffee.png'); ?>"
                                     alt="<?php echo htmlspecialchars($product['productName']); ?>" class="img-fluid"
-                                    style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                                    style="max-height: 100%; max-width: 100%; object-fit: contain; <?php echo $isAvailable ? '' : 'filter: grayscale(100%); opacity:0.6;'; ?>">
                             </div>
 
                             <div class="subheading menu-name"
@@ -442,25 +441,35 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                                 ₱<?php echo number_format($product['price'], 2); ?>
                             </div>
 
-                            <button class="lead buy-btn mt-auto" data-bs-toggle="modal" data-bs-target="#item-customization"
-                                data-product-id="<?php echo $product['productID']; ?>"
-                                data-name="<?php echo htmlspecialchars($product['productName']); ?>"
-                                data-price="<?php echo $product['price']; ?>"
-                                data-category="<?php echo htmlspecialchars($product['categoryName'] ?? 'Uncategorized'); ?>"
-                                onclick="openPopup(this)" style="
-                                    font-size: clamp(0.8rem, 2vw, 1rem);
-                                    border-radius: 12px;
-                                    padding: clamp(6px, 1.5vw, 8px) clamp(10px, 2vw, 14px);
-                                ">
-                                Order Now
-                            </button>
+                            <?php if ($isAvailable): ?>
+                                <button class="lead buy-btn mt-auto" data-bs-toggle="modal" data-bs-target="#item-customization"
+                                    data-product-id="<?php echo $product['productID']; ?>"
+                                    data-name="<?php echo htmlspecialchars($product['productName']); ?>"
+                                    data-price="<?php echo $product['price']; ?>"
+                                    data-category="<?php echo htmlspecialchars($product['categoryName'] ?? 'Uncategorized'); ?>"
+                                    onclick="openPopup(this)" style="
+                            font-size: clamp(0.8rem, 2vw, 1rem);
+                            border-radius: 12px;
+                            padding: clamp(6px, 1.5vw, 8px) clamp(10px, 2vw, 14px);
+                        ">
+                                    Order Now
+                                </button>
+                            <?php else: ?>
+                                <button class="lead buy-btn mt-auto btn-secondary" disabled style="
+                        font-size: clamp(0.8rem, 2vw, 1rem);
+                        border-radius: 12px;
+                        padding: clamp(6px, 1.5vw, 8px) clamp(10px, 2vw, 14px);
+                    ">
+                                    Unavailable
+                                </button>
+                            <?php endif; ?>
                         </div>
-
                     </div>
                     <?php
                 }
             }
             ?>
+
         </div>
     </div>
 
@@ -684,8 +693,8 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
             if (document.querySelector('input[name="sugar"][value="100% Sugar"]')) {
                 document.querySelector('input[name="sugar"][value="100% Sugar"]').checked = true;
             }
-            if (document.querySelector('input[name="ice"][value="Default"]')) {
-                document.querySelector('input[name="ice"][value="Default"]').checked = true;
+            if (document.querySelector('input[name="ice"][value="Default Ice"]')) {
+                document.querySelector('input[name="ice"][value="Default Ice"]').checked = true;
             }
         });
 
@@ -1024,6 +1033,7 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
             });
         </script>
     <?php endif; ?>
+
     <!-- External Scripts -->
     <script src="assets/js/main.js"></script>
     <script src="assets/js/navbar.js"></script>
