@@ -596,8 +596,7 @@ foreach ($rows as $row) {
 
                                         <td class="actions-cell">
                                             <div class="action-buttons">
-                                                <button class="btn action-btn-sm edit-btn"
-                                                    data-id="<?= $row['inventoryID'] ?>"
+                                                <button class="btn action-btn-sm edit-btn" data-id="<?= $row['inventoryID'] ?>"
                                                     data-ingredient-id="<?= $row['ingredientID'] ?>"
                                                     data-ingredient="<?= htmlspecialchars($row['ingredientName']) ?>"
                                                     data-quantity="<?= $row['quantity'] ?>" data-unit="<?= $row['unit'] ?>"
@@ -671,29 +670,54 @@ foreach ($rows as $row) {
 
     <script>
 
+        document.addEventListener('DOMContentLoaded', function () {
+            // Loop through all edit buttons
+            document.querySelectorAll('.edit-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    // Grab dataset values
+                    const inventoryID = this.dataset.id;
+                    const ingredientID = this.dataset.ingredientId;
+                    const ingredient = this.dataset.ingredient;
+                    const quantity = this.dataset.quantity;
+                    const unit = this.dataset.unit;
+                    const expiration = this.dataset.expiration;
 
-        const editButtons = document.querySelectorAll('.edit-btn');
-        const inventoryIDInput = document.getElementById('inventoryID');
-        const ingredientNameInput = document.getElementById('ingredientName');    
-
-        editButtons.forEach(btn => {
-            btn.addEventListener('click', function () {
-                console.log("Dataset values:", this.dataset);
-
-                // inventoryID = this.dataset.id;
-                // ingredientId = this.dataset.ingredientId;
-                ingredientName = this.dataset.ingredient;
-                // quantity = this.dataset.quantity;
-                // unit = this.dataset.unit;
-                // expirationDate = this.dataset.expiration;
-                // threshold = this.dataset.threshold;
+                    // Fill modal fields
+                    document.getElementById('inventoryID').value = inventoryID;
+                    document.getElementById('ingredientID').value = ingredientID;
+                    document.getElementById('ingredientNameEdit').value = ingredient;
+                    document.getElementById('quantityEdit').value = quantity;
+                    document.getElementById('unitEdit').value = unit;
+                    document.getElementById('expirationEdit').value = expiration;
+                    document.getElementById('thresholdEdit').value = this.dataset.threshold;
+                });
             });
         });
 
+        document.getElementById("updateForm").addEventListener("submit", function (e) {
+            e.preventDefault();
 
+            const formData = new FormData(this);
 
+            fetch("../assets/inventory-update-product.php", {
+                method: "POST",
+                body: formData
+            })
+                .then(res => res.json())
+                .then(resp => {
+                    if (resp.success) {
+                        showToast("Inventory updated successfully", "success");
+                        bootstrap.Modal.getInstance(document.getElementById("editItemModal")).hide();
+                        setTimeout(() => {
+                            location.reload();
+                        }, 800);
+                    } else {
+                        showToast("Error: " + resp.message, "danger");
+                    }
+                })
+                .catch(err => console.error("AJAX Error:", err));
 
-
+        });
 
         // Toast Notification System
         function showToast(message, type = 'success') {
