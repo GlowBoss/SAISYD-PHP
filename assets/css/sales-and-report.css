@@ -201,13 +201,47 @@ button.btn.btnCancel:hover {
   color: var(--text-color-dark);
 }
 
-/* 🎨 Chart Theme */
-:root {
-  --chart-line-color: #4a2800;
-  --chart-line-fill: rgba(74, 40, 0, 0.2);
-
-  --chart-bar1: #4a2800;
-  --chart-bar2: #a35c00;
-  --chart-bar3: #d98e00;
+/* Force scroll directly on the table */
+.custom-scroll {
+    display: block;          /* table needs to behave like a block */
+    max-height: 400px;       /* limit height */
+    overflow-y: auto;
+    overflow-x: auto;        /* horizontal scroll if table is wide */
+    scroll-behavior: smooth;
 }
 
+/* Custom scrollbar for this table */
+.custom-scroll::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 3px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 3px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--btn-hover1);
+}
+
+.chart-container {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  height: 270px; /* default height for desktop */
+}
+
+/* On small screens, shrink width but keep height readable */
+@media (max-width: 768px) {
+  .chart-container {
+    max-width: 90%;   /* not too small */
+    height: 240px;    /* smaller height for mobile */
+    margin: 0 auto;   /* center it */
+  }
+}
