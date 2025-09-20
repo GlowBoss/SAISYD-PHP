@@ -117,6 +117,7 @@ if (isset($_GET['order']) && ($_GET['order'] === 'asc' || $_GET['order'] === 'de
 
 // Query
 $inventoryQuery = "SELECT i.inventoryID,
+                          i.ingredientID,
                           ing.ingredientName,
                           i.quantity,
                           i.unit,
@@ -127,6 +128,7 @@ $inventoryQuery = "SELECT i.inventoryID,
                    LEFT JOIN ingredients ing 
                         ON i.ingredientID = ing.ingredientID
                    ORDER BY $sort $order";
+
 
 $result = executeQuery($inventoryQuery);
 $rows = [];
@@ -594,9 +596,15 @@ foreach ($rows as $row) {
 
                                         <td class="actions-cell">
                                             <div class="action-buttons">
-                                                <button class="btn action-btn-sm edit-btn" title="Edit Item"
-                                                    data-id="<?= $row['inventoryID'] ?>">
-                                                    <i class="bi bi-pencil"></i>
+                                                <button class="btn action-btn-sm edit-btn"
+                                                    data-id="<?= $row['inventoryID'] ?>"
+                                                    data-ingredient-id="<?= $row['ingredientID'] ?>"
+                                                    data-ingredient="<?= htmlspecialchars($row['ingredientName']) ?>"
+                                                    data-quantity="<?= $row['quantity'] ?>" data-unit="<?= $row['unit'] ?>"
+                                                    data-expiration="<?= $row['expirationDate'] ?>"
+                                                    data-threshold="<?= $row['threshold'] ?>" data-bs-toggle="modal"
+                                                    data-bs-target="#editItemModal">
+                                                    Edit
                                                 </button>
                                                 <button class="btn action-btn-sm delete-btn" title="Delete Item"
                                                     onclick="confirmDelete(<?= $row['inventoryID'] ?>, '<?= addslashes($row['ingredientName']) ?>')">
@@ -652,6 +660,7 @@ foreach ($rows as $row) {
 
     <!-- MODALS -->
     <?php include '../modal/add-item-inventory-modal.php'; ?>
+    <?php include '../modal/edit-item-inventory-modal.php'; ?>
     <?php include '../modal/delete-confirm-modal.php'; ?>
     <?php include '../modal/export-modal.php'; ?>
 
@@ -661,6 +670,31 @@ foreach ($rows as $row) {
     <script src="../assets/js/admin_sidebar.js"></script>
 
     <script>
+
+
+        const editButtons = document.querySelectorAll('.edit-btn');
+        const inventoryIDInput = document.getElementById('inventoryID');
+        const ingredientNameInput = document.getElementById('ingredientName');    
+
+        editButtons.forEach(btn => {
+            btn.addEventListener('click', function () {
+                console.log("Dataset values:", this.dataset);
+
+                // inventoryID = this.dataset.id;
+                // ingredientId = this.dataset.ingredientId;
+                ingredientName = this.dataset.ingredient;
+                // quantity = this.dataset.quantity;
+                // unit = this.dataset.unit;
+                // expirationDate = this.dataset.expiration;
+                // threshold = this.dataset.threshold;
+            });
+        });
+
+
+
+
+
+
         // Toast Notification System
         function showToast(message, type = 'success') {
             const toastContainer = document.querySelector('.toast-container');
