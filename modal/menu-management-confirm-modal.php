@@ -1,24 +1,43 @@
 <!-- Modal -->
 <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content text-center">
-            <div class="modal-header">
-                <h5 class="modal-title modalText" id="confirmModalLabel">Add Product</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body modalText">
-                <form method="POST" enctype="multipart/form-data">
-                    <div class="row">
+        <div class="modal-content rounded-4 shadow-lg border-0" style="background: var(--bg-color);">
 
+            <!-- Header -->
+            <div class="modal-header border-0 pb-0">
+                <h1 class="modal-title fs-4 fw-bold" id="confirmModalLabel"
+                    style="font-family: var(--primaryFont); color: var(--primary-color); letter-spacing: 1px;">
+                    Add Product
+                </h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                    style="filter: invert(50%);"></button>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body modalText text-start">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="row g-4">
+                        <!-- Left Column -->
                         <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Item Name</label>
-                                <input type="text" class="form-control" name="productName" placeholder="Enter item name"
-                                    required>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold mb-2"
+                                    style="font-family: var(--primaryFont); color: var(--text-color-dark);">
+                                    Item Name <span style="color: #dc3545;">*</span>
+                                </label>
+                                <input type="text" class="form-control" name="productName" required
+                                    placeholder="Enter item name" style="border: 2px solid var(--primary-color); border-radius: 10px; 
+                                          font-family: var(--secondaryFont); background: var(--card-bg-color);
+                                          color: var(--text-color-dark); padding: 12px;">
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label">Item Group</label>
-                                <select class="form-select" name="categoryID" required>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold mb-2"
+                                    style="font-family: var(--primaryFont); color: var(--text-color-dark);">
+                                    Item Group <span style="color: #dc3545;">*</span>
+                                </label>
+                                <select class="form-select" name="categoryID" required style="border: 2px solid var(--primary-color); border-radius: 10px; 
+                                          font-family: var(--secondaryFont); background: var(--card-bg-color);
+                                          color: var(--text-color-dark); padding: 12px;">
                                     <option disabled selected>Select Category</option>
                                     <?php
                                     $getCategories = mysqli_query($conn, "SELECT * FROM categories");
@@ -30,63 +49,175 @@
                             </div>
                         </div>
 
+                        <!-- Right Column -->
                         <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Price</label>
-                                <input type="text" class="form-control" name="price" placeholder="Enter price" required>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold mb-2"
+                                    style="font-family: var(--primaryFont); color: var(--text-color-dark);">
+                                    Price <span style="color: #dc3545;">*</span>
+                                </label>
+                                <input type="text" class="form-control" name="price" required placeholder="Enter price"
+                                    style="border: 2px solid var(--primary-color); border-radius: 10px; 
+                                          font-family: var(--secondaryFont); background: var(--card-bg-color);
+                                          color: var(--text-color-dark); padding: 12px;">
                             </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">Attachment</label>
-                                <input type="file" class="form-control" name="image">
+                            <div class="mb-4">
+                                <label class="form-label fw-bold mb-2"
+                                    style="font-family: var(--primaryFont); color: var(--text-color-dark);">
+                                    Attachment
+                                </label>
+                                <input type="file" class="form-control" name="image" id="productImage" accept="image/*"
+                                    style="border: 2px solid var(--primary-color); border-radius: 10px; 
+                                          font-family: var(--secondaryFont); background: var(--card-bg-color);
+                                          color: var(--text-color-dark); padding: 12px;">
                             </div>
                         </div>
                     </div>
 
                     <hr>
-                    <h6 class="text-start mb-3">Ingredients</h6>
-                    <div id="ingredients-container">
+                    <h6 class="text-start mb-3 fw-bold"
+                        style="font-family: var(--primaryFont); color: var(--text-color-dark);">
+                        Ingredients
+                    </h6>
+                    <div id="ingredients-container" style="max-height: 250px; overflow-y: auto; padding-right: 5px;">
                         <div class="row g-2 mb-2 ingredient-row">
-                            <div class="col-md-5">
+                            <div class="col-md-5 position-relative">
                                 <input type="text" class="form-control ingredient-search"
-                                    placeholder="Search Ingredient" required>
+                                    placeholder="Search Ingredient" required style="border: 2px solid var(--primary-color); border-radius: 10px; 
+                           font-family: var(--secondaryFont); background: var(--card-bg-color);
+                           color: var(--text-color-dark); padding: 12px;">
                                 <input type="hidden" name="ingredientID[]" class="ingredient-id">
+                                <button type="button" class="cancel-search"
+                                    style="position:absolute; right:8px; top:50%; transform:translateY(-50%);
+                           border:none; background:none; color:#333; font-size:18px; display:none; cursor:pointer;">&times;</button>
                             </div>
                             <div class="col-md-3">
                                 <input type="number" class="form-control" name="requiredQuantity[]"
-                                    placeholder="Quantity" required>
+                                    placeholder="Quantity" step="any" required style="border: 2px solid var(--primary-color); border-radius: 10px; 
+                                          font-family: var(--secondaryFont); background: var(--card-bg-color);
+                                          color: var(--text-color-dark); padding: 12px;">
                             </div>
                             <div class="col-md-3">
-                                <select class="form-select measurement-select" name="measurementUnit[]" required>
-                                    <!-- dito nagdagdag lang me ng mga iba pang option pasabi nalang if tatanggalin ko yung iba -->
+                                <select class="form-select measurement-select" name="measurementUnit[]" required style="border: 2px solid var(--primary-color); border-radius: 10px; 
+                                          font-family: var(--secondaryFont); background: var(--card-bg-color);
+                                          color: var(--text-color-dark); padding: 12px;">
                                     <option value="" disabled selected>Select Unit</option>
-                                    <option class="option-hover" value="pcs">pcs</option>
-                                    <option class="option-hover" value="kg">kg</option>
-                                    <option class="option-hover"  value="g">g</option>
-                                    <option class="option-hover"  value="ml">ml</option>
-                                    <option  class="option-hover" value="L">L</option>
-                                    <option  class="option-hover" value="oz">oz</option>
-                                    <option  class="option-hover" value="pack">pack</option>
-                                    <option  class="option-hover" value="pack">pack</option>
-                                    <option  value="box">box</option>
+                                    <option value="pcs">pcs</option>
+                                    <option value="box">box</option>
+                                    <option value="pack">pack</option>
+                                    <option value="g">g</option>
+                                    <option value="kg">kg</option>
+                                    <option value="oz">oz</option>
+                                    <option value="ml">ml</option>
+                                    <option value="L">L</option>
+                                    <option value="pump">pump</option>
+                                    <option value="tbsp">tbsp</option>
+                                    <option value="tsp">tsp</option>
                                 </select>
                                 <input type="text" class="form-control mt-2 d-none custom-unit" name="customUnit[]"
-                                    placeholder="Enter custom unit">
+                                    placeholder="Enter custom unit" style="border: 2px solid var(--primary-color); border-radius: 10px; 
+                                          font-family: var(--secondaryFont); background: var(--card-bg-color);
+                                          color: var(--text-color-dark); padding: 12px;">
                             </div>
                             <div class="col-md-1 d-flex align-items-center">
-                                <button type="button" class="btn btn-sm remove-ingredient">&times;</button>
+                                <!-- <button type="button" class="btn btn-sm remove-ingredient"
+                                    style="background: var(--card-bg-color); 
+                                           color: var(--text-color-dark); 
+                                           border: 2px solid var(--primary-color);
+                                           border-radius: 8px; font-family: var(--primaryFont);">
+                                    &times;
+                                </button> -->
                             </div>
                         </div>
                     </div>
 
-                    <button type="button" class="btn btn-outline-primary btn-sm mb-3" id="add-modal-ingredient">+</button>
+                    <button type="button" class="btn fw-bold px-3 py-1 mb-3" id="add-modal-ingredient" style="background: var(--text-color-dark); 
+                               color: var(--text-color-light); 
+                               border-radius: 8px; font-family: var(--primaryFont); 
+                               transition: all 0.3s ease;">
+                        +
+                    </button>
 
-                    <div class="d-flex justify-content-end mt-3">
-                        <button type="button" class="btn btn-de btn-del me-2" data-bs-dismiss="modal">CANCEL</button>
-                        <button type="submit" name="btnAddProduct" class="btn btn-sm">ADD ITEM</button>
+                    <!-- Action Buttons -->
+                    <div class="d-flex gap-3 justify-content-end mt-4">
+                        <button type="button" class="btn fw-bold px-4 py-2" data-bs-dismiss="modal" style="
+                                    background: var(--card-bg-color); 
+                                    color: var(--text-color-dark); 
+                                    border: 2px solid var(--primary-color);
+                                    border-radius: 10px; 
+                                    font-family: var(--primaryFont); 
+                                    letter-spacing: 1px; 
+                                    transition: all 0.3s ease;
+                                    min-width: 120px;
+                                " onmouseover="
+                                    this.style.background='var(--primary-color)'; 
+                                    this.style.color='var(--text-color-light)';
+                                    this.style.transform='translateY(-2px)';
+                                    this.style.boxShadow='0 4px 8px rgba(0,0,0,0.2)';
+                                " onmouseout="
+                                    this.style.background='var(--card-bg-color)'; 
+                                    this.style.color='var(--text-color-dark)';
+                                    this.style.transform='translateY(0)';
+                                    this.style.boxShadow='none';
+                                ">
+                            CANCEL
+                        </button>
+
+                        <button type="submit" name="btnAddProduct" class="btn fw-bold px-4 py-2" style="
+                                    background: var(--text-color-dark); 
+                                    color: var(--text-color-light); 
+                                    border: none;
+                                    border-radius: 10px; 
+                                    font-family: var(--primaryFont); 
+                                    letter-spacing: 1px; 
+                                    box-shadow: 0 4px 8px rgba(196, 162, 119, 0.3); 
+                                    transition: all 0.3s ease;
+                                    min-width: 120px;
+                                " onmouseover="
+                                    this.style.background='var(--primary-color)'; 
+                                    this.style.transform='translateY(-2px)';
+                                    this.style.boxShadow='0 6px 12px rgba(196, 162, 119, 0.4)';
+                                " onmouseout="
+                                    this.style.background='var(--text-color-dark)'; 
+                                    this.style.transform='translateY(0)';
+                                    this.style.boxShadow='0 4px 8px rgba(196, 162, 119, 0.3)';
+                                ">
+                            <i class="bi bi-plus-circle-fill me-2"></i>ADD ITEM
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    #ingredients-container {
+        max-height: 250px;
+        overflow-y: auto;
+        padding-right: 5px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--primary-color) var(--card-bg-color);
+    }
+
+    /* For Chrome, Edge, Safari */
+    #ingredients-container::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    #ingredients-container::-webkit-scrollbar-track {
+        background: var(--card-bg-color);
+        border-radius: 10px;
+    }
+
+    #ingredients-container::-webkit-scrollbar-thumb {
+        background-color: var(--primary-color);
+        border-radius: 10px;
+        border: 2px solid var(--card-bg-color);
+    }
+
+    #ingredients-container::-webkit-scrollbar-thumb:hover {
+        background-color: var(--text-color-dark);
+    }
+</style>

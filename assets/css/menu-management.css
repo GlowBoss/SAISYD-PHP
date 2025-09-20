@@ -74,15 +74,27 @@ select.form-select {
 }
 
 .menu-img {
-  max-height: 150px;
+  /* max-height: 150px;
   object-fit: contain;
+  width: 100%; */
+
   width: 100%;
+  height: 200px;      
+   object-fit: contain;; 
 }
 
-.menu-name,
+
 .menu-price {
   word-wrap: break-word;
   text-align: center;
+}
+
+.menu-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  max-width: 100%;
 }
 
 .btn-dropdown {
@@ -176,6 +188,14 @@ button.btn.btn-del:hover {
   .btnAdd {
     font-size: 0.9rem;
     padding: 0.4rem 1rem;
+  }
+
+  .menu-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    max-width: 100%;
   }
 }
 
