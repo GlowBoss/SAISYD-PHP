@@ -3,6 +3,7 @@ include 'connect.php';
 session_start();
 header('Content-Type: application/json');
 
+// ✅ Validate ID
 if (!isset($_GET['id'])) {
     echo json_encode(['error' => 'Missing ID']);
     exit;
@@ -10,15 +11,26 @@ if (!isset($_GET['id'])) {
 
 $id = intval($_GET['id']);
 
-$query = "SELECT p.productID, p.productName, p.price, p.image, p.categoryID,
-                 pr.productRecipeID, pr.requiredQuantity, pr.measurementUnit,
-                 i.ingredientID, i.ingredientName,
-                 inv.quantity AS inventoryQuantity, inv.unit AS inventoryUnit
-          FROM products p
-          LEFT JOIN productRecipe pr ON p.productID = pr.productID
-          LEFT JOIN ingredients i ON pr.ingredientID = i.ingredientID
-          LEFT JOIN inventory inv ON pr.productRecipeID = inv.productRecipeID
-          WHERE p.productID = $id";
+$query = "
+    SELECT 
+        p.productID, 
+        p.productName, 
+        p.price, 
+        p.image, 
+        p.categoryID,
+        pr.productRecipeID, 
+        pr.requiredQuantity, 
+        pr.measurementUnit,
+        i.ingredientID, 
+        i.ingredientName,
+        inv.quantity AS inventoryQuantity, 
+        inv.unit AS inventoryUnit
+    FROM products p
+    LEFT JOIN productrecipe pr ON p.productID = pr.productID
+    LEFT JOIN ingredients i ON pr.ingredientID = i.ingredientID
+    LEFT JOIN inventory inv ON i.ingredientID = inv.ingredientID
+    WHERE p.productID = $id
+";
 
 $result = mysqli_query($conn, $query);
 
@@ -36,23 +48,29 @@ while ($row = mysqli_fetch_assoc($result)) {
             "productID" => $row['productID'],
             "productName" => $row['productName'],
             "price" => $row['price'],
-            "image" => $row['image'],          
-            "categoryID" => $row['categoryID'] 
+            "image" => $row['image'],
+            "categoryID" => $row['categoryID']
         ];
-
     }
 
-    if ($row['ingredientID']) {
+    if (!empty($row['ingredientID'])) {
         $ingredients[] = [
             "productRecipeID" => $row['productRecipeID'],
             "ingredientID" => $row['ingredientID'],
             "ingredientName" => $row['ingredientName'],
             "requiredQuantity" => $row['requiredQuantity'],
             "measurementUnit" => $row['measurementUnit'],
-            "inventoryQuantity" => $row['inventoryQuantity'],
-            "inventoryUnit" => $row['inventoryUnit']
+            "inventoryQuantity" => $row['inventoryQuantity'] ?? 0,
+            "inventoryUnit" => $row['inventoryUnit'] ?? ''  
         ];
     }
 }
 
-echo json_encode(['product' => $product, 'ingredients' => $ingredients]);
+// ✅ Return as JSON
+echo json_encode([
+    'product' => $product,
+    'ingredients' => $ingredients
+]);
+
+mysqli_free_result($result);
+mysqli_close($conn);

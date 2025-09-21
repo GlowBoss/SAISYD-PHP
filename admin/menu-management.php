@@ -14,16 +14,22 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
 
 
 $searchProductTerm = '';
-$categoryFilter = '';
+$categoryFilterId = null;
 
 // dito kona nilagay sa taas tong pag 
-$ingredients = [];
-$result = mysqli_query($conn, "SELECT ingredientID, ingredientName FROM ingredients ORDER BY ingredientName ASC");
+$result = mysqli_query($conn, "
+    SELECT i.ingredientID, ing.ingredientName, i.unit
+    FROM inventory i
+    JOIN ingredients ing ON i.ingredientID = ing.ingredientID
+    ORDER BY ing.ingredientName ASC
+");
+
 while ($row = mysqli_fetch_assoc($result)) {
     $ingredients[] = [
         "id" => $row['ingredientID'],
         "label" => $row['ingredientName'],
-        "value" => $row['ingredientName']
+        "value" => $row['ingredientName'],
+        "unit" => $row['unit']
     ];
 }
 
@@ -122,49 +128,118 @@ if (isset($_POST['btnDeleteProduct'])) {
 }
 
 
+if (!empty($_GET['searchProduct'])) {
+    $searchProductTerm = mysqli_real_escape_string($conn, $_GET['searchProduct']);
+}
+if (!empty($_GET['categoryID'])) {
+    $categoryFilterId = (int) $_GET['categoryID'];
+}
 
+// TOGGLE AVAILABILITY
+if (isset($_POST['btnToggleAvailability'])) {
+    $productID = intval($_POST['productID']);
+    $newAvailability = intval($_POST['newAvailability']);
+    $response = [];
+
+    if ($productID > 0) {
+        $updateQuery = "UPDATE products SET isAvailable = '$newAvailability' WHERE productID = '$productID'";
+
+        if (mysqli_query($conn, $updateQuery)) {
+            $statusText = $newAvailability ? 'enabled' : 'disabled';
+            $response['success'] = true;
+            $response['message'] = "Product availability has been $statusText successfully!";
+        } else {
+            $response['success'] = false;
+            $response['message'] = "Failed to update product availability!";
+        }
+    } else {
+        $response['success'] = false;
+        $response['message'] = "Invalid product ID!";
+    }
+
+    // Return JSON instead of redirecting
+    header('Content-Type: application/json');
+    echo json_encode($response);
+    exit();
+}
+
+
+
+// Fetch menu items
 $menuItemsQuery = "
     SELECT 
         p.*, 
-        c.categoryName AS category_name
+        c.categoryName AS category_name,
+        COALESCE(pc.possible_count, 0) AS possible_count
     FROM 
         products p
     JOIN 
         categories c ON p.categoryID = c.categoryID
-    WHERE 
-        1=1
+    LEFT JOIN (
+        SELECT 
+            pr.productID,
+            MIN(FLOOR(inv.total_quantity / NULLIF(
+                CASE 
+                    WHEN pr.measurementUnit = 'g' AND inv.unit = 'kg' THEN pr.requiredQuantity / 1000
+                    WHEN pr.measurementUnit = 'kg' AND inv.unit = 'g' THEN pr.requiredQuantity * 1000
+                    WHEN pr.measurementUnit = 'oz' AND inv.unit = 'g' THEN pr.requiredQuantity * 28.35
+                    WHEN pr.measurementUnit = 'g' AND inv.unit = 'oz' THEN pr.requiredQuantity / 28.35
+                    WHEN pr.measurementUnit = 'ml' AND inv.unit = 'L' THEN pr.requiredQuantity / 1000
+                    WHEN pr.measurementUnit = 'L' AND inv.unit = 'ml' THEN pr.requiredQuantity * 1000
+                    WHEN pr.measurementUnit = 'pump' AND inv.unit = 'ml' THEN pr.requiredQuantity * 10
+                    WHEN pr.measurementUnit = 'tbsp' AND inv.unit = 'ml' THEN pr.requiredQuantity * 15
+                    WHEN pr.measurementUnit = 'tsp' AND inv.unit = 'ml' THEN pr.requiredQuantity * 5
+                    WHEN pr.measurementUnit = 'pcs' AND inv.unit = 'box' THEN pr.requiredQuantity / 12
+                    WHEN pr.measurementUnit = 'box' AND inv.unit = 'pcs' THEN pr.requiredQuantity * 12
+                    WHEN pr.measurementUnit = 'pack' AND inv.unit = 'pcs' THEN pr.requiredQuantity * 6
+                    WHEN pr.measurementUnit = 'pcs' AND inv.unit = 'pack' THEN pr.requiredQuantity / 6
+                    WHEN pr.measurementUnit = inv.unit THEN pr.requiredQuantity
+                    ELSE pr.requiredQuantity 
+                END, 0
+            ))) AS possible_count
+        FROM productrecipe pr
+        JOIN (
+            SELECT ingredientID, SUM(quantity) AS total_quantity, MAX(unit) AS unit
+            FROM inventory
+            GROUP BY ingredientID
+        ) inv ON pr.ingredientID = inv.ingredientID
+        GROUP BY pr.productID
+    ) pc ON p.productID = pc.productID
+    WHERE 1=1
 ";
 
-// Search filter
-if (!empty($_GET['searchProduct'])) {
-    $searchProductTerm = mysqli_real_escape_string($conn, $_GET['searchProduct']);
-    $menuItemsQuery .= " AND (p.productName LIKE '%$searchProductTerm%' 
-                          OR c.categoryName LIKE '%$searchProductTerm%')";
+if ($searchProductTerm !== '') {
+    $menuItemsQuery .= " AND (p.productName LIKE '%$searchProductTerm%' OR c.categoryName LIKE '%$searchProductTerm%')";
+}
+if ($categoryFilterId !== null) {
+    $menuItemsQuery .= " AND p.categoryID = $categoryFilterId";
 }
 
-// Category filter
-if (!empty($_GET['categoryID'])) {
-    $categoryID = (int) $_GET['categoryID'];
-    $menuItemsQuery .= " AND p.categoryID = $categoryID";
-}
-
-$currentCategory = "All"; // default
-
-if (isset($_GET['categoryID'])) {
-    $catID = (int) $_GET['categoryID'];
-    $catQuery = executeQuery("SELECT categoryName FROM categories WHERE categoryID = $catID LIMIT 1");
-    if ($catRow = mysqli_fetch_assoc($catQuery)) {
-        $currentCategory = $catRow['categoryName'];
-    }
-}
-
-// Order
 $menuItemsQuery .= " ORDER BY p.productID DESC";
-
 $menuItemsResults = mysqli_query($conn, $menuItemsQuery);
 
-// edittt toggle
+$menuItems = [];
 
+// Update availability if possible_count is 0
+while ($row = mysqli_fetch_assoc($menuItemsResults)) {
+    $productID = $row['productID'];
+    $possibleCount = $row['possible_count'] ?? 0;
+
+    if ($possibleCount == 0 && $row['isAvailable'] == 1) {
+        mysqli_query($conn, "UPDATE products SET isAvailable = 0 WHERE productID = $productID");
+        $row['isAvailable'] = 0; // update for display
+    }
+
+    $menuItems[] = $row;
+}
+
+$currentCategory = 'All'; // default
+if ($categoryFilterId !== null) {
+    $categoryData = mysqli_query($conn, "SELECT categoryName FROM categories WHERE categoryID = $categoryFilterId");
+    if ($row = mysqli_fetch_assoc($categoryData)) {
+        $currentCategory = $row['categoryName'];
+    }
+}
 
 ?>
 
@@ -379,9 +454,12 @@ $menuItemsResults = mysqli_query($conn, $menuItemsQuery);
                             <ul class="dropdown-menu w-100" aria-labelledby="categoryDropdown">
                                 <li>
                                     <a class="dropdown-item <?= !isset($_GET['categoryID']) ? 'active' : '' ?>"
-                                        href="menu-management.php<?= !empty($searchProductTerm) ? '?searchProduct=' . urlencode($searchProductTerm) : '' ?>">
+                                        href="menu-management.php<?= !empty($searchProductTerm) ? '?searchProduct=' . urlencode($searchProductTerm) : '' ?>"
+                                        style="background-color: <?= !isset($_GET['categoryID']) ? 'var(--primary-color)' : 'transparent' ?>; 
+                                            color: <?= !isset($_GET['categoryID']) ? 'var(--text-color-dark)' : 'inherit' ?>;">
                                         All
                                     </a>
+
                                 </li>
                                 <?php
                                 $categories = executeQuery("SELECT * FROM categories ORDER BY categoryName ASC");
@@ -400,101 +478,63 @@ $menuItemsResults = mysqli_query($conn, $menuItemsQuery);
                     </div>
                 </div>
 
-                <!-- Menu -->
-                <?php
-                // Add this new section after the DELETE section and before the menu query
-                
-                // TOGGLE AVAILABILITY
-                if (isset($_POST['btnToggleAvailability'])) {
-                    $productID = intval($_POST['productID']);
-                    $newAvailability = intval($_POST['newAvailability']);
-
-                    if ($productID > 0) {
-                        $updateQuery = "UPDATE products SET isAvailable = '$newAvailability' WHERE productID = '$productID'";
-
-                        if (mysqli_query($conn, $updateQuery)) {
-                            $statusText = $newAvailability ? 'enabled' : 'disabled';
-                            $_SESSION['alertMessage'] = "Product availability has been $statusText successfully!";
-                            $_SESSION['alertType'] = "success";
-                        } else {
-                            $_SESSION['alertMessage'] = "Failed to update product availability!";
-                            $_SESSION['alertType'] = "error";
-                        }
-                    }
-
-                    header("Location: menu-management.php");
-                    exit();
-                }
-
-                // UPDATE the menu items query to show all products regardless of availability
-                $menuItemsQuery = "
-    SELECT 
-        p.*, 
-        c.categoryName AS category_name
-    FROM 
-        products p
-    JOIN 
-        categories c ON p.categoryID = c.categoryID
-    WHERE 
-        1=1
-";
-                ?>
-
-                  
-
                 <!-- Update your menu grid section to include availability status -->
                 <div id="productGrid" class="row g-2 m-3 align-items-center">
                     <?php
-                    if (mysqli_num_rows($menuItemsResults) > 0) {
-                        while ($row = mysqli_fetch_assoc($menuItemsResults)) {
+                    if (!empty($menuItems)) {
+                        foreach ($menuItems as $row) {
                             $id = $row['productID'];
                             $name = $row['productName'];
                             $image = $row['image'];
                             $price = $row['price'];
                             $categoryName = $row['category_name'];
-                            $isAvailable = $row['isAvailable'];
+                            $possibleCount = $row['possible_count'] ?? 0;
+
+                            // Determine availability based on possible_count
+                            $isAvailable = $possibleCount > 0 ? 1 : 0;
 
                             $unavailableClass = $isAvailable ? '' : ' unavailable';
                             $statusBadgeClass = $isAvailable ? 'status-available' : 'status-unavailable';
                             $statusText = $isAvailable ? 'Available' : 'Unavailable';
 
                             echo "
-<div class='col-6 col-md-4 col-lg-2'>
-    <div class='menu-item border p-3 rounded shadow-sm text-center$unavailableClass'>
-        <!-- Status Badge -->
-        <div class='mb-2'>
-            <span class='status-badge $statusBadgeClass'>$statusText</span>
-        </div>
-        
-        <img src='../assets/img/img-menu/" . htmlspecialchars($image) . "' 
-             alt='" . htmlspecialchars($name) . "' 
-             class='img-fluid mb-2 menu-img'>
+            <div class='col-6 col-md-4 col-lg-2'>
+                <div class='menu-item border p-3 rounded shadow-sm text-center$unavailableClass'>
+                    <div class='mb-2'>
+                        <span class='status-badge $statusBadgeClass'>$statusText</span>
+                    </div>
 
-        <div class='lead menu-name fs-6'>" . htmlspecialchars($name) . "</div>
-        <div class='d-flex justify-content-center align-items-center gap-2 my-2'>
-            <span class='lead fw-bold menu-price'>₱" . number_format($price, 2) . "</span>
-        </div>
+                    <img src='../assets/img/img-menu/" . htmlspecialchars($image) . "' 
+                         alt='" . htmlspecialchars($name) . "' 
+                         class='img-fluid mb-2 menu-img'>
 
-        <div class='d-flex flex-wrap justify-content-center gap-2'>
-            <button class='btn btn-sm edit-btn'
-                data-bs-toggle='modal'
-                data-bs-target='#editModal'
-                data-id='$id'
-                data-available='" . ($isAvailable ? "1" : "0") . "'>
-                <i class='bi bi-pencil-square'></i> Edit
-             </button>
-             <form method='POST' class='deleteProductForm'>
-                <input type='hidden' name='productID' value='$id'>
-                <input type='hidden' name='btnDeleteProduct' value='1'>
-                <button type='submit' class='btn btn-del'>
-                    <i class='bi bi-trash'></i> Delete
-                </button>
-            </form>
-        </div>
-    </div>
-</div>
-";
+                    <div class='lead menu-name fs-6'>" . htmlspecialchars($name) . "</div>
+                    <div class='d-flex justify-content-center align-items-center gap-2 my-2'>
+                        <span class='lead fw-bold menu-price'>₱" . number_format($price, 2) . "</span>
+                    </div>
+                    <div class='text-muted'>
+                        Available: " . (int) $possibleCount . " pcs
+                    </div>
 
+                    <div class='d-flex flex-wrap justify-content-center gap-2'>
+                        <button class='btn btn-sm edit-btn'
+                            data-bs-toggle='modal'
+                            data-bs-target='#editModal'
+                            data-id='$id'
+                            data-available='" . ($isAvailable ? "1" : "0") . "'>
+                            <i class='bi bi-pencil-square'></i> Edit
+                        </button>
+                        <form method='POST' class='deleteProductForm'>
+                            <input type='hidden' name='productID' value='$id'>
+                            <input type='hidden' name='btnDeleteProduct' value='1'>
+                            <button type='submit' class='btn btn-del'>
+                                <i class='bi bi-trash'></i> Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            ";
                         }
                     } else {
                         echo "<p class='text-center'>No products available.</p>";
@@ -515,7 +555,6 @@ $menuItemsResults = mysqli_query($conn, $menuItemsQuery);
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
     </div>
@@ -556,81 +595,149 @@ $menuItemsResults = mysqli_query($conn, $menuItemsQuery);
                 });
             });
 
-            // para sa search product (ADD modal only)
             $(document).ready(function () {
                 var ingredients = <?php echo json_encode($ingredients); ?>;
+                let skipAutocompleteChange = false; // flag to skip alert
 
                 function initAutocomplete(selector) {
                     $(selector).autocomplete({
                         source: ingredients,
                         minLength: 1,
-                        appendTo: "#confirmModal", // scoped sa Add modal
+                        appendTo: "#confirmModal",
                         select: function (event, ui) {
                             $(this).val(ui.item.label);
                             $(this).siblings(".ingredient-id").val(ui.item.id);
+                            $(this).closest(".ingredient-row")
+                                .find(".measurement-select")
+                                .data("correct-unit", ui.item.unit);
                             return false;
                         },
                         change: function (event, ui) {
+                            if (skipAutocompleteChange) return; // skip when cleared manually
                             if (!ui.item) {
                                 Swal.fire({
                                     icon: 'error',
                                     title: 'Ingredient Not Found',
                                     text: 'The ingredient you entered is not on the Inventory.',
-                                    confirmButtonColor: 'var(--primary-color)',
-                                    confirmButtonText: 'OK',
-                                    customClass: {
-                                        popup: 'swal2-border-radius',
-                                        confirmButton: 'swal2-confirm-radius',
-                                        cancelButton: 'swal2-cancel-radius'
-                                    }
+                                    confirmButtonColor: 'var(--primary-color)'
                                 });
                                 $(this).val("");
                                 $(this).siblings(".ingredient-id").val("");
+                                $(this).siblings(".cancel-search").hide();
                             }
                         }
                     });
                 }
 
-                // initialize autocomplete for inputs inside Add Product modal only
+                // initialize autocomplete for existing inputs
                 initAutocomplete("#confirmModal .ingredient-search");
 
-                // Add new ingredient row inside Add modal
+                // Add new ingredient row
                 $("#confirmModal #add-modal-ingredient").click(function () {
                     var row = `
-            <div class="row g-2 mb-2 ingredient-row">
-                <div class="col-md-5">
-                    <input type="text" class="form-control ingredient-search" placeholder="Search Ingredient" required>
-                    <input type="hidden" name="ingredientID[]" class="ingredient-id">
-                </div>
-                <div class="col-md-3">
-                    <input type="number" class="form-control" name="requiredQuantity[]" placeholder="Quantity" required>
-                </div>
-                <div class="col-md-3">
-                    <select class="form-select measurement-select" name="measurementUnit[]" required>
-                        <option value="" disabled selected>Select Unit</option>
-                        <option value="pcs">pcs</option>
-                        <option value="kg">kg</option>
-                        <option value="g">g</option>
-                        <option value="ml">ml</option>
-                        <option value="L">L</option>
-                        <option value="oz">oz</option>
-                        <option value="pack">pack</option>
-                        <option value="box">box</option>
-                    </select>
-                </div>
-                <div class="col-md-1 d-flex align-items-center">
-                    <button type="button" class="btn btn-sm remove-ingredient">&times;</button>
-                </div>
-            </div>`;
+        <div class="row g-2 mb-2 ingredient-row">
+            <div class="col-md-5 position-relative">
+                <input type="text" class="form-control ingredient-search"
+                    placeholder="Search Ingredient" required
+                    style="border: 2px solid var(--primary-color); border-radius: 10px; 
+                           font-family: var(--secondaryFont); background: var(--card-bg-color);
+                           color: var(--text-color-dark); padding: 12px;">
+                <input type="hidden" name="ingredientID[]" class="ingredient-id">
+                <button type="button" class="cancel-search"
+                    style="position:absolute; right:8px; top:50%; transform:translateY(-50%);
+                           border:none; background:none; color:#333; font-size:18px; display:none; cursor:pointer;">&times;</button>
+            </div>
+            <div class="col-md-3">
+                <input type="number" class="form-control" name="requiredQuantity[]"
+                    placeholder="Quantity" step="any" required
+                    style="border: 2px solid var(--primary-color); border-radius: 10px; 
+                           font-family: var(--secondaryFont); background: var(--card-bg-color);
+                           color: var(--text-color-dark); padding: 12px;">
+            </div>
+            <div class="col-md-3">
+                <select class="form-select measurement-select" name="measurementUnit[]" required
+                    style="border: 2px solid var(--primary-color); border-radius: 10px; 
+                           font-family: var(--secondaryFont); background: var(--card-bg-color);
+                           color: var(--text-color-dark); padding: 12px;">
+                    <option value="" disabled selected>Select Unit</option>
+                    <option value="pcs">pcs</option>
+                    <option value="box">box</option>
+                    <option value="pack">pack</option>
+                    <option value="g">g</option>
+                    <option value="kg">kg</option>
+                    <option value="oz">oz</option>
+                    <option value="ml">ml</option>
+                    <option value="L">L</option>
+                    <option value="pump">pump</option>
+                    <option value="tbsp">tbsp</option>
+                    <option value="tsp">tsp</option>
+                </select>
+            </div>
+            <div class="col-md-1 d-flex align-items-center">
+                <button type="button" class="btn btn-sm remove-ingredient"
+                    style="background: var(--card-bg-color); 
+                           color: var(--text-color-dark); 
+                           border: 2px solid var(--primary-color);
+                           border-radius: 8px; font-family: var(--primaryFont);">
+                    &times;
+                </button>
+            </div>
+        </div>`;
                     $("#confirmModal #ingredients-container").append(row);
 
-                    // autocomplete for newly added row (scoped to Add modal)
+                    // autocomplete for new row
                     initAutocomplete($("#confirmModal #ingredients-container .ingredient-search").last());
                 });
 
-                // remove ingredient row (scoped to Add modal)
+                // remove ingredient row
                 $(document).on("click", "#confirmModal .remove-ingredient", function () {
                     $(this).closest(".ingredient-row").remove();
+                });
+
+                // cancel search button click
+                $(document).on("click", "#confirmModal .cancel-search", function () {
+                    skipAutocompleteChange = true; // skip alert
+                    const input = $(this).siblings(".ingredient-search");
+                    input.val("");
+                    input.siblings(".ingredient-id").val("");
+                    $(this).hide();
+                    setTimeout(() => skipAutocompleteChange = false, 10);
+                });
+
+                // show/hide cancel search button on input
+                $(document).on("input", "#confirmModal .ingredient-search", function () {
+                    $(this).siblings(".cancel-search").toggle($(this).val().trim() !== "");
+                });
+
+                // Unit mismatch validation
+                $(document).on("change", "#confirmModal .measurement-select", function () {
+                    const correctUnit = $(this).data("correct-unit");
+                    const chosenUnit = $(this).val();
+                    if (!correctUnit) return;
+
+                    const allowedUnits = {
+                        "g": ["g", "kg", "oz"],
+                        "kg": ["kg", "g"],
+                        "oz": ["oz", "g"],
+                        "ml": ["ml", "L", "pump", "tbsp", "tsp"],
+                        "L": ["L", "ml"],
+                        "pump": ["pump", "ml"],
+                        "tbsp": ["tbsp", "ml"],
+                        "tsp": ["tsp", "ml"],
+                        "pcs": ["pcs", "box", "pack"],
+                        "box": ["box", "pcs"],
+                        "pack": ["pack", "pcs"]
+                    };
+
+                    if (!allowedUnits[correctUnit].includes(chosenUnit)) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Unit Mismatch',
+                            text: `This ingredient requires "${correctUnit}" (allowed: ${allowedUnits[correctUnit].join(", ")}), not "${chosenUnit}".`,
+                            confirmButtonColor: 'var(--primary-color)'
+                        });
+                        $(this).val("");
+                    }
                 });
             });
 
@@ -708,6 +815,8 @@ $menuItemsResults = mysqli_query($conn, $menuItemsQuery);
                         .catch(err => console.error('Error updating product availability:', err));
                 }
             });
+
+
             // Session Alerts
             <?php if (isset($_SESSION['alertMessage'])): ?>
                 Swal.fire({
@@ -725,6 +834,48 @@ $menuItemsResults = mysqli_query($conn, $menuItemsQuery);
                 ?>
             <?php endif; ?>
         });
+
+
+
+        window.ingredients = <?php echo json_encode($ingredients); ?>;
+
+        const ingredientsData = <?php echo json_encode($ingredients); ?>;
+
+        // Polling interval in milliseconds
+        const POLL_INTERVAL = 5000; // every 5 seconds
+
+        function fetchProductAvailability() {
+            fetch('fetch-availability.php') // new endpoint that returns JSON of productID -> possible_count
+                .then(res => res.json())
+                .then(data => {
+                    data.forEach(item => {
+                        const productCard = document.querySelector(`.edit-btn[data-id="${item.productID}"]`)?.closest('.menu-item');
+                        if (!productCard) return;
+
+                        const badge = productCard.querySelector('.status-badge');
+                        const newAvailable = item.possible_count > 0 ? 1 : 0;
+
+                        // Only update if changed
+                        const isCurrentlyAvailable = badge.classList.contains('status-available');
+                        if ((newAvailable && !isCurrentlyAvailable) || (!newAvailable && isCurrentlyAvailable)) {
+                            if (newAvailable) {
+                                productCard.classList.remove('unavailable');
+                                badge.textContent = 'Available';
+                                badge.className = 'status-badge status-available';
+                            } else {
+                                productCard.classList.add('unavailable');
+                                badge.textContent = 'Unavailable';
+                                badge.className = 'status-badge status-unavailable';
+                            }
+                        }
+                    });
+                })
+                .catch(err => console.error('Error fetching availability:', err));
+        }
+
+        // Start polling
+        setInterval(fetchProductAvailability, POLL_INTERVAL);
+
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous">
