@@ -14,84 +14,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_SESSION['cart'][$index])) {
             if ($newQuantity > 0) {
                 $_SESSION['cart'][$index]['quantity'] = $newQuantity;
-
-                // Find pending order - note: status column doesn't exist in schema
-                $orderResult = executeQuery("SELECT * FROM orders WHERE isDone = 0 ORDER BY orderID DESC LIMIT 1");
-                if (mysqli_num_rows($orderResult) > 0) {
-                    $order = mysqli_fetch_assoc($orderResult);
-                    $orderID = $order['orderID'];
-
-                    // Update quantity in database
-                    $productId = $_SESSION['cart'][$index]['product_id'];
-                    $sugar = $_SESSION['cart'][$index]['sugar'] ?? 0;
-                    $ice = $_SESSION['cart'][$index]['ice'] ?? 'Normal';
-                    $notes = $_SESSION['cart'][$index]['notes'] ?? '';
-
-                    $updateQuery = "UPDATE orderitems SET quantity = '$newQuantity' 
-                                   WHERE orderID = '$orderID' AND productID = '$productId' 
-                                   AND sugar = '" . mysqli_real_escape_string($conn, $sugar) . "' 
-                                   AND ice = '" . mysqli_real_escape_string($conn, $ice) . "' 
-                                   AND notes = '" . mysqli_real_escape_string($conn, $notes) . "'";
-                    executeQuery($updateQuery);
-                }
             } else {
-                // Remove item if quantity is 0
-                $productId = $_SESSION['cart'][$index]['product_id'];
-                $sugar = $_SESSION['cart'][$index]['sugar'] ?? 0;
-                $ice = $_SESSION['cart'][$index]['ice'] ?? 'Normal';
-                $notes = $_SESSION['cart'][$index]['notes'] ?? '';
-
                 unset($_SESSION['cart'][$index]);
                 $_SESSION['cart'] = array_values($_SESSION['cart']);
-
-                // Remove from database
-                $orderResult = executeQuery("SELECT * FROM orders WHERE isDone = 0 ORDER BY orderID DESC LIMIT 1");
-                if (mysqli_num_rows($orderResult) > 0) {
-                    $order = mysqli_fetch_assoc($orderResult);
-                    $orderID = $order['orderID'];
-
-                    $deleteQuery = "DELETE FROM orderitems 
-                                   WHERE orderID = '$orderID' AND productID = '$productId' 
-                                   AND sugar = '" . mysqli_real_escape_string($conn, $sugar) . "' 
-                                   AND ice = '" . mysqli_real_escape_string($conn, $ice) . "' 
-                                   AND notes = '" . mysqli_real_escape_string($conn, $notes) . "'";
-                    executeQuery($deleteQuery);
-                }
             }
         }
     }
 
     if (isset($_POST['clear_cart'])) {
         $_SESSION['cart'] = [];
-
-        // Clear database - using isDone instead of status
-        $orderResult = executeQuery("SELECT * FROM orders WHERE isDone = 0 ORDER BY orderID DESC LIMIT 1");
-        if (mysqli_num_rows($orderResult) > 0) {
-            $order = mysqli_fetch_assoc($orderResult);
-            $orderID = $order['orderID'];
-            executeQuery("DELETE FROM orderitems WHERE orderID = '$orderID'");
-            executeQuery("DELETE FROM orders WHERE orderID = '$orderID'");
-            executeQuery("DELETE FROM payments WHERE orderID = '$orderID'");
-        }
+        $_SESSION['cart_message'] = 'Cart cleared successfully!';
     }
 
-    if (isset($_POST['checkout'])) {
+    // Checkout processing - ONLY process if confirmed_checkout is set
+    if (isset($_POST['checkout']) && isset($_POST['confirmed_checkout'])) {
+        // Get form data
         $orderType = $_POST['order_type'] ?? '';
         $paymentMethod = $_POST['payment_method'] ?? '';
         $refNumber = $_POST['ref_number'] ?? '';
         $customerName = $_POST['customer_name'] ?? '';
         $customerPhone = $_POST['customer_phone'] ?? '';
 
+        // Validation
         if (empty($orderType) || empty($paymentMethod)) {
             $_SESSION['cart_error'] = 'Please select both order method and payment method.';
-        } elseif ($paymentMethod === 'gcash' && empty($refNumber)) {
-            $_SESSION['cart_error'] = 'Please enter a GCash reference number.';
+        } elseif ($paymentMethod === 'gcash' && (!$refNumber || !preg_match('/^\d{13}$/', $refNumber))) {
+            $_SESSION['cart_error'] = 'GCash reference number must be exactly 13 digits.';
         } elseif (empty($_SESSION['cart'])) {
             $_SESSION['cart_error'] = 'Your cart is empty.';
-        } elseif ($orderType === 'pickup' && empty($customerName)) {
-            $_SESSION['cart_error'] = 'Please enter your name for pickup orders.';
-        } elseif ($orderType === 'pickup' && empty($customerPhone)) {
-            $_SESSION['cart_error'] = 'Please enter your phone number for pickup orders.';
+        } elseif ($orderType === 'pickup' && (empty($customerName) || empty($customerPhone))) {
+            $_SESSION['cart_error'] = 'Please enter your name and phone number for pickup orders.';
         } else {
             // Calculate total
             $total = 0;
@@ -99,10 +51,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $total += $item['price'] * $item['quantity'];
             }
 
-            // Generate new order number - using orderNumber column correctly
+            // Generate new order number
             $result = executeQuery("SELECT orderNumber FROM orders ORDER BY orderID DESC LIMIT 1");
-            $orderNumber = 1; // Default starting number
-            
+            $orderNumber = 1;
+
             if ($result && mysqli_num_rows($result) > 0) {
                 $row = mysqli_fetch_assoc($result);
                 $lastOrderNumber = $row['orderNumber'];
@@ -118,41 +70,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $customerPhone = null;
             }
 
-            // Insert order - matching the actual table structure
+            // Insert order
             $insertOrderQuery = "INSERT INTO orders (orderDate, customerName, orderContactNumber, totalAmount, orderType, orderNumber, status, isDone, userID) 
-                                VALUES (NOW(), '$customerName', " . 
-                                ($customerPhone ? "'$customerPhone'" : "NULL") . ", 
+                                VALUES (NOW(), '$customerName', " .
+                ($customerPhone ? "'$customerPhone'" : "NULL") . ", 
                                 '$total', '$orderType', '$orderNumber', 'pending', 0, 1)";
-            
+
             $orderResult = executeQuery($insertOrderQuery);
-            
+
             if ($orderResult) {
-                // Get the new order ID
                 $orderID = mysqli_insert_id($conn);
 
                 // Insert order items
                 foreach ($_SESSION['cart'] as $item) {
                     $productID = $item['product_id'];
                     $quantity = $item['quantity'];
-                    $sugar = isset($item['sugar']) ? $item['sugar'] : 0;
-                    $ice = isset($item['ice']) ? $item['ice'] : 'Normal';
-                    $notes = isset($item['notes']) ? mysqli_real_escape_string($conn, $item['notes']) : '';
+
+                    $sugar = (isset($item['sugar']) && $item['sugar'] !== '' && trim($item['sugar']) !== '' && $item['sugar'] !== '0')
+                        ? "'" . mysqli_real_escape_string($conn, $item['sugar']) . "'"
+                        : 'NULL';
+
+                    $ice = (isset($item['ice']) && $item['ice'] !== '' && trim($item['ice']) !== '')
+                        ? "'" . mysqli_real_escape_string($conn, $item['ice']) . "'"
+                        : 'NULL';
+
+                    $notes = (isset($item['notes']) && $item['notes'] !== '' && trim($item['notes']) !== '')
+                        ? "'" . mysqli_real_escape_string($conn, $item['notes']) . "'"
+                        : 'NULL';
 
                     $insertItemQuery = "INSERT INTO orderitems (orderID, productID, quantity, sugar, ice, notes) 
-                                       VALUES ('$orderID', '$productID', '$quantity', '$sugar', '$ice', '$notes')";
+                                       VALUES ('$orderID', '$productID', '$quantity', $sugar, $ice, $notes)";
                     executeQuery($insertItemQuery);
                 }
 
-                // Insert payment record
-                $paymentStatus = 'pending';
+                // Insert payment
+                $paymentStatus = 'Paid';
+                $refNumberEscaped = $refNumber ? "'" . mysqli_real_escape_string($conn, $refNumber) . "'" : "NULL";
+                $paymentMethodEscaped = mysqli_real_escape_string($conn, $paymentMethod);
+
                 $insertPaymentQuery = "INSERT INTO payments (orderID, paymentMethod, paymentStatus, referenceNumber) 
-                                      VALUES ('$orderID', '$paymentMethod', '$paymentStatus', " . 
-                                      ($refNumber ? "'$refNumber'" : "NULL") . ")";
+                                      VALUES ('$orderID', '$paymentMethodEscaped', '$paymentStatus', $refNumberEscaped)";
                 executeQuery($insertPaymentQuery);
 
-                // Clear session cart
                 $_SESSION['cart'] = [];
-                $_SESSION['cart_message'] = 'Order placed successfully! Order Number: ' . $orderNumber;
+                $_SESSION['cart_message'] = 'Order placed successfully! Order No. ' . $orderNumber;
 
                 header('Location: ' . $_SERVER['PHP_SELF']);
                 exit();
@@ -186,8 +147,6 @@ function getCartTotal()
 }
 ?>
 
-
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -201,17 +160,14 @@ function getCartTotal()
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/styles.css">
     <link rel="stylesheet" href="assets/css/cart.css">
-    <link rel="stylesheet" href="assets/css/swiper-bundle.min.css">
     <link rel="stylesheet" href="assets/css/navbar.css">
     <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <link rel="icon" href="../assets/img/round_logo.png" type="image/png">
     <link rel="icon" href="assets/img/round_logo.png" type="image/png">
-
 </head>
 
 <body>
-
+    <!-- [Previous sidebar and navbar code remains the same] -->
     <!-- Sidebar Overlay -->
     <div id="sidebarOverlay" class="sidebar-overlay"></div>
 
@@ -250,31 +206,26 @@ function getCartTotal()
             </a>
         </div>
 
-        <button class="btn menu-btn" onclick="location.href='menu.php'">
+        <button class="btn menu-btn wow" onclick="location.href='menu.php'">
             <i class="fas fa-mug-hot me-2"></i> Menu
         </button>
-
     </div>
 
     <!-- Navbar -->
     <nav id="mainNavbar" class="navbar navbar-expand-lg navbar-custom fixed-top py-2">
         <div class="container-fluid px-3">
-
-            <!-- Mobile Layout: Burger (left) - Logo (center) - Cart (right) -->
+            <!-- Mobile Layout -->
             <div class="d-flex d-lg-none align-items-center w-100 position-relative" style="min-height: 50px;">
-                <!-- Left: Burger menu -->
                 <button id="openSidebarBtn" class="navbar-toggler border-0 p-1">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <!-- Center: Logo  -->
                 <div class="position-absolute top-50 translate-middle" style="left: 53%;">
                     <a class="navbar-brand fw-bold mb-0">
                         <img src="assets/img/saisydLogo.png" alt="SAISYD Logo" style="height: 45px;" />
                     </a>
                 </div>
 
-                <!-- Mobile: Right Cart -->
                 <div class="ms-auto d-flex align-items-center">
                     <a href="cart.php" class="d-flex align-items-center text-decoration-none position-relative">
                         <i class="bi bi-cart3 fs-5 me-2" style="color: var(--text-color-dark);"></i>
@@ -293,12 +244,11 @@ function getCartTotal()
                 </div>
             </div>
 
-            <!-- Desktop Layout: Logo on left -->
+            <!-- Desktop Layout -->
             <a class="navbar-brand fw-bold d-none d-lg-block">
                 <img src="assets/img/saisydLogo.png" alt="SAISYD Logo" style="height: 45px;" />
             </a>
 
-            <!-- Navbar Links -->
             <div class="collapse navbar-collapse" id="saisydNavbar">
                 <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-lg-3" id="navbarNav">
                     <li class="nav-item">
@@ -307,23 +257,22 @@ function getCartTotal()
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#about">
+                        <a class="nav-link" href="index.php#about">
                             <i class="bi bi-info-circle"></i> <span>About</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#location">
+                        <a class="nav-link" href="index.php#location">
                             <i class="bi bi-geo-alt"></i> <span>Location</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#contact">
+                        <a class="nav-link" href="index.php#contact">
                             <i class="bi bi-envelope"></i> <span>Contact</span>
                         </a>
                     </li>
                 </ul>
 
-                <!-- Desktop: Cart + Menu -->
                 <div class="d-none d-lg-flex align-items-center">
                     <a href="cart.php" class="nav-link position-relative me-2">
                         <i class="bi bi-cart3 fs-4"></i> <span>Cart</span>
@@ -346,278 +295,374 @@ function getCartTotal()
         </div>
     </nav>
 
-    <div class="container-fluid mt-5 mt-3 pt-lg-3">
-        <div class="row justify-content-center">
+    <!-- Main Content -->
+    <div id="mainContent" class="cart-container">
+        <div class="cart-main">
+            <!-- Header -->
+            <div class="cart-header">
+                <h1 class="cart-title">Your Cart</h1>
+                <p class="cart-subtitle">Review your items and checkout when ready</p>
+            </div>
 
-            <!-- CART -->
-            <div class="col-12 col-lg-6 mb-4">
-                <div class="card cart-section p-3 border-0" style="max-height: 75vh;">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="subheading2 fw-bold">Cart</div>
+            <div class="cart-content">
+                <!-- Cart Items Section -->
+                <div class="cart-items-section">
+                    <div class="cart-section-header">
+                        <h2 class="section-title">
+                            <i class="bi bi-bag me-2"></i>
+                            Cart Items (<?= getCartItemCount() ?>)
+                        </h2>
                         <?php if (!empty($_SESSION['cart'])): ?>
-                            <form method="POST">
-                                <button type="submit" name="clear_cart" class="btn btn-outline-danger btn-sm">
-                                    <i class="fas fa-trash-alt"></i>
+                            <form method="POST" style="margin: 0;">
+                                <button type="submit" name="clear_cart" class="clear-cart-btn">
+                                    <i class="fas fa-trash-alt me-1"></i> Clear All
                                 </button>
                             </form>
                         <?php endif; ?>
                     </div>
 
-                    <div class="overflow-auto" style="max-height: 49vh;">
+                    <div class="cart-items-container">
                         <?php if (empty($_SESSION['cart'])): ?>
-                            <p class="text-muted text-center">Your cart is empty.</p>
+                            <div class="empty-cart">
+                                <div class="empty-cart-icon">
+                                    <i class="bi bi-cart-x"></i>
+                                </div>
+                                <p class="empty-cart-message">Your cart is empty</p>
+                                <a href="menu.php" class="browse-menu-btn">
+                                    <i class="fas fa-mug-hot me-2"></i> Browse Menu
+                                </a>
+                            </div>
                         <?php else: ?>
                             <?php foreach ($_SESSION['cart'] as $i => $item): ?>
-                                <div class="d-flex justify-content-between align-items-center mb-2 px-2">
-                                    <div class="d-flex align-items-center">
-                                        <form method="POST">
-                                            <input type="hidden" name="cart_index" value="<?= $i ?>">
-                                            <input type="hidden" name="new_quantity"
-                                                value="<?= max(0, $item['quantity'] - 1) ?>">
-                                            <button type="submit" name="update_quantity"
-                                                class="btn btn-sm btn-outline-dark fw-bold">-</button>
-                                        </form>
-                                        <div class="mx-2 fw-bold"><?= $item['quantity'] ?>x</div>
-                                        <form method="POST">
-                                            <input type="hidden" name="cart_index" value="<?= $i ?>">
-                                            <input type="hidden" name="new_quantity" value="<?= $item['quantity'] + 1 ?>">
-                                            <button type="submit" name="update_quantity"
-                                                class="btn btn-sm btn-outline-dark fw-bold">+</button>
-                                        </form>
+                                <div class="cart-item">
+                                    <div class="cart-item-main">
+                                        <!-- Quantity Controls -->
+                                        <div class="quantity-controls">
+                                            <form method="POST" style="margin: 0;">
+                                                <input type="hidden" name="cart_index" value="<?= $i ?>">
+                                                <input type="hidden" name="new_quantity"
+                                                    value="<?= max(0, $item['quantity'] - 1) ?>">
+                                                <button type="submit" name="update_quantity" class="quantity-btn">-</button>
+                                            </form>
+                                            <span class="quantity-display"><?= $item['quantity'] ?></span>
+                                            <form method="POST" style="margin: 0;">
+                                                <input type="hidden" name="cart_index" value="<?= $i ?>">
+                                                <input type="hidden" name="new_quantity" value="<?= $item['quantity'] + 1 ?>">
+                                                <button type="submit" name="update_quantity" class="quantity-btn">+</button>
+                                            </form>
+                                        </div>
+
+                                        <!-- Item Details -->
+                                        <div class="item-details">
+                                            <h4 class="item-name"><?= htmlspecialchars($item['product_name']) ?></h4>
+                                        </div>
+
+                                        <!-- Item Price -->
+                                        <div class="item-price">₱<?= number_format($item['price'], 2) ?></div>
                                     </div>
-                                    <div class="fw-bold"><?= htmlspecialchars($item['product_name']) ?></div>
-                                    <div class="fw-bold">₱<?= number_format($item['price'], 2) ?></div>
+
+                                    <!-- Customizations -->
+                                    <?php if (
+                                        (isset($item['sugar']) && $item['sugar'] !== '' && trim($item['sugar']) !== '' && $item['sugar'] !== '0') ||
+                                        (isset($item['ice']) && $item['ice'] !== '' && trim($item['ice']) !== '') ||
+                                        (isset($item['notes']) && $item['notes'] !== '' && trim($item['notes']) !== '')
+                                    ): ?>
+                                        <div class="item-customizations">
+                                            <?php if (isset($item['sugar']) && $item['sugar'] !== '' && trim($item['sugar']) !== '' && $item['sugar'] !== '0'): ?>
+                                                <div class="customization-item">
+                                                    <span class="customization-label">Sugar:</span>
+                                                    <?= htmlspecialchars($item['sugar']) ?>
+                                                </div>
+                                            <?php endif; ?>
+                                            <?php if (isset($item['ice']) && $item['ice'] !== '' && trim($item['ice']) !== ''): ?>
+                                                <div class="customization-item">
+                                                    <span class="customization-label">Ice:</span> <?= htmlspecialchars($item['ice']) ?>
+                                                </div>
+                                            <?php endif; ?>
+                                            <?php if (isset($item['notes']) && $item['notes'] !== '' && trim($item['notes']) !== ''): ?>
+                                                <div class="customization-item">
+                                                    <span class="customization-label">Notes:</span>
+                                                    <?= htmlspecialchars($item['notes']) ?>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
-                                <?php if ($item['sugar']): ?>
-                                    <div class="small text-muted ms-5">Sugar: <?= $item['sugar'] ?></div><?php endif; ?>
-                                <?php if ($item['ice']): ?>
-                                    <div class="small text-muted ms-5">Ice: <?= $item['ice'] ?></div><?php endif; ?>
-                                <?php if ($item['notes']): ?>
-                                    <div class="small text-muted ms-5">Notes: <?= $item['notes'] ?></div><?php endif; ?>
-                                <hr>
                             <?php endforeach; ?>
                         <?php endif; ?>
                     </div>
                 </div>
-            </div>
-            <!-- SUMMARY -->
-            <div class="col-12 col-lg-4 mb-4">
-                <div class="card p-3" style="border-radius: 16px; max-height: 75vh;">
-                    <h3 class="subheading2 text-start ms-2 pt-2 pb-3">Summary</h3>
-                    <div class="d-flex justify-content-evenly mb-2">
-                        <p class="lead mb-0">Items: <?= getCartItemCount() ?></p>
-                        <p class="lead mb-0">Total: ₱<?= number_format(getCartTotal(), 2) ?></p>
+
+                <!-- Summary Section -->
+                <div class="summary-section">
+                    <div class="summary-header">
+                        <h2 class="section-title">
+                            <i class="bi bi-receipt me-2"></i>
+                            Order Summary
+                        </h2>
                     </div>
-                    <hr>
 
                     <?php if (!empty($_SESSION['cart'])): ?>
-                        <form method="POST">
+                        <!-- Order Summary -->
+                        <div class="order-summary">
+                            <div class="summary-row">
+                                <span class="summary-label">Items:</span>
+                                <span class="summary-value"><?= getCartItemCount() ?></span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-label">Subtotal:</span>
+                                <span class="summary-value">₱<?= number_format(getCartTotal(), 2) ?></span>
+                            </div>
+                            <div class="summary-row total-row">
+                                <span class="total-label">Total:</span>
+                                <span class="total-value">₱<?= number_format(getCartTotal(), 2) ?></span>
+                            </div>
+                        </div>
+
+                        <form method="POST" id="checkoutForm">
+                            <!-- Hidden inputs for customer info (will be populated by pickup modal) -->
+                            <input type="hidden" name="customer_name" id="hiddenCustomerName" value="">
+                            <input type="hidden" name="customer_phone" id="hiddenCustomerPhone" value="">
+
                             <!-- Order Method -->
-                            <div class="mx-3 mb-3">
-                                <p class="lead">Choose your order method:</p>
-                                <div class="row row-cols-2 gx-2">
-                                    <div class="col">
-                                        <div class="form-check d-flex align-items-center">
-                                            <input class="form-check-input me-2" type="radio" name="order_type"
-                                                value="dine-in" required>
-                                            <label class="form-check-label">Dine-in</label>
-                                        </div>
+                            <div class="form-section">
+                                <h3 class="form-title">
+                                    <i class="bi bi-clipboard-check me-2"></i>
+                                    Order Method
+                                </h3>
+                                <div class="radio-group">
+                                    <div class="radio-option">
+                                        <input class="form-check-input" type="radio" name="order_type" value="dine-in"
+                                            id="dine-in" required>
+                                        <label class="radio-card" for="dine-in">
+                                            <i class="bi bi-shop mb-2 d-block" style="font-size: 1.5rem;"></i>
+                                            <p class="radio-label">Dine-in</p>
+                                        </label>
                                     </div>
-                                    <div class="col"></div>
-                                    <div class="col">
-                                        <div class="form-check d-flex align-items-center">
-                                            <input class="form-check-input me-2" type="radio" name="order_type"
-                                                value="takeout" required>
-                                            <label class="form-check-label">Takeout</label>
-                                        </div>
+                                    <div class="radio-option">
+                                        <input class="form-check-input" type="radio" name="order_type" value="takeout"
+                                            id="takeout" required>
+                                        <label class="radio-card" for="takeout">
+                                            <i class="bi bi-bag-check mb-2 d-block" style="font-size: 1.5rem;"></i>
+                                            <p class="radio-label">Takeout</p>
+                                        </label>
                                     </div>
-                                    <div class="col">
-                                        <div class="form-check d-flex align-items-center">
-                                            <input class="form-check-input me-2" type="radio" name="order_type"
-                                                value="pickup" required>
-                                            <label class="form-check-label">Pickup</label>
-                                            <input type="hidden" name="customer_name" id="hiddenCustomerName">
-                                            <input type="hidden" name="customer_phone" id="hiddenCustomerPhone">
-                                        </div>
+                                    <div class="radio-option">
+                                        <input class="form-check-input" type="radio" name="order_type" value="pickup"
+                                            id="pickup" required>
+                                        <label class="radio-card" for="pickup">
+                                            <i class="bi bi-clock mb-2 d-block" style="font-size: 1.5rem;"></i>
+                                            <p class="radio-label">Pickup</p>
+                                        </label>
                                     </div>
                                 </div>
                             </div>
-
-                            <hr>
 
                             <!-- Payment Method -->
-                            <div class="row row-cols-1 row-cols-md-2 g-4 mx-2 mb-3">
-                                <div class="col">
-                                    <p class="lead">Mode of Payment:</p>
-                                    <div class="form-check my-2">
-                                        <input class="form-check-input me-2" type="radio" name="payment_method" value="cash"
-                                            required>
-                                        <label class="form-check-label">Cash</label>
+                            <div class="form-section">
+                                <h3 class="form-title">
+                                    <i class="bi bi-credit-card me-2"></i>
+                                    Payment Method
+                                </h3>
+                                <div class="radio-group">
+                                    <div class="radio-option">
+                                        <input class="form-check-input" type="radio" name="payment_method" value="Cash"
+                                            id="cash" required>
+                                        <label class="radio-card" for="cash">
+                                            <i class="bi bi-cash mb-2 d-block" style="font-size: 1.5rem;"></i>
+                                            <p class="radio-label">Cash</p>
+                                        </label>
                                     </div>
-                                    <div class="form-check my-2">
-                                        <input class="form-check-input me-2" type="radio" name="payment_method"
-                                            value="gcash" required>
-                                        <label class="form-check-label">GCash</label>
+                                    <div class="radio-option">
+                                        <input class="form-check-input" type="radio" name="payment_method" value="GCash"
+                                            id="gcash" required>
+                                        <label class="radio-card" for="gcash">
+                                            <i class="bi bi-phone mb-2 d-block" style="font-size: 1.5rem;"></i>
+                                            <p class="radio-label">GCash</p>
+                                        </label>
                                     </div>
                                 </div>
-                                <div class="col">
-                                    <div class="mb-3" id="gcashField" style="display:none;">
-                                        <input type="text" class="form-control" name="ref_number" id="refNumber"
-                                            placeholder="Enter 13-digit GCash Ref No." pattern="\d{13}" maxlength="13"
-                                            inputmode="numeric"
-                                            oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,13);">
-                                    </div>
-                                </div>
-                            </div>
-                            <hr>
 
-                            <div class="text-end px-3 mb-3">
-                                <h3 class="subheading3">TOTAL: ₱<?= number_format(getCartTotal(), 2) ?></h3>
+                                <div class="gcash-field" id="gcashField" style="display:none;">
+                                    <input type="text" class="form-control" name="ref_number" id="refNumber"
+                                        placeholder="Enter 13-digit GCash Reference Number" pattern="\d{13}" maxlength="13"
+                                        inputmode="numeric"
+                                        oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,13);">
+                                </div>
                             </div>
-                            <button type="submit" name="checkout"
-                                class="btn buy-btn rounded-5 mx-auto mb-2">Checkout</button>
+
+                            <button type="button" name="checkout" id="checkoutBtn" class="checkout-btn">
+                                <i class="bi bi-check-circle me-2"></i>
+                                Place Order • ₱<?= number_format(getCartTotal(), 2) ?>
+                            </button>
                         </form>
                     <?php else: ?>
-                        <p class="text-muted">Add items to your cart to proceed.</p>
+                        <div class="text-center p-4">
+                            <p class="text-muted mb-3">Add items to your cart to proceed with checkout</p>
+                        </div>
                     <?php endif; ?>
                 </div>
             </div>
-
         </div>
     </div>
 
+    <!-- Display Success/Error Messages -->
+    <?php if (isset($_SESSION['cart_message'])): ?>
+        <div class="toast-container position-fixed bottom-0 end-0 p-3 z-3">
+            <div id="successToast" class="toast align-items-center border-0 fade show" role="alert" aria-live="assertive"
+                aria-atomic="true" data-bs-delay="3000" data-bs-autohide="true"
+                style="background-color: var(--text-color-dark); color: var(--text-color-light); border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.25);">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-check-circle-fill ms-3 me-3"
+                        style="font-size: 1.2rem; color: var(--secondary-color);"></i>
+                    <div class="toast-body" style="font-family: var(--secondaryFont);">
+                        <?= $_SESSION['cart_message'] ?>
+                    </div>
+                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"
+                        style="filter: invert(1);"></button>
+                </div>
+            </div>
+        </div>
+        <?php unset($_SESSION['cart_message']); ?>
+    <?php endif; ?>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const pickupRadio = document.querySelector('input[name="order_type"][value="pickup"]');
-            const modalEl = document.getElementById('confirmModal');
-            if (!modalEl) return;
+    <?php if (isset($_SESSION['cart_error'])): ?>
+        <div class="toast-container position-fixed bottom-0 end-0 p-3 z-3">
+            <div id="errorToast" class="toast align-items-center border-0 fade show" role="alert" aria-live="assertive"
+                aria-atomic="true" data-bs-delay="4000" data-bs-autohide="true"
+                style="background-color: var(--text-color-dark); color: var(--text-color-light); border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.25);">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-x-circle-fill ms-3 me-3" style="font-size: 1.2rem; color: #dc3545;"></i>
+                    <div class="toast-body" style="font-family: var(--secondaryFont);">
+                        <?= $_SESSION['cart_error'] ?>
+                    </div>
+                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"
+                        style="filter: invert(1);"></button>
+                </div>
+            </div>
+        </div>
+        <?php unset($_SESSION['cart_error']); ?>
+    <?php endif; ?>
 
-            const confirmModal = new bootstrap.Modal(modalEl);
-            const orderSummaryList = document.getElementById("orderSummaryList");
-            const confirmBtn = modalEl.querySelector(".confirm-order-btn");
-            const checkoutForm = document.querySelector("form"); // Main checkout form
-            const toastEl = document.getElementById('orderToast');
-            const orderToast = new bootstrap.Toast(toastEl);
+    <!-- Include both modals -->
+    <?php include 'modal/cart-modal.php'; ?>
+    <?php include 'modal/order-confirmation-modal.php'; ?>
 
-            if (pickupRadio) {
-                pickupRadio.addEventListener("change", () => {
-                    if (pickupRadio.checked) {
-                        // Populate order summary
-                        orderSummaryList.innerHTML = "";
-                        <?php if (!empty($_SESSION['cart'])): ?>
-                            <?php foreach ($_SESSION['cart'] as $item): ?>
-                                orderSummaryList.innerHTML += `<li><?= $item['quantity'] ?>x <?= htmlspecialchars($item['product_name']) ?></li>`;
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-
-                        // Show modal
-                        confirmModal.show();
-                    }
-                });
-            }
-
-            if (confirmBtn && checkoutForm) {
-                confirmBtn.addEventListener("click", () => {
-                    const customerNameInput = document.getElementById('pickupCustomerName');
-                    let hiddenInput = checkoutForm.querySelector('input[name="customer_name"]');
-
-                    if (!hiddenInput) {
-                        hiddenInput = document.createElement('input');
-                        hiddenInput.type = 'hidden';
-                        hiddenInput.name = 'customer_name';
-                        checkoutForm.appendChild(hiddenInput);
-                    }
-
-                    hiddenInput.value = customerNameInput.value.trim();
-
-                    confirmModal.hide();
-                    checkoutForm.querySelector("button[name='checkout']").click();
-                    orderToast.show();
-                });
-            }
-        });
-    </script>
-    <script src="assets/js/main.js"></script>
-    <script src="assets/js/navbar.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO"
         crossorigin="anonymous"></script>
-    <?php include 'modal/cart-modal.php'; ?>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/navbar.js"></script>
+
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            const pickupRadio = document.querySelector('input[name="order_type"][value="pickup"]');
-            const modalEl = document.getElementById('confirmModal');
-            if (!modalEl) return;
+            // Initialize and show toasts
+            const successToast = document.getElementById('successToast');
+            const errorToast = document.getElementById('errorToast');
 
-            const confirmModal = new bootstrap.Modal(modalEl);
-            const orderSummaryList = document.getElementById("orderSummaryList");
-            const confirmBtn = modalEl.querySelector(".confirm-order-btn");
-            const checkoutForm = document.querySelector("form"); // Main checkout form
-
-            // When Pickup is selected, show modal
-            if (pickupRadio) {
-                pickupRadio.addEventListener("change", () => {
-                    if (pickupRadio.checked) {
-                        // Populate order summary
-                        orderSummaryList.innerHTML = "";
-                        <?php if (!empty($_SESSION['cart'])): ?>
-                            <?php foreach ($_SESSION['cart'] as $item): ?>
-                                orderSummaryList.innerHTML += `<li><?= $item['quantity'] ?>x <?= htmlspecialchars($item['product_name']) ?></li>`;
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-
-                        // Show modal
-                        confirmModal.show();
-                    }
-                });
+            if (successToast) {
+                const toast = new bootstrap.Toast(successToast);
+                toast.show();
             }
 
-            // When Confirm is clicked in modal, save customer name only
-            if (confirmBtn && checkoutForm) {
-                confirmBtn.addEventListener("click", () => {
-                    const customerNameInput = document.getElementById('pickupCustomerName');
-                    let hiddenInput = checkoutForm.querySelector('input[name="customer_name"]');
-
-                    if (!hiddenInput) {
-                        hiddenInput = document.createElement('input');
-                        hiddenInput.type = 'hidden';
-                        hiddenInput.name = 'customer_name';
-                        checkoutForm.appendChild(hiddenInput);
-                    }
-
-                    hiddenInput.value = customerNameInput.value.trim();
-                    confirmModal.hide();
-                });
+            if (errorToast) {
+                const toast = new bootstrap.Toast(errorToast);
+                toast.show();
             }
-        });
-    </script>
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
+
+            // Radio card selection styling
+            const radioInputs = document.querySelectorAll('input[type="radio"]');
+
+            radioInputs.forEach(radio => {
+                radio.addEventListener('change', () => {
+                    // Remove selected class from all cards in the same group
+                    const groupName = radio.getAttribute('name');
+                    document.querySelectorAll(`input[name="${groupName}"]`).forEach(input => {
+                        input.closest('.radio-option').querySelector('.radio-card').classList.remove('selected');
+                    });
+
+                    // Add selected class to current card
+                    if (radio.checked) {
+                        radio.closest('.radio-option').querySelector('.radio-card').classList.add('selected');
+                    }
+                });
+            });
+
+            // GCash field toggle
             const gcashRadio = document.querySelector('input[name="payment_method"][value="gcash"]');
             const cashRadio = document.querySelector('input[name="payment_method"][value="cash"]');
             const gcashField = document.getElementById("gcashField");
             const refNumberInput = document.getElementById("refNumber");
 
             function toggleGCashField() {
-                if (gcashRadio.checked) {
+                if (gcashRadio && gcashRadio.checked) {
                     gcashField.style.display = "block";
-                    refNumberInput.setAttribute("required", "true"); // make it required only for GCash
+                    refNumberInput.setAttribute("required", "true");
                 } else {
                     gcashField.style.display = "none";
                     refNumberInput.removeAttribute("required");
-                    refNumberInput.value = ""; // clear if switching back
+                    refNumberInput.value = "";
                 }
             }
 
-            // Run on page load
-            toggleGCashField();
+            if (gcashRadio && cashRadio) {
+                toggleGCashField();
+                gcashRadio.addEventListener("change", toggleGCashField);
+                cashRadio.addEventListener("change", toggleGCashField);
+            }
 
-            // Attach listeners
-            gcashRadio.addEventListener("change", toggleGCashField);
-            cashRadio.addEventListener("change", toggleGCashField);
+            // Handle pickup radio - this will trigger the pickup modal from cart-modal.php
+            const pickupRadio = document.querySelector('input[name="order_type"][value="pickup"]');
+            const dineInRadio = document.querySelector('input[name="order_type"][value="dine-in"]');
+            const takeoutRadio = document.querySelector('input[name="order_type"][value="takeout"]');
+
+            function handleOrderTypeChange() {
+                const cashOption = cashRadio.closest('.radio-option');
+                const cashCard = cashOption.querySelector('.radio-card');
+
+                if (pickupRadio && pickupRadio.checked) {
+                    // Disable cash option for pickup
+                    cashRadio.disabled = true;
+                    cashCard.style.opacity = '0.5';
+                    cashCard.style.cursor = 'not-allowed';
+
+                    // Auto-select GCash if cash was selected
+                    if (cashRadio.checked) {
+                        gcashRadio.checked = true;
+                        gcashRadio.closest('.radio-option').querySelector('.radio-card').classList.add('selected');
+                        cashCard.classList.remove('selected');
+                        toggleGCashField();
+                    }
+                } else {
+                    // Enable cash option for dine-in/takeout
+                    cashRadio.disabled = false;
+                    cashCard.style.opacity = '1';
+                    cashCard.style.cursor = 'pointer';
+                }
+            }
+
+            if (pickupRadio) {
+                pickupRadio.addEventListener('change', handleOrderTypeChange);
+            }
+            if (dineInRadio) {
+                dineInRadio.addEventListener('change', handleOrderTypeChange);
+            }
+            if (takeoutRadio) {
+                takeoutRadio.addEventListener('change', handleOrderTypeChange);
+            }
+
+            // Simple checkout button click - let modal handle all validation
+            const checkoutBtn = document.getElementById('checkoutBtn');
+            if (checkoutBtn) {
+                checkoutBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    // All validation is handled by the order confirmation modal
+                    // No duplicate validation here to prevent double toast
+                });
+            }
         });
     </script>
 </body>

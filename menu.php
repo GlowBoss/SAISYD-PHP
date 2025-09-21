@@ -71,41 +71,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
             'quantity' => $quantity
         ];
     }
-// INSERT TO DATABASE
-
-    // Check if may pending order (reuse) or create new
-    // $orderResult = executeQuery("SELECT * FROM orders WHERE status='pending' LIMIT 1");
-
-    // if (mysqli_num_rows($orderResult) > 0) {
-    //     $order = mysqli_fetch_assoc($orderResult);
-    //     $orderID = $order['orderID'];
-    // } else {
-    //     $today = date("Y-m-d");
-    //     $insertOrder = "INSERT INTO orders (orderDate, status, totalAmount) VALUES ('$today','pending',0)";
-    //     executeQuery($insertOrder);
-
-    //     $newOrder = executeQuery("SELECT orderID FROM orders ORDER BY orderID DESC LIMIT 1");
-    //     $orderRow = mysqli_fetch_assoc($newOrder);
-    //     $orderID = $orderRow['orderID'];
-    // }
-    // Prepare values for database insert -  naghahandle ng NULL values 
-    $sugarValue = ($sugar !== null) ? "'" . mysqli_real_escape_string($conn, $sugar) . "'" : "NULL";
-    $iceValue = ($ice !== null) ? "'" . mysqli_real_escape_string($conn, $ice) . "'" : "NULL";
-    $notesValue = "'" . mysqli_real_escape_string($conn, $notes) . "'";
-
-    // Insert item with customizations
-    $insertItem = "
-        INSERT INTO orderitems (orderID, productID, quantity, sugar, ice, notes) 
-        VALUES (
-            '$orderID',
-            '$productId',
-            '$quantity',
-            $sugarValue,
-            $iceValue,
-            $notesValue
-        )
-    ";
-    executeQuery($insertItem);
 
     // Reset cart timeout
     $_SESSION['cart_timeout'] = time() + (30 * 60);
@@ -181,7 +146,6 @@ function getCartItemCount()
 // Get current category from cookie if using JS filtering
 $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_category'] : 'ALL';
 ?>
-
 
 <!doctype html>
 <html lang="en">
