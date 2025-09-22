@@ -27,7 +27,8 @@ $count = $result->num_rows;
     <div class="modal-content rounded-4 shadow-lg border-0" style="background: var(--bg-color); max-height: 90vh;">
 
       <!-- Header -->
-      <div class="modal-header border-0 pb-2 px-3 px-sm-4">
+      <div class="modal-header border-0 pb-2 px-3 px-sm-4 d-flex justify-content-between align-items-center">
+
         <h1 class="modal-title fs-5 fs-sm-4 fw-bold" id="stockModalLabel"
           style="font-family: var(--primaryFont); color: var(--primary-color); letter-spacing: 1px;">
           Low Stock Alert
