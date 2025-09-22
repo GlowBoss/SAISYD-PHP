@@ -18,7 +18,7 @@ $dailySales = "
         SUM(o.totalAmount) AS total_sales
     FROM orders o
     JOIN payments p ON o.orderID = p.orderID
-    WHERE p.paymentStatus = 'completed'
+    WHERE p.paymentStatus = 'paid'
       AND o.orderDate >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
     GROUP BY sale_date
     ORDER BY sale_date;
@@ -38,7 +38,7 @@ $weeklySales = "SELECT
     SUM(o.totalAmount) AS total_sales
 FROM orders o
 JOIN payments p ON o.orderID = p.orderID
-WHERE p.paymentStatus = 'completed'
+WHERE p.paymentStatus = 'paid'
   AND YEARWEEK(o.orderDate, 1) = YEARWEEK(CURDATE(), 1)";
 
 $weeklyResult = mysqli_query($conn, $weeklySales);
@@ -50,7 +50,7 @@ $monthlySales = "SELECT
     SUM(o.totalAmount) AS total_sales
 FROM orders o
 JOIN payments p ON o.orderID = p.orderID
-WHERE p.paymentStatus = 'completed'
+WHERE p.paymentStatus = 'paid'
   AND YEAR(o.orderDate) = YEAR(CURDATE())
   AND MONTH(o.orderDate) = MONTH(CURDATE())";
 $monthlyResult = mysqli_query($conn, $monthlySales);
@@ -62,7 +62,7 @@ $avgOrderValue = "SELECT
     ROUND(AVG(o.totalAmount), 2) AS avg_order_value
 FROM orders o
 JOIN payments p ON o.orderID = p.orderID
-WHERE p.paymentStatus = 'completed'
+WHERE p.paymentStatus = 'paid'
   AND MONTH(o.orderDate) = MONTH(CURDATE())
   AND YEAR(o.orderDate) = YEAR(CURDATE());";
 $avgOrderValueResult = mysqli_query($conn, $avgOrderValue);
@@ -78,7 +78,7 @@ FROM orderitems oi
 JOIN products pr ON oi.productID = pr.productID
 JOIN orders o ON oi.orderID = o.orderID
 JOIN payments p ON o.orderID = p.orderID
-WHERE p.paymentStatus = 'completed'
+WHERE p.paymentStatus = 'paid'
   AND YEARWEEK(o.orderDate, 1) = YEARWEEK(CURDATE(), 1)
 GROUP BY pr.productID, pr.productName
 ORDER BY total_qty_sold DESC
@@ -96,7 +96,7 @@ SELECT
 FROM orderitems oi
 JOIN orders o ON oi.orderID = o.orderID
 JOIN payments p ON o.orderID = p.orderID
-WHERE p.paymentStatus = 'completed'
+WHERE p.paymentStatus = 'paid'
   AND YEARWEEK(o.orderDate, 1) = YEARWEEK(CURDATE(), 1);
 ";
 
@@ -145,7 +145,7 @@ JOIN payments p    ON o.orderID = p.orderID
 JOIN orderitems oi ON oi.orderID = o.orderID
 LEFT JOIN products pr ON pr.productID = oi.productID
 LEFT JOIN users u  ON u.userID = o.userID
-WHERE p.paymentStatus = 'completed'
+WHERE p.paymentStatus = 'paid'
 GROUP BY
   o.orderID,
   o.orderNumber,
@@ -173,7 +173,7 @@ JOIN products pr ON oi.productID = pr.productID
 LEFT JOIN categories c ON pr.categoryID = c.categoryID
 JOIN orders o ON oi.orderID = o.orderID
 JOIN payments p ON o.orderID = p.orderID
-WHERE p.paymentStatus = 'completed'
+WHERE p.paymentStatus = 'paid'
 GROUP BY pr.productID, pr.productName, c.categoryName, pr.price
 ORDER BY total_quantity DESC;
 ";
@@ -240,7 +240,7 @@ $sql = "
     JOIN categories c ON pr.categoryID = c.categoryID
     JOIN orders o ON oi.orderID = o.orderID
     WHERE o.status = 'completed'
-      AND o.orderID IN (SELECT orderID FROM payments WHERE paymentStatus = 'completed')
+      AND o.orderID IN (SELECT orderID FROM payments WHERE paymentStatus = 'paid')
     $whereSql
     GROUP BY pr.productID, pr.productName, c.categoryName, pr.price
     $orderBy
@@ -555,9 +555,9 @@ $productResult = $stmt->get_result();
                                         <div class="cardStats mt-3">
                                             <div class="card-body p-0">
                                                 <!-- Chart.js Canvas -->
-                                                 <div class="chart-container">
-                                                     <canvas id="salesChart"></canvas>
-                                                 </div>
+                                                <div class="chart-container">
+                                                    <canvas id="salesChart"></canvas>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -582,24 +582,25 @@ $productResult = $stmt->get_result();
                                                 <th>Total (₱)</th>
                                                 <th>Payment Method</th>
                                                 <th>Status</th>
-                                                <th>Customer/Counter Name</th>
+                                                <th>Customer Name</th>
                                             </tr>
                                         </thead>
-                                        <tbody class="text-center align-middle">
+                                        <tbody class="text-center align-middle"
+                                            style="font-size: 0.50rem; line-height: 1.2; padding: 0 !important;">
                                             <?php
                                             if (mysqli_num_rows($transactionResult) > 0) {
                                                 while ($row = mysqli_fetch_assoc($transactionResult)) {
                                                     ?>
-                                                    <tr>
-                                                        <td><?= date('M d, Y', strtotime($row['orderDate'])) ?><br>
+                                                    <tr style="font-size: 0.50rem; line-height: 1.1; padding: 0 !important;">
+                                                        <td class="p-0"><?= date('M d, Y', strtotime($row['orderDate'])) ?><br>
                                                             <?= date('H:i', strtotime($row['orderDate'])) ?>
                                                         </td>
-                                                        <td><?= htmlspecialchars($row['orderNumber']) ?></td>
-                                                        <td><?= $row['orderItems'] ?></td>
-                                                        <td>₱<?= number_format($row['totalAmount'], 2) ?></td>
-                                                        <td><?= htmlspecialchars($row['paymentMethod']) ?></td>
-                                                        <td><?= ucfirst($row['paymentStatus']) ?></td>
-                                                        <td><?= htmlspecialchars($row['displayName']) ?></td>
+                                                        <td class="p-1"><?= htmlspecialchars($row['orderNumber']) ?></td>
+                                                        <td class="p-1"><?= $row['orderItems'] ?></td>
+                                                        <td class="p-1">₱<?= number_format($row['totalAmount'], 2) ?></td>
+                                                        <td class="p-1"><?= htmlspecialchars($row['paymentMethod']) ?></td>
+                                                        <td class="p-1"><?= ucfirst($row['paymentStatus']) ?></td>
+                                                        <td class="p-1"><?= htmlspecialchars($row['displayName']) ?></td>
                                                     </tr>
                                                     <?php
                                                 }
@@ -607,7 +608,6 @@ $productResult = $stmt->get_result();
                                                 echo "<tr><td colspan='7' class='text-center'>No transactions found</td></tr>";
                                             }
                                             ?>
-
                                         </tbody>
 
                                     </table>
@@ -696,18 +696,18 @@ $productResult = $stmt->get_result();
                                                         <th>Product ID</th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody>
+                                                    <tbody style="font-size: 0.50rem; line-height: 1.1; padding: 0 !important;">
                                                         <?php
                                                         if (mysqli_num_rows($productResult) > 0) {
                                                             while ($row = mysqli_fetch_assoc($productResult)) {
                                                                 ?>
-                                                                <tr>
-                                                                    <td><?= htmlspecialchars($row['item_name']) ?></td>
-                                                                    <td><?= htmlspecialchars($row['category']) ?></td>
-                                                                    <td>₱<?= number_format($row['price_each'], 2) ?></td>
-                                                                    <td><?= (int) $row['total_quantity'] ?></td>
-                                                                    <td>₱<?= number_format($row['total_sales'], 2) ?></td>
-                                                                    <td><?= htmlspecialchars($row['productID']) ?></td>
+                                                                <tr style="font-size: 0.50rem; line-height: 1.1; padding: 0 !important;">
+                                                                    <td class="p-1"><?= htmlspecialchars($row['item_name']) ?></td>
+                                                                    <td class="p-1"><?= htmlspecialchars($row['category']) ?></td>
+                                                                    <td class="p-1">₱<?= number_format($row['price_each'], 2) ?></td>
+                                                                    <td class="p-1"><?= (int) $row['total_quantity'] ?></td>
+                                                                    <td class="p-1">₱<?= number_format($row['total_sales'], 2) ?></td>
+                                                                    <td class="p-1"><?= htmlspecialchars($row['productID']) ?></td>
                                                                 </tr>
                                                                 <?php
                                                             }
@@ -818,7 +818,7 @@ $productResult = $stmt->get_result();
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false, 
+                maintainAspectRatio: false,
                 plugins: {
                     legend: { display: true }
                 },
