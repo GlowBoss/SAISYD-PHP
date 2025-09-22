@@ -104,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 // Insert payment
-                $paymentStatus = 'Paid';
+                $paymentStatus = 'paid';
                 $refNumberEscaped = $refNumber ? "'" . mysqli_real_escape_string($conn, $refNumber) . "'" : "NULL";
                 $paymentMethodEscaped = mysqli_real_escape_string($conn, $paymentMethod);
 
@@ -167,7 +167,6 @@ function getCartTotal()
 </head>
 
 <body>
-    <!-- [Previous sidebar and navbar code remains the same] -->
     <!-- Sidebar Overlay -->
     <div id="sidebarOverlay" class="sidebar-overlay"></div>
 
@@ -466,7 +465,7 @@ function getCartTotal()
                                 </h3>
                                 <div class="radio-group">
                                     <div class="radio-option">
-                                        <input class="form-check-input" type="radio" name="payment_method" value="Cash"
+                                        <input class="form-check-input" type="radio" name="payment_method" value="cash"
                                             id="cash" required>
                                         <label class="radio-card" for="cash">
                                             <i class="bi bi-cash mb-2 d-block" style="font-size: 1.5rem;"></i>
@@ -474,7 +473,7 @@ function getCartTotal()
                                         </label>
                                     </div>
                                     <div class="radio-option">
-                                        <input class="form-check-input" type="radio" name="payment_method" value="GCash"
+                                        <input class="form-check-input" type="radio" name="payment_method" value="gcash"
                                             id="gcash" required>
                                         <label class="radio-card" for="gcash">
                                             <i class="bi bi-phone mb-2 d-block" style="font-size: 1.5rem;"></i>
@@ -559,7 +558,7 @@ function getCartTotal()
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            // Initialize and show toasts
+            
             const successToast = document.getElementById('successToast');
             const errorToast = document.getElementById('errorToast');
 
@@ -573,25 +572,25 @@ function getCartTotal()
                 toast.show();
             }
 
-            // Radio card selection styling
+            // Radio card 
             const radioInputs = document.querySelectorAll('input[type="radio"]');
 
             radioInputs.forEach(radio => {
                 radio.addEventListener('change', () => {
-                    // Remove selected class from all cards in the same group
+                    
                     const groupName = radio.getAttribute('name');
                     document.querySelectorAll(`input[name="${groupName}"]`).forEach(input => {
                         input.closest('.radio-option').querySelector('.radio-card').classList.remove('selected');
                     });
 
-                    // Add selected class to current card
+                    
                     if (radio.checked) {
                         radio.closest('.radio-option').querySelector('.radio-card').classList.add('selected');
                     }
                 });
             });
 
-            // GCash field toggle
+            // GCash field toggle 
             const gcashRadio = document.querySelector('input[name="payment_method"][value="gcash"]');
             const cashRadio = document.querySelector('input[name="payment_method"][value="cash"]');
             const gcashField = document.getElementById("gcashField");
@@ -614,7 +613,7 @@ function getCartTotal()
                 cashRadio.addEventListener("change", toggleGCashField);
             }
 
-            // Handle pickup radio - this will trigger the pickup modal from cart-modal.php
+            // Handle pickup radio
             const pickupRadio = document.querySelector('input[name="order_type"][value="pickup"]');
             const dineInRadio = document.querySelector('input[name="order_type"][value="dine-in"]');
             const takeoutRadio = document.querySelector('input[name="order_type"][value="takeout"]');
@@ -624,12 +623,12 @@ function getCartTotal()
                 const cashCard = cashOption.querySelector('.radio-card');
 
                 if (pickupRadio && pickupRadio.checked) {
-                    // Disable cash option for pickup
+                  
                     cashRadio.disabled = true;
                     cashCard.style.opacity = '0.5';
                     cashCard.style.cursor = 'not-allowed';
 
-                    // Auto-select GCash if cash was selected
+                  
                     if (cashRadio.checked) {
                         gcashRadio.checked = true;
                         gcashRadio.closest('.radio-option').querySelector('.radio-card').classList.add('selected');
@@ -637,7 +636,7 @@ function getCartTotal()
                         toggleGCashField();
                     }
                 } else {
-                    // Enable cash option for dine-in/takeout
+                  
                     cashRadio.disabled = false;
                     cashCard.style.opacity = '1';
                     cashCard.style.cursor = 'pointer';
@@ -654,13 +653,12 @@ function getCartTotal()
                 takeoutRadio.addEventListener('change', handleOrderTypeChange);
             }
 
-            // Simple checkout button click - let modal handle all validation
+            
             const checkoutBtn = document.getElementById('checkoutBtn');
             if (checkoutBtn) {
                 checkoutBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    // All validation is handled by the order confirmation modal
-                    // No duplicate validation here to prevent double toast
+                    
                 });
             }
         });

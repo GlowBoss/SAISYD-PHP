@@ -163,19 +163,18 @@
         const checkoutForm = document.getElementById('checkoutForm');
         const finalConfirmBtn = document.getElementById('finalConfirmBtn');
 
-        // Intercept checkout button click - FIXED EVENT PROPAGATION
+        // Intercept checkout button click 
         if (checkoutBtn && checkoutForm) {
             checkoutBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                e.stopPropagation(); // Prevent event bubbling
+                e.stopPropagation(); 
 
-                // Validate form first
+                
                 const formData = new FormData(checkoutForm);
                 const orderType = formData.get('order_type');
                 const paymentMethod = formData.get('payment_method');
                 const refNumber = formData.get('ref_number');
 
-                // Enhanced validation with proper GCash reference number check
                 let hasError = false;
                 let errorMessage = '';
 
@@ -202,15 +201,15 @@
                     return;
                 }
 
-                // Populate modal with order details
+           
                 populateOrderConfirmation(formData);
 
-                // Show confirmation modal
+       
                 orderConfirmModal.show();
             });
         }
 
-        // Handle final confirmation with additional validation
+  
         if (finalConfirmBtn) {
             finalConfirmBtn.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -220,7 +219,7 @@
                 const paymentMethod = document.querySelector('input[name="payment_method"]:checked')?.value;
                 const refNumberInput = document.getElementById('refNumber');
                 
-                // Re-validate GCash reference before final submission
+       
                 if (paymentMethod === 'gcash') {
                     const refNumber = refNumberInput ? refNumberInput.value.trim() : '';
                     
@@ -230,7 +229,6 @@
                     }
                 }
 
-                // Check pickup customer info
                 if (orderType === 'pickup') {
                     const hiddenNameInput = checkoutForm.querySelector('input[name="customer_name"]');
                     const hiddenPhoneInput = checkoutForm.querySelector('input[name="customer_phone"]');
@@ -241,11 +239,9 @@
                     }
                 }
 
-                // Show loading state
                 finalConfirmBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>Processing...';
                 finalConfirmBtn.disabled = true;
 
-                // Add hidden inputs to indicate this is a confirmed submission
                 const confirmedInput = document.createElement('input');
                 confirmedInput.type = 'hidden';
                 confirmedInput.name = 'confirmed_checkout';
@@ -258,7 +254,6 @@
                 checkoutInput.value = '1';
                 checkoutForm.appendChild(checkoutInput);
 
-                // Submit after brief loading animation
                 setTimeout(() => {
                     orderConfirmModal.hide();
                     checkoutForm.submit();
@@ -266,7 +261,6 @@
             });
         }
 
-        // Real-time validation for GCash reference number input
         const refNumberInput = document.getElementById('refNumber');
         if (refNumberInput) {
             refNumberInput.addEventListener('input', function(e) {
@@ -277,27 +271,24 @@
                 }
                 e.target.value = value;
 
-                // Visual feedback for validation
                 const gcashField = document.getElementById('gcashField');
                 if (gcashField) {
                     if (value.length === 13) {
-                        // Valid - green border
+
                         e.target.style.borderColor = '#28a745';
                         e.target.style.boxShadow = '0 0 0 0.2rem rgba(40, 167, 69, 0.25)';
                     } else if (value.length > 0) {
-                        // Invalid length - red border
+                        
                         e.target.style.borderColor = '#dc3545';
                         e.target.style.boxShadow = '0 0 0 0.2rem rgba(220, 53, 69, 0.25)';
                     } else {
-                        // Empty - reset to default
+                        
                         e.target.style.borderColor = '';
                         e.target.style.boxShadow = '';
                     }
                 }
             });
 
-            // Remove the blur validation - it's causing the issue
-            // Validation is already handled in the main checkout validation
         }
 
         function populateOrderConfirmation(formData) {
@@ -396,7 +387,7 @@
         }
 
         function showErrorMessage(message) {
-            // Remove existing error toasts first to prevent duplicates
+            
             const existingToasts = document.querySelectorAll('.toast[role="alert"]');
             existingToasts.forEach(toast => {
                 if (toast.querySelector('.bi-x-circle-fill')) { // Error toast

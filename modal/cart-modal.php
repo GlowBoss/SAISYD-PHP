@@ -1,4 +1,4 @@
-<!-- Pickup Customer Info Modal (Compact) -->
+<!-- Pickup Customer -->
 <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 shadow-lg border-0" style="background: var(--bg-color);">
@@ -135,10 +135,9 @@
 
 <script>
     function formatPhoneNumber(input) {
-        // Remove all non-digits
+        
         let value = input.value.replace(/[^0-9]/g, '');
         
-        // If user tries to delete the '09', restore it
         if (!value.startsWith('09')) {
             if (value === '' || value === '0') {
                 value = '09';
@@ -149,7 +148,6 @@
             }
         }
         
-        // Limit to 11 digits
         value = value.slice(0, 11);
         
         input.value = value;
@@ -170,7 +168,7 @@
         const hiddenCustomerInput = document.getElementById('hiddenCustomerName');
         const hiddenPhoneInput = document.getElementById('hiddenCustomerPhone');
 
-        // Disable confirm button initially
+    
         confirmBtn.disabled = true;
 
         function validateForm() {
@@ -180,7 +178,7 @@
             
             confirmBtn.disabled = !isValid;
             
-            // Update button opacity when disabled
+           
             if (confirmBtn.disabled) {
                 confirmBtn.style.opacity = '0.6';
                 confirmBtn.style.cursor = 'not-allowed';
@@ -190,13 +188,12 @@
             }
         }
 
-        // Validate live while typing
         customerNameInput.addEventListener("input", validateForm);
         customerPhoneInput.addEventListener("input", validateForm);
 
         pickupRadio.addEventListener("change", () => {
             if (pickupRadio.checked) {
-                // Fill order summary (compact format)
+                
                 orderSummaryList.innerHTML = "";
                 <?php if (!empty($_SESSION['cart'])): ?>
                     <?php foreach ($_SESSION['cart'] as $item): ?>
@@ -210,16 +207,16 @@
 
         confirmBtn.addEventListener("click", () => {
             if (!confirmBtn.disabled) {
-                // Show loading state
+              
                 const originalText = confirmBtn.innerHTML;
                 confirmBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>Saving...';
                 confirmBtn.disabled = true;
                 
-                // Save values to hidden inputs only if validation passes
+               
                 hiddenCustomerInput.value = customerNameInput.value.trim();
                 hiddenPhoneInput.value = customerPhoneInput.value.trim();
                 
-                // Reset button after brief delay
+             
                 setTimeout(() => {
                     confirmBtn.innerHTML = originalText;
                     confirmBtn.disabled = false;
@@ -230,7 +227,6 @@
             confirmBtn.blur();
         });
 
-        // Handle close button and backdrop clicks
         modalEl.addEventListener("hide.bs.modal", () => {
             const focusedElement = modalEl.querySelector(':focus');
             if (focusedElement) {
@@ -238,35 +234,33 @@
             }
         });
 
-        // Handle all modal close events consistently
         modalEl.addEventListener("hidden.bs.modal", () => {
-            // Reset pickup radio if not properly confirmed
+          
             if (!hiddenCustomerInput.value || !hiddenPhoneInput.value) {
                 pickupRadio.checked = false;
             }
 
-            // Clear any lingering modal effects
             document.body.classList.remove('modal-open');
             const backdrop = document.querySelector('.modal-backdrop');
             if (backdrop) {
                 backdrop.remove();
             }
             
-            // Reset body styles that might be stuck
+           
             document.body.style.overflow = '';
             document.body.style.paddingRight = '';
             
-            // Reset form validation state
+            
             validateForm();
         });
 
-        // Reset form state when modal opens
+        
         modalEl.addEventListener("shown.bs.modal", () => {
             validateForm();
             customerNameInput.focus();
         });
 
-        // Additional safety: handle backdrop clicks
+       
         modalEl.addEventListener("click", (e) => {
             if (e.target === modalEl) {
                 confirmModal.hide();
