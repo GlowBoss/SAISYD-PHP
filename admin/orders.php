@@ -610,7 +610,7 @@ $statusCounts = getStatusCountsData();
         // Update order status
         function updateOrderStatus(orderID, newStatus) {
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', 'orders.php', true);
+            xhr.open('POST','../assets/inventory-deduction.php', true);
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4 && xhr.status === 200) {
