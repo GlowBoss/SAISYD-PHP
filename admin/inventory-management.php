@@ -603,7 +603,7 @@ foreach ($rows as $row) {
                                                     data-expiration="<?= $row['expirationDate'] ?>"
                                                     data-threshold="<?= $row['threshold'] ?>" data-bs-toggle="modal"
                                                     data-bs-target="#editItemModal">
-                                                    Edit
+                                                    <i class = "bi bi-pencil"></i>
                                                 </button>
                                                 <button class="btn action-btn-sm delete-btn" title="Delete Item"
                                                     onclick="confirmDelete(<?= $row['inventoryID'] ?>, '<?= addslashes($row['ingredientName']) ?>')">
