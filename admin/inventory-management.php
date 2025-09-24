@@ -684,7 +684,7 @@ foreach ($rows as $row) {
 
                     // Fill modal fields
                     document.getElementById('inventoryID').value = inventoryID;
-                    document.getElementById('ingredientID').value = ingredientID;
+                    document.getElementById('ingredientIDEdit').value = ingredientID;
                     document.getElementById('ingredientNameEdit').value = ingredient;
                     document.getElementById('quantityEdit').value = quantity;
                     document.getElementById('unitEdit').value = unit;

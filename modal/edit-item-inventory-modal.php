@@ -77,7 +77,7 @@
                 <div class="modal-body">
 
                     <input type="hidden" id="inventoryID" name="inventoryID" value="">
-                    <input type="hidden" id="ingredientID" name="ingredientID" value="">
+                    <input type="hidden" id="ingredientIDEdit" name="ingredientIDEdit" value="">
                     <div class="row g-4">
                         <!-- Left Column -->
                         <div class="col-md-6">

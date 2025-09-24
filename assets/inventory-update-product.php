@@ -11,33 +11,33 @@ if (!isset($_SESSION['userID'])) {
 
 // Validate required fields
 if (
-    !isset($_POST['inventoryID'], $_POST['ingredientNameEdit'], $_POST['quantityEdit'], 
-            $_POST['unitEdit'], $_POST['expirationEdit'], $_POST['thresholdEdit'])
+    !isset($_POST['inventoryID'], $_POST['ingredientIDEdit'], $_POST['ingredientNameEdit'], 
+            $_POST['quantityEdit'], $_POST['unitEdit'], $_POST['expirationEdit'], $_POST['thresholdEdit'])
 ) {
     echo json_encode(["success" => false, "message" => "Missing required fields"]);
     exit;
 }
 
 $inventoryID   = intval($_POST['inventoryID']);
-$ingredientID  = !empty($_POST['ingredientIDEdit']) ? intval($_POST['ingredientIDEdit']) : 0;
+$ingredientID  = intval($_POST['ingredientIDEdit']); // ✅ must exist
 $ingredient    = trim($_POST['ingredientNameEdit']);
 $quantity      = floatval($_POST['quantityEdit']);
 $unit          = mysqli_real_escape_string($conn, $_POST['unitEdit']);
 $expiration    = $_POST['expirationEdit'];  // YYYY-MM-DD
 $threshold     = floatval($_POST['thresholdEdit']);
 
-// ✅ If no ingredientID → add new ingredient
-if ($ingredientID === 0 && !empty($ingredient)) {
-    $stmtNew = $conn->prepare("INSERT INTO ingredients (ingredientName) VALUES (?)");
-    $stmtNew->bind_param("s", $ingredient);
-    if ($stmtNew->execute()) {
-        $ingredientID = $stmtNew->insert_id;
-    } else {
-        echo json_encode(["success" => false, "message" => "Failed to add new ingredient: " . $conn->error]);
-        exit;
-    }
-    $stmtNew->close();
+// ✅ Ensure ingredientID exists in DB (optional safety check)
+$checkStmt = $conn->prepare("SELECT ingredientID FROM ingredients WHERE ingredientID = ?");
+$checkStmt->bind_param("i", $ingredientID);
+$checkStmt->execute();
+$checkStmt->store_result();
+
+if ($checkStmt->num_rows === 0) {
+    echo json_encode(["success" => false, "message" => "Invalid ingredient ID"]);
+    $checkStmt->close();
+    exit;
 }
+$checkStmt->close();
 
 // ✅ Update inventory row
 $sql = "UPDATE inventory 
