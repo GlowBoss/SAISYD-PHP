@@ -17,7 +17,7 @@
 
                 <!-- QR Code -->
                 <div class="d-flex justify-content-center my-4">
-                    <img src="" alt="QR Code" style="width:200px; height:200px;">
+                    <div id="qrcode"></div>
                 </div>
 
                 <!-- Direct Link -->
@@ -29,13 +29,32 @@
 
             <!-- Footer -->
             <div class="modal-footer border-0 d-flex justify-content-end">
-                <button type="button" class="btn fw-bold px-4 py-2" data-bs-dismiss="modal" style="background: var(--card-bg-color); color: var(--text-color-dark); border: 2px solid var(--primary-color); border-radius:10px;
-                           transition: all 0.3s ease;"
-                    onmouseover="this.style.background='var(--primary-color)'; this.style.color='var(--text-color-light)'; this.style.transform='translateY(-2px)';"
-                    onmouseout="this.style.background='var(--card-bg-color)'; this.style.color='var(--text-color-dark)'; this.style.transform='translateY(0)';">
-                    CLOSE
-                </button>
             </div>
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    var qrContainer = document.getElementById("qrcode");
+
+    // Bootstrap "shown.bs.modal" event
+    var qrModal = document.getElementById("qrModal");
+    qrModal.addEventListener("shown.bs.modal", function () {
+        qrContainer.innerHTML = "";
+
+        // Generate QR code for your local menu
+        new QRCode(qrContainer, {
+            text: "http://localhost/Capstone/SAISYD-PHP/menu.php",
+            width: 200,
+            height: 200,
+            colorDark : "#000000",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
+        });
+    });
+});
+</script>
+
