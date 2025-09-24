@@ -76,7 +76,7 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
               <a href="user_role.html" class="dashboard-box text-decoration-none">User  Role</a>
             </div>
             <div class="col-12 col-sm-6 col-md-4">
-              <a href="setting.php" class="dashboard-box text-decoration-none">Settings</a>
+              <a href="settings.php" class="dashboard-box text-decoration-none">Settings</a>
             </div>
           </div>
         </div>
