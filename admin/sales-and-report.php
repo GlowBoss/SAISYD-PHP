@@ -104,14 +104,14 @@ $totalItemsSoldResult = mysqli_query($conn, $totalItemsSold);
 $totalItemsSoldRow = mysqli_fetch_assoc($totalItemsSoldResult);
 $totalItemsSoldCount = $totalItemsSoldRow['total_items_sold'] ?? 0;
 
-// Today's website visits
+// Today's website visits   (may binago lang me here sa query)
 
 $dailyVisits = "SELECT 
-    visitDate,
+    DATE(visitDate) AS visitDate,
     COUNT(*) AS dailyVisits
 FROM visits
-WHERE visitDate = CURDATE()
-GROUP BY visitDate
+WHERE DATE(visitDate) = CURDATE()
+GROUP BY DATE(visitDate)
 ORDER BY visitDate;
 ";
 $dailyVisitsResult = mysqli_query($conn, $dailyVisits);
