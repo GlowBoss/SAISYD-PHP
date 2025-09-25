@@ -1211,15 +1211,15 @@ function getCartItemCount()
     </button>
 
 
-    <!-- Scripts -->
+    <!-- Scripts in correct order -->
     <script src="assets/js/swiper-bundle.min.js"></script>
-    <script src="assets/js/main.js"></script>
-    <script src="assets/js/navbar.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO"
         crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/navbar.js"></script>
 </body>
 
 </html>

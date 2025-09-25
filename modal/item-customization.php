@@ -73,29 +73,22 @@
 
                     <!-- Ice -->
                     <div class="mb-3" id="iceOption">
-                        <label class="form-label fw-bold"
-                            style="font-family: var(--primaryFont); color: var(--text-color-dark);">Ice Options</label>
+                        <label class="form-label fw-bold">Ice Options</label>
                         <div class="d-flex flex-wrap gap-3">
                             <div class="form-check"><input class="form-check-input" type="radio" name="ice"
                                     value="Extra Ice">
-                                <label class="form-check-label" style="font-family: var(--secondaryFont);">Extra Ice</label>
-                            </div>
-                            <div class="form-check"><input class="form-check-input" type="radio" name="ice"
-                                    value="Less Ice">
-                                <label class="form-check-label" style="font-family: var(--secondaryFont);">Less Ice</label>
+                                <label class="form-check-label">Extra Ice</label>
                             </div>
                             <div class="form-check"><input class="form-check-input" type="radio" name="ice"
                                     value="Default Ice" checked>
-                                <label class="form-check-label"
-                                    style="font-family: var(--secondaryFont);">Default Ice</label>
+                                <label class="form-check-label">Default Ice</label>
                             </div>
                             <div class="form-check"><input class="form-check-input" type="radio" name="ice"
                                     value="No Ice">
-                                <label class="form-check-label" style="font-family: var(--secondaryFont);">None Ice</label>
+                                <label class="form-check-label">No Ice</label>
                             </div>
                         </div>
                     </div>
-
 
                     <div class="mb-4 text-center" style="font-family: var(--primaryFont);">
                         <label class="form-label fw-bold d-block mb-2"
