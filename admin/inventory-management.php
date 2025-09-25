@@ -117,6 +117,7 @@ if (isset($_GET['order']) && ($_GET['order'] === 'asc' || $_GET['order'] === 'de
 
 // Query
 $inventoryQuery = "SELECT i.inventoryID,
+                          i.ingredientID,
                           ing.ingredientName,
                           i.quantity,
                           i.unit,
@@ -127,6 +128,7 @@ $inventoryQuery = "SELECT i.inventoryID,
                    LEFT JOIN ingredients ing 
                         ON i.ingredientID = ing.ingredientID
                    ORDER BY $sort $order";
+
 
 $result = executeQuery($inventoryQuery);
 $rows = [];
@@ -594,9 +596,14 @@ foreach ($rows as $row) {
 
                                         <td class="actions-cell">
                                             <div class="action-buttons">
-                                                <button class="btn action-btn-sm edit-btn" title="Edit Item"
-                                                    data-id="<?= $row['inventoryID'] ?>">
-                                                    <i class="bi bi-pencil"></i>
+                                                <button class="btn action-btn-sm edit-btn" data-id="<?= $row['inventoryID'] ?>"
+                                                    data-ingredient-id="<?= $row['ingredientID'] ?>"
+                                                    data-ingredient="<?= htmlspecialchars($row['ingredientName']) ?>"
+                                                    data-quantity="<?= $row['quantity'] ?>" data-unit="<?= $row['unit'] ?>"
+                                                    data-expiration="<?= $row['expirationDate'] ?>"
+                                                    data-threshold="<?= $row['threshold'] ?>" data-bs-toggle="modal"
+                                                    data-bs-target="#editItemModal">
+                                                    <i class = "bi bi-pencil"></i>
                                                 </button>
                                                 <button class="btn action-btn-sm delete-btn" title="Delete Item"
                                                     onclick="confirmDelete(<?= $row['inventoryID'] ?>, '<?= addslashes($row['ingredientName']) ?>')">
@@ -652,6 +659,7 @@ foreach ($rows as $row) {
 
     <!-- MODALS -->
     <?php include '../modal/add-item-inventory-modal.php'; ?>
+    <?php include '../modal/edit-item-inventory-modal.php'; ?>
     <?php include '../modal/delete-confirm-modal.php'; ?>
     <?php include '../modal/export-modal.php'; ?>
 
@@ -661,6 +669,56 @@ foreach ($rows as $row) {
     <script src="../assets/js/admin_sidebar.js"></script>
 
     <script>
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Loop through all edit buttons
+            document.querySelectorAll('.edit-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    // Grab dataset values
+                    const inventoryID = this.dataset.id;
+                    const ingredientID = this.dataset.ingredientId;
+                    const ingredient = this.dataset.ingredient;
+                    const quantity = this.dataset.quantity;
+                    const unit = this.dataset.unit;
+                    const expiration = this.dataset.expiration;
+
+                    // Fill modal fields
+                    document.getElementById('inventoryID').value = inventoryID;
+                    document.getElementById('ingredientIDEdit').value = ingredientID;
+                    document.getElementById('ingredientNameEdit').value = ingredient;
+                    document.getElementById('quantityEdit').value = quantity;
+                    document.getElementById('unitEdit').value = unit;
+                    document.getElementById('expirationEdit').value = expiration;
+                    document.getElementById('thresholdEdit').value = this.dataset.threshold;
+                });
+            });
+        });
+
+        document.getElementById("updateForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+
+            fetch("../assets/inventory-update-product.php", {
+                method: "POST",
+                body: formData
+            })
+                .then(res => res.json())
+                .then(resp => {
+                    if (resp.success) {
+                        showToast("Inventory updated successfully", "success");
+                        bootstrap.Modal.getInstance(document.getElementById("editItemModal")).hide();
+                        setTimeout(() => {
+                            location.reload();
+                        }, 800);
+                    } else {
+                        showToast("Error: " + resp.message, "danger");
+                    }
+                })
+                .catch(err => console.error("AJAX Error:", err));
+
+        });
+
         // Toast Notification System
         function showToast(message, type = 'success') {
             const toastContainer = document.querySelector('.toast-container');
