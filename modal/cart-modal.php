@@ -1,46 +1,143 @@
-<!-- Order Confirmation Modal -->
+<!-- Pickup Customer -->
 <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold" id="confirmModalLabel">Confirm Pickup Order</h5>
-                <button type="button" class="btn-close" onclick="window.location.href='cart.php'" aria-label="Close"></button>
+        <div class="modal-content rounded-4 shadow-lg border-0" style="background: var(--bg-color);">
+
+            <!-- Header -->
+            <div class="modal-header border-0 pb-2">
+                <h1 class="modal-title fs-5 fw-bold" id="confirmModalLabel"
+                    style="font-family: var(--primaryFont); color: var(--primary-color); letter-spacing: 1px;">
+                    <i class="bi bi-person-fill me-2"></i>Customer Info
+                </h1>
+                <button type="button" class="btn-close" onclick="window.location.href='cart.php'" aria-label="Close"
+                    style="filter: invert(50%);"></button>
             </div>
 
-            <div class="modal-body">
-                <p class="fw-semibold">Please enter your name for pickup:</p>
-                <div class="mb-3">
-                    <input type="text" class="form-control" id="pickupCustomerName" placeholder="Your Name" required>
-                </div>
-                <div class="mb-3">
-                    <label for="pickupCustomerPhone" class="form-label fw-semibold">Phone Number</label>
-                    <input type="text" class="form-control" id="pickupCustomerPhone"
-                        placeholder="09XXXXXXXXX" pattern="\d{11}" maxlength="11" inputmode="numeric"
-                        oninput="formatPhoneNumber(this)" value="09" required>
+            <!-- Body -->
+            <div class="modal-body py-3">
+                <!-- Pickup Icon -->
+                <div class="text-center mb-3">
+                    <i class="bi bi-clock-history" style="font-size: 3rem; color: var(--primary-color);"></i>
                 </div>
 
-                <div class="border rounded p-3 bg-light text-dark mb-3">
-                    <h6 class="fw-bold mb-2">Order Summary</h6>
-                    <ul class="list-unstyled mb-0" id="orderSummaryList">
+                <!-- Info Text -->
+                <div class="text-center mb-3">
+                    <p class="mb-1" style="font-family: var(--secondaryFont); color: var(--text-color-dark); font-size: 1rem;">
+                        Please provide your information for pickup
+                    </p>
+                    <small class="text-muted" style="font-family: var(--secondaryFont);">
+                        We'll contact you when ready
+                    </small>
+                </div>
+
+                <!-- Customer Information Form -->
+                <div class="mb-3">
+                    <div class="mb-3">
+                        <label for="pickupCustomerName" class="form-label fw-semibold" 
+                               style="font-family: var(--primaryFont); color: var(--primary-color); font-size: 0.9rem;">
+                            <i class="bi bi-person me-1"></i>Full Name
+                        </label>
+                        <input type="text" class="form-control" id="pickupCustomerName" placeholder="Enter your full name" required
+                               style="border-radius: 10px; border: 2px solid var(--secondary-color); 
+                                      font-family: var(--secondaryFont); padding: 10px; font-size: 0.9rem;">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="pickupCustomerPhone" class="form-label fw-semibold"
+                               style="font-family: var(--primaryFont); color: var(--primary-color); font-size: 0.9rem;">
+                            <i class="bi bi-telephone me-1"></i>Phone Number
+                        </label>
+                        <input type="text" class="form-control" id="pickupCustomerPhone"
+                            placeholder="09XXXXXXXXX" pattern="\d{11}" maxlength="11" inputmode="numeric"
+                            oninput="formatPhoneNumber(this)" value="09" required
+                            style="border-radius: 10px; border: 2px solid var(--secondary-color); 
+                                   font-family: var(--secondaryFont); padding: 10px; font-size: 0.9rem;">
+                    </div>
+                </div>
+
+                <!-- Quick Order Summary -->
+                <div class="rounded-3 p-3 mb-3" style="background: var(--card-bg-color); border: 2px solid var(--secondary-color);">
+                    <h6 class="fw-bold mb-2" style="font-family: var(--primaryFont); color: var(--primary-color); letter-spacing: 1px; font-size: 0.9rem;">
+                        <i class="bi bi-list-check me-2"></i>Your Order
+                    </h6>
+                    <div id="orderSummaryList" style="font-family: var(--secondaryFont); color: var(--text-color-dark); font-size: 0.8rem; max-height: 80px; overflow-y: auto;">
                         <!-- Filled dynamically by JS -->
-                    </ul>
+                    </div>
                 </div>
 
-                <div class="d-grid gap-2">
-                    <button type="button" class="btn addbtn buy-btn confirm-order-btn">Yes, Confirm</button>
-                    <button type="button" class="btn btn-secondary" onclick="window.location.href='cart.php'">Cancel</button>
+                <!-- Action Buttons -->
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn fw-bold px-3 py-2 flex-fill" onclick="window.location.href='cart.php'" style="
+                                background: var(--card-bg-color); 
+                                color: var(--text-color-dark); 
+                                border: 2px solid var(--primary-color);
+                                border-radius: 10px; 
+                                font-family: var(--primaryFont); 
+                                letter-spacing: 1px; 
+                                transition: all 0.3s ease;
+                                font-size: 0.85rem;
+                            " onmouseover="
+                                this.style.background='var(--primary-color)'; 
+                                this.style.color='var(--text-color-light)';
+                                this.style.transform='translateY(-2px)';
+                                this.style.boxShadow='0 4px 8px rgba(0,0,0,0.2)';
+                            " onmouseout="
+                                this.style.background='var(--card-bg-color)'; 
+                                this.style.color='var(--text-color-dark)';
+                                this.style.transform='translateY(0)';
+                                this.style.boxShadow='none';
+                            ">
+                        CANCEL
+                    </button>
+
+                    <button type="button" class="btn fw-bold px-3 py-2 confirm-order-btn flex-fill" style="
+                        background: var(--text-color-dark); 
+                        color: white; 
+                        border: none;
+                        border-radius: 10px; 
+                        font-family: var(--primaryFont); 
+                        letter-spacing: 1px; 
+                        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); 
+                        transition: all 0.3s ease;
+                        font-size: 0.85rem;
+                    " onmouseover="
+                        this.style.background='var(--primary-color)';  
+                        this.style.transform='translateY(-2px)';    
+                        this.style.boxShadow='0 6px 12px rgba(0, 0, 0, 0.4)';
+                    " onmouseout="
+                        this.style.background='var(--text-color-dark)'; 
+                        this.style.transform='translateY(0)';
+                        this.style.boxShadow='0 4px 8px rgba(0, 0, 0, 0.3)';
+                    ">
+                        <i class="bi bi-check-circle me-1"></i>CONFIRM
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<style>
+/* Custom scrollbar for order summary */
+#orderSummaryList::-webkit-scrollbar {
+    width: 3px;
+}
+
+#orderSummaryList::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#orderSummaryList::-webkit-scrollbar-thumb {
+    background: var(--secondary-color);
+    border-radius: 3px;
+}
+</style>
+
 <script>
     function formatPhoneNumber(input) {
-        // Remove all non-digits
+        
         let value = input.value.replace(/[^0-9]/g, '');
         
-        // If user tries to delete the '09', restore it
         if (!value.startsWith('09')) {
             if (value === '' || value === '0') {
                 value = '09';
@@ -51,7 +148,6 @@
             }
         }
         
-        // Limit to 11 digits
         value = value.slice(0, 11);
         
         input.value = value;
@@ -72,26 +168,36 @@
         const hiddenCustomerInput = document.getElementById('hiddenCustomerName');
         const hiddenPhoneInput = document.getElementById('hiddenCustomerPhone');
 
-        // Disable confirm button initially
+    
         confirmBtn.disabled = true;
 
         function validateForm() {
             const nameValid = customerNameInput.value.trim() !== "";
             const phoneValid = /^09\d{9}$/.test(customerPhoneInput.value.trim());
-            confirmBtn.disabled = !(nameValid && phoneValid);
+            const isValid = nameValid && phoneValid;
+            
+            confirmBtn.disabled = !isValid;
+            
+           
+            if (confirmBtn.disabled) {
+                confirmBtn.style.opacity = '0.6';
+                confirmBtn.style.cursor = 'not-allowed';
+            } else {
+                confirmBtn.style.opacity = '1';
+                confirmBtn.style.cursor = 'pointer';
+            }
         }
 
-        // Validate live while typing
         customerNameInput.addEventListener("input", validateForm);
         customerPhoneInput.addEventListener("input", validateForm);
 
         pickupRadio.addEventListener("change", () => {
             if (pickupRadio.checked) {
-                // Fill order summary
+                
                 orderSummaryList.innerHTML = "";
                 <?php if (!empty($_SESSION['cart'])): ?>
                     <?php foreach ($_SESSION['cart'] as $item): ?>
-                        orderSummaryList.innerHTML += `<li><?= $item['quantity'] ?>x <?= htmlspecialchars($item['product_name']) ?></li>`;
+                        orderSummaryList.innerHTML += `<div style="padding: 3px 0; border-bottom: 1px solid var(--secondary-color); display: flex; justify-content-between;"><span><i class="bi bi-dot"></i><?= $item['quantity'] ?>x <?= htmlspecialchars($item['product_name']) ?></span><span>₱<?= number_format($item['price'] * $item['quantity'], 2) ?></span></div>`;
                     <?php endforeach; ?>
                 <?php endif; ?>
 
@@ -100,57 +206,61 @@
         });
 
         confirmBtn.addEventListener("click", () => {
-            // Allow click even if disabled for closing purposes
             if (!confirmBtn.disabled) {
-                // Save values to hidden inputs only if validation passes
+              
+                const originalText = confirmBtn.innerHTML;
+                confirmBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>Saving...';
+                confirmBtn.disabled = true;
+                
+               
                 hiddenCustomerInput.value = customerNameInput.value.trim();
                 hiddenPhoneInput.value = customerPhoneInput.value.trim();
+                
+             
+                setTimeout(() => {
+                    confirmBtn.innerHTML = originalText;
+                    confirmBtn.disabled = false;
+                    confirmModal.hide();
+                }, 800);
             }
             
-            // Blur focus from the button before closing modal
             confirmBtn.blur();
-            // Always close the modal when confirm is clicked
-            confirmModal.hide();
         });
 
-        // Handle close button and backdrop clicks
         modalEl.addEventListener("hide.bs.modal", () => {
-            // Remove focus from any focused element within the modal before closing
             const focusedElement = modalEl.querySelector(':focus');
             if (focusedElement) {
                 focusedElement.blur();
             }
         });
 
-        // Handle all modal close events consistently
         modalEl.addEventListener("hidden.bs.modal", () => {
-            // Reset pickup radio if not properly confirmed
+          
             if (!hiddenCustomerInput.value || !hiddenPhoneInput.value) {
                 pickupRadio.checked = false;
             }
 
-            // Clear any lingering modal effects
             document.body.classList.remove('modal-open');
             const backdrop = document.querySelector('.modal-backdrop');
             if (backdrop) {
                 backdrop.remove();
             }
             
-            // Reset body styles that might be stuck
+           
             document.body.style.overflow = '';
             document.body.style.paddingRight = '';
             
-            // Reset form validation state
+            
             validateForm();
         });
 
-        // Reset form state when modal opens
+        
         modalEl.addEventListener("shown.bs.modal", () => {
             validateForm();
             customerNameInput.focus();
         });
 
-        // Additional safety: handle backdrop clicks
+       
         modalEl.addEventListener("click", (e) => {
             if (e.target === modalEl) {
                 confirmModal.hide();
