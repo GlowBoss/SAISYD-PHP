@@ -49,10 +49,10 @@
                             <i class="bi bi-speedometer2"></i>
                             <span>Dashboard</span>
                         </a>
-                        <a href="notification.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
+                        <a href="orders.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
                             data-wow-delay="0.15s">
                             <i class="bi bi-bell"></i>
-                            <span>Notifications</span>
+                            <span>Order Management</span>
                         </a>
                         <a href="point-of-sales.php"
                             class="admin-nav-link active wow animate__animated animate__fadeInLeft"
@@ -85,7 +85,7 @@
                     <!-- TOOLS Section -->
                     <div class="section-header">Tools</div>
                     <div>
-                        <a href="#" class="admin-nav-link wow animate__animated animate__fadeInLeft"
+                        <a href="settings.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
                             data-wow-delay="0.4s">
                             <i class="bi bi-gear"></i>
                             <span>Settings</span>
@@ -116,7 +116,7 @@
                                         <h5 class="heading fw-semibold mb-0 pt-2 text-center text-lg-start">Point of
                                             Sale System</h5>
                                     </div>
-                                    <a href="notification.php" class="btn btn-light position-relative">
+                                    <a href="orders.php" class="btn btn-light position-relative">
                                         <i class="bi bi-bell-fill"></i>
                                         <span
                                             class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
