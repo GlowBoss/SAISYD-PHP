@@ -1,5 +1,6 @@
 <?php
 session_start();
+include 'assets/track_visits.php'; 
 
 // Function to get cart item count
 function getCartItemCount()
