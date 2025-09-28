@@ -24,60 +24,17 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
 </head>
 
 <body>
-  <div class="dashboard-container text-white text-center">
-    <div class="container">
-      <header class="d-flex justify-content-between align-items-center p-3 flex-wrap">
-        <div class="logo">
-          <img src="../assets/img/saisydLogo.png" alt="Saisyd Logo" height="70" />
-        </div>
-
-        <div class="d-flex gap-3 align-items-center flex-wrap justify-content-end">
-          <!-- Bell Icon with red dot -->
-          <a href="#" class="btn bg-transparent icon-btn position-relative notification-bell" data-bs-toggle="modal"
-            data-bs-target="#stockModal">
-            <i class="bi bi-bell fs-3"></i>
-            <!-- Badge -->
-            <span id="lowStockBadge"
-              class="position-absolute start-60 translate-middle badge rounded-pill d-none fs-6 px-2 py-1"
-              style="top: 20%; background-color: var(--btn-hover1);">
-            </span>
-          </a>
-          <a href="../index.html" class="btn custom-visit">
-            <i class="bi bi-globe"></i> <span class="d-none d-md-inline">Visit Site</span>
-          </a>
-          <a class="btn custom-logout" href="login.php">
-            <i class="bi bi-power"></i> <span class="d-none d-md-inline">Log Out</span>
-          </a>
-        </div>
-      </header>
-
-      <main class="text-center mt-4">
-        <h1 class="dashboard-title">ADMIN DASHBOARD</h1>
-        <p class="dashboard-subtitle">Unlock your potential. Let earnings follow.</p>
-
-        <div class="container mt-5 mb-5">
-          <div class="row g-4 justify-content-center">
-            <div class="col-12 col-sm-6 col-md-4">
-              <a href="point-of-sales.php" class="dashboard-box text-decoration-none">Point of Sale
-                System</a>
-            </div>
-            <div class="col-12 col-sm-6 col-md-4">
-              <a href="inventory-management.php" class="dashboard-box text-decoration-none">Inventory
-                Management</a>
-            </div>
-            <div class="col-12 col-sm-6 col-md-4">
-              <a href="sales-and-report.php" class="dashboard-box text-decoration-none">Sales and
-                Report</a>
-            </div>
-            <div class="col-12 col-sm-6 col-md-4">
-              <a href="menu-management.php" class="dashboard-box text-decoration-none">Menu
-                Management</a>
-            </div>
-            <div class="col-12 col-sm-6 col-md-4">
-              <a href="user_role.html" class="dashboard-box text-decoration-none">User  Role</a>
-            </div>
-            <div class="col-12 col-sm-6 col-md-4">
-              <a href="settings.php" class="dashboard-box text-decoration-none">Settings</a>
+  <div class="admin-wrapper">
+    <!-- Header Section -->
+    <header class="admin-header">
+      <div class="container-fluid">
+        <div class="header-content">
+          <!-- Logo Section -->
+          <div class="logo-section">
+            <img src="../assets/img/saisydLogo.png" alt="Saisyd Logo" class="logo-img" />
+            <div class="logo-text d-none d-md-block">
+              <h2 class="brand-name">SAISYD CAFE</h2>
+              <p class="brand-subtitle">Admin Portal</p>
             </div>
           </div>
 
