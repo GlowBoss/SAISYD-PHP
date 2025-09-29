@@ -1,7 +1,5 @@
 <?php
-include 'connect.php';
 
-// Start session only if none
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -20,6 +18,10 @@ $_SESSION['last_activity'] = time();
 $pageVisit = basename($_SERVER['PHP_SELF']);
 $visitDate = (new DateTime('now', new DateTimeZone('Asia/Manila')))->format('Y-m-d H:i:s');
 $ipAddress = $_SERVER['REMOTE_ADDR']; // get visitor IP
+
+if ($ipAddress === '::1') {
+    $ipAddress = '127.0.0.1';
+}
 
 // Ensure session array exists
 if (!isset($_SESSION['logged_pages'])) {
@@ -43,5 +45,4 @@ if (!in_array($pageVisit, $_SESSION['logged_pages'])) {
     }
 }
 
-$conn->close();
 ?>

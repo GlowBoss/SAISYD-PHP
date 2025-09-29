@@ -106,14 +106,16 @@ $totalItemsSoldCount = $totalItemsSoldRow['total_items_sold'] ?? 0;
 
 // Today's website visits   (may binago lang me here sa query)
 
-$dailyVisits = "SELECT 
-    DATE(visitDate) AS visitDate,
-    COUNT(*) AS dailyVisits
-FROM visits
-WHERE DATE(visitDate) = CURDATE()
-GROUP BY DATE(visitDate)
-ORDER BY visitDate;
+$dailyVisits = "
+    SELECT 
+        DATE(visitDate) AS visitDate,
+        COUNT(DISTINCT CONCAT(ipAddress, '-', FLOOR(UNIX_TIMESTAMP(visitDate)/1800))) AS dailyVisits
+    FROM visits
+    WHERE DATE(visitDate) = CURDATE()
+    GROUP BY DATE(visitDate)
+    ORDER BY visitDate;
 ";
+
 $dailyVisitsResult = mysqli_query($conn, $dailyVisits);
 $dailyVisitsRow = mysqli_fetch_assoc($dailyVisitsResult);
 $todayVisits = $dailyVisitsRow['dailyVisits'] ?? 0;
