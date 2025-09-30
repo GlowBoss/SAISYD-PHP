@@ -2,8 +2,40 @@ body,
 html {
   height: auto;
   overflow-x: hidden;
-  overflow-y: auto;
+  /* overflow-y: auto; */
   background-color: var(--secondary-color);
+  overflow-y: scroll;
+}
+
+h4.heading {
+  font-size: var(--heading);
+  font-weight: 700;
+  color: var(--text-color-dark);
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.header-stats {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  text-align: center;
+}
+
+.stat-number {
+  color: var(--primary-color);
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.subheading {
+  font-size: var(--subheading);
+  font-weight: 700;
+  color: var(--text-color-dark);
+  letter-spacing: -0.5px;
 }
 
 .cardMain {
@@ -20,7 +52,6 @@ html {
 #customerMenuSwitch.form-check-input:checked {
   background-color: var(--primary-color) !important;
   border-color: var(--primary-color) !important;
-
 }
 
 .btnAdd {
@@ -38,18 +69,84 @@ button.btn.btnAdd:hover {
   color: white !important;
 }
 
-select.form-select {
-  border-radius: 12px !important;
-  font-family: var(--secondaryFont) !important;
-  font-size: var(--lead) !important;
+.settings-table-container {
+  border-radius: 1rem;
+  padding: 1rem;
+}
+
+.settings-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 1rem 1rem 0 0;
+  overflow: hidden;
+}
+
+/* Top corners */
+.settings-table thead th:first-child {
+  border-top-left-radius: 1rem;
+}
+.settings-table thead th:last-child {
+  border-top-right-radius: 1rem;
+}
+
+/* Bottom corners */
+.settings-table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 1rem;
+}
+.settings-table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 1rem;
+}
+
+.table-header th {
+  background-color: #e9e5da;
   color: var(--text-color-dark);
+  font-weight: bold;
+  text-align: center;
+  border: none;
+  padding: 1rem;
+}
+
+.user-card {
+  background: rgba(196, 162, 119, 0.15);
+  border: 1px solid #eee;
+}
+
+.settings-table tbody td {
+  background-color: var(--secondary-color);
+  padding: 1rem;
+  vertical-align: middle;
+}
+
+.settings-table tbody tr td {
+  border-bottom: 1px solid rgba(196, 162, 119, 0.15);
+}
+
+.role-badge {
+  background: #c49b73;
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.action-btn {
+  border-radius: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  border: none;
+}
+
+.edit-btn {
+  background: #f5f3ef;
+  color: #333;
+}
+
+.delete-btn {
+  background: #fceaea;
+  color: #b33a3a;
 }
 
 .btn-action {
   border: none;
   border-radius: 12px;
   font-family: var(--secondaryFont);
-
 }
 
 .btn-action:hover {
@@ -68,7 +165,6 @@ select.form-select {
   border: none;
   border-radius: 12px;
   font-family: var(--secondaryFont);
-
 }
 
 .btn-action-del:hover {
@@ -101,7 +197,6 @@ button.btn.btn-dropdown:hover {
   background-color: var(--btn-hover1) !important;
   color: white !important;
 }
-
 
 .dropdown-item {
   transition: background-color 0.2s ease, color 0.2s ease;
@@ -143,28 +238,18 @@ button.btn.btn-dropdown:hover {
   color: var(--text-color-light);
 }
 
-.table {
-  background-color: var(--card-bg-color);
-  border: 1px solid var(--bs-border-color);
-}
-
-.table th,
-.table td {
-  background-color: var(--card-bg-color) !important;
-}
-
 .modalText {
   font-family: var(--secondaryFont) !important;
 }
 
 .swal2-border-radius {
-  border-radius: 12px; 
-}
-
-.swal2-confirm-radius, .swal2-cancel-radius{
   border-radius: 12px;
 }
 
+.swal2-confirm-radius,
+.swal2-cancel-radius {
+  border-radius: 12px;
+}
 
 .custom-alert {
   position: fixed;
@@ -174,7 +259,7 @@ button.btn.btn-dropdown:hover {
   color: white;
   padding: 15px 20px;
   border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   font-weight: bold;
   opacity: 0;
   pointer-events: none;
