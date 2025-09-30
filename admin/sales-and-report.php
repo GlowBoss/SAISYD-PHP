@@ -404,8 +404,7 @@ $productResult = $stmt->get_result();
 
             <!-- TOOLS Section -->
             <div class="section-header">Tools</div>
-            <a href="settings.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
-                data-wow-delay="0.4s">
+            <a href="settings.php" class="admin-nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.4s">
                 <i class="bi bi-gear"></i>
                 <span>Settings</span>
             </a>
