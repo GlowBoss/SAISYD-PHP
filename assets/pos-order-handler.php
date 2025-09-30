@@ -34,6 +34,59 @@ switch ($action) {
         break;
 }
 
+/**
+ * Updates product availability based on quantity
+ */
+function updateProductAvailability($productID = null) {
+    global $conn;
+    
+    if ($productID) {
+        // Update specific product
+        $query = "UPDATE products 
+                  SET isAvailable = CASE 
+                      WHEN availableQuantity <= 0 THEN 'No'
+                      ELSE 'Yes'
+                  END 
+                  WHERE productID = " . intval($productID);
+    } else {
+        // Update all products
+        $query = "UPDATE products 
+                  SET isAvailable = CASE 
+                      WHEN availableQuantity <= 0 THEN 'No'
+                      ELSE 'Yes'
+                  END";
+    }
+    
+    return executeQuery($query);
+}
+
+/**
+ * Check if product has enough stock
+ */
+function checkProductStock($productID, $requestedQuantity) {
+    global $conn;
+    
+    $productID = intval($productID);
+    $requestedQuantity = intval($requestedQuantity);
+    
+    $checkQuery = "SELECT availableQuantity, productName FROM products WHERE productID = $productID";
+    $result = executeQuery($checkQuery);
+    $product = mysqli_fetch_assoc($result);
+    
+    if (!$product) {
+        return ['available' => false, 'message' => 'Product not found'];
+    }
+    
+    if ($product['availableQuantity'] < $requestedQuantity) {
+        return [
+            'available' => false, 
+            'message' => 'Insufficient stock for ' . $product['productName'] . '. Available: ' . $product['availableQuantity']
+        ];
+    }
+    
+    return ['available' => true, 'message' => 'Stock available'];
+}
+
 function addToCart()
 {
     $productID = $_POST['productID'] ?? '';
@@ -42,28 +95,44 @@ function addToCart()
     $quantity = (int) ($_POST['quantity'] ?? 1);
     $sugarLevel = $_POST['sugarLevel'] ?? '';
     $iceLevel = $_POST['iceLevel'] ?? '';
-    $size = $_POST['size'] ?? '';
+    $size = $_POST['size'] ?? 'Regular'; // Default to Regular since API only provides Regular size
 
     if (empty($productID) || empty($productName) || $price <= 0 || $quantity <= 0) {
         echo json_encode(['error' => 'Invalid product data']);
         return;
     }
 
-    // Create unique key for cart item
-    $itemKey = $productID . '_' . $size . '_' . $sugarLevel . '_' . $iceLevel;
+    // Check stock availability before adding to cart
+    $stockCheck = checkProductStock($productID, $quantity);
+    if (!$stockCheck['available']) {
+        echo json_encode(['error' => $stockCheck['message']]);
+        return;
+    }
+
+    // Create unique key for cart item - simplified since size is always Regular
+    $itemKey = $productID . '_' . $sugarLevel . '_' . $iceLevel;
 
     // Check if item already exists in cart
     if (isset($_SESSION['cart'][$itemKey])) {
-        $_SESSION['cart'][$itemKey]['quantity'] += $quantity;
+        $newQuantity = $_SESSION['cart'][$itemKey]['quantity'] + $quantity;
+        
+        // Check stock for new total quantity
+        $stockCheck = checkProductStock($productID, $newQuantity);
+        if (!$stockCheck['available']) {
+            echo json_encode(['error' => $stockCheck['message']]);
+            return;
+        }
+        
+        $_SESSION['cart'][$itemKey]['quantity'] = $newQuantity;
     } else {
         $_SESSION['cart'][$itemKey] = [
             'productID' => $productID,
-            'productName' => $productName,
+            'productName' => $productName, // This now contains the full name with size from database
             'price' => $price,
             'quantity' => $quantity,
             'sugarLevel' => $sugarLevel,
             'iceLevel' => $iceLevel,
-            'size' => $size,
+            'size' => $size, // Will always be 'Regular' now
             'totalPrice' => $price * $quantity
         ];
     }
@@ -101,13 +170,27 @@ function updateQuantity()
     $itemKey = $_POST['itemKey'] ?? '';
     $quantity = (int) ($_POST['quantity'] ?? 1);
 
-    if (isset($_SESSION['cart'][$itemKey]) && $quantity > 0) {
-        $_SESSION['cart'][$itemKey]['quantity'] = $quantity;
-        $_SESSION['cart'][$itemKey]['totalPrice'] = $_SESSION['cart'][$itemKey]['price'] * $quantity;
-        echo json_encode(['success' => true, 'message' => 'Quantity updated']);
-    } else {
-        echo json_encode(['error' => 'Item not found or invalid quantity']);
+    if (!isset($_SESSION['cart'][$itemKey])) {
+        echo json_encode(['error' => 'Item not found']);
+        return;
     }
+
+    if ($quantity <= 0) {
+        echo json_encode(['error' => 'Invalid quantity']);
+        return;
+    }
+
+    // Check stock availability for new quantity
+    $productID = $_SESSION['cart'][$itemKey]['productID'];
+    $stockCheck = checkProductStock($productID, $quantity);
+    if (!$stockCheck['available']) {
+        echo json_encode(['error' => $stockCheck['message']]);
+        return;
+    }
+
+    $_SESSION['cart'][$itemKey]['quantity'] = $quantity;
+    $_SESSION['cart'][$itemKey]['totalPrice'] = $_SESSION['cart'][$itemKey]['price'] * $quantity;
+    echo json_encode(['success' => true, 'message' => 'Quantity updated']);
 }
 
 function removeItem()
@@ -139,6 +222,14 @@ function checkout()
     try {
         // Start transaction
         mysqli_autocommit($conn, false);
+
+        // First, verify all items in cart still have sufficient stock
+        foreach ($_SESSION['cart'] as $item) {
+            $stockCheck = checkProductStock($item['productID'], $item['quantity']);
+            if (!$stockCheck['available']) {
+                throw new Exception($stockCheck['message']);
+            }
+        }
 
         // Calculate total
         $total = 0;
@@ -179,7 +270,7 @@ function checkout()
 
         $orderID = mysqli_insert_id($conn);
 
-        // Insert order items - matching your orderitems table structure
+        // Insert order items and update product quantities
         foreach ($_SESSION['cart'] as $item) {
             $productID = (int) $item['productID'];
             $quantity = (int) $item['quantity'];
@@ -203,14 +294,39 @@ function checkout()
                 }
             }
 
-            $notes = !empty($item['size']) ? mysqli_real_escape_string($conn, $item['size']) : '';
+            // Notes field simplified - no longer needed to store size since it's part of product name
+            $notes = mysqli_real_escape_string($conn, $item['size'] ?? '');
 
+            // Insert order item
             $insertItemQuery = "INSERT INTO orderitems (orderID, productID, quantity, sugar, ice, notes) 
                                VALUES ('$orderID', '$productID', '$quantity', '$sugar', '$ice', '$notes')";
 
             $itemResult = executeQuery($insertItemQuery);
             if (!$itemResult) {
                 throw new Exception('Failed to add order item: ' . mysqli_error($conn));
+            }
+
+            // Update product quantity and availability
+            $updateProductQuery = "UPDATE products 
+                                  SET availableQuantity = availableQuantity - $quantity,
+                                      isAvailable = CASE 
+                                          WHEN (availableQuantity - $quantity) <= 0 THEN 'No'
+                                          ELSE 'Yes'
+                                      END
+                                  WHERE productID = $productID";
+
+            $updateResult = executeQuery($updateProductQuery);
+            if (!$updateResult) {
+                throw new Exception('Failed to update product quantity: ' . mysqli_error($conn));
+            }
+
+            // Verify the update was successful
+            $checkQuery = "SELECT availableQuantity FROM products WHERE productID = $productID";
+            $checkResult = executeQuery($checkQuery);
+            $updatedProduct = mysqli_fetch_assoc($checkResult);
+            
+            if ($updatedProduct['availableQuantity'] < 0) {
+                throw new Exception('Product ' . $item['productName'] . ' went into negative stock. Transaction rolled back.');
             }
         }
 

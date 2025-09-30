@@ -39,22 +39,23 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
           </div>
 
           <!-- Actions Section -->
-          <div class="d-flex gap-3 align-items-center flex-wrap justify-content-end">
-            <!-- Bell Icon with red dot -->
-            <a href="#" class="btn bg-transparent icon-btn position-relative notification-bell" data-bs-toggle="modal"
-              data-bs-target="#stockModal">
-              <i class="bi bi-bell fs-3"></i>
-              <!-- Badge -->
-              <span id="lowStockBadge"
-                class="position-absolute start-60 translate-middle badge rounded-pill d-none fs-6 px-2 py-1"
-                style="top: 20%; background-color: var(--btn-hover1);">
-              </span>
+          <div class="header-actions">
+            <!-- Notification Bell -->
+            <button class="notification-btn" data-bs-toggle="modal" data-bs-target="#stockModal">
+              <i class="bi bi-bell"></i>
+              <span id="lowStockBadge" class="notification-badge d-none"></span>
+            </button>
+
+            <!-- Visit Site Button -->
+            <a href="../index.html" class="action-btn visit-btn">
+              <i class="bi bi-globe"></i>
+              <span class="btn-text d-none d-lg-inline">Visit Site</span>
             </a>
-            <a href="../index.php" class="btn custom-visit">
-              <i class="bi bi-globe"></i> <span class="d-none d-md-inline">Visit Site</span>
-            </a>
-            <a class="btn custom-logout" href="login.php">
-              <i class="bi bi-power"></i> <span class="d-none d-md-inline">Log Out</span>
+
+            <!-- Logout Button -->
+            <a class="action-btn logout-btn" href="login.php">
+              <i class="bi bi-power"></i>
+              <span class="btn-text d-none d-lg-inline">Log Out</span>
             </a>
           </div>
         </div>
@@ -139,11 +140,36 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
               </a>
             </div>
 
-            <div class="col-12 col-sm-6 col-md-4">
-              <a href="orders.php" class="dashboard-box text-decoration-none">Order Management</a>
+            <!-- Order Management -->
+            <div class="col-12 col-sm-6 col-lg-4">
+              <a href="orders.php" class="dashboard-card">
+                <div class="card-icon">
+                  <i class="bi bi-people"></i>
+                </div>
+                <div class="card-content">
+                  <h3 class="card-title">Order Management</h3>
+                  <p class="card-description">View and track customer orders</p>
+                </div>
+                <div class="card-arrow">
+                  <i class="bi bi-arrow-right"></i>
+                </div>
+              </a>
             </div>
-            <div class="col-12 col-sm-6 col-md-4">
-              <a href="settings.php" class="dashboard-box text-decoration-none">Settings</a>
+
+            <!-- Settings -->
+            <div class="col-12 col-sm-6 col-lg-4">
+              <a href="settings.php" class="dashboard-card">
+                <div class="card-icon">
+                  <i class="bi bi-gear"></i>
+                </div>
+                <div class="card-content">
+                  <h3 class="card-title">Settings</h3>
+                  <p class="card-description">System configuration</p>
+                </div>
+                <div class="card-arrow">
+                  <i class="bi bi-arrow-right"></i>
+                </div>
+              </a>
             </div>
           </div>
         </section>
