@@ -23,6 +23,9 @@ if ($ipAddress === '::1') {
     $ipAddress = '127.0.0.1';
 }
 
+// Hash the IP for privacy
+$hashedIp = hash('sha256', $ipAddress);
+
 // Ensure session array exists
 if (!isset($_SESSION['logged_pages'])) {
     $_SESSION['logged_pages'] = [];
@@ -36,7 +39,7 @@ if (!in_array($pageVisit, $_SESSION['logged_pages'])) {
     if (!$insertVisit) {
         error_log("Prepare failed: " . $conn->error);
     } else {
-        $insertVisit->bind_param("sss", $visitDate, $pageVisit, $ipAddress);
+        $insertVisit->bind_param("sss", $visitDate, $pageVisit, $hashedIp);
         if (!$insertVisit->execute()) {
             error_log("Execute failed: " . $insertVisit->error);
         }

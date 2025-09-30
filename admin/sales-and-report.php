@@ -698,18 +698,25 @@ $productResult = $stmt->get_result();
                                                         <th>Product ID</th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody style="font-size: 0.50rem; line-height: 1.1; padding: 0 !important;">
+                                                    <tbody
+                                                        style="font-size: 0.50rem; line-height: 1.1; padding: 0 !important;">
                                                         <?php
                                                         if (mysqli_num_rows($productResult) > 0) {
                                                             while ($row = mysqli_fetch_assoc($productResult)) {
                                                                 ?>
-                                                                <tr style="font-size: 0.50rem; line-height: 1.1; padding: 0 !important;">
-                                                                    <td class="p-1"><?= htmlspecialchars($row['item_name']) ?></td>
-                                                                    <td class="p-1"><?= htmlspecialchars($row['category']) ?></td>
-                                                                    <td class="p-1">₱<?= number_format($row['price_each'], 2) ?></td>
+                                                                <tr
+                                                                    style="font-size: 0.50rem; line-height: 1.1; padding: 0 !important;">
+                                                                    <td class="p-1"><?= htmlspecialchars($row['item_name']) ?>
+                                                                    </td>
+                                                                    <td class="p-1"><?= htmlspecialchars($row['category']) ?>
+                                                                    </td>
+                                                                    <td class="p-1">₱<?= number_format($row['price_each'], 2) ?>
+                                                                    </td>
                                                                     <td class="p-1"><?= (int) $row['total_quantity'] ?></td>
-                                                                    <td class="p-1">₱<?= number_format($row['total_sales'], 2) ?></td>
-                                                                    <td class="p-1"><?= htmlspecialchars($row['productID']) ?></td>
+                                                                    <td class="p-1">
+                                                                        ₱<?= number_format($row['total_sales'], 2) ?></td>
+                                                                    <td class="p-1"><?= htmlspecialchars($row['productID']) ?>
+                                                                    </td>
                                                                 </tr>
                                                                 <?php
                                                             }
