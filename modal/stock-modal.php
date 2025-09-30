@@ -169,7 +169,7 @@ $count = $result->num_rows;
                             this.style.background='var(--text-color-dark)';
                         }, 150);
                     ">
-            <i class="bi bi-box-seam me-1 me-sm-2"></i><span class="d-none d-sm-inline">GO TO </span>INVENTORY
+            <i class="bi bi-box-seam me-1 me-sm-2"></i><span class="d-none d-sm-inline"></span>GO TO INVENTORY
           </a>
         </div>
       </div>

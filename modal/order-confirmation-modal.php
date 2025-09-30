@@ -136,7 +136,7 @@
 </div>
 
 <style>
-    /* Custom scrollbar for order items */
+
     #confirmOrderItems::-webkit-scrollbar {
         width: 3px;
     }
@@ -163,7 +163,6 @@
         const checkoutForm = document.getElementById('checkoutForm');
         const finalConfirmBtn = document.getElementById('finalConfirmBtn');
 
-        // Intercept checkout button click 
         if (checkoutBtn && checkoutForm) {
             checkoutBtn.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -182,12 +181,12 @@
                     errorMessage = 'Please select both order method and payment method.';
                     hasError = true;
                 } else if (paymentMethod === 'gcash') {
-                    // Strict validation for GCash reference number
+                   
                     if (!refNumber || refNumber.trim() === '') {
                         errorMessage = 'Please enter a GCash reference number.';
                         hasError = true;
                     } else if (!/^\d{13}$/.test(refNumber.trim())) {
-                        // Check if exactly 13 digits
+                        
                         errorMessage = 'GCash reference number must be exactly 13 digits.';
                         hasError = true;
                     }
@@ -264,7 +263,7 @@
         const refNumberInput = document.getElementById('refNumber');
         if (refNumberInput) {
             refNumberInput.addEventListener('input', function(e) {
-                // Remove any non-numeric characters and limit to 13 digits
+                
                 let value = e.target.value.replace(/[^0-9]/g, '');
                 if (value.length > 13) {
                     value = value.slice(0, 13);
@@ -292,10 +291,10 @@
         }
 
         function populateOrderConfirmation(formData) {
-            // Get cart items from PHP session
+           
             const cartItems = <?= json_encode($_SESSION['cart'] ?? []) ?>;
 
-            // Populate order items (compact format)
+            // Populate order items 
             const orderItemsList = document.getElementById('confirmOrderItems');
             orderItemsList.innerHTML = '';
 
@@ -390,7 +389,7 @@
             
             const existingToasts = document.querySelectorAll('.toast[role="alert"]');
             existingToasts.forEach(toast => {
-                if (toast.querySelector('.bi-x-circle-fill')) { // Error toast
+                if (toast.querySelector('.bi-x-circle-fill')) { 
                     toast.remove();
                 }
             });

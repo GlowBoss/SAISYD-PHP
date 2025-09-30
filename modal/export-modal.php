@@ -29,7 +29,7 @@
                     </p>
                     <p class="fw-bold mb-2"
                         style="font-family: var(--primaryFont); color: var(--text-color-dark); font-size: 1.2rem;">
-                        <strong>inventory_export.xlsx</strong>
+                        <strong>inventory_export.csv</strong>
                     </p>
                     <p style="font-family: var(--secondaryFont); color: var(--text-color-dark);">
                         This will include all inventory items with current stock levels, expiration dates, and status
