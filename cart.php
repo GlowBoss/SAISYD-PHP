@@ -1,5 +1,6 @@
 <?php
 include 'assets/connect.php';
+include 'assets/track_visits.php'; 
 session_start();
 
 if (!isset($_SESSION['cart'])) {
