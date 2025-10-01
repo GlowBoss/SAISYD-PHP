@@ -404,7 +404,8 @@ $productResult = $stmt->get_result();
 
             <!-- TOOLS Section -->
             <div class="section-header">Tools</div>
-            <a href="settings.php" class="admin-nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.4s">
+            <a href="settings.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
+                data-wow-delay="0.4s">
                 <i class="bi bi-gear"></i>
                 <span>Settings</span>
             </a>
@@ -521,14 +522,30 @@ $productResult = $stmt->get_result();
                                             </div>
 
                                             <div class="card cardSmall m-2 fw-bolder p-3">
-                                                <div class="text-center">
-                                                    <div class="sales-label fw-semibold">Website Visits:</div>
-                                                    <div class="sales-amount mt-2 fs-4">
-                                                        <?php echo $todayVisits ?>
+                                                <div class="text-center mb-3">
+                                                    <div class="sales-title fw-bold fs-5">Website Visits</div>
+                                                </div>
+                                                <div class="d-flex text-center">
+                                                    <!-- Weekly -->
+                                                    <div class="col border-end">
+                                                        <div class="sales-amount fs-5">123</div>
+                                                        <div class="sales-label fw-semibold">Weekly</div>
                                                     </div>
-                                                    <div class="sales-period mt-2">Today</div>
+
+                                                    <!-- Today -->
+                                                    <div class="col border-end">
+                                                        <div class="sales-amount fs-5">45</div>
+                                                        <div class="sales-label fw-semibold">Today</div>
+                                                    </div>
+
+                                                    <!-- Overall -->
+                                                    <div class="col">
+                                                        <div class="sales-amount fs-5">6789</div>
+                                                        <div class="sales-label fw-semibold">Overall</div>
+                                                    </div>
                                                 </div>
                                             </div>
+
                                         </div>
                                     </div>
                                 </div>
@@ -569,49 +586,62 @@ $productResult = $stmt->get_result();
                     <div class="col-12">
                         <div class="card cardOrders rounded-3 px-4 mt-5">
                             <div class="card-body p-0">
-                                <div class="subheading fs-4 mb-3 text-center">Recent Transactions</div>
-                                <div class="table-responsive custom-scroll"
-                                    style="max-height: 300px; overflow-y: auto;">
-                                    <table class="table table-bordered table-hover">
-                                        <thead class="text-center">
-                                            <tr>
-                                                <th>Date</th>
-                                                <th>Order No.</th>
-                                                <th>Order Items</th>
-                                                <th>Total (₱)</th>
-                                                <th>Payment Method</th>
-                                                <th>Status</th>
-                                                <th>Customer Name</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="text-center align-middle"
-                                            style="font-size: 0.50rem; line-height: 1.2; padding: 0 !important;">
-                                            <?php
-                                            if (mysqli_num_rows($transactionResult) > 0) {
-                                                while ($row = mysqli_fetch_assoc($transactionResult)) {
-                                                    ?>
-                                                    <tr style="font-size: 0.50rem; line-height: 1.1; padding: 0 !important;">
-                                                        <td class="p-0"><?= date('M d, Y', strtotime($row['orderDate'])) ?><br>
-                                                            <?= date('H:i', strtotime($row['orderDate'])) ?>
-                                                        </td>
-                                                        <td class="p-1"><?= htmlspecialchars($row['orderNumber']) ?></td>
-                                                        <td class="p-1"><?= $row['orderItems'] ?></td>
-                                                        <td class="p-1">₱<?= number_format($row['totalAmount'], 2) ?></td>
-                                                        <td class="p-1"><?= htmlspecialchars($row['paymentMethod']) ?></td>
-                                                        <td class="p-1"><?= ucfirst($row['paymentStatus']) ?></td>
-                                                        <td class="p-1"><?= htmlspecialchars($row['displayName']) ?></td>
-                                                    </tr>
-                                                    <?php
+                                <div class="subheading fs-4 mb-3">Recent Transactions</div>
+                                <div class="inventory-table-container">
+                                    <div class="table-responsive custom-scroll">
+                                        <table class="table inventory-table" id="transactionsTable">
+                                            <thead class="table-header">
+                                                <tr>
+                                                    <th scope="col">
+                                                        <div class="th-content"><span>Date</span></div>
+                                                    </th>
+                                                    <th scope="col">
+                                                        <div class="th-content"><span>Order No.</span></div>
+                                                    </th>
+                                                    <th scope="col">
+                                                        <div class="th-content"><span>Order Items</span></div>
+                                                    </th>
+                                                    <th scope="col">
+                                                        <div class="th-content"><span>Total (₱)</span></div>
+                                                    </th>
+                                                    <th scope="col">
+                                                        <div class="th-content"><span>Payment Method</span></div>
+                                                    </th>
+                                                    <th scope="col">
+                                                        <div class="th-content"><span>Status</span></div>
+                                                    </th>
+                                                    <th scope="col">
+                                                        <div class="th-content"><span>Customer Name</span></div>
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="table-body text-center align-middle">
+                                                <?php
+                                                if (mysqli_num_rows($transactionResult) > 0) {
+                                                    while ($row = mysqli_fetch_assoc($transactionResult)) {
+                                                        ?>
+                                                        <tr>
+                                                            <td>
+                                                                <?= date('M d, Y', strtotime($row['orderDate'])) ?><br>
+                                                                <?= date('H:i', strtotime($row['orderDate'])) ?>
+                                                            </td>
+                                                            <td><?= htmlspecialchars($row['orderNumber']) ?></td>
+                                                            <td><?= $row['orderItems'] ?></td>
+                                                            <td>₱<?= number_format($row['totalAmount'], 2) ?></td>
+                                                            <td><?= htmlspecialchars($row['paymentMethod']) ?></td>
+                                                            <td><?= ucfirst($row['paymentStatus']) ?></td>
+                                                            <td><?= htmlspecialchars($row['displayName']) ?></td>
+                                                        </tr>
+                                                        <?php
+                                                    }
+                                                } else {
+                                                    echo "<tr><td colspan='7' class='no-records'>No transactions found</td></tr>";
                                                 }
-                                            } else {
-                                                echo "<tr><td colspan='7' class='text-center'>No transactions found</td></tr>";
-                                            }
-                                            ?>
-                                        </tbody>
-
-                                    </table>
+                                                ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
-
                             </div>
                         </div>
                     </div>
@@ -684,38 +714,78 @@ $productResult = $stmt->get_result();
                                         <div class="card-body">
                                             <div class="table-responsive custom-scroll"
                                                 style="max-height: 400px; overflow-y: auto;">
-                                                <table class="table table-bordered table-hover">
-                                                    <thead>
-                                                        <tr></tr>
-                                                        <th>Item Name</th>
-                                                        <th>Category</th>
-                                                        <th>Price (Each)</th>
-                                                        <th>Quantity</th>
-                                                        <th>Total</th>
-                                                        <th>Product ID</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody style="font-size: 0.50rem; line-height: 1.1; padding: 0 !important;">
-                                                        <?php
-                                                        if (mysqli_num_rows($productResult) > 0) {
-                                                            while ($row = mysqli_fetch_assoc($productResult)) {
-                                                                ?>
-                                                                <tr style="font-size: 0.50rem; line-height: 1.1; padding: 0 !important;">
-                                                                    <td class="p-1"><?= htmlspecialchars($row['item_name']) ?></td>
-                                                                    <td class="p-1"><?= htmlspecialchars($row['category']) ?></td>
-                                                                    <td class="p-1">₱<?= number_format($row['price_each'], 2) ?></td>
-                                                                    <td class="p-1"><?= (int) $row['total_quantity'] ?></td>
-                                                                    <td class="p-1">₱<?= number_format($row['total_sales'], 2) ?></td>
-                                                                    <td class="p-1"><?= htmlspecialchars($row['productID']) ?></td>
+                                                <div class="inventory-table-container">
+                                                    <div class="table-responsive">
+                                                        <table class="table inventory-table" id="inventoryTable">
+                                                            <thead class="table-header">
+                                                                <tr>
+                                                                    <th scope="col">
+                                                                        <div class="th-content">
+                                                                            <span>Item Name</span>
+                                                                        </div>
+                                                                    </th>
+                                                                    <th scope="col">
+                                                                        <div class="th-content">
+                                                                            <span>Category</span>
+                                                                        </div>
+                                                                    </th>
+                                                                    <th scope="col">
+                                                                        <div class="th-content">
+                                                                            <span>Price (Each)</span>
+                                                                        </div>
+                                                                    </th>
+                                                                    <th scope="col">
+                                                                        <div class="th-content">
+                                                                            <span>Quantity</span>
+                                                                        </div>
+                                                                    </th>
+                                                                    <th scope="col">
+                                                                        <div class="th-content">
+                                                                            <span>Total</span>
+                                                                        </div>
+                                                                    </th>
+                                                                    <th scope="col">
+                                                                        <div class="th-content">
+                                                                            <span>Product ID</span>
+                                                                        </div>
+                                                                    </th>
                                                                 </tr>
+                                                            </thead>
+                                                            <tbody class="table-body text-center align-middle">
                                                                 <?php
-                                                            }
-                                                        } else {
-                                                            echo "<tr><td colspan='7' class='text-center'>No product sales found</td></tr>";
-                                                        }
-                                                        ?>
-                                                    </tbody>
-                                                </table>
+                                                                if (mysqli_num_rows($productResult) > 0) {
+                                                                    while ($row = mysqli_fetch_assoc($productResult)) {
+                                                                        ?>
+                                                                        <tr
+                                                                            style="font-size: 0.50rem; line-height: 1.1; padding: 0 !important;">
+                                                                            <td class="p-1">
+                                                                                <?= htmlspecialchars($row['item_name']) ?>
+                                                                            </td>
+                                                                            <td class="p-1">
+                                                                                <?= htmlspecialchars($row['category']) ?>
+                                                                            </td>
+                                                                            <td class="p-1">
+                                                                                ₱<?= number_format($row['price_each'], 2) ?>
+                                                                            </td>
+                                                                            <td class="p-1"><?= (int) $row['total_quantity'] ?>
+                                                                            </td>
+                                                                            <td class="p-1">
+                                                                                ₱<?= number_format($row['total_sales'], 2) ?>
+                                                                            </td>
+                                                                            <td class="p-1">
+                                                                                <?= htmlspecialchars($row['productID']) ?>
+                                                                            </td>
+                                                                        </tr>
+                                                                        <?php
+                                                                    }
+                                                                } else {
+                                                                    echo "<tr><td colspan='7' class='text-center'>No product sales found</td></tr>";
+                                                                }
+                                                                ?>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

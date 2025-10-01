@@ -87,6 +87,14 @@ h4 {
   background-color: var(--card-bg-color);
 }
 
+.sales-amount {
+    font-weight: 700;              
+    font-family: var(--primaryFont);  
+    font-size: 1.5rem;           
+    color: var(--text-color-dark); 
+}
+
+
 input.form-control[aria-label="search-bar"] {
   border-radius: 12px !important;
   font-family: var(--secondaryFont) !important;
@@ -152,16 +160,69 @@ button.btn.excelBtn:hover {
   background-color: var(--card-bg-color);
 }
 
-.table {
-  background-color: var(--card-bg-color);
-  border: 1px solid var(--bs-border-color);
+/* Table Container */
+.inventory-table-container {
+    background: var(--secondary-color);
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(46, 26, 0, 0.08);
+    border: 1px solid rgba(196, 162, 119, 0.15);
+    overflow: hidden;
+    margin-bottom: 2rem;
 }
 
-.table th,
-.table td {
-  background-color: var(--card-bg-color) !important;
+/* Table Styles */
+.table{
+    background-color: var(--card-bg-color);
 }
 
+.inventory-table {
+    width: 100%;
+    margin-bottom: 0;
+    background: var(--text-color-light);
+}
+
+.table-header {
+    background: linear-gradient(135deg, var(--primary-color), #b8956a);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+
+.table-header th {
+    border: none;
+    padding: 1rem 0.75rem;
+    font-weight: 600;
+    font-size: var(--h6);
+    color: var(--text-color-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    font-family: var(--primaryFont);
+    background-color: #e9e5da;
+}
+
+.th-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background-color: transparent !important; 
+}
+.th-content span {
+  font-family: var(--primaryFont);
+    background: transparent !important;
+}
+
+.sort-icon {
+    font-size: 0.8rem;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+}
+
+.table-header th:hover .sort-icon {
+    opacity: 1;
+}
 .btnModal {
   border-radius: 12px;
   font-family: var(--secondaryFont);
@@ -245,3 +306,83 @@ button.btn.btnCancel:hover {
     margin: 0 auto;   /* center it */
   }
 }
+
+
+/* Table Body */
+.table-body tr {
+    transition: all 0.2s ease;
+    border-bottom: 1px solid rgba(196, 162, 119, 0.15);
+}
+
+.table-body tr:hover {
+    background-color: rgba(196, 162, 119, 0.05);
+}
+
+.table-body td {
+    padding: 1rem 0.75rem;
+    vertical-align: middle;
+    border: none;
+    font-size: var(--h6);
+    font-family: var(--secondaryFont);
+    background-color: var(--card-bg-color);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 767px) {
+    .container-fluid {
+        padding: 1rem;
+    }
+    
+    .page-title {
+        font-size: var(--subheading);
+        text-align: center;
+    }
+    
+    .page-subtitle {
+        font-size: var(--h6);
+        text-align: center;
+    }
+    
+    .inventory-table {
+        font-size: var(--h6);
+    }
+    
+    .table-header th,
+    .table-body td {
+        padding: 0.75rem 0.5rem;
+    }
+}
+
+@media (max-width: 575px) {
+    .inventory-table-container {
+        overflow-x: auto;
+    }
+    
+    .inventory-table {
+        min-width: 600px;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .mobile-header,
+    .action-bar,
+    .action-buttons {
+        display: none;
+    }
+    
+    .main-content {
+        margin-left: 0;
+    }
+    
+    .inventory-table-container {
+        box-shadow: none;
+        border: 1px solid var(--gray);
+    }
+    
+    .table-header {
+        background: var(--secondary-color) !important;
+        color: var(--text-color-dark) !important;
+    }
+}
+
