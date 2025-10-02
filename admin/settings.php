@@ -182,7 +182,7 @@ $userResult = executeQuery("
         <button id="menuToggle" class="mobile-menu-toggle me-3">
             <i class="fas fa-bars"></i>
         </button>
-        <h4 class="mobile-header-title">Settings</h4>
+
     </div>
 
     <!-- Desktop Sidebar (visible on md+ screens) -->
@@ -200,9 +200,9 @@ $userResult = executeQuery("
                     <i class="bi bi-speedometer2"></i>
                     <span>Dashboard</span>
                 </a>
-                <a href="notification.php" class="admin-nav-link">
-                    <i class="bi bi-bell"></i>
-                    <span>Notifications</span>
+                <a href="orders.php" class="admin-nav-link">
+                    <i class="bi bi-clipboard-check"></i>
+                    <span>Order Management</span>
                 </a>
                 <a href="point-of-sales.php" class="admin-nav-link">
                     <i class="bi bi-shop-window"></i>
@@ -261,10 +261,10 @@ $userResult = executeQuery("
                 <i class="bi bi-speedometer2"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="notification.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
+            <a href="orders.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
                 data-wow-delay="0.15s">
                 <i class="bi bi-bell"></i>
-                <span>Notifications</span>
+                <span>Order Management</span>
             </a>
             <a href="point-of-sales.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
                 data-wow-delay="0.2s">
@@ -307,8 +307,11 @@ $userResult = executeQuery("
     <!-- Main Content Area -->
     <div class="main-content">
         <div class="container-fluid">
-            <div class="card mt-2 mt-md-0 rounded-4 cardMain shadow-sm">
+            <div class="card mt-2 mt-md-0 rounded-4 cardMain shadow-lg no-shadow-mobile responsive-card">
 
+            <h4 class="heading mt-2 d-flex d-md-none justify-content-center w-100">
+                        <span>Settings</span>
+                    </h4>
                 <!-- Header Row -->
                 <div class="d-flex align-items-center justify-content-between py-4 px-lg-3 px-2">
 
@@ -317,7 +320,7 @@ $userResult = executeQuery("
                         <span>Settings</span>
                     </h4>
 
-
+                    
                     <div
                         class="header-stats d-flex justify-content-center justify-content-md-end flex-grow-1 flex-md-grow-0">
                         <div class="stat-item text-center">
@@ -337,9 +340,9 @@ $userResult = executeQuery("
                     </div>
                     <div class="col-6 col-sm-auto ms-auto">
                         <!-- add button -->
-                        <button class="btn btn-add w-100" type="button" data-bs-toggle="modal"
+                        <button class="btn btn-add w-100 shadow" type="button" data-bs-toggle="modal"
                             data-bs-target="#confirmModal">
-                            <i class="bi bi-plus"></i> Add User
+                            <i class="bi bi-plus-circle"></i> Add User
                         </button>
 
 
@@ -351,7 +354,7 @@ $userResult = executeQuery("
                     <form method="POST" id="updateUserForm">
                         <input type="hidden" name="userID" value="<?= $userToEdit['userID'] ?>">
 
-                        <div class="row align-items-center mb-3 g-2">
+                        <div class="row align-items-center mb-3 g-2 namePlate ms-2">
                             <!-- Name + Email -->
                             <div class="col-12 col-md-auto p-3">
                                 <h5 class="card-title">
@@ -361,13 +364,13 @@ $userResult = executeQuery("
 
                             <!-- Back Button -->
                             <div class="col-12 col-md-auto ms-md-auto p-3">
-                                <button class="btn btn-add w-100 w-md-auto" type="button" onclick="window.history.back()">
+                                <button class="btn btn-add w-100 w-md-auto shadow" type="button" onclick="window.history.back()">
                                     <i class="bi bi-arrow-left "></i> Back
                                 </button>
                             </div>
                         </div>
 
-                        <div class="card rounded-3 p-3" style="border:none;">
+                        <div class="card rounded-3 p-3 userEdit">
                             <div class="row g-3 position-relative">
 
                                 <!-- Row 1 -->
@@ -458,7 +461,7 @@ $userResult = executeQuery("
 
                     <div class="settings-table-container">
                         <div class="table-responsive">
-                            <table class="table settings-table">
+                            <table class="table settings-table ">
                                 <thead class="table-header">
                                     <tr>
                                         <th scope="col">Users</th>
@@ -477,21 +480,24 @@ $userResult = executeQuery("
                                                             <?= htmlspecialchars($row['username']); ?>
                                                             <?php if ($row['userID'] == $_SESSION['userID']): ?>
                                                                 <span class="badge ms-2 px-2 py-1"
-                                                                    style="background:#eee; color:#333;">You</span>
+                                                                    style="color: var(--primary-color);">You</span>
                                                             <?php endif; ?>
                                                         </h5>
                                                         <p class="mb-1"><i class="bi bi-person-fill me-2"></i>Full Name:
-                                                            <?= htmlspecialchars($row['fullName']); ?></p>
+                                                            <?= htmlspecialchars($row['fullName']); ?>
+                                                        </p>
                                                         <p class="mb-1"><i class="bi bi-telephone-fill me-2"></i>Contact:
-                                                            <?= htmlspecialchars($row['accNumber']); ?></p>
+                                                            <?= htmlspecialchars($row['accNumber']); ?>
+                                                        </p>
                                                         <p class="mb-0"><i class="bi bi-envelope-fill me-2"></i>Email:
-                                                            <?= htmlspecialchars($row['email']); ?></p>
+                                                            <?= htmlspecialchars($row['email']); ?>
+                                                        </p>
                                                     </div>
                                                 </td>
 
                                                 <!-- Role -->
                                                 <td class="align-middle text-center">
-                                                    <span class="role-badge px-3 py-2 rounded-pill fw-semibold">
+                                                    <span class="role-badge px-3 py-2 rounded-pill ">
                                                         <?= htmlspecialchars($row['role']); ?>
                                                     </span>
                                                 </td>
@@ -532,7 +538,7 @@ $userResult = executeQuery("
                             </table>
                         </div>
                     </div>
-                    
+
                 <?php endif; ?>
 
                 <hr>
