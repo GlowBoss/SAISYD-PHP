@@ -1,6 +1,7 @@
 <?php
 include 'assets/connect.php';
-session_start();
+include 'assets/track_visits.php'; 
+
 
 // Initialize cart session if it doesn't exist
 if (!isset($_SESSION['cart'])) {
