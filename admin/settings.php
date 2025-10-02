@@ -182,7 +182,7 @@ $userResult = executeQuery("
         <button id="menuToggle" class="mobile-menu-toggle me-3">
             <i class="fas fa-bars"></i>
         </button>
-        <h4 class="mobile-header-title">Settings</h4>
+
     </div>
 
     <!-- Desktop Sidebar (visible on md+ screens) -->
@@ -201,7 +201,7 @@ $userResult = executeQuery("
                     <span>Dashboard</span>
                 </a>
                 <a href="orders.php" class="admin-nav-link">
-                    <i class="bi bi-bell"></i>
+                    <i class="bi bi-clipboard-check"></i>
                     <span>Order Management</span>
                 </a>
                 <a href="point-of-sales.php" class="admin-nav-link">
@@ -307,24 +307,42 @@ $userResult = executeQuery("
     <!-- Main Content Area -->
     <div class="main-content">
         <div class="container-fluid">
-            <div class="card rounded-4 cardMain shadow-sm">
-                <!-- Header Row  -->
-                <div class="d-none d-md-block align-items-center py-4 px-lg-3 px-2">
-                    <h4 class="subheading fw-bold m-1 d-flex align-items-center">
+            <div class="card mt-2 mt-md-0 rounded-4 cardMain shadow-lg no-shadow-mobile responsive-card">
+
+            <h4 class="heading mt-2 d-flex d-md-none justify-content-center w-100">
                         <span>Settings</span>
                     </h4>
+                <!-- Header Row -->
+                <div class="d-flex align-items-center justify-content-between py-4 px-lg-3 px-2">
+
+
+                    <h4 class="heading ms-3 mt-2 d-none d-md-flex align-items-center">
+                        <span>Settings</span>
+                    </h4>
+
+                    
+                    <div
+                        class="header-stats d-flex justify-content-center justify-content-md-end flex-grow-1 flex-md-grow-0">
+                        <div class="stat-item text-center">
+                            <span class="stat-number" id="totalUsers"><?= mysqli_num_rows($userResult) ?></span>
+                            <span class="stat-label d-block">Total Users</span>
+                        </div>
+                    </div>
+
                 </div>
+
+
 
                 <div class="row g-2 align-items-center mb-3 px-2 px-lg-3">
 
                     <div class="col-6 col-sm-auto p-3">
-                        <h1 class="subheading">User Role Management</h1>
+                        <h1 class="subheading">User Management</h1>
                     </div>
                     <div class="col-6 col-sm-auto ms-auto">
                         <!-- add button -->
-                        <button class="btn btn-add w-100" type="button" data-bs-toggle="modal"
+                        <button class="btn btn-add w-100 shadow" type="button" data-bs-toggle="modal"
                             data-bs-target="#confirmModal">
-                            <i class="bi bi-plus"></i> Add User
+                            <i class="bi bi-plus-circle"></i> Add User
                         </button>
 
 
@@ -336,7 +354,7 @@ $userResult = executeQuery("
                     <form method="POST" id="updateUserForm">
                         <input type="hidden" name="userID" value="<?= $userToEdit['userID'] ?>">
 
-                        <div class="row align-items-center mb-3 g-2">
+                        <div class="row align-items-center mb-3 g-2 namePlate ms-2">
                             <!-- Name + Email -->
                             <div class="col-12 col-md-auto p-3">
                                 <h5 class="card-title">
@@ -346,13 +364,13 @@ $userResult = executeQuery("
 
                             <!-- Back Button -->
                             <div class="col-12 col-md-auto ms-md-auto p-3">
-                                <button class="btn btn-add w-100 w-md-auto" type="button" onclick="window.history.back()">
+                                <button class="btn btn-add w-100 w-md-auto shadow" type="button" onclick="window.history.back()">
                                     <i class="bi bi-arrow-left "></i> Back
                                 </button>
                             </div>
                         </div>
 
-                        <div class="card rounded-3 p-3" style="border:none;">
+                        <div class="card rounded-3 p-3 userEdit">
                             <div class="row g-3 position-relative">
 
                                 <!-- Row 1 -->
@@ -440,107 +458,88 @@ $userResult = executeQuery("
                         </div>
                     </form>
                 <?php else: ?>
-                    <div class="m-3 ">
-                        <div class="card-body" id="cardBody">
-                            <h5 class="card-title mb-3">All Users | <?= mysqli_num_rows($userResult) ?></h5>
 
-                            <div class="table-responsive" style="min-height: 20vh; max-height: 40vh; overflow-y: auto;">
-                                <table class="table table-bordered">
-                                    <thead class="table-light sticky-top">
-                                        <tr>
-                                            <th>User</th>
-                                            <th>Role</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php if (mysqli_num_rows($userResult) > 0): ?>
-                                            <?php while ($row = mysqli_fetch_assoc($userResult)): ?>
-                                                <tr>
-                                                    <td>
-                                                        <h5>
+                    <div class="settings-table-container">
+                        <div class="table-responsive">
+                            <table class="table settings-table ">
+                                <thead class="table-header">
+                                    <tr>
+                                        <th scope="col">Users</th>
+                                        <th scope="col">Role</th>
+                                        <th scope="col">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (mysqli_num_rows($userResult) > 0): ?>
+                                        <?php while ($row = mysqli_fetch_assoc($userResult)): ?>
+                                            <tr>
+                                                <!-- User Card -->
+                                                <td>
+                                                    <div class="user-card shadow-sm rounded-4 p-3">
+                                                        <h5 class="fw-bold mb-1 d-flex align-items-center">
                                                             <?= htmlspecialchars($row['username']); ?>
-                                                            <?= $row['userID'] == $_SESSION['userID'] ? '<span class="badge ms-2 fs-6 py-1" style="background-color: var(--primary-color)">You</span>' : '' ?>
+                                                            <?php if ($row['userID'] == $_SESSION['userID']): ?>
+                                                                <span class="badge ms-2 px-2 py-1"
+                                                                    style="color: var(--primary-color);">You</span>
+                                                            <?php endif; ?>
                                                         </h5>
-
-                                                        <h6 class="lead fst-italic d-flex align-items-center">
-                                                            <i class="bi bi-person-fill me-2 fw-bold"></i>
+                                                        <p class="mb-1"><i class="bi bi-person-fill me-2"></i>Full Name:
                                                             <?= htmlspecialchars($row['fullName']); ?>
-                                                        </h6>
-
-                                                        <h6 class="lead fst-italic d-flex align-items-center">
-                                                            <i class="bi bi-envelope-fill me-2 fw-bold"></i>
-                                                            <?= htmlspecialchars($row['email']); ?>
-                                                        </h6>
-
-                                                        <h6 class="lead fst-italic d-flex align-items-center">
-                                                            <i class="bi bi-telephone-fill me-2 fw-bold"></i>
+                                                        </p>
+                                                        <p class="mb-1"><i class="bi bi-telephone-fill me-2"></i>Contact:
                                                             <?= htmlspecialchars($row['accNumber']); ?>
-                                                        </h6>
+                                                        </p>
+                                                        <p class="mb-0"><i class="bi bi-envelope-fill me-2"></i>Email:
+                                                            <?= htmlspecialchars($row['email']); ?>
+                                                        </p>
+                                                    </div>
+                                                </td>
 
-                                                    </td>
-                                                    <td>
-                                                        <div
-                                                            class="dropdown text-center d-flex justify-content-center align-items-center">
-                                                            <button class="btn btn-dropdown dropdown-toggle fw-semibold"
-                                                                type="button" data-bs-toggle="dropdown" aria-expanded="false"
-                                                                <?= $row['userID'] == $_SESSION['userID'] ? 'disabled title="Cannot change your own role"' : '' ?>>
-                                                                <?= htmlspecialchars($row['role']); ?>
-                                                            </button>
+                                                <!-- Role -->
+                                                <td class="align-middle text-center">
+                                                    <span class="role-badge px-3 py-2 rounded-pill ">
+                                                        <?= htmlspecialchars($row['role']); ?>
+                                                    </span>
+                                                </td>
 
-                                                            <ul class="dropdown-menu">
-                                                                <li>
-                                                                    <form method="POST" style="margin:0;">
-                                                                        <input type="hidden" name="userID"
-                                                                            value="<?= $row['userID']; ?>">
-                                                                        <input type="hidden" name="role" value="Admin">
-                                                                        <button type="submit" class="dropdown-item">Admin</button>
-                                                                    </form>
-                                                                </li>
-                                                                <li>
-                                                                    <form method="POST" style="margin:0;">
-                                                                        <input type="hidden" name="userID"
-                                                                            value="<?= $row['userID']; ?>">
-                                                                        <input type="hidden" name="role" value="Staff">
-                                                                        <button type="submit" class="dropdown-item">Staff</button>
-                                                                    </form>
-                                                                </li>
-                                                            </ul>
-                                                        </div>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <form method="GET" style="display:inline;">
+                                                <!-- Actions -->
+                                                <td class="align-middle text-center">
+                                                    <div class="d-flex justify-content-center gap-2">
+                                                        <form method="GET">
                                                             <input type="hidden" name="editUser" value="<?= $row['userID']; ?>">
-                                                            <button class="btn btn-action" type="submit">
-                                                                <i class="bi bi-pencil-square"></i> Edit Credentials
+                                                            <button class="btn btn-sm action-btn edit-btn" type="submit">
+                                                                <i class="bi bi-pencil"></i>
                                                             </button>
                                                         </form>
                                                         <form method="POST" class="deleteUserForm">
                                                             <input type="hidden" name="userID" value="<?= $row['userID']; ?>">
                                                             <input type="hidden" name="btnDeleteUser" value="1">
-                                                            <button type="submit" class="btn btn-delete btn-action-del">
-                                                                <i class="bi bi-trash"></i> Delete
+                                                            <button type="submit" class="btn btn-sm action-btn delete-btn">
+                                                                <i class="bi bi-trash"></i>
                                                             </button>
                                                         </form>
-                                                    </td>
-                                                </tr>
-                                            <?php endwhile; ?>
-                                        <?php else: ?>
-                                            <tr>
-                                                <td colspan="3" class="text-center">No users found.</td>
+                                                    </div>
+                                                </td>
                                             </tr>
-                                        <?php endif; ?>
-                                    </tbody>
-
-                                </table>
-                            </div>
+                                        <?php endwhile; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="3" class="text-center py-4">
+                                                <i class="bi bi-inbox fs-1"></i>
+                                                <p>No users found</p>
+                                                <button class="btn btn-primary" data-bs-toggle="modal"
+                                                    data-bs-target="#confirmModal">
+                                                    <i class="bi bi-plus-circle"></i> Add First User
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
+
                 <?php endif; ?>
-
-
-
-
 
                 <hr>
 
@@ -691,7 +690,7 @@ $userResult = executeQuery("
             });
         });
     </script>
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
     <script src="../assets/js/admin_sidebar.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
