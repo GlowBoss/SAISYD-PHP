@@ -37,9 +37,10 @@ switch ($action) {
 /**
  * Updates product availability based on quantity
  */
-function updateProductAvailability($productID = null) {
+function updateProductAvailability($productID = null)
+{
     global $conn;
-    
+
     if ($productID) {
         // Update specific product
         $query = "UPDATE products 
@@ -56,34 +57,35 @@ function updateProductAvailability($productID = null) {
                       ELSE 'Yes'
                   END";
     }
-    
+
     return executeQuery($query);
 }
 
 /**
  * Check if product has enough stock
  */
-function checkProductStock($productID, $requestedQuantity) {
+function checkProductStock($productID, $requestedQuantity)
+{
     global $conn;
-    
+
     $productID = intval($productID);
     $requestedQuantity = intval($requestedQuantity);
-    
+
     $checkQuery = "SELECT availableQuantity, productName FROM products WHERE productID = $productID";
     $result = executeQuery($checkQuery);
     $product = mysqli_fetch_assoc($result);
-    
+
     if (!$product) {
         return ['available' => false, 'message' => 'Product not found'];
     }
-    
+
     if ($product['availableQuantity'] < $requestedQuantity) {
         return [
-            'available' => false, 
+            'available' => false,
             'message' => 'Insufficient stock for ' . $product['productName'] . '. Available: ' . $product['availableQuantity']
         ];
     }
-    
+
     return ['available' => true, 'message' => 'Stock available'];
 }
 
@@ -115,14 +117,14 @@ function addToCart()
     // Check if item already exists in cart
     if (isset($_SESSION['cart'][$itemKey])) {
         $newQuantity = $_SESSION['cart'][$itemKey]['quantity'] + $quantity;
-        
+
         // Check stock for new total quantity
         $stockCheck = checkProductStock($productID, $newQuantity);
         if (!$stockCheck['available']) {
             echo json_encode(['error' => $stockCheck['message']]);
             return;
         }
-        
+
         $_SESSION['cart'][$itemKey]['quantity'] = $newQuantity;
     } else {
         $_SESSION['cart'][$itemKey] = [
@@ -275,31 +277,31 @@ function checkout()
             $productID = (int) $item['productID'];
             $quantity = (int) $item['quantity'];
 
-            // Convert sugar level to boolean (1 or 0) - assuming it's stored as tinyint(1)
-            $sugar = 0;
-            if (!empty($item['sugarLevel']) && $item['sugarLevel'] !== '0' && $item['sugarLevel'] !== '0%') {
-                $sugar = 1;
-            }
 
-            // Ice level - matching enum('Less','Normal','Extra') - convert from display text to DB values
-            $ice = 'Normal'; // default
-            if (!empty($item['iceLevel'])) {
-                $iceLevel = strtolower($item['iceLevel']);
-                if (strpos($iceLevel, 'less') !== false || strpos($iceLevel, 'no') !== false) {
-                    $ice = 'Less';
-                } elseif (strpos($iceLevel, 'extra') !== false) {
-                    $ice = 'Extra';
+            // Handle sugar level - store as tinyint(1) or NULL
+            $sugar = (isset($item['sugarLevel']) && $item['sugarLevel'] !== '' && trim($item['sugarLevel']) !== '' && $item['sugarLevel'] !== '0')
+                ? "'" . mysqli_real_escape_string($conn, $item['sugarLevel']) . "'"
+                : 'NULL';
+            $ice = "'Normal'"; // default to Normal
+            if (!empty($item['iceLevel']) && trim($item['iceLevel']) !== '') {
+                $iceLevel = trim($item['iceLevel']); // Don't lowercase, keep exact value
+
+                // Exact match to database enum values
+                if ($iceLevel === 'Less') {
+                    $ice = "'Less'";
+                } elseif ($iceLevel === 'Extra') {
+                    $ice = "'Extra'";
                 } else {
-                    $ice = 'Normal';
+                    $ice = "'Normal'"; // Default to Normal for any other value
                 }
             }
 
-            // Notes field simplified - no longer needed to store size since it's part of product name
-            $notes = mysqli_real_escape_string($conn, $item['size'] ?? '');
+            // Handle notes - only store if there's actual content (not size)
+            $notes = 'NULL'; // Default to NULL, not storing size anymore
 
-            // Insert order item
+            // Insert order item - note: values are already quoted where needed
             $insertItemQuery = "INSERT INTO orderitems (orderID, productID, quantity, sugar, ice, notes) 
-                               VALUES ('$orderID', '$productID', '$quantity', '$sugar', '$ice', '$notes')";
+                   VALUES ('$orderID', '$productID', '$quantity', $sugar, $ice, $notes)";
 
             $itemResult = executeQuery($insertItemQuery);
             if (!$itemResult) {
@@ -324,7 +326,7 @@ function checkout()
             $checkQuery = "SELECT availableQuantity FROM products WHERE productID = $productID";
             $checkResult = executeQuery($checkQuery);
             $updatedProduct = mysqli_fetch_assoc($checkResult);
-            
+
             if ($updatedProduct['availableQuantity'] < 0) {
                 throw new Exception('Product ' . $item['productName'] . ' went into negative stock. Transaction rolled back.');
             }

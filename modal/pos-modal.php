@@ -68,7 +68,7 @@
 
           <!-- Action Buttons -->
           <div class="d-grid gap-2">
-            <button type="submit" name="confirm_order" class="btn btnConfirm">
+            <button type="button" name="confirm_order" class="btn btnConfirm">
               <i class="bi bi-check-circle me-2"></i>Confirm Order
             </button>
             <button type="button" class="btn btnCancel" data-bs-dismiss="modal">
