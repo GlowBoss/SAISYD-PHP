@@ -742,31 +742,37 @@ $productResult = $stmt->get_result();
                                                                 <th scope="col">
                                                                     <div class="th-content">
                                                                         <span>Item Name</span>
+                                                                        <i class="bi bi-chevron-expand sort-icon"></i>
                                                                     </div>
                                                                 </th>
                                                                 <th scope="col">
                                                                     <div class="th-content">
                                                                         <span>Category</span>
+                                                                        <i class="bi bi-chevron-expand sort-icon"></i>
                                                                     </div>
                                                                 </th>
                                                                 <th scope="col">
                                                                     <div class="th-content">
                                                                         <span>Price (Each)</span>
+                                                                        <i class="bi bi-chevron-expand sort-icon"></i>
                                                                     </div>
                                                                 </th>
                                                                 <th scope="col">
                                                                     <div class="th-content">
                                                                         <span>Quantity</span>
+                                                                        <i class="bi bi-chevron-expand sort-icon"></i>
                                                                     </div>
                                                                 </th>
                                                                 <th scope="col">
                                                                     <div class="th-content">
                                                                         <span>Total</span>
+                                                                        <i class="bi bi-chevron-expand sort-icon"></i>
                                                                     </div>
                                                                 </th>
                                                                 <th scope="col">
                                                                     <div class="th-content">
                                                                         <span>Product ID</span>
+                                                                        <i class="bi bi-chevron-expand sort-icon"></i>
                                                                     </div>
                                                                 </th>
                                                             </tr>
