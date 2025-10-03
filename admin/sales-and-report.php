@@ -424,8 +424,9 @@ $productResult = $stmt->get_result();
                 <div class="d-none d-md-flex align-items-center justify-content-between pt-4 px-lg-3 px-2">
                     <!-- Title -->
                     <div class="subheading fw-bold m-1">
-                        <span style="color: var(--text-color-dark);">Sales and Report</span>
+                        <span style="color: var(--text-color-dark); font-size: 39px;">Sales and Report</span>
                     </div>
+
 
                     <!-- Export Button -->
                     <div class="ms-auto">
@@ -589,29 +590,50 @@ $productResult = $stmt->get_result();
                                 <div class="subheading fs-4 mb-3">Recent Transactions</div>
                                 <div class="inventory-table-container">
                                     <div class="table-responsive custom-scroll">
-                                        <table class="table inventory-table" id="transactionsTable">
+                                        <table class="table inventory-table" id="inventoryTable">
                                             <thead class="table-header">
                                                 <tr>
                                                     <th scope="col">
-                                                        <div class="th-content"><span>Date</span></div>
+                                                        <div class="th-content">
+                                                            <span>Order No.</span>
+                                                            <i class="bi bi-chevron-expand sort-icon"></i>
+                                                        </div>
                                                     </th>
                                                     <th scope="col">
-                                                        <div class="th-content"><span>Order No.</span></div>
+                                                        <div class="th-content">
+                                                            <span>Order Items</span>
+                                                            <i class="bi bi-chevron-expand sort-icon"></i>
+                                                        </div>
                                                     </th>
                                                     <th scope="col">
-                                                        <div class="th-content"><span>Order Items</span></div>
+                                                        <div class="th-content">
+                                                            <span>Total (₱)</span>
+                                                            <i class="bi bi-chevron-expand sort-icon"></i>
+                                                        </div>
                                                     </th>
                                                     <th scope="col">
-                                                        <div class="th-content"><span>Total (₱)</span></div>
+                                                        <div class="th-content">
+                                                            <span>Payment Method</span>
+                                                            <i class="bi bi-chevron-expand sort-icon"></i>
+                                                        </div>
                                                     </th>
                                                     <th scope="col">
-                                                        <div class="th-content"><span>Payment Method</span></div>
+                                                        <div class="th-content">
+                                                            <span>Status</span>
+                                                            <i class="bi bi-chevron-expand sort-icon"></i>
+                                                        </div>
                                                     </th>
                                                     <th scope="col">
-                                                        <div class="th-content"><span>Status</span></div>
+                                                        <div class="th-content">
+                                                            <span>Customer Name</span>
+                                                            <i class="bi bi-chevron-expand sort-icon"></i>
+                                                        </div>
                                                     </th>
                                                     <th scope="col">
-                                                        <div class="th-content"><span>Customer Name</span></div>
+                                                        <div class="th-content">
+                                                            <span>Date</span>
+                                                            <i class="bi bi-chevron-expand sort-icon"></i>
+                                                        </div>
                                                     </th>
                                                 </tr>
                                             </thead>
@@ -621,16 +643,16 @@ $productResult = $stmt->get_result();
                                                     while ($row = mysqli_fetch_assoc($transactionResult)) {
                                                         ?>
                                                         <tr>
-                                                            <td>
-                                                                <?= date('M d, Y', strtotime($row['orderDate'])) ?><br>
-                                                                <?= date('H:i', strtotime($row['orderDate'])) ?>
-                                                            </td>
                                                             <td><?= htmlspecialchars($row['orderNumber']) ?></td>
                                                             <td><?= $row['orderItems'] ?></td>
                                                             <td>₱<?= number_format($row['totalAmount'], 2) ?></td>
                                                             <td><?= htmlspecialchars($row['paymentMethod']) ?></td>
                                                             <td><?= ucfirst($row['paymentStatus']) ?></td>
                                                             <td><?= htmlspecialchars($row['displayName']) ?></td>
+                                                            <td>
+                                                                <?= date('m/d/Y', strtotime($row['orderDate'])) ?><br>
+                                                                <?= date('H:i', strtotime($row['orderDate'])) ?>
+                                                            </td>
                                                         </tr>
                                                         <?php
                                                     }
@@ -650,141 +672,138 @@ $productResult = $stmt->get_result();
                     <div class="col-12">
                         <div class="card cardContainer m-2">
                             <div class="card-body py-0 px-3 text-center">
-                                <div class="subheading fs-4 mb-3">Sales Report</div>
-                                <form method="GET" action="">
-                                    <div class="row g-3 justify-content-center">
-                                        <!-- Search Bar -->
-                                        <div class="col-12 col-md-6 col-lg-4">
-                                            <input class="form-control" type="text" name="search" placeholder="Search"
-                                                value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
-                                        </div>
+                                <div class="subheading fs-4 mb-3 text-start">Sales Table</div>
+                            </div>
 
-                                        <!-- Category Sorting -->
-                                        <div class="col-12 col-sm-6 col-md-4 col-lg-2">
-                                            <div class="dropdown-center">
-                                                <button class="btn btn-dropdown dropdown-toggle fw-semibold"
-                                                    type="button" data-bs-toggle="dropdown">
-                                                    Category
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                    <li><button class="dropdown-item" type="submit" name="category_sort"
-                                                            value="asc">A → Z</button></li>
-                                                    <li><button class="dropdown-item" type="submit" name="category_sort"
-                                                            value="desc">Z → A</button></li>
-                                                </ul>
-                                            </div>
-                                        </div>
+                            <form method="GET" action="">
+                                <div class="row g-3 justify-content-center">
+                                    <!-- Search Bar -->
+                                    <div class="col-12 col-md-6 col-lg-4">
+                                        <input class="form-control" type="text" name="search" placeholder="Search"
+                                            value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
+                                    </div>
 
-                                        <!-- Price Sorting -->
-                                        <div class="col-12 col-sm-6 col-md-4 col-lg-2">
-                                            <div class="dropdown-center">
-                                                <button class="btn btn-dropdown dropdown-toggle fw-semibold"
-                                                    type="button" data-bs-toggle="dropdown">
-                                                    Price
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                    <li><button class="dropdown-item" type="submit" name="price_sort"
-                                                            value="high">High to Low</button></li>
-                                                    <li><button class="dropdown-item" type="submit" name="price_sort"
-                                                            value="low">Low to High</button></li>
-                                                </ul>
-                                            </div>
-                                        </div>
-
-                                        <!-- Date Picker -->
-                                        <div class="col-12 col-sm-6 col-md-4 col-lg-2">
-                                            <input type="date" class="form-control" name="date_filter"
-                                                value="<?= isset($_GET['date_filter']) ? htmlspecialchars($_GET['date_filter']) : '' ?>">
-                                        </div>
-
-                                        <!-- Apply + Clear Buttons -->
-                                        <div class="col-12 col-sm-6 col-md-4 col-lg-2 d-flex gap-2">
-                                            <button type="submit" class="btn excelBtn flex-fill">Apply</button>
-                                            <a href="<?= strtok($_SERVER["REQUEST_URI"], '?') ?>"
-                                                class="btn btn-secondary flex-fill">Clear</a>
+                                    <!-- Category Sorting -->
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="dropdown-center">
+                                            <button class="btn btn-dropdown dropdown-toggle fw-semibold" type="button"
+                                                data-bs-toggle="dropdown">
+                                                Category
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><button class="dropdown-item" type="submit" name="category_sort"
+                                                        value="asc">Iced Coffee</button></li>
+                                                <li><button class="dropdown-item" type="submit" name="category_sort"
+                                                        value="desc">Non-COffee</button></li>
+                                                <li><button class="dropdown-item" type="submit" name="category_sort"
+                                                        value="asc">Frappé</button></li>
+                                                <li><button class="dropdown-item" type="submit" name="category_sort"
+                                                        value="desc">Milk tea</button></li>        
+                                            </ul>
                                         </div>
                                     </div>
-                                </form>
 
+                                    <!-- Price Sorting -->
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                        <div class="dropdown-center">
+                                            <button class="btn btn-dropdown dropdown-toggle fw-semibold" type="button"
+                                                data-bs-toggle="dropdown">
+                                                Price
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><button class="dropdown-item" type="submit" name="price_sort"
+                                                        value="high">High to Low</button></li>
+                                                <li><button class="dropdown-item" type="submit" name="price_sort"
+                                                        value="low">Low to High</button></li>
+                                            </ul>
+                                        </div>
+                                    </div>
 
-                            </div>
-                            <div class="row align-items-center">
-                                <div class="col-12">
-                                    <div class="card cardOrders rounded-3 m-3" style="min-height: 30vh;">
-                                        <div class="card-body">
-                                            <div class="table-responsive custom-scroll"
-                                                style="max-height: 400px; overflow-y: auto;">
-                                                <div class="inventory-table-container">
-                                                    <div class="table-responsive">
-                                                        <table class="table inventory-table" id="inventoryTable">
-                                                            <thead class="table-header">
-                                                                <tr>
-                                                                    <th scope="col">
-                                                                        <div class="th-content">
-                                                                            <span>Item Name</span>
-                                                                        </div>
-                                                                    </th>
-                                                                    <th scope="col">
-                                                                        <div class="th-content">
-                                                                            <span>Category</span>
-                                                                        </div>
-                                                                    </th>
-                                                                    <th scope="col">
-                                                                        <div class="th-content">
-                                                                            <span>Price (Each)</span>
-                                                                        </div>
-                                                                    </th>
-                                                                    <th scope="col">
-                                                                        <div class="th-content">
-                                                                            <span>Quantity</span>
-                                                                        </div>
-                                                                    </th>
-                                                                    <th scope="col">
-                                                                        <div class="th-content">
-                                                                            <span>Total</span>
-                                                                        </div>
-                                                                    </th>
-                                                                    <th scope="col">
-                                                                        <div class="th-content">
-                                                                            <span>Product ID</span>
-                                                                        </div>
-                                                                    </th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody class="table-body text-center align-middle">
-                                                                <?php
-                                                                if (mysqli_num_rows($productResult) > 0) {
-                                                                    while ($row = mysqli_fetch_assoc($productResult)) {
-                                                                        ?>
-                                                                        <tr
-                                                                            style="font-size: 0.50rem; line-height: 1.1; padding: 0 !important;">
-                                                                            <td class="p-1">
-                                                                                <?= htmlspecialchars($row['item_name']) ?>
-                                                                            </td>
-                                                                            <td class="p-1">
-                                                                                <?= htmlspecialchars($row['category']) ?>
-                                                                            </td>
-                                                                            <td class="p-1">
-                                                                                ₱<?= number_format($row['price_each'], 2) ?>
-                                                                            </td>
-                                                                            <td class="p-1"><?= (int) $row['total_quantity'] ?>
-                                                                            </td>
-                                                                            <td class="p-1">
-                                                                                ₱<?= number_format($row['total_sales'], 2) ?>
-                                                                            </td>
-                                                                            <td class="p-1">
-                                                                                <?= htmlspecialchars($row['productID']) ?>
-                                                                            </td>
-                                                                        </tr>
-                                                                        <?php
-                                                                    }
-                                                                } else {
-                                                                    echo "<tr><td colspan='7' class='text-center'>No product sales found</td></tr>";
+                                    <!-- Apply + Clear Buttons -->
+                                    <div class="col-12 col-sm-6 col-md-4 col-lg-2 d-flex gap-2">
+                                        <button type="submit" class="btn excelBtn flex-fill">Apply</button>
+                                        <a href="<?= strtok($_SERVER["REQUEST_URI"], '?') ?>"
+                                            class="btn btn-secondary flex-fill">Clear</a>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="row align-items-center">
+                            <div class="col-12">
+                                <div class="card cardOrders rounded-3 m-3" style="min-height: 30vh;">
+                                    <div class="card-body">
+                                        <div class="table-responsive custom-scroll"
+                                            style="max-height: 400px; overflow-y: auto;">
+                                            <div class="inventory-table-container">
+                                                <div class="table-responsive">
+                                                    <table class="table inventory-table" id="inventoryTable">
+                                                        <thead class="table-header">
+                                                            <tr>
+                                                                <th scope="col">
+                                                                    <div class="th-content">
+                                                                        <span>Item Name</span>
+                                                                    </div>
+                                                                </th>
+                                                                <th scope="col">
+                                                                    <div class="th-content">
+                                                                        <span>Category</span>
+                                                                    </div>
+                                                                </th>
+                                                                <th scope="col">
+                                                                    <div class="th-content">
+                                                                        <span>Price (Each)</span>
+                                                                    </div>
+                                                                </th>
+                                                                <th scope="col">
+                                                                    <div class="th-content">
+                                                                        <span>Quantity</span>
+                                                                    </div>
+                                                                </th>
+                                                                <th scope="col">
+                                                                    <div class="th-content">
+                                                                        <span>Total</span>
+                                                                    </div>
+                                                                </th>
+                                                                <th scope="col">
+                                                                    <div class="th-content">
+                                                                        <span>Product ID</span>
+                                                                    </div>
+                                                                </th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody class="table-body text-center align-middle">
+                                                            <?php
+                                                            if (mysqli_num_rows($productResult) > 0) {
+                                                                while ($row = mysqli_fetch_assoc($productResult)) {
+                                                                    ?>
+                                                                    <tr
+                                                                        style="font-size: 0.50rem; line-height: 1.1; padding: 0 !important;">
+                                                                        <td class="p-1">
+                                                                            <?= htmlspecialchars($row['item_name']) ?>
+                                                                        </td>
+                                                                        <td class="p-1">
+                                                                            <?= htmlspecialchars($row['category']) ?>
+                                                                        </td>
+                                                                        <td class="p-1">
+                                                                            ₱<?= number_format($row['price_each'], 2) ?>
+                                                                        </td>
+                                                                        <td class="p-1"><?= (int) $row['total_quantity'] ?>
+                                                                        </td>
+                                                                        <td class="p-1">
+                                                                            ₱<?= number_format($row['total_sales'], 2) ?>
+                                                                        </td>
+                                                                        <td class="p-1">
+                                                                            <?= htmlspecialchars($row['productID']) ?>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <?php
                                                                 }
-                                                                ?>
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
+                                                            } else {
+                                                                echo "<tr><td colspan='7' class='text-center'>No product sales found</td></tr>";
+                                                            }
+                                                            ?>
+                                                        </tbody>
+                                                    </table>
                                                 </div>
                                             </div>
                                         </div>
@@ -796,6 +815,7 @@ $productResult = $stmt->get_result();
                 </div>
             </div>
         </div>
+    </div>
     </div>
 
     <script>
