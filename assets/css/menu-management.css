@@ -125,9 +125,48 @@
   white-space: nowrap;
 }
 
+/* RESPONSIVE STYLES */
+@media (max-width: 992px) {
+  .search-input {
+    padding: 0.65rem 0.9rem;
+  }
+
+  .search-btn {
+    max-width: 120px;
+  }
+}
+
+@media (max-width: 768px) {
+  .search-input {
+    padding: 0.5rem 0.7rem;
+    width: 100%;
+    border-radius: 8px;
+  }
+
+  .search-btn {
+    max-width: 50px;
+  }
+
+  .search-container {
+    padding-left: 25px;
+    padding-right: 25px;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .search-btn,
+  .action-btn,
+  .filter-toggle-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+}
+
 /* FILTER PART */
 .filter-toggle-btn {
   background: var(--text-color-light);
+  font-size: var(--lead);
   border: 2px solid rgba(196, 162, 119, 0.3);
   color: var(--text-color-dark);
   padding: 0.75rem 1.25rem;
@@ -147,7 +186,8 @@
 @media (max-width: 576px) {
 
   .filter-toggle-btn {
-    min-width: 150px;
+    padding: 0.35rem 0.35rem;
+    min-width: 130px;
   }
 }
 
@@ -171,6 +211,7 @@
 
 .action-btn {
   background-color: var(--primary-color);
+  font-size: var(--lead);
   border: none;
   color: var(--text-color-light);
   font-weight: 500;
@@ -186,16 +227,6 @@
 .action-btn:hover {
   background-color: var(--btn-hover1);
   transform: translateY(-2px);
-}
-
-.filter-toggle-btn {
-  background-color: var(--text-color-light);
-  border: 2px solid rgba(196, 162, 119, 0.3);
-  color: var(--text-color-dark);
-  font-weight: 500;
-  padding: 0.6rem 1.2rem;
-  border-radius: 8px;
-  transition: all 0.3s ease;
 }
 
 .filter-toggle-btn:hover,
@@ -222,22 +253,6 @@
 }
 
 @media (max-width: 768px) {
-  .search-container {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .search-input {
-    width: 100%;
-    border-radius: 8px;
-  }
-
-  .search-btn,
-  .action-btn,
-  .filter-toggle-btn {
-    width: 100%;
-    justify-content: center;
-  }
 
   .dropdown-menu {
     width: 100%;
@@ -255,13 +270,8 @@
     text-align: center;
   }
 
-  .action-btn,
-  .filter-toggle-btn {
-    font-size: 0.95rem;
-  }
-
-  .search-btn {
-    font-size: 0.9rem;
+  .action-btn {
+    padding: 0.35rem 0.35rem;
   }
 }
 
@@ -326,12 +336,14 @@
 
 .btn-del,
 .edit-btn {
-  font-size: 0.95rem; /* default font size */
+  font-size: 0.95rem;
+  /* default font size */
   border-radius: 14px;
   padding: 8px 16px;
   transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
-  white-space: nowrap; /* prevent text from wrapping */
+  white-space: nowrap;
+  /* prevent text from wrapping */
 }
 
 .edit-btn {
@@ -353,20 +365,20 @@
   background: var(--btn-hover1);
   color: var(--text-color-light);
   transform: scale(1.05);
-  color:var(--text-color-light);
+  color: var(--text-color-light);
 }
 
 
-.btn-del:hover{
+.btn-del:hover {
   transform: scale(1.05);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  background-color:  #e74c3c;
+  background-color: #e74c3c;
   color: var(--text-color-light);
 }
 
 @media (min-width: 768px) and (max-width: 991.98px) {
   .only-md-hide {
-      display: none !important;
+    display: none !important;
   }
 }
 
@@ -375,9 +387,11 @@
   .menu-img-container {
     height: 110px;
   }
+
   .menu-item {
     padding: 0.8rem;
   }
+
   .menu-name {
     font-size: 0.95rem;
   }
@@ -387,17 +401,22 @@
   .menu-img-container {
     height: 100px;
   }
+
   .menu-item {
     padding: 0.7rem;
   }
+
   .menu-name {
     font-size: 0.9rem;
   }
+
   .btn-del,
   .edit-btn {
-    font-size: 0.8rem; /* even smaller on phones */
+    font-size: 0.8rem;
+    /* even smaller on phones */
     padding: 5px 10px;
   }
+
   /* Hide text and show only icons on very small screens */
   .btn-del span,
   .edit-btn span {
@@ -410,9 +429,11 @@
     border-radius: 15px;
     padding: 0.7rem;
   }
+
   .menu-img-container {
     height: 100px;
   }
+
   .menu-name {
     font-size: 0.9rem;
   }
@@ -515,6 +536,8 @@ input:checked+.toggle-slider:before {
   border: 1px solid var(--text-color-dark);
 }
 
+
+
 /* Only apply grayscale to the image when unavailable */
 .menu-item.unavailable .menu-img {
   filter: grayscale(100%);
@@ -542,12 +565,13 @@ input:checked+.toggle-slider:before {
   font-family: var(--primaryFont);
   align-items: center;
   justify-content: center;
-  font-size: clamp(0.75rem, 1.5vw, 0.88rem);;
+  font-size: clamp(0.75rem, 1.5vw, 0.88rem);
+  ;
 }
 
 .clear-btn:hover {
   background: var(--btn-hover1);
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   color: var(--text-color-light);
 }

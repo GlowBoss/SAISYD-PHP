@@ -417,105 +417,103 @@ if ($categoryFilterId !== null) {
     <!-- Main Content Area -->
     <div class="main-content">
         <div class="container-fluid">
-            <div class="cardMain  shadow-lg no-shadow-mobile">
+            <div class="enhanced-page-header">
+                <div class="header-content">
+                    <div class="header-title">
+                        <h1 class="page-title-text">Menu Management</h1>
+                    </div>
+                </div>
+            </div>
 
-                <div class="enhanced-page-header">
-                    <div class="header-content">
-                        <div class="header-title">
-                            <h1 class="page-title-text">Order Management</h1>
+            <div class="action-bar mb-4">
+                <div class="row g-3 align-items-end">
+
+                    <!-- Quick Search (Left Side) -->
+                    <div class="col-12 col-md-12 col-lg-5 px-md-4">
+                        <form method="get" class="search-container">
+                            <div class="input-group search-bar">
+                                <span class="input-group-text search-icon">
+                                    <i class="bi bi-search"></i>
+                                </span>
+                                <input type="text" class="form-control search-input" name="searchProduct"
+                                    placeholder="Search by item name or code..."
+                                    value="<?= htmlspecialchars($searchProductTerm) ?>">
+                                <button class="btn search-btn" type="submit">
+                                    <i class="bi bi-search"></i>
+                                    <span class="d-none d-sm-inline ms-1">Search</span>
+                                </button>
+                                <?php if (isset($_GET['categoryID'])): ?>
+                                    <input type="hidden" name="categoryID" value="<?= (int) $_GET['categoryID'] ?>">
+                                <?php endif; ?>
+                            </div>
+                        </form>
+                    </div>
+
+
+                    <!-- Actions (Right Side) -->
+                    <div class="col-12 col-md-12 col-lg-7 px-lg-4">
+                        <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-lg-end w-100">
+
+                            <!-- Add Button -->
+                            <button class="action-btn" type="button" data-bs-toggle="modal"
+                                data-bs-target="#confirmModal">
+                                <i class="bi bi-plus-circle"></i>
+                                <span class="d-sm-inline">Add</span>
+                            </button>
+
+                            <!-- Category Dropdown -->
+                            <div class="dropdown">
+                                <button class="filter-toggle-btn dropdown-toggle" type="button" id="categoryDropdown"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                    <?= htmlspecialchars($currentCategory) ?>
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="categoryDropdown">
+                                    <li>
+                                        <a class="dropdown-item <?= !isset($_GET['categoryID']) ? 'active' : '' ?> "
+                                            href="menu-management.php<?= !empty($searchProductTerm) ? '?searchProduct=' . urlencode($searchProductTerm) : '' ?>"
+                                            style="background-color: <?= !isset($_GET['categoryID']) ? 'var(--primary-color)' : 'transparent' ?>; 
+                               color: <?= !isset($_GET['categoryID']) ? 'var(--text-color-light)' : 'inherit' ?>;">
+                                            All
+                                        </a>
+                                    </li>
+                                    <?php
+                                    $categories = executeQuery("SELECT * FROM categories ORDER BY categoryName ASC");
+                                    while ($category = mysqli_fetch_assoc($categories)) {
+                                        $isActive = (isset($_GET['categoryID']) && $_GET['categoryID'] == $category['categoryID']) ? 'active' : '';
+                                        $url = "menu-management.php?categoryID=" . $category['categoryID'];
+                                        if (!empty($searchProductTerm)) {
+                                            $url .= "&searchProduct=" . urlencode($searchProductTerm);
+                                        }
+                                        echo '<li><a class="dropdown-item ' . $isActive . '" href="' . $url . '">'
+                                            . htmlspecialchars($category['categoryName']) . '</a></li>';
+                                    }
+                                    ?>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="action-bar mb-4">
-                    <div class="row g-3 align-items-end">
-
-                        <!-- Quick Search (Left Side) -->
-                        <div class="col-12 col-md-12 col-lg-5 px-md-4">
-                            <form method="get" class="search-container">
-                                <div class="input-group search-bar">
-                                    <span class="input-group-text search-icon">
-                                        <i class="bi bi-search"></i>
-                                    </span>
-                                    <input type="text" class="form-control search-input" name="searchProduct"
-                                        placeholder="Search by item name or code..."
-                                        value="<?= htmlspecialchars($searchProductTerm) ?>">
-                                    <button class="btn search-btn" type="submit">
-                                        <i class="bi bi-search"></i>
-                                        <span class="d-sm-inline ms-1">Search</span>
-                                    </button>
-                                    <?php if (isset($_GET['categoryID'])): ?>
-                                        <input type="hidden" name="categoryID" value="<?= (int) $_GET['categoryID'] ?>">
-                                    <?php endif; ?>
-                                </div>
-                            </form>
-                        </div>
 
 
-                        <!-- Actions (Right Side) -->
-                        <div class="col-12 col-md-12 col-lg-7 px-lg-4">
-                            <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-lg-end w-100">
+                <div id="productGrid" class="row g-3 m-2">
+                    <?php
+                    if (!empty($menuItems)) {
+                        foreach ($menuItems as $row) {
+                            $id = $row['productID'];
+                            $name = $row['productName'];
+                            $image = $row['image'];
+                            $price = $row['price'];
+                            $categoryName = $row['category_name'];
+                            $possibleCount = $row['possible_count'] ?? 0;
 
-                                <!-- Add Button -->
-                                <button class="action-btn" type="button" data-bs-toggle="modal"
-                                    data-bs-target="#confirmModal">
-                                    <i class="bi bi-plus-circle"></i>
-                                    <span class="d-sm-inline ms-2">Add</span>
-                                </button>
+                            $isAvailable = $possibleCount > 0 ? 1 : 0;
+                            $unavailableClass = $isAvailable ? '' : ' unavailable';
+                            $statusBadgeClass = $isAvailable ? 'status-available' : 'status-unavailable';
+                            $statusText = $isAvailable ? 'Available' : 'Unavailable';
 
-                                <!-- Category Dropdown -->
-                                <div class="dropdown">
-                                    <button class="filter-toggle-btn dropdown-toggle" type="button"
-                                        id="categoryDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <?= htmlspecialchars($currentCategory) ?>
-                                    </button>
-                                    <ul class="dropdown-menu" aria-labelledby="categoryDropdown">
-                                        <li>
-                                            <a class="dropdown-item <?= !isset($_GET['categoryID']) ? 'active' : '' ?> "
-                                                href="menu-management.php<?= !empty($searchProductTerm) ? '?searchProduct=' . urlencode($searchProductTerm) : '' ?>"
-                                                style="background-color: <?= !isset($_GET['categoryID']) ? 'var(--primary-color)' : 'transparent' ?>; 
-                               color: <?= !isset($_GET['categoryID']) ? 'var(--text-color-light)' : 'inherit' ?>;">
-                                                All
-                                            </a>
-                                        </li>
-                                        <?php
-                                        $categories = executeQuery("SELECT * FROM categories ORDER BY categoryName ASC");
-                                        while ($category = mysqli_fetch_assoc($categories)) {
-                                            $isActive = (isset($_GET['categoryID']) && $_GET['categoryID'] == $category['categoryID']) ? 'active' : '';
-                                            $url = "menu-management.php?categoryID=" . $category['categoryID'];
-                                            if (!empty($searchProductTerm)) {
-                                                $url .= "&searchProduct=" . urlencode($searchProductTerm);
-                                            }
-                                            echo '<li><a class="dropdown-item ' . $isActive . '" href="' . $url . '">'
-                                                . htmlspecialchars($category['categoryName']) . '</a></li>';
-                                        }
-                                        ?>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-
-
-                    <div id="productGrid" class="row g-3 m-2">
-    <?php
-    if (!empty($menuItems)) {
-        foreach ($menuItems as $row) {
-            $id = $row['productID'];
-            $name = $row['productName'];
-            $image = $row['image'];
-            $price = $row['price'];
-            $categoryName = $row['category_name'];
-            $possibleCount = $row['possible_count'] ?? 0;
-
-            $isAvailable = $possibleCount > 0 ? 1 : 0;
-            $unavailableClass = $isAvailable ? '' : ' unavailable';
-            $statusBadgeClass = $isAvailable ? 'status-available' : 'status-unavailable';
-            $statusText = $isAvailable ? 'Available' : 'Unavailable';
-
-            echo "
-            <div class='col-6 col-sm-6 col-md-4 col-lg-3 col-xl-2 d-flex'>
+                            echo "
+            <div class='col-6 col-sm-6 col-md-4 col-lg-3 col-xl-2 d-flex px-3 py-2'>
                 <div class='menu-item w-100 text-center$unavailableClass'>
                     <div class='mb-2'>
                         <span class='status-badge $statusBadgeClass'>$statusText</span>
@@ -551,10 +549,10 @@ if ($categoryFilterId !== null) {
                 </div>
             </div>
             ";
-        }
-    }  else {
-        // No products message + clear search button
-        echo "
+                        }
+                    } else {
+                        // No products message + clear search button
+                        echo "
         <div class='col-12 text-center'>
         <p>No items match the current filters</p>
         <a href='?' class='btn clear-btn mt-2'>
@@ -562,25 +560,24 @@ if ($categoryFilterId !== null) {
         </a>
     </div>
         ";
-    }
-    ?>
-</div>
+                    }
+                    ?>
+                </div>
 
 
 
 
 
-                    <!-- Toast Container -->
-                    <div class="position-fixed bottom-0 end-0 p-3 " style="z-index: 1100">
-                        <div id="updateToast" class="toast align-items-center updateToast border-0" role="alert"
-                            aria-live="assertive" aria-atomic="true">
-                            <div class="d-flex">
-                                <div class="toast-body">
-                                    Product updated successfully!
-                                </div>
-                                <button type="button" class="btn-close btn-close-white me-2 m-auto"
-                                    data-bs-dismiss="toast" aria-label="Close"></button>
+                <!-- Toast Container -->
+                <div class="position-fixed bottom-0 end-0 p-3 " style="z-index: 1100">
+                    <div id="updateToast" class="toast align-items-center updateToast border-0" role="alert"
+                        aria-live="assertive" aria-atomic="true">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                Product updated successfully!
                             </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                                aria-label="Close"></button>
                         </div>
                     </div>
                 </div>
