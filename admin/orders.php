@@ -492,7 +492,7 @@ $statusCounts = getStatusCountsData();
     <!-- Main Content Area -->
     <div class="main-content">
         <div class="container-fluid">
-            <div class="cardMain shadow-lg no-shadow-mobile">
+            <!-- <div class="cardMain shadow-lg no-shadow-mobile"> -->
                 
                 <!-- Enhanced Header -->
                 <div class="enhanced-page-header">
@@ -664,7 +664,7 @@ $statusCounts = getStatusCountsData();
             pollingInterval = setInterval(() => {
                 fetchOrders(currentFilter);
                 updateStatusCounts();
-            }, 5000);
+            }, 5000000);
         }
 
         // Stop polling

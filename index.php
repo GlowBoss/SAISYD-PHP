@@ -1,7 +1,7 @@
 <?php
 include 'assets/connect.php';
 include 'assets/track_visits.php'; 
-session_start();
+
 
 // Function to get cart item count
 function getCartItemCount()
