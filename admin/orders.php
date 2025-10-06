@@ -664,7 +664,7 @@ $statusCounts = getStatusCountsData();
             pollingInterval = setInterval(() => {
                 fetchOrders(currentFilter);
                 updateStatusCounts();
-            }, 5000000);
+            }, 5000);
         }
 
         // Stop polling
