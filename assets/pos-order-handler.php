@@ -282,15 +282,15 @@ function checkout()
             }
 
             // Ice level - matching enum('Less','Normal','Extra') - convert from display text to DB values
-            $ice = 'Normal'; // default
+            $ice = 'Default Ice'; // default
             if (!empty($item['iceLevel'])) {
                 $iceLevel = strtolower($item['iceLevel']);
                 if (strpos($iceLevel, 'less') !== false || strpos($iceLevel, 'no') !== false) {
-                    $ice = 'Less';
+                    $ice = 'Less Ice';
                 } elseif (strpos($iceLevel, 'extra') !== false) {
-                    $ice = 'Extra';
+                    $ice = 'Extra Ice';
                 } else {
-                    $ice = 'Normal';
+                    $ice = 'Default Ice';
                 }
             }
 

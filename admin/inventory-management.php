@@ -386,9 +386,6 @@ foreach ($rows as $row) {
                         <label class="form-label fw-semibold">Quick Search</label>
                         <div class="search-container">
                             <div class="input-group">
-                                <span class="input-group-text search-icon">
-                                    <i class="bi bi-search"></i>
-                                </span>
                                 <input type="text" class="form-control search-input"
                                     placeholder="Search by item name or code..." id="searchInput">
                                 <button class="btn search-btn" type="button" id="searchBtn">

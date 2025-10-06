@@ -492,7 +492,7 @@ $statusCounts = getStatusCountsData();
     <!-- Main Content Area -->
     <div class="main-content">
         <div class="container-fluid">
-            <div class="cardMain shadow-lg no-shadow-mobile">
+            <!-- <div class="cardMain shadow-lg no-shadow-mobile"> -->
                 
                 <!-- Enhanced Header -->
                 <div class="enhanced-page-header">
