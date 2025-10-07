@@ -738,16 +738,50 @@ $productResult = $stmt->get_result();
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
+    <script src="../assets/js/admin_sidebar.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous">
+        </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
+        // Load modal HTML
         fetch("../modal/sales-and-report-modal.php")
             .then(res => res.text())
             .then(data => {
                 document.getElementById("modal-placeholder").innerHTML = data;
-                document.querySelector('.addbtn').addEventListener('click', function (e) {
-                    e.preventDefault();
-                    confirmOrder();
-                    downloadReportExcel();
-                });
+
+                // Attach event listener
+                const exportBtn = document.querySelector('.addbtn.btnDownload');
+                if (exportBtn) {
+                    exportBtn.addEventListener('click', function (e) {
+                        e.preventDefault();
+
+                        // Show loading state
+                        exportBtn.disabled = true;
+                        const originalText = exportBtn.innerHTML;
+                        exportBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>EXPORTING...';
+
+                        setTimeout(() => {
+                            downloadReportCSV();
+
+                            // Close modal
+                            const modal = bootstrap.Modal.getInstance(document.getElementById('confirmModal'));
+                            if (modal) modal.hide();
+
+                            // Show toast
+                            const toast = new bootstrap.Toast(document.getElementById('orderToast'));
+                            toast.show();
+
+                            // Reset button
+                            setTimeout(() => {
+                                exportBtn.disabled = false;
+                                exportBtn.innerHTML = originalText;
+                            }, 500);
+                        }, 1000);
+                    });
+                }
             });
 
         function openPopup() {
@@ -755,56 +789,65 @@ $productResult = $stmt->get_result();
             modal.show();
         }
 
-        function confirmOrder() {
-            const modal = bootstrap.Modal.getInstance(document.getElementById('confirmModal'));
-            modal.hide();
+        function downloadReportCSV() {
+            let csvContent = "";
 
-            const toastElement = document.getElementById('orderToast');
-            const toast = new bootstrap.Toast(toastElement);
-            toast.show();
-        }
+            // Add Summary Section
+            csvContent += "SALES SUMMARY\n";
+            csvContent += "Metric,Value\n";
+            csvContent += "Weekly Total Sales,₱<?= number_format($weeklyTotal, 2); ?>\n";
+            csvContent += "Monthly Total Sales,₱<?= number_format($monthlyTotal, 2); ?>\n";
+            csvContent += "Average Order Value,₱<?= number_format($averageOrderValue, 2); ?>\n";
+            csvContent += "Top Product,<?= !empty($topProductsData) ? htmlspecialchars($topProductsData[0]['productName']) : 'No sales'; ?>\n";
+            csvContent += "Total Items Sold (This Week),<?= $totalItemsSoldCount ?>\n";
+            csvContent += "Website Visits (Today),<?= $todayVisits ?>\n\n\n";
 
-        function downloadReportExcel() {
-            const wb = XLSX.utils.book_new();
-
-            // Export Recent Transactions Table
+            // Add Recent Transactions
+            csvContent += "RECENT TRANSACTIONS\n";
             const transactionTable = document.querySelector(".cardOrders table");
             if (transactionTable) {
-                const ws1 = XLSX.utils.table_to_sheet(transactionTable);
-                XLSX.utils.book_append_sheet(wb, ws1, "Transactions");
+                const rows = transactionTable.querySelectorAll("tr");
+                rows.forEach((row, index) => {
+                    const cells = row.querySelectorAll("th, td");
+                    const rowData = [];
+                    cells.forEach(cell => {
+                        let text = cell.innerText.replace(/"/g, '""').replace(/\n/g, ' ');
+                        rowData.push('"' + text + '"');
+                    });
+                    csvContent += rowData.join(",") + "\n";
+                });
             }
 
-            // Export Sales Report Table
+            csvContent += "\n\n";
+
+            // Add Sales Report
+            csvContent += "SALES REPORT\n";
             const salesReportTable = document.querySelector(".cardContainer table");
             if (salesReportTable) {
-                const ws2 = XLSX.utils.table_to_sheet(salesReportTable);
-                XLSX.utils.book_append_sheet(wb, ws2, "Sales Report");
+                const rows = salesReportTable.querySelectorAll("tr");
+                rows.forEach((row, index) => {
+                    const cells = row.querySelectorAll("th, td");
+                    const rowData = [];
+                    cells.forEach(cell => {
+                        let text = cell.innerText.replace(/"/g, '""').replace(/\n/g, ' ');
+                        rowData.push('"' + text + '"');
+                    });
+                    csvContent += rowData.join(",") + "\n";
+                });
             }
 
-            // Export Small Card Statistics (weekly, monthly, etc.)
-            const stats = [
-                ["Weekly Total Sales", "₱<?= number_format($weeklyTotal, 2); ?>"],
-                ["Monthly Total Sales", "₱<?= number_format($monthlyTotal, 2); ?>"],
-                ["Average Order Value", "₱<?= number_format($averageOrderValue, 2); ?>"],
-                ["Top Product", "<?= !empty($topProductsData) ? htmlspecialchars($topProductsData[0]['productName']) : 'No sales'; ?>"],
-                ["Total Items Sold (This Week)", "<?= $totalItemsSoldCount ?>"],
-                ["Website Visits (Today)", "<?= $todayVisits ?>"]
-            ];
-            const ws3 = XLSX.utils.aoa_to_sheet(stats);
-            XLSX.utils.book_append_sheet(wb, ws3, "Summary");
-
-            // Download Excel File
-            XLSX.writeFile(wb, "sales_and_report.xlsx");
+            // Create download link
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", "sales_and_report.csv");
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     </script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
-    <script src="../assets/js/admin_sidebar.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous">
-        </script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
         const labels = <?php echo json_encode($salesDates); ?>;
@@ -841,7 +884,6 @@ $productResult = $stmt->get_result();
         window.addEventListener("resize", () => {
             salesChart.resize();
         });
-
     </script>
 
 </body>
