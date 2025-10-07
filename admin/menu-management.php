@@ -95,7 +95,7 @@ if (isset($_POST['btnAddProduct'])) {
         }
     }
 
-    $_SESSION['alertMessage'] = "Product added successfully with ingredients!";
+    $_SESSION['alertMessage'] = "Product added successfully!";
     $_SESSION['alertType'] = "success";
     header("Location: menu-management.php");
     exit();
@@ -432,9 +432,6 @@ if ($categoryFilterId !== null) {
                     <div class="col-12 col-md-12 col-lg-5 px-md-4">
                         <form method="get" class="search-container">
                             <div class="input-group search-bar">
-                                <span class="input-group-text search-icon">
-                                    <i class="bi bi-search"></i>
-                                </span>
                                 <input type="text" class="form-control search-input" name="searchProduct"
                                     placeholder="Search by item name or code..."
                                     value="<?= htmlspecialchars($searchProductTerm) ?>">
@@ -538,13 +535,14 @@ if ($categoryFilterId !== null) {
                             <i class='bi bi-pencil-square'></i> 
                         </button>
 
-                        <form method='POST' class='deleteProductForm'>
-                            <input type='hidden' name='productID' value='$id'>
-                            <input type='hidden' name='btnDeleteProduct' value='1'>
-                            <button type='submit' class='btn btn-del'>
-                                <i class='bi bi-trash'></i> 
-                            </button>
-                        </form>
+                        <button type='button' class='btn btn-del' 
+                            data-bs-toggle='modal' 
+                            data-bs-target='#deleteConfirmModal'
+                            data-product-id='" . $id . "'
+                            data-product-name='" . htmlspecialchars($name) . "'>
+                            <i class='bi bi-trash'></i>
+                        </button>
+
                     </div>
                 </div>
             </div>
@@ -569,11 +567,12 @@ if ($categoryFilterId !== null) {
 
 
                 <!-- Toast Container -->
-                <div class="position-fixed bottom-0 end-0 p-3 " style="z-index: 1100">
+                <div class=" toast-container p-3 position-fixed end-0 p-3 " style="z-index: 1100">
                     <div id="updateToast" class="toast align-items-center updateToast border-0" role="alert"
                         aria-live="assertive" aria-atomic="true">
                         <div class="d-flex">
                             <div class="toast-body">
+                                <i class="bi bi-check-circle-fill px-2"></i>
                                 Product updated successfully!
                             </div>
                             <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
@@ -584,42 +583,51 @@ if ($categoryFilterId !== null) {
             </div>
         </div>
 
+        <!-- Toast Container -->
+        <div class="toast-container p-3">
+            <div id="addToast" class="toast align-items-center border-0" role="alert" aria-live="assertive"
+                aria-atomic="true">
+                <div class="d-flex align-items-center">
+                    <div class="toast-body d-flex align-items-center">
+                        <i id="toastIcon" class="bi "></i>
+                        <span id="toastMessage" class="px-2"></span>
+                    </div>
+
+                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+
+
+
 
         <?php include '../modal/menu-management-confirm-modal.php'; ?>
         <?php include '../modal/menu-management-edit-modal.php'; ?>
+        <?php include '../modal/delete-confirm-menu-management.php'; ?>
+
 
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min js"></script>
         <script src="../assets/js/menu-management.js"></script>
         <script src="../assets/js/admin_sidebar.js"></script>
         <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                // Delete Product Confirmation
-                document.querySelectorAll('.deleteProductForm').forEach(form => {
-                    form.addEventListener('submit', function (e) {
-                        e.preventDefault();
-                        Swal.fire({
-                            title: 'Are you sure?',
-                            text: "This product will be deleted!",
-                            icon: 'warning',
-                            showCancelButton: true,
-                            confirmButtonText: 'Yes, delete it!',
-                            cancelButtonText: 'Cancel',
-                            confirmButtonColor: 'var(--primary-color)',
-                            cancelButtonColor: 'var(--btn-hover2)',
-                            customClass: {
-                                popup: 'swal2-border-radius',
-                                confirmButton: 'swal2-confirm-radius',
-                                cancelButton: 'swal2-cancel-radius'
-                            }
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                form.submit();
-                            }
-                        });
-                    });
-                });
+            document.addEventListener('DOMContentLoaded', function () {
+                const deleteModal = document.getElementById('deleteConfirmModal');
 
+                deleteModal.addEventListener('show.bs.modal', function (event) {
+                    const button = event.relatedTarget; // Button that triggered the modal
+                    const productId = button.getAttribute('data-product-id');
+                    const productName = button.getAttribute('data-product-name');
+
+                    // Update modal content
+                    deleteModal.querySelector('#deleteItemName').textContent = productName;
+                    deleteModal.querySelector('#deleteProductID').value = productId;
+                });
+            });
+
+
+
+            document.addEventListener('DOMContentLoaded', () => {
                 $(document).ready(function () {
                     var ingredients = <?php echo json_encode($ingredients); ?>;
                     let skipAutocompleteChange = false; // flag to skip alert
@@ -660,54 +668,54 @@ if ($categoryFilterId !== null) {
                     // Add new ingredient row
                     $("#confirmModal #add-modal-ingredient").click(function () {
                         var row = `
-        <div class="row g-2 mb-2 ingredient-row">
-            <div class="col-md-5 position-relative">
-                <input type="text" class="form-control ingredient-search"
-                    placeholder="Search Ingredient" required
-                    style="border: 2px solid var(--primary-color); border-radius: 10px; 
-                           font-family: var(--secondaryFont); background: var(--card-bg-color);
-                           color: var(--text-color-dark); padding: 12px;">
-                <input type="hidden" name="ingredientID[]" class="ingredient-id">
-                <button type="button" class="cancel-search"
-                    style="position:absolute; right:8px; top:50%; transform:translateY(-50%);
-                           border:none; background:none; color:#333; font-size:18px; display:none; cursor:pointer;">&times;</button>
-            </div>
-            <div class="col-md-3">
-                <input type="number" class="form-control" name="requiredQuantity[]"
-                    placeholder="Quantity" step="any" required
-                    style="border: 2px solid var(--primary-color); border-radius: 10px; 
-                           font-family: var(--secondaryFont); background: var(--card-bg-color);
-                           color: var(--text-color-dark); padding: 12px;">
-            </div>
-            <div class="col-md-3">
-                <select class="form-select measurement-select" name="measurementUnit[]" required
-                    style="border: 2px solid var(--primary-color); border-radius: 10px; 
-                           font-family: var(--secondaryFont); background: var(--card-bg-color);
-                           color: var(--text-color-dark); padding: 12px;">
-                    <option value="" disabled selected>Select Unit</option>
-                    <option value="pcs">pcs</option>
-                    <option value="box">box</option>
-                    <option value="pack">pack</option>
-                    <option value="g">g</option>
-                    <option value="kg">kg</option>
-                    <option value="oz">oz</option>
-                    <option value="ml">ml</option>
-                    <option value="L">L</option>
-                    <option value="pump">pump</option>
-                    <option value="tbsp">tbsp</option>
-                    <option value="tsp">tsp</option>
-                </select>
-            </div>
-            <div class="col-md-1 d-flex align-items-center">
-                <button type="button" class="btn btn-sm remove-ingredient"
-                    style="background: var(--card-bg-color); 
-                           color: var(--text-color-dark); 
-                           border: 2px solid var(--primary-color);
-                           border-radius: 8px; font-family: var(--primaryFont);">
-                    &times;
-                </button>
-            </div>
-        </div>`;
+                        <div class="row g-2 mb-2 ingredient-row">
+                            <div class="col-md-5 position-relative">
+                                <input type="text" class="form-control ingredient-search"
+                                    placeholder="Search Ingredient" required style="border: 2px solid var(--primary-color); border-radius: 10px; 
+          font-family: var(--secondaryFont); background: var(--card-bg-color);
+          color: var(--text-color-dark); padding: 12px;">
+                                <input type="hidden" name="ingredientID[]" class="ingredient-id">
+                                <button type="button" class="cancel-search" style="position:absolute; right:8px; top:50%; transform:translateY(-50%);
+          border:none; background:none; color:#333; font-size:18px; display:none; cursor:pointer;">
+                                    &times;
+                                </button>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="number" class="form-control" name="requiredQuantity[]"
+                                    placeholder="Quantity" step="any" required style="border: 2px solid var(--primary-color); border-radius: 10px; 
+          font-family: var(--secondaryFont); background: var(--card-bg-color);
+          color: var(--text-color-dark); padding: 12px;">
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select measurement-select" name="measurementUnit[]" required style="border: 2px solid var(--primary-color); border-radius: 10px; 
+          font-family: var(--secondaryFont); background: var(--card-bg-color);
+          color: var(--text-color-dark); padding: 12px;">
+          <option value="" disabled selected>Select Unit</option>
+                                    <option value="pcs">Pieces (pcs)</option>
+                                    <option value="box">Box</option>
+                                    <option value="pack">Pack</option>
+                                    <option value="g">Gram (g)</option>
+                                    <option value="kg">Kilogram (kg)</option>
+                                    <option value="oz">Ounce (oz)</option>
+                                    <option value="ml">Milliliter (ml)</option>
+                                    <option value="L">Liter (L)</option>
+                                    <option value="pump">Pump</option>
+                                    <option value="tbsp">Tablespoon (tbsp)</option>
+                                    <option value="tsp">Teaspoon (tsp)</option>
+                                </select>
+                                <input type="text" class="form-control mt-2 d-none custom-unit" name="customUnit[]"
+                                    placeholder="Enter custom unit" style="border: 2px solid var(--primary-color); border-radius: 10px; 
+          font-family: var(--secondaryFont); background: var(--card-bg-color);
+          color: var(--text-color-dark); padding: 12px;">
+                            </div>
+                            <div class="col-md-1 d-flex justify-content-center align-items-center">
+                                <button type="button"
+                                    class="btn btn-sm btn-del remove-ingredient d-flex justify-content-center align-items-center"
+                                    style="border-radius: 10px; width: 38px; height: 38px; transition: all 0.3s ease;">
+                                    <i class="bi bi-trash fs-5"></i>
+                                </button>
+                            </div>
+                        </div>`;
                         $("#confirmModal #ingredients-container").append(row);
 
                         // autocomplete for new row
@@ -841,23 +849,6 @@ if ($categoryFilterId !== null) {
                     }
                 });
 
-
-                // Session Alerts
-                <?php if (isset($_SESSION['alertMessage'])): ?>
-                    Swal.fire({
-                        icon: '<?= $_SESSION['alertType'] ?>', // success, error, warning, info, question
-                        title: '<?= $_SESSION['alertMessage'] ?>',
-                        showConfirmButton: false,
-                        timer: 2500,
-                        timerProgressBar: true,
-                        toast: true,
-                        position: 'top-end'
-                    });
-                    <?php
-                    unset($_SESSION['alertMessage']);
-                    unset($_SESSION['alertType']);
-                    ?>
-                <?php endif; ?>
             });
 
 
@@ -902,6 +893,39 @@ if ($categoryFilterId !== null) {
             setInterval(fetchProductAvailability, POLL_INTERVAL);
 
         </script>
+        <?php if (isset($_SESSION['alertMessage'])): ?>
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const toastEl = document.getElementById('addToast');
+                    const toastBody = document.getElementById('toastMessage');
+                    const toastIcon = document.getElementById('toastIcon');
+                    const bsToast = new bootstrap.Toast(toastEl, { delay: 2500 });
+
+                    const message = '<?= $_SESSION['alertMessage'] ?>';
+                    const type = '<?= $_SESSION['alertType'] ?>'; // success, error, warning
+
+                    toastBody.textContent = message;
+
+                    // Use Bootstrap Icons
+                    if (type === 'error') {
+                        toastIcon.className = 'bi bi-x-circle-fill text-danger';
+                    } else if (type === 'warning') {
+                        toastIcon.className = 'bi bi-exclamation-triangle-fill';
+                    } else {
+                        toastIcon.className = 'bi bi-check-circle-fill';
+                    }
+
+                    bsToast.show();
+                });
+            </script>
+
+            <?php
+            unset($_SESSION['alertMessage']);
+            unset($_SESSION['alertType']);
+            ?>
+        <?php endif; ?>
+
+
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous">
             </script>

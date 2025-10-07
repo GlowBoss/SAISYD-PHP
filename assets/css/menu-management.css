@@ -596,3 +596,51 @@ input:checked+.toggle-slider:before {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   color: var(--text-color-light);
 }
+
+/* Toast Container */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1050;
+}
+
+/* Base Toast */
+.toast {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  font-family: var(--secondaryFont);
+  color: var(--text-color-light);
+  background-color: var(--text-color-dark);
+}
+
+/* Success Toast */
+.toast.success {
+  background-color: var(--text-color-dark);
+  border-left: 4px solid var(--accent-color);
+  color: var(--text-color-light);
+}
+
+/* Error Toast */
+.toast.error {
+  background-color: #e74c3c; 
+  border-left: 4px solid #c0392b; 
+  color: var(--text-color-light); 
+}
+
+/* Toast Body */
+.toast-body {
+  font-weight: 500;
+  font-family: var(--secondaryFont);
+}
+
+.toast-header {
+  background: var(--secondary-color);
+  border-bottom: 1px solid rgba(196, 162, 119, 0.2);
+  font-family: var(--primaryFont);
+}
+
+.toast .btn-close {
+  filter: invert(1) sepia(1) saturate(5) hue-rotate(200deg);
+}
