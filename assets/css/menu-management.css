@@ -49,6 +49,27 @@
 
 }
 
+@media (max-width: 768px) {
+
+  .enhanced-page-header {
+    padding-top: 1rem;
+    padding-bottom: 2rem;
+  }
+
+  .header-content {
+    display: block;
+    justify-content: unset;
+    align-items: unset;
+    text-align: center;
+  }
+
+  .page-title-text {
+    font-size: var(--subheading);
+    text-align: center;
+    width: 100%;
+  }
+}
+
 .header-content {
   color: var(--text-color-dark);
   /* siguradong dark */

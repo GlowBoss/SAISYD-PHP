@@ -513,7 +513,7 @@ if ($categoryFilterId !== null) {
                             $statusText = $isAvailable ? 'Available' : 'Unavailable';
 
                             echo "
-            <div class='col-6 col-sm-6 col-md-4 col-lg-3 col-xl-2 d-flex px-3 py-2'>
+            <div class='col-6 col-md-6 col-lg-4 col-xl-2 d-flex px-3 py-2'>
                 <div class='menu-item w-100 text-center$unavailableClass'>
                     <div class='mb-2'>
                         <span class='status-badge $statusBadgeClass'>$statusText</span>
