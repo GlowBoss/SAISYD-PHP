@@ -49,6 +49,30 @@
 
 }
 
+.page-title-text {
+  font-size: var(--heading);
+  font-weight: 600;
+  color: var(--text-color-dark);
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.header-content {
+  color: var(--text-color-dark);
+  /* siguradong dark */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-title {
+  color: var(--text-color-dark);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+
 @media (max-width: 768px) {
 
   .enhanced-page-header {
@@ -69,31 +93,6 @@
     width: 100%;
   }
 }
-
-.header-content {
-  color: var(--text-color-dark);
-  /* siguradong dark */
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.header-title {
-  color: var(--text-color-dark);
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.page-title-text {
-  font-size: var(--heading);
-  font-weight: 600;
-  color: var(--text-color-dark);
-  margin: 0;
-  letter-spacing: -0.5px;
-}
-
-
 
 /* SEARCH PART  */
 .search-input {
