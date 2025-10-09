@@ -564,16 +564,21 @@ $userResult = executeQuery("
                     </div>
                 </div>
 
-
-
+                <div class="card rounded-3 mx-3 mb-4">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <span>Customer Menu QR Code</span>
+                        <button class="btn btn-add" type="button" data-bs-toggle="modal" data-bs-target="#qrModal">
+                            <i class="bi bi-qr-code"></i> Show QR Code
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- add user modal -->
     <?php include '../modal/add-user-modal.php'; ?>
-
-
+    <?php include '../modal/qr-modal.php'; ?>
     <?php include '../modal/confirm-toggle-modal.php'; ?>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
@@ -691,7 +696,7 @@ $userResult = executeQuery("
             });
         });
     </script>
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
     <script src="../assets/js/admin_sidebar.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
