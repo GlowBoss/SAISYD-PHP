@@ -61,3 +61,32 @@ body {
     
 }
 
+*::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--secondary-color);
+  border-radius: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 10px;
+  border: 2px solid var(--secondary-color);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--btn-hover1);
+}
+
+* {
+  scrollbar-width: thin; 
+  scrollbar-color: var(--primary-color) var(--secondary-color);
+}
+
+html, body {
+  -webkit-overflow-scrolling: touch;
+}
+

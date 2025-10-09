@@ -96,7 +96,7 @@ body {
     color: var(--gray);
     margin-top: 0.25rem;
     font-weight: 500;
-    font-family: var(--secondaryFont);
+    font-family: var(--primaryFont);
 }
 
 /* Mobile Stats */

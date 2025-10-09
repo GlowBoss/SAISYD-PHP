@@ -12,104 +12,6 @@ if (!isset($ingredients)) {
 }
 ?>
 
-<style>
-
-input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
-input[type=number] {
-    -moz-appearance: textfield;
-}
-
-.form-control:focus,
-.form-select:focus {
-    border-color: var(--btn-hover1) !important;
-    box-shadow: 0 0 0 0.2rem rgba(46, 26, 0, 0.15) !important;
-}
-
-.form-select option {
-    background: var(--card-bg-color);
-    color: var(--text-color-dark);
-}
-
-.autocomplete-dropdown {
-    border-top: none !important;
-}
-
-.autocomplete-item {
-    padding: 12px 15px;
-    cursor: pointer;
-    border-bottom: 1px solid rgba(196, 162, 119, 0.2);
-    font-family: var(--secondaryFont);
-    color: var(--text-color-dark);
-    transition: background-color 0.2s ease;
-}
-
-.autocomplete-item:hover,
-.autocomplete-item.selected {
-    background-color: var(--primary-color);
-    color: var(--text-color-light);
-}
-
-.autocomplete-item:last-child {
-    border-bottom: none;
-    border-radius: 0 0 10px 10px;
-}
-
-.new-ingredient-item {
-    font-style: italic;
-    color: var(--text-color-dark);
-    font-weight: bold;
-}
-
-.new-ingredient-item:hover {
-    background-color: var(--primary-color);
-    color: var(--text-color-light);
-}
-
-/* Unit Mismatch Warning Styles */
-.unit-warning {
-    background-color: #fff3cd;
-    border: 2px solid #ffc107;
-    border-radius: 8px;
-    padding: 10px 15px;
-    margin-top: 10px;
-    display: none;
-}
-
-.unit-warning.show {
-    display: block;
-    animation: slideDown 0.3s ease;
-}
-
-.unit-warning i {
-    color: #856404;
-    font-size: 1.2rem;
-    margin-right: 8px;
-}
-
-.unit-warning-text {
-    color: #856404;
-    font-weight: 600;
-    font-family: var(--secondaryFont);
-    font-size: 0.9rem;
-}
-
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-</style>
-
 <!-- Add Item Modal -->
 <div class="modal fade" id="addItemModal" data-bs-backdrop="true" tabindex="-1" 
      aria-labelledby="addItemModalLabel" aria-hidden="true">
@@ -128,7 +30,7 @@ input[type=number] {
             
             <!-- Body -->
             <div class="modal-body">
-                <form method="POST" action="" id="addItemForm">
+                <form method="POST" action="">
                     <input type="hidden" name="action" value="create">
                     <input type="hidden" id="ingredientID" name="ingredientID" value="">
                     
@@ -184,38 +86,17 @@ input[type=number] {
                                                font-family: var(--secondaryFont); background: var(--card-bg-color);
                                                color: var(--text-color-dark); padding: 12px;">
                                     <option value="">Select Unit</option>
-                                    <optgroup label="Weight">
-                                        <option value="kg">Kilogram (kg)</option>
-                                        <option value="g">Gram (g)</option>
-                                        <option value="lbs">Pounds (lbs)</option>
-                                        <option value="oz">Ounce (oz)</option>
-                                    </optgroup>
-                                    <optgroup label="Volume - Metric">
-                                        <option value="L">Liter (L)</option>
-                                        <option value="ml">Milliliter (ml)</option>
-                                    </optgroup>
-                                    <optgroup label="Volume - Coffee Shop">
-                                        <option value="pump">Pump</option>
-                                        <option value="tbsp">Tablespoon (tbsp)</option>
-                                        <option value="tsp">Teaspoon (tsp)</option>
-                                        <option value="cup">Cup</option>
-                                        <option value="shot">Shot</option>
-                                    </optgroup>
-                                    <optgroup label="Count">
-                                        <option value="pcs">Pieces (pcs)</option>
-                                        <option value="bags">Bags</option>
-                                        <option value="bottles">Bottles</option>
-                                        <option value="cans">Cans</option>
-                                        <option value="packs">Packs</option>
-                                        <option value="boxes">Boxes</option>
-                                    </optgroup>
+                                    <option value="kg">Kilogram (kg)</option>
+                                    <option value="g">Gram (g)</option>
+                                    <option value="lbs">Pounds (lbs)</option>
+                                    <option value="oz">Ounce (oz)</option>
+                                    <option value="L">Liter (L)</option>
+                                    <option value="ml">Milliliter (ml)</option>
+                                    <option value="pcs">Pieces (pcs)</option>
+                                    <option value="bags">Bags</option>
+                                    <option value="bottles">Bottles</option>
+                                    <option value="cans">Cans</option>
                                 </select>
-
-                                <!-- Unit Mismatch Warning -->
-                                <div class="unit-warning" id="unitWarningAdd">
-                                    <i class="bi bi-exclamation-triangle-fill"></i>
-                                    <span class="unit-warning-text" id="unitWarningTextAdd"></span>
-                                </div>
                             </div>
                         </div>
 
@@ -283,7 +164,7 @@ input[type=number] {
                         </button>
                         
                         <!-- Add Item Button -->
-                        <button type="submit" class="btn fw-bold px-4 py-2" id="addItemBtn"
+                        <button type="submit" class="btn fw-bold px-4 py-2"
                                 style="
                                     background: var(--text-color-dark); 
                                     color: var(--text-color-light); 
@@ -314,197 +195,71 @@ input[type=number] {
     </div>
 </div>
 
-<!-- Unit Mismatch Error Modal (Shared) -->
-<div class="modal fade" id="unitMismatchModalAdd" tabindex="-1" aria-labelledby="unitMismatchModalAddLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-4 shadow-lg border-0" style="background: var(--bg-color);">
-            <div class="modal-header border-0 pb-2" style="background: linear-gradient(135deg, #ff6b6b 0%, #dc3545 100%);">
-                <h5 class="modal-title fw-bold text-white" id="unitMismatchModalAddLabel">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Unit Mismatch Error
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body text-center py-4">
-                <div class="mb-3">
-                    <i class="bi bi-x-circle-fill" style="font-size: 4rem; color: #dc3545;"></i>
-                </div>
-                <h5 class="fw-bold mb-3" style="color: var(--text-color-dark); font-family: var(--primaryFont);">
-                    Incompatible Unit Selected
-                </h5>
-                <p class="mb-2" style="color: var(--text-color-dark); font-family: var(--secondaryFont);" id="mismatchMessageAdd">
-                    <!-- Dynamic message here -->
-                </p>
-                <div class="alert alert-warning mt-3" role="alert" style="font-size: 0.9rem;">
-                    <i class="bi bi-info-circle me-2"></i>
-                    <strong>Allowed units:</strong> <span id="allowedUnitsTextAdd"></span>
-                </div>
-            </div>
-             <div class="modal-footer border-0 justify-content-center">
-                <button type="button" class="btn fw-bold px-4 py-2" id="fixUnitMismatchBtnAdd" style="
-                    background: var(--text-color-dark); 
-                    color: var(--text-color-light); 
-                    border: none;
-                    border-radius: 10px; 
-                    font-family: var(--primaryFont); 
-                    letter-spacing: 1px;
-                    box-shadow: 0 4px 8px rgba(196, 162, 119, 0.3); 
-                    transition: all 0.3s ease;
-                    min-width: 120px;
-                    " onmouseover="
-                    this.style.background='var(--primary-color)'; 
-                    this.style.transform='translateY(-2px)';
-                    this.style.boxShadow='0 6px 12px rgba(196, 162, 119, 0.4)';
-                    " onmouseout="
-                    this.style.background='var(--text-color-dark)'; 
-                    this.style.transform='translateY(0)';
-                    this.style.boxShadow='0 4px 8px rgba(196, 162, 119, 0.3)';
-                    ">
-                    <i class="bi bi-tools me-2"></i>FIX THIS NOW
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+<style>
+/* Remove number input spinners */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+/* Focus states */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--btn-hover1) !important;
+    box-shadow: 0 0 0 0.2rem rgba(46, 26, 0, 0.15) !important;
+}
+
+/* Dropdown styling */
+.form-select option {
+    background: var(--card-bg-color);
+    color: var(--text-color-dark);
+}
+
+/* Autocomplete dropdown styling */
+.autocomplete-dropdown {
+    border-top: none !important;
+}
+
+.autocomplete-item {
+    padding: 12px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(196, 162, 119, 0.2);
+    font-family: var(--secondaryFont);
+    color: var(--text-color-dark);
+    transition: background-color 0.2s ease;
+}
+
+.autocomplete-item:hover,
+.autocomplete-item.selected {
+    background-color: var(--primary-color);
+    color: var(--text-color-light);
+}
+
+.autocomplete-item:last-child {
+    border-bottom: none;
+    border-radius: 0 0 10px 10px;
+}
+
+.new-ingredient-item {
+    font-style: italic;
+    color: var(--text-color-dark);
+    font-weight: bold;
+}
+
+.new-ingredient-item:hover {
+    background-color: var(--primary-color);
+    color: var(--text-color-light);
+}
+</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // ==================== UNIT VALIDATION SYSTEM ====================
-    
-    // Ingredient type detection based on keywords
-    function detectIngredientType(ingredientName) {
-        const name = ingredientName.toLowerCase();
-        
-        // LIQUIDS - anything liquid/fluid
-        const liquidKeywords = ['milk', 'water', 'syrup', 'juice', 'espresso', 
-                               'cream', 'latte', 'tea', 'oil', 'sauce', 'broth', 'soda',
-                               'coke', 'sprite', 'drink', 'beverage', 'liquid', 'coffee',
-                               'mocha', 'vanilla', 'caramel', 'hazelnut', 'chocolate sauce'];
-        
-        // SOLIDS - dry/powder/granular/solid items
-        const solidKeywords = ['sugar', 'flour', 'powder', 'salt', 'beans', 'leaves', 
-                              'cocoa', 'chocolate', 'spice', 'grain', 'rice', 'cheese',
-                              'butter', 'matcha', 'taro', 'ube', 'caramel powder', 'cookie',
-                              'biscuit', 'pastry', 'cake', 'bread'];
-        
-        // COUNTABLE - by pieces/whole items
-        const countableKeywords = ['egg', 'potato', 'fries', 'cup', 'piece', 'slice',
-                                  'patty', 'bun', 'bottle', 'can', 'bag', 'pack', 'box',
-                                  'sachet', 'tablet', 'capsule', 'carrot', 'muffin', 'donut',
-                                  'croissant', 'sandwich', 'wrap'];
-        
-        // Check which category (priority: countable > liquid > solid)
-        if (countableKeywords.some(keyword => name.includes(keyword))) {
-            return 'countable';
-        }
-        if (liquidKeywords.some(keyword => name.includes(keyword))) {
-            return 'liquid';
-        }
-        if (solidKeywords.some(keyword => name.includes(keyword))) {
-            return 'solid';
-        }
-        
-        
-        return 'solid'; 
-    }
-
-    // Define allowed units per category 
-    const allowedUnits = {
-        liquid: ['L', 'ml', 'bottles', 'pump', 'tbsp', 'tsp', 'cup', 'shot'],
-        solid: ['kg', 'g', 'lbs', 'oz', 'bags', 'packs', 'boxes', 'tbsp', 'tsp', 'cup'],
-        countable: ['pcs', 'bags', 'bottles', 'cans', 'packs', 'boxes']
-    };
-
-    // Get unit display names 
-    function getUnitDisplayName(unit) {
-        const unitNames = {
-            'kg': 'Kilogram',
-            'g': 'Gram',
-            'lbs': 'Pounds',
-            'oz': 'Ounce',
-            'L': 'Liter',
-            'ml': 'Milliliter',
-            'pump': 'Pump',
-            'tbsp': 'Tablespoon',
-            'tsp': 'Teaspoon',
-            'cup': 'Cup',
-            'shot': 'Shot',
-            'pcs': 'Pieces',
-            'bags': 'Bags',
-            'bottles': 'Bottles',
-            'cans': 'Cans',
-            'packs': 'Packs',
-            'boxes': 'Boxes'
-        };
-        return unitNames[unit] || unit;
-    }
-
-    
-    function validateUnitMatch(ingredientName, selectedUnit) {
-        if (!ingredientName || !selectedUnit) {
-            return { valid: true };
-        }
-
-        const ingredientType = detectIngredientType(ingredientName);
-        const allowed = allowedUnits[ingredientType];
-
-        if (!allowed.includes(selectedUnit)) {
-            const allowedUnitsDisplay = allowed.map(u => getUnitDisplayName(u)).join(', ');
-            return {
-                valid: false,
-                type: ingredientType,
-                message: `"${ingredientName}" is a ${ingredientType} ingredient and cannot use "${getUnitDisplayName(selectedUnit)}" as unit.`,
-                allowedUnits: allowedUnitsDisplay
-            };
-        }
-
-        return { valid: true };
-    }
-
-   
-    function showUnitMismatchModal(validation) {
-        document.getElementById('mismatchMessageAdd').textContent = validation.message;
-        document.getElementById('allowedUnitsTextAdd').textContent = validation.allowedUnits;
-        
-        const mismatchModal = new bootstrap.Modal(document.getElementById('unitMismatchModalAdd'), {
-            backdrop: 'static',
-            keyboard: false
-        });
-        mismatchModal.show();
-    }
-
-    
-    document.addEventListener('click', function(e) {
-        if (e.target && e.target.id === 'fixUnitMismatchBtnAdd') {
-            const mismatchModal = bootstrap.Modal.getInstance(document.getElementById('unitMismatchModalAdd'));
-            if (mismatchModal) {
-                mismatchModal.hide();
-            }
-            
-            document.getElementById('unit').focus();
-            document.getElementById('unit').scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'center' 
-            });
-        }
-    });
-
-    
-    function showUnitWarning(message) {
-        const warning = document.getElementById('unitWarningAdd');
-        const warningText = document.getElementById('unitWarningTextAdd');
-        
-        warningText.textContent = message;
-        warning.classList.add('show');
-    }
-
-   
-    function hideUnitWarning() {
-        const warning = document.getElementById('unitWarningAdd');
-        warning.classList.remove('show');
-    }
-
-    // ==================== AUTOCOMPLETE SYSTEM ====================
-    
+    // Existing ingredients data - no JSON needed, direct PHP array
     const ingredients = [
         <?php foreach ($ingredients as $ingredient): ?>
         {
@@ -517,57 +272,28 @@ document.addEventListener('DOMContentLoaded', function() {
     const ingredientInput = document.getElementById('ingredientName');
     const ingredientIDInput = document.getElementById('ingredientID');
     const dropdown = document.getElementById('ingredientDropdown');
-    const unitSelect = document.getElementById('unit');
     let selectedIndex = -1;
     
-
+    // Show/hide dropdown and filter ingredients
     ingredientInput.addEventListener('input', function() {
         const query = this.value.toLowerCase().trim();
         
         if (query === '') {
             hideDropdown();
             ingredientIDInput.value = '';
-            hideUnitWarning();
             return;
         }
         
+        // Filter existing ingredients
         const filtered = ingredients.filter(ingredient => 
             ingredient.ingredientName.toLowerCase().includes(query)
         );
         
         showDropdown(filtered, query);
         selectedIndex = -1;
-
-        const currentUnit = unitSelect.value;
-        if (currentUnit) {
-            const validation = validateUnitMatch(this.value, currentUnit);
-            if (!validation.valid) {
-                showUnitWarning(validation.message);
-            } else {
-                hideUnitWarning();
-            }
-        }
-    });
-
-   
-    unitSelect.addEventListener('change', function() {
-        const ingredientName = ingredientInput.value.trim();
-        const selectedUnit = this.value;
-
-        if (!ingredientName || !selectedUnit) {
-            hideUnitWarning();
-            return;
-        }
-
-        const validation = validateUnitMatch(ingredientName, selectedUnit);
-        if (!validation.valid) {
-            showUnitWarning(validation.message);
-        } else {
-            hideUnitWarning();
-        }
     });
     
-   
+    // Handle keyboard navigation
     ingredientInput.addEventListener('keydown', function(e) {
         const items = dropdown.querySelectorAll('.autocomplete-item');
         
@@ -589,7 +315,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    
+    // Hide dropdown when clicking outside
     document.addEventListener('click', function(e) {
         if (!ingredientInput.contains(e.target) && !dropdown.contains(e.target)) {
             hideDropdown();
@@ -599,6 +325,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function showDropdown(filtered, query) {
         dropdown.innerHTML = '';
         
+        // Show existing ingredients
         filtered.forEach(ingredient => {
             const item = createDropdownItem(
                 ingredient.ingredientName, 
@@ -608,6 +335,7 @@ document.addEventListener('DOMContentLoaded', function() {
             dropdown.appendChild(item);
         });
         
+        // Show "Add new ingredient" option if query doesn't exactly match any existing ingredient
         const exactMatch = filtered.some(ingredient => 
             ingredient.ingredientName.toLowerCase() === query.toLowerCase()
         );
@@ -651,21 +379,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         ingredientInput.value = ingredientName;
         ingredientIDInput.value = isNew ? '' : ingredientID;
+        
+        // Add a data attribute to indicate if this is a new ingredient
         ingredientInput.setAttribute('data-is-new-ingredient', isNew ? 'true' : 'false');
         
         hideDropdown();
         selectedIndex = -1;
-
-        
-        const currentUnit = unitSelect.value;
-        if (currentUnit) {
-            const validation = validateUnitMatch(ingredientName, currentUnit);
-            if (!validation.valid) {
-                showUnitWarning(validation.message);
-            } else {
-                hideUnitWarning();
-            }
-        }
     }
     
     function updateSelection(items) {
@@ -678,68 +397,13 @@ document.addEventListener('DOMContentLoaded', function() {
         dropdown.style.display = 'none';
         selectedIndex = -1;
     }
-
-    // ==================== FORM SUBMIT WITH VALIDATION ====================
     
-    const addItemForm = document.getElementById('addItemForm');
-    const addItemBtn = document.getElementById('addItemBtn');
-    
-    addItemForm.addEventListener('submit', function(e) {
-        
-        e.preventDefault();
-        e.stopPropagation();
-
-        const ingredientName = ingredientInput.value.trim();
-        const selectedUnit = unitSelect.value;
-
-        console.log('Add Form - Validating:', ingredientName, 'with unit:', selectedUnit);
-
-        
-        const validation = validateUnitMatch(ingredientName, selectedUnit);
-        
-        console.log('Add Form - Validation result:', validation);
-        
-        if (!validation.valid) {
-            // Show error modal and BLOCK submission completely
-            console.log('BLOCKING ADD SUBMISSION - Unit mismatch detected!');
-            showUnitMismatchModal(validation);
-            
-            
-            unitSelect.style.borderColor = '#dc3545';
-            unitSelect.style.boxShadow = '0 0 0 0.2rem rgba(220, 53, 69, 0.25)';
-            
-         
-            addItemBtn.disabled = true;
-            
-            setTimeout(() => {
-                addItemBtn.disabled = false;
-            }, 2000);
-            
-           
-            return false;
-        }
-
-        console.log('Add Form - Validation passed - Proceeding with submission');
-
-        
-        unitSelect.style.borderColor = 'var(--primary-color)';
-        unitSelect.style.boxShadow = 'none';
-
-       
-        this.submit();
-    });
-    
-   
+    // Clear selection when modal is closed
     document.getElementById('addItemModal').addEventListener('hidden.bs.modal', function() {
         ingredientInput.value = '';
         ingredientIDInput.value = '';
         hideDropdown();
-        hideUnitWarning();
         selectedIndex = -1;
-        
-        
-        unitSelect.style.borderColor = 'var(--primary-color)';
-        unitSelect.style.boxShadow = 'none';
     });
 });
 </script>
