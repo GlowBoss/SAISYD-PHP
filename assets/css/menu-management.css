@@ -42,11 +42,10 @@
   background: var(--card-bg-color);
   /* padding: 2rem; */
   padding-top: 1.5rem;
-  padding-bottom: 3rem;
+  padding-bottom: 5rem;
   padding-left: 2rem;
   padding-right: 2rem;
   position: relative;
-
 }
 
 .page-title-text {

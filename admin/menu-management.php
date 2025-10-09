@@ -493,7 +493,7 @@ if ($categoryFilterId !== null) {
 
 
 
-                <div id="productGrid" class="row g-3 m-2">
+                <div id="productGrid" class="row g-3 m-2 row g-3 m-2 justify-content-start align-items-start">
                     <?php
                     if (!empty($menuItems)) {
                         foreach ($menuItems as $row) {
