@@ -78,18 +78,6 @@
                               color: var(--text-color-dark); padding: 12px;">
                             </div>
 
-                            <div class="mb-4">
-                                <label class="form-label fw-bold mb-2"
-                                    style="font-family: var(--primaryFont); color: var(--text-color-dark);">
-                                    Size
-                                </label>
-                                <select class="form-select" name="menu_size" id="edit_menu_size" style="border: 2px solid var(--primary-color); border-radius: 10px;
-                               font-family: var(--secondaryFont); background: var(--card-bg-color);
-                               color: var(--text-color-dark); padding: 12px;">
-                                    <option value="12oz">12oz</option>
-                                    <option value="16oz">16oz</option>
-                                </select>
-                            </div>
 
                             <div class="mb-4">
                                 <label class="form-label fw-bold mb-2"
