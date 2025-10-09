@@ -691,30 +691,30 @@ foreach ($rows as $row) {
             });
         });
 
-        document.getElementById("updateForm").addEventListener("submit", function (e) {
-            e.preventDefault();
+        // document.getElementById("updateForm").addEventListener("submit", function (e) {
+        //     e.preventDefault();
 
-            const formData = new FormData(this);
+        //     const formData = new FormData(this);
 
-            fetch("../assets/inventory-update-product.php", {
-                method: "POST",
-                body: formData
-            })
-                .then(res => res.json())
-                .then(resp => {
-                    if (resp.success) {
-                        showToast("Inventory updated successfully", "success");
-                        bootstrap.Modal.getInstance(document.getElementById("editItemModal")).hide();
-                        setTimeout(() => {
-                            location.reload();
-                        }, 800);
-                    } else {
-                        showToast("Error: " + resp.message, "danger");
-                    }
-                })
-                .catch(err => console.error("AJAX Error:", err));
+        //     fetch("../assets/inventory-update-product.php", {
+        //         method: "POST",
+        //         body: formData
+        //     })
+        //         .then(res => res.json())
+        //         .then(resp => {
+        //             if (resp.success) {
+        //                 showToast("Inventory updated successfully", "success");
+        //                 bootstrap.Modal.getInstance(document.getElementById("editItemModal")).hide();
+        //                 setTimeout(() => {
+        //                     location.reload();
+        //                 }, 800);
+        //             } else {
+        //                 showToast("Error: " + resp.message, "danger");
+        //             }
+        //         })
+        //         .catch(err => console.error("AJAX Error:", err));
 
-        });
+        // });
 
         // Toast Notification System
         function showToast(message, type = 'success') {
