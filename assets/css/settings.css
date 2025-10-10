@@ -114,6 +114,7 @@ button.btn.btnAdd:hover {
 .table-header th {
   background-color: #e9e5da;
   color: var(--text-color-dark);
+  font-family: var(--primaryFont);
   font-weight: bold;
   text-align: center;
   border: none;
@@ -126,7 +127,7 @@ button.btn.btnAdd:hover {
 }
 
 .settings-table tbody td {
-  background-color: var(--secondary-color);
+  background-color: transparent;
   padding: 1rem;
   vertical-align: middle;
 }
@@ -136,8 +137,7 @@ button.btn.btnAdd:hover {
 }
 
 .role-badge {
-  background: #c49b73;
-  color: #fff;
+  color: var(--text-color-dark);
   font-size: 0.9rem;
 }
 
@@ -192,6 +192,7 @@ button.btn.btnAdd:hover {
   border-radius: 12px;
   font-family: var(--secondaryFont);
   color: var(--text-color-light);
+  padding: 0.6rem 1.2rem;
 }
 
 .btn-add:hover {

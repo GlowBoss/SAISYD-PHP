@@ -342,7 +342,7 @@ $userResult = executeQuery("
                     <!-- add button -->
                     <button class="btn btn-add w-100" type="button" data-bs-toggle="modal"
                         data-bs-target="#confirmModal">
-                        <i class="bi bi-plus"></i> Add User
+                        <i class="bi bi-plus-circle"></i> Add User
                     </button>
 
 
@@ -475,7 +475,7 @@ $userResult = executeQuery("
                                                         <?= htmlspecialchars($row['username']); ?>
                                                         <?php if ($row['userID'] == $_SESSION['userID']): ?>
                                                             <span class="badge ms-2 px-2 py-1"
-                                                                style="background:#eee; color:#333;">You</span>
+                                                                style=" color:var(--primary-color);">You</span>
                                                         <?php endif; ?>
                                                     </h5>
                                                     <p class="mb-1"><i class="bi bi-person-fill me-2"></i>Full Name:
