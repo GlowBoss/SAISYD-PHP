@@ -1,5 +1,9 @@
 <?php
+<<<<<<< Updated upstream
 // Get ingredients for autocomplete 
+=======
+// Get ingredients for autocomplete (this should be included in your main inventory-management.php)
+>>>>>>> Stashed changes
 if (!isset($ingredients)) {
     $ingredientsQuery = "SELECT ingredientID, ingredientName FROM ingredients ORDER BY ingredientName";
     $ingredientsResult = executeQuery($ingredientsQuery);
