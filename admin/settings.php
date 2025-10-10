@@ -201,7 +201,7 @@ $userResult = executeQuery("
                     <span>Dashboard</span>
                 </a>
                 <a href="orders.php" class="admin-nav-link">
-                    <i class="bi bi-bell"></i>
+                    <i class="bi bi-clipboard-check"></i>
                     <span>Order Management</span>
                 </a>
                 <a href="point-of-sales.php" class="admin-nav-link">
