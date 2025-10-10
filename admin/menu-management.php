@@ -95,7 +95,7 @@ if (isset($_POST['btnAddProduct'])) {
         }
     }
 
-    $_SESSION['alertMessage'] = "Product added successfully with ingredients!";
+    $_SESSION['alertMessage'] = "Product added successfully!";
     $_SESSION['alertType'] = "success";
     header("Location: menu-management.php");
     exit();
@@ -285,12 +285,14 @@ if ($categoryFilterId !== null) {
 
 
 <body>
-    <!-- Mobile Menu Toggle Button  -->
-    <div class="d-md-none mobile-header d-flex align-items-center p-3">
+    <!-- Toast Container -->
+    <div class="toast-container"></div>
+
+    <!-- Mobile Menu Toggle Button -->
+    <div class="d-md-none mobile-header d-flex align-items-center pt-3 px-3">
         <button id="menuToggle" class="mobile-menu-toggle me-3">
             <i class="fas fa-bars"></i>
         </button>
-        <h4 class="mobile-header-title">Menu Management</h4>
     </div>
 
     <!-- Desktop Sidebar (visible on md+ screens) -->
@@ -316,11 +318,11 @@ if ($categoryFilterId !== null) {
                     <i class="bi bi-shop-window"></i>
                     <span>Point of Sales</span>
                 </a>
-                <a href="inventory-management.php" class="admin-nav-link">
+                <a href="inventory-management.php" class="admin-nav-link active">
                     <i class="bi bi-boxes"></i>
                     <span>Inventory Management</span>
                 </a>
-                <a href="menu-management.php" class="admin-nav-link active">
+                <a href="menu-management.php" class="admin-nav-link">
                     <i class="bi bi-menu-button-wide"></i>
                     <span>Menu Management</span>
                 </a>
@@ -379,12 +381,12 @@ if ($categoryFilterId !== null) {
                 <i class="bi bi-shop-window"></i>
                 <span>Point of Sales</span>
             </a>
-            <a href="inventory-management.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
+            <a href="inventory-management.php" class="admin-nav-link active wow animate__animated animate__fadeInLeft"
                 data-wow-delay="0.25s">
                 <i class="bi bi-boxes"></i>
                 <span>Inventory Management</span>
             </a>
-            <a href="menu-management.php" class="admin-nav-link active wow animate__animated animate__fadeInLeft"
+            <a href="menu-management.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
                 data-wow-delay="0.3s">
                 <i class="bi bi-menu-button-wide"></i>
                 <span>Menu Management</span>
@@ -415,71 +417,83 @@ if ($categoryFilterId !== null) {
     <!-- Main Content Area -->
     <div class="main-content">
         <div class="container-fluid">
-            <div class="cardMain shadow-sm">
-
-                <!-- Header Row -->
-                <div class="d-none d-md-block align-items-center py-4 px-lg-3 px-2">
-                    <div class="subheading fw-bold m-1 d-flex align-items-center">
-                        <span style="color: var(--text-color-dark);">Menu Management</span>
+            <div class="enhanced-page-header">
+                <div class="header-content">
+                    <div class="header-title">
+                        <h1 class="page-title-text">Menu Management</h1>
                     </div>
                 </div>
+            </div>
 
-                <div class="row g-2 align-items-center mb-3 px-2 px-lg-3 m-3">
-                    <!-- search -->
-                    <div class="col">
-                        <form method="get" class="d-flex">
-                            <input type="text" class="form-control search ms-lg-2" name="searchProduct"
-                                placeholder="Search" value="<?= htmlspecialchars($searchProductTerm) ?>">
-                            <?php if (isset($_GET['categoryID'])): ?>
-                                <input type="hidden" name="categoryID" value="<?= (int) $_GET['categoryID'] ?>">
-                            <?php endif; ?>
+            <div class="action-bar mb-4">
+                <div class="row g-3 align-items-end">
+
+                    <!-- Quick Search (Left Side) -->
+                    <div class="col-12 col-md-12 col-lg-5 px-md-4">
+                        <form method="get" class="search-container">
+                            <div class="input-group search-bar">
+                                <input type="text" class="form-control search-input" name="searchProduct"
+                                    placeholder="Search by item name or code..."
+                                    value="<?= htmlspecialchars($searchProductTerm) ?>">
+                                <button class="btn search-btn" type="submit">
+                                    <i class="bi bi-search"></i>
+                                    <span class="d-none d-sm-inline ms-1">Search</span>
+                                </button>
+                                <?php if (isset($_GET['categoryID'])): ?>
+                                    <input type="hidden" name="categoryID" value="<?= (int) $_GET['categoryID'] ?>">
+                                <?php endif; ?>
+                            </div>
                         </form>
                     </div>
 
-                    <!-- add button -->
-                    <div class="col-auto ps-0 ps-sm-3">
-                        <button class="btn btnAdd" type="button" data-bs-toggle="modal" data-bs-target="#confirmModal">
-                            <i class="bi bi-plus-circle"></i>
-                            <span class="d-none d-sm-inline ms-2">Add</span>
-                        </button>
-                    </div>
 
-                    <!-- category part -->
-                    <div class="col-12 col-sm-auto">
-                        <div class="dropdown">
-                            <button class="btn btn-dropdown dropdown-toggle w-100" type="button" id="categoryDropdown"
-                                data-bs-toggle="dropdown" aria-expanded="false">
-                                <?= htmlspecialchars($currentCategory) ?>
+                    <!-- Actions (Right Side) -->
+                    <div class="col-12 col-md-12 col-lg-7 px-lg-4">
+                        <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-lg-end w-100">
+
+                            <!-- Add Button -->
+                            <button class="action-btn" type="button" data-bs-toggle="modal"
+                                data-bs-target="#confirmModal">
+                                <i class="bi bi-plus-circle"></i>
+                                <span class="d-sm-inline">Add</span>
                             </button>
-                            <ul class="dropdown-menu w-100" aria-labelledby="categoryDropdown">
-                                <li>
-                                    <a class="dropdown-item <?= !isset($_GET['categoryID']) ? 'active' : '' ?>"
-                                        href="menu-management.php<?= !empty($searchProductTerm) ? '?searchProduct=' . urlencode($searchProductTerm) : '' ?>"
-                                        style="background-color: <?= !isset($_GET['categoryID']) ? 'var(--primary-color)' : 'transparent' ?>; 
-                                            color: <?= !isset($_GET['categoryID']) ? 'var(--text-color-dark)' : 'inherit' ?>;">
-                                        All
-                                    </a>
 
-                                </li>
-                                <?php
-                                $categories = executeQuery("SELECT * FROM categories ORDER BY categoryName ASC");
-                                while ($category = mysqli_fetch_assoc($categories)) {
-                                    $isActive = (isset($_GET['categoryID']) && $_GET['categoryID'] == $category['categoryID']) ? 'active' : '';
-                                    $url = "menu-management.php?categoryID=" . $category['categoryID'];
-                                    if (!empty($searchProductTerm)) {
-                                        $url .= "&searchProduct=" . urlencode($searchProductTerm);
+                            <!-- Category Dropdown -->
+                            <div class="dropdown">
+                                <button class="filter-toggle-btn dropdown-toggle" type="button" id="categoryDropdown"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                    <?= htmlspecialchars($currentCategory) ?>
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="categoryDropdown">
+                                    <li>
+                                        <a class="dropdown-item <?= !isset($_GET['categoryID']) ? 'active' : '' ?> "
+                                            href="menu-management.php<?= !empty($searchProductTerm) ? '?searchProduct=' . urlencode($searchProductTerm) : '' ?>"
+                                            style="background-color: <?= !isset($_GET['categoryID']) ? 'var(--primary-color)' : 'transparent' ?>; 
+                               color: <?= !isset($_GET['categoryID']) ? 'var(--text-color-light)' : 'inherit' ?>;">
+                                            All
+                                        </a>
+                                    </li>
+                                    <?php
+                                    $categories = executeQuery("SELECT * FROM categories ORDER BY categoryName ASC");
+                                    while ($category = mysqli_fetch_assoc($categories)) {
+                                        $isActive = (isset($_GET['categoryID']) && $_GET['categoryID'] == $category['categoryID']) ? 'active' : '';
+                                        $url = "menu-management.php?categoryID=" . $category['categoryID'];
+                                        if (!empty($searchProductTerm)) {
+                                            $url .= "&searchProduct=" . urlencode($searchProductTerm);
+                                        }
+                                        echo '<li><a class="dropdown-item ' . $isActive . '" href="' . $url . '">'
+                                            . htmlspecialchars($category['categoryName']) . '</a></li>';
                                     }
-                                    echo '<li><a class="dropdown-item ' . $isActive . '" href="' . $url . '">'
-                                        . htmlspecialchars($category['categoryName']) . '</a></li>';
-                                }
-                                ?>
-                            </ul>
+                                    ?>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Update your menu grid section to include availability status -->
-                <div id="productGrid" class="row g-2 m-3 align-items-center">
+
+
+                <div id="productGrid" class="row g-3 m-2 row g-3 m-2 justify-content-start align-items-start">
                     <?php
                     if (!empty($menuItems)) {
                         foreach ($menuItems as $row) {
@@ -490,396 +504,431 @@ if ($categoryFilterId !== null) {
                             $categoryName = $row['category_name'];
                             $possibleCount = $row['possible_count'] ?? 0;
 
-                            // Determine availability based on possible_count
                             $isAvailable = $possibleCount > 0 ? 1 : 0;
-
                             $unavailableClass = $isAvailable ? '' : ' unavailable';
                             $statusBadgeClass = $isAvailable ? 'status-available' : 'status-unavailable';
                             $statusText = $isAvailable ? 'Available' : 'Unavailable';
 
                             echo "
-            <div class='col-6 col-md-4 col-lg-2'>
-                <div class='menu-item border p-3 rounded shadow-sm text-center$unavailableClass'>
+            <div class='col-6 col-md-6 col-lg-4 col-xl-2 d-flex px-3 py-2'>
+                <div class='menu-item w-100 text-center$unavailableClass'>
                     <div class='mb-2'>
                         <span class='status-badge $statusBadgeClass'>$statusText</span>
                     </div>
 
-                    <img src='../assets/img/img-menu/" . htmlspecialchars($image) . "' 
-                         alt='" . htmlspecialchars($name) . "' 
-                         class='img-fluid mb-2 menu-img'>
-
-                    <div class='lead menu-name fs-6'>" . htmlspecialchars($name) . "</div>
-                    <div class='d-flex justify-content-center align-items-center gap-2 my-2'>
-                        <span class='lead fw-bold menu-price'>₱" . number_format($price, 2) . "</span>
-                    </div>
-                    <div class='text-muted'>
-                        Available: " . (int) $possibleCount . " pcs
+                    <div class='menu-img-container'>
+                        <img src='../assets/img/img-menu/" . htmlspecialchars($image) . "'
+                            alt='" . htmlspecialchars($name) . "'
+                            class='img-fluid menu-img " . ($isAvailable ? "" : "img-unavailable") . "'>
                     </div>
 
-                    <div class='d-flex flex-wrap justify-content-center gap-2'>
+                    <div class='menu-name'>" . htmlspecialchars($name) . "</div>
+                    <div class='menu-price'>₱" . number_format($price, 2) . "</div>
+                    <div class='menu-stock'>Available: " . (int) $possibleCount . " pcs</div>
+
+                    <div class='d-flex flex-wrap justify-content-center gap-2 mt-2'>
                         <button class='btn btn-sm edit-btn'
                             data-bs-toggle='modal'
                             data-bs-target='#editModal'
                             data-id='$id'
                             data-available='" . ($isAvailable ? "1" : "0") . "'>
-                            <i class='bi bi-pencil-square'></i> Edit
+                            <i class='bi bi-pencil-square'></i> 
                         </button>
-                        <form method='POST' class='deleteProductForm'>
-                            <input type='hidden' name='productID' value='$id'>
-                            <input type='hidden' name='btnDeleteProduct' value='1'>
-                            <button type='submit' class='btn btn-del'>
-                                <i class='bi bi-trash'></i> Delete
-                            </button>
-                        </form>
+
+                        <button type='button' class='btn btn-del' 
+                            data-bs-toggle='modal' 
+                            data-bs-target='#deleteConfirmModal'
+                            data-product-id='" . $id . "'
+                            data-product-name='" . htmlspecialchars($name) . "'>
+                            <i class='bi bi-trash'></i>
+                        </button>
+
                     </div>
                 </div>
             </div>
             ";
                         }
                     } else {
-                        echo "<p class='text-center'>No products available.</p>";
+                        // No products message + clear search button
+                        echo "
+        <div class='col-12 text-center'>
+        <p>No items match the current filters</p>
+        <a href='?' class='btn clear-btn mt-2'>
+            <i class='bi bi-x-circle'></i> Clear Search 
+        </a>
+    </div>
+        ";
                     }
                     ?>
                 </div>
-            </div>
-            <!-- Toast Container -->
-            <div class="position-fixed bottom-0 end-0 p-3 " style="z-index: 1100">
-                <div id="updateToast" class="toast align-items-center updateToast border-0" role="alert"
-                    aria-live="assertive" aria-atomic="true">
-                    <div class="d-flex">
-                        <div class="toast-body">
-                            Product updated successfully!
+
+
+
+
+
+                <!-- Toast Container -->
+                <div class=" toast-container p-3 position-fixed end-0 p-3 " style="z-index: 1100">
+                    <div id="updateToast" class="toast align-items-center updateToast border-0" role="alert"
+                        aria-live="assertive" aria-atomic="true">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                <i class="bi bi-check-circle-fill px-2"></i>
+                                Product updated successfully!
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                                aria-label="Close"></button>
                         </div>
-                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
-                            aria-label="Close"></button>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    </div>
 
+        <!-- Toast Container -->
+        <div class="toast-container p-3">
+            <div id="addToast" class="toast align-items-center border-0" role="alert" aria-live="assertive"
+                aria-atomic="true">
+                <div class="d-flex align-items-center">
+                    <div class="toast-body d-flex align-items-center">
+                        <i id="toastIcon" class="bi "></i>
+                        <span id="toastMessage" class="px-2"></span>
+                    </div>
 
-    <?php include '../modal/menu-management-confirm-modal.php'; ?>
-    <?php include '../modal/menu-management-edit-modal.php'; ?>
-
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min js"></script>
-    <script src="../assets/js/menu-management.js"></script>
-    <script src="../assets/js/admin_sidebar.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Delete Product Confirmation
-            document.querySelectorAll('.deleteProductForm').forEach(form => {
-                form.addEventListener('submit', function (e) {
-                    e.preventDefault();
-                    Swal.fire({
-                        title: 'Are you sure?',
-                        text: "This product will be deleted!",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonText: 'Yes, delete it!',
-                        cancelButtonText: 'Cancel',
-                        confirmButtonColor: 'var(--primary-color)',
-                        cancelButtonColor: 'var(--btn-hover2)',
-                        customClass: {
-                            popup: 'swal2-border-radius',
-                            confirmButton: 'swal2-confirm-radius',
-                            cancelButton: 'swal2-cancel-radius'
-                        }
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            form.submit();
-                        }
-                    });
-                });
-            });
-
-            $(document).ready(function () {
-                var ingredients = <?php echo json_encode($ingredients); ?>;
-                let skipAutocompleteChange = false; // flag to skip alert
-
-                function initAutocomplete(selector) {
-                    $(selector).autocomplete({
-                        source: ingredients,
-                        minLength: 1,
-                        appendTo: "#confirmModal",
-                        select: function (event, ui) {
-                            $(this).val(ui.item.label);
-                            $(this).siblings(".ingredient-id").val(ui.item.id);
-                            $(this).closest(".ingredient-row")
-                                .find(".measurement-select")
-                                .data("correct-unit", ui.item.unit);
-                            return false;
-                        },
-                        change: function (event, ui) {
-                            if (skipAutocompleteChange) return; // skip when cleared manually
-                            if (!ui.item) {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Ingredient Not Found',
-                                    text: 'The ingredient you entered is not on the Inventory.',
-                                    confirmButtonColor: 'var(--primary-color)'
-                                });
-                                $(this).val("");
-                                $(this).siblings(".ingredient-id").val("");
-                                $(this).siblings(".cancel-search").hide();
-                            }
-                        }
-                    });
-                }
-
-                // initialize autocomplete for existing inputs
-                initAutocomplete("#confirmModal .ingredient-search");
-
-                // Add new ingredient row
-                $("#confirmModal #add-modal-ingredient").click(function () {
-                    var row = `
-        <div class="row g-2 mb-2 ingredient-row">
-            <div class="col-md-5 position-relative">
-                <input type="text" class="form-control ingredient-search"
-                    placeholder="Search Ingredient" required
-                    style="border: 2px solid var(--primary-color); border-radius: 10px; 
-                           font-family: var(--secondaryFont); background: var(--card-bg-color);
-                           color: var(--text-color-dark); padding: 12px;">
-                <input type="hidden" name="ingredientID[]" class="ingredient-id">
-                <button type="button" class="cancel-search"
-                    style="position:absolute; right:8px; top:50%; transform:translateY(-50%);
-                           border:none; background:none; color:#333; font-size:18px; display:none; cursor:pointer;">&times;</button>
+                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
             </div>
-            <div class="col-md-3">
-                <input type="number" class="form-control" name="requiredQuantity[]"
-                    placeholder="Quantity" step="any" required
-                    style="border: 2px solid var(--primary-color); border-radius: 10px; 
-                           font-family: var(--secondaryFont); background: var(--card-bg-color);
-                           color: var(--text-color-dark); padding: 12px;">
-            </div>
-            <div class="col-md-3">
-                <select class="form-select measurement-select" name="measurementUnit[]" required
-                    style="border: 2px solid var(--primary-color); border-radius: 10px; 
-                           font-family: var(--secondaryFont); background: var(--card-bg-color);
-                           color: var(--text-color-dark); padding: 12px;">
-                    <option value="" disabled selected>Select Unit</option>
-                    <option value="pcs">pcs</option>
-                    <option value="box">box</option>
-                    <option value="pack">pack</option>
-                    <option value="g">g</option>
-                    <option value="kg">kg</option>
-                    <option value="oz">oz</option>
-                    <option value="ml">ml</option>
-                    <option value="L">L</option>
-                    <option value="pump">pump</option>
-                    <option value="tbsp">tbsp</option>
-                    <option value="tsp">tsp</option>
-                </select>
-            </div>
-            <div class="col-md-1 d-flex align-items-center">
-                <button type="button" class="btn btn-sm remove-ingredient"
-                    style="background: var(--card-bg-color); 
-                           color: var(--text-color-dark); 
-                           border: 2px solid var(--primary-color);
-                           border-radius: 8px; font-family: var(--primaryFont);">
-                    &times;
-                </button>
-            </div>
-        </div>`;
-                    $("#confirmModal #ingredients-container").append(row);
+        </div>
 
-                    // autocomplete for new row
-                    initAutocomplete($("#confirmModal #ingredients-container .ingredient-search").last());
-                });
 
-                // remove ingredient row
-                $(document).on("click", "#confirmModal .remove-ingredient", function () {
-                    $(this).closest(".ingredient-row").remove();
-                });
 
-                // cancel search button click
-                $(document).on("click", "#confirmModal .cancel-search", function () {
-                    skipAutocompleteChange = true; // skip alert
-                    const input = $(this).siblings(".ingredient-search");
-                    input.val("");
-                    input.siblings(".ingredient-id").val("");
-                    $(this).hide();
-                    setTimeout(() => skipAutocompleteChange = false, 10);
-                });
 
-                // show/hide cancel search button on input
-                $(document).on("input", "#confirmModal .ingredient-search", function () {
-                    $(this).siblings(".cancel-search").toggle($(this).val().trim() !== "");
-                });
+        <?php include '../modal/menu-management-confirm-modal.php'; ?>
+        <?php include '../modal/menu-management-edit-modal.php'; ?>
+        <?php include '../modal/delete-confirm-menu-management.php'; ?>
 
-                // Unit mismatch validation
-                $(document).on("change", "#confirmModal .measurement-select", function () {
-                    const correctUnit = $(this).data("correct-unit");
-                    const chosenUnit = $(this).val();
-                    if (!correctUnit) return;
 
-                    const allowedUnits = {
-                        "g": ["g", "kg", "oz"],
-                        "kg": ["kg", "g"],
-                        "oz": ["oz", "g"],
-                        "ml": ["ml", "L", "pump", "tbsp", "tsp"],
-                        "L": ["L", "ml"],
-                        "pump": ["pump", "ml"],
-                        "tbsp": ["tbsp", "ml"],
-                        "tsp": ["tsp", "ml"],
-                        "pcs": ["pcs", "box", "pack"],
-                        "box": ["box", "pcs"],
-                        "pack": ["pack", "pcs"]
-                    };
-
-                    if (!allowedUnits[correctUnit].includes(chosenUnit)) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Unit Mismatch',
-                            text: `This ingredient requires "${correctUnit}" (allowed: ${allowedUnits[correctUnit].join(", ")}), not "${chosenUnit}".`,
-                            confirmButtonColor: 'var(--primary-color)'
-                        });
-                        $(this).val("");
-                    }
-                });
-            });
-
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min js"></script>
+        <script src="../assets/js/menu-management.js"></script>
+        <script src="../assets/js/admin_sidebar.js"></script>
+        <script>
             document.addEventListener('DOMContentLoaded', function () {
-                const availabilityToggle = document.getElementById('availabilityToggle');
-                const availabilityStatus = document.getElementById('availabilityStatus');
-                let currentProductId = null;
+                const deleteModal = document.getElementById('deleteConfirmModal');
 
-                // Update modal toggle with product data
-                document.querySelectorAll('.edit-btn').forEach(button => {
-                    button.addEventListener('click', function () {
-                        currentProductId = this.getAttribute('data-id');
-                        const isAvailable = this.getAttribute('data-available') === '1';
+                deleteModal.addEventListener('show.bs.modal', function (event) {
+                    const button = event.relatedTarget; // Button that triggered the modal
+                    const productId = button.getAttribute('data-product-id');
+                    const productName = button.getAttribute('data-product-name');
 
-                        // Set toggle state properly
-                        availabilityToggle.checked = isAvailable;
-                        updateAvailabilityStatus(isAvailable);
-                    });
+                    // Update modal content
+                    deleteModal.querySelector('#deleteItemName').textContent = productName;
+                    deleteModal.querySelector('#deleteProductID').value = productId;
                 });
-
-
-                // Handle toggle change
-                if (availabilityToggle) {
-                    availabilityToggle.addEventListener('change', function () {
-                        const isChecked = this.checked;
-                        updateAvailabilityStatus(isChecked);
-
-                        if (currentProductId) {
-                            updateProductAvailability(currentProductId, isChecked ? 1 : 0);
-                        }
-                    });
-                }
-
-                // Update text + badge inside modal
-                function updateAvailabilityStatus(isAvailable) {
-                    if (availabilityStatus) {
-                        availabilityStatus.textContent = isAvailable ? 'Available' : 'Unavailable';
-                        availabilityStatus.className = 'status-badge ' +
-                            (isAvailable ? 'status-available' : 'status-unavailable');
-                    }
-                }
-
-                // AJAX request to update availability
-                function updateProductAvailability(productId, newAvailability) {
-                    fetch('menu-management.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: `btnToggleAvailability=1&productID=${productId}&newAvailability=${newAvailability}`
-                    })
-                        .then(response => response.text())
-                        .then(() => {
-                            // Update product card without reloading
-                            const productCard = document.querySelector(`.edit-btn[data-id="${productId}"]`).closest('.menu-item');
-                            const badge = productCard.querySelector('.status-badge');
-
-                            if (newAvailability == 1) {
-                                productCard.classList.remove('unavailable');
-                                badge.textContent = 'Available';
-                                badge.className = 'status-badge status-available';
-                            } else {
-                                productCard.classList.add('unavailable');
-                                badge.textContent = 'Unavailable';
-                                badge.className = 'status-badge status-unavailable';
-                            }
-
-                            // Show toast
-                            const toast = document.getElementById('updateToast');
-                            if (toast) {
-                                const bsToast = new bootstrap.Toast(toast);
-                                bsToast.show();
-                            }
-                        })
-                        .catch(err => console.error('Error updating product availability:', err));
-                }
             });
 
 
-            // Session Alerts
-            <?php if (isset($_SESSION['alertMessage'])): ?>
-                Swal.fire({
-                    icon: '<?= $_SESSION['alertType'] ?>', // success, error, warning, info, question
-                    title: '<?= $_SESSION['alertMessage'] ?>',
-                    showConfirmButton: false,
-                    timer: 2500,
-                    timerProgressBar: true,
-                    toast: true,
-                    position: 'top-end'
-                });
-                <?php
-                unset($_SESSION['alertMessage']);
-                unset($_SESSION['alertType']);
-                ?>
-            <?php endif; ?>
-        });
 
+            document.addEventListener('DOMContentLoaded', () => {
+                $(document).ready(function () {
+                    var ingredients = <?php echo json_encode($ingredients); ?>;
+                    let skipAutocompleteChange = false; // flag to skip alert
 
-
-        window.ingredients = <?php echo json_encode($ingredients); ?>;
-
-        const ingredientsData = <?php echo json_encode($ingredients); ?>;
-
-        // Polling interval in milliseconds
-        const POLL_INTERVAL = 5000; // every 5 seconds
-
-        function fetchProductAvailability() {
-            fetch('fetch-availability.php') // new endpoint that returns JSON of productID -> possible_count
-                .then(res => res.json())
-                .then(data => {
-                    data.forEach(item => {
-                        const productCard = document.querySelector(`.edit-btn[data-id="${item.productID}"]`)?.closest('.menu-item');
-                        if (!productCard) return;
-
-                        const badge = productCard.querySelector('.status-badge');
-                        const newAvailable = item.possible_count > 0 ? 1 : 0;
-
-                        // Only update if changed
-                        const isCurrentlyAvailable = badge.classList.contains('status-available');
-                        if ((newAvailable && !isCurrentlyAvailable) || (!newAvailable && isCurrentlyAvailable)) {
-                            if (newAvailable) {
-                                productCard.classList.remove('unavailable');
-                                badge.textContent = 'Available';
-                                badge.className = 'status-badge status-available';
-                            } else {
-                                productCard.classList.add('unavailable');
-                                badge.textContent = 'Unavailable';
-                                badge.className = 'status-badge status-unavailable';
+                    function initAutocomplete(selector) {
+                        $(selector).autocomplete({
+                            source: ingredients,
+                            minLength: 1,
+                            appendTo: "#confirmModal",
+                            select: function (event, ui) {
+                                $(this).val(ui.item.label);
+                                $(this).siblings(".ingredient-id").val(ui.item.id);
+                                $(this).closest(".ingredient-row")
+                                    .find(".measurement-select")
+                                    .data("correct-unit", ui.item.unit);
+                                return false;
+                            },
+                            change: function (event, ui) {
+                                if (skipAutocompleteChange) return; // skip when cleared manually
+                                if (!ui.item) {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Ingredient Not Found',
+                                        text: 'The ingredient you entered is not on the Inventory.',
+                                        confirmButtonColor: 'var(--primary-color)'
+                                    });
+                                    $(this).val("");
+                                    $(this).siblings(".ingredient-id").val("");
+                                    $(this).siblings(".cancel-search").hide();
+                                }
                             }
+                        });
+                    }
+
+                    // initialize autocomplete for existing inputs
+                    initAutocomplete("#confirmModal .ingredient-search");
+
+                    // Add new ingredient row
+                    $("#confirmModal #add-modal-ingredient").click(function () {
+                        var row = `
+                        <div class="row g-2 mb-2 ingredient-row">
+                            <div class="col-md-5 position-relative">
+                                <input type="text" class="form-control ingredient-search"
+                                    placeholder="Search Ingredient" required style="border: 2px solid var(--primary-color); border-radius: 10px; 
+          font-family: var(--secondaryFont); background: var(--card-bg-color);
+          color: var(--text-color-dark); padding: 12px;">
+                                <input type="hidden" name="ingredientID[]" class="ingredient-id">
+                                <button type="button" class="cancel-search" style="position:absolute; right:8px; top:50%; transform:translateY(-50%);
+          border:none; background:none; color:#333; font-size:18px; display:none; cursor:pointer;">
+                                    &times;
+                                </button>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="number" class="form-control" name="requiredQuantity[]"
+                                    placeholder="Quantity" step="any" required style="border: 2px solid var(--primary-color); border-radius: 10px; 
+          font-family: var(--secondaryFont); background: var(--card-bg-color);
+          color: var(--text-color-dark); padding: 12px;">
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select measurement-select" name="measurementUnit[]" required style="border: 2px solid var(--primary-color); border-radius: 10px; 
+          font-family: var(--secondaryFont); background: var(--card-bg-color);
+          color: var(--text-color-dark); padding: 12px;">
+          <option value="" disabled selected>Select Unit</option>
+                                    <option value="pcs">Pieces (pcs)</option>
+                                    <option value="box">Box</option>
+                                    <option value="pack">Pack</option>
+                                    <option value="g">Gram (g)</option>
+                                    <option value="kg">Kilogram (kg)</option>
+                                    <option value="oz">Ounce (oz)</option>
+                                    <option value="ml">Milliliter (ml)</option>
+                                    <option value="L">Liter (L)</option>
+                                    <option value="pump">Pump</option>
+                                    <option value="tbsp">Tablespoon (tbsp)</option>
+                                    <option value="tsp">Teaspoon (tsp)</option>
+                                </select>
+                                <input type="text" class="form-control mt-2 d-none custom-unit" name="customUnit[]"
+                                    placeholder="Enter custom unit" style="border: 2px solid var(--primary-color); border-radius: 10px; 
+          font-family: var(--secondaryFont); background: var(--card-bg-color);
+          color: var(--text-color-dark); padding: 12px;">
+                            </div>
+                            <div class="col-md-1 d-flex justify-content-center align-items-center">
+                                <button type="button"
+                                    class="btn btn-sm btn-del remove-ingredient d-flex justify-content-center align-items-center"
+                                    style="border-radius: 10px; width: 38px; height: 38px; transition: all 0.3s ease;">
+                                    <i class="bi bi-trash fs-5"></i>
+                                </button>
+                            </div>
+                        </div>`;
+                        $("#confirmModal #ingredients-container").append(row);
+
+                        // autocomplete for new row
+                        initAutocomplete($("#confirmModal #ingredients-container .ingredient-search").last());
+                    });
+
+                    // remove ingredient row
+                    $(document).on("click", "#confirmModal .remove-ingredient", function () {
+                        $(this).closest(".ingredient-row").remove();
+                    });
+
+                    // cancel search button click
+                    $(document).on("click", "#confirmModal .cancel-search", function () {
+                        skipAutocompleteChange = true; // skip alert
+                        const input = $(this).siblings(".ingredient-search");
+                        input.val("");
+                        input.siblings(".ingredient-id").val("");
+                        $(this).hide();
+                        setTimeout(() => skipAutocompleteChange = false, 10);
+                    });
+
+                    // show/hide cancel search button on input
+                    $(document).on("input", "#confirmModal .ingredient-search", function () {
+                        $(this).siblings(".cancel-search").toggle($(this).val().trim() !== "");
+                    });
+
+                    // Unit mismatch validation
+                    $(document).on("change", "#confirmModal .measurement-select", function () {
+                        const correctUnit = $(this).data("correct-unit");
+                        const chosenUnit = $(this).val();
+                        if (!correctUnit) return;
+
+                        const allowedUnits = {
+                            "g": ["g", "kg", "oz"],
+                            "kg": ["kg", "g"],
+                            "oz": ["oz", "g"],
+                            "ml": ["ml", "L", "pump", "tbsp", "tsp"],
+                            "L": ["L", "ml"],
+                            "pump": ["pump", "ml"],
+                            "tbsp": ["tbsp", "ml"],
+                            "tsp": ["tsp", "ml"],
+                            "pcs": ["pcs", "box", "pack"],
+                            "box": ["box", "pcs"],
+                            "pack": ["pack", "pcs"]
+                        };
+
+                        if (!allowedUnits[correctUnit].includes(chosenUnit)) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Unit Mismatch',
+                                text: `This ingredient requires "${correctUnit}" (allowed: ${allowedUnits[correctUnit].join(", ")}), not "${chosenUnit}".`,
+                                confirmButtonColor: 'var(--primary-color)'
+                            });
+                            $(this).val("");
                         }
                     });
-                })
-                .catch(err => console.error('Error fetching availability:', err));
-        }
+                });
 
-        // Start polling
-        setInterval(fetchProductAvailability, POLL_INTERVAL);
+                document.addEventListener('DOMContentLoaded', function () {
+                    const availabilityToggle = document.getElementById('availabilityToggle');
+                    const availabilityStatus = document.getElementById('availabilityStatus');
+                    let currentProductId = null;
 
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous">
+                    // Update modal toggle with product data
+                    document.querySelectorAll('.edit-btn').forEach(button => {
+                        button.addEventListener('click', function () {
+                            currentProductId = this.getAttribute('data-id');
+                            const isAvailable = this.getAttribute('data-available') === '1';
+
+                            // Set toggle state properly
+                            availabilityToggle.checked = isAvailable;
+                            updateAvailabilityStatus(isAvailable);
+                        });
+                    });
+
+
+                    // Handle toggle change
+                    if (availabilityToggle) {
+                        availabilityToggle.addEventListener('change', function () {
+                            const isChecked = this.checked;
+                            updateAvailabilityStatus(isChecked);
+
+                            if (currentProductId) {
+                                updateProductAvailability(currentProductId, isChecked ? 1 : 0);
+                            }
+                        });
+                    }
+
+                    // Update text + badge inside modal
+                    function updateAvailabilityStatus(isAvailable) {
+                        if (availabilityStatus) {
+                            availabilityStatus.textContent = isAvailable ? 'Available' : 'Unavailable';
+                            availabilityStatus.className = 'status-badge ' +
+                                (isAvailable ? 'status-available' : 'status-unavailable');
+                        }
+                    }
+
+                    // AJAX request to update availability
+                    function updateProductAvailability(productId, newAvailability) {
+                        fetch('menu-management.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            },
+                            body: `btnToggleAvailability=1&productID=${productId}&newAvailability=${newAvailability}`
+                        })
+                            .then(response => response.text())
+                            .then(() => {
+                                // Update product card without reloading
+                                const productCard = document.querySelector(`.edit-btn[data-id="${productId}"]`).closest('.menu-item');
+                                const badge = productCard.querySelector('.status-badge');
+
+                                if (newAvailability == 1) {
+                                    productCard.classList.remove('unavailable');
+                                    badge.textContent = 'Available';
+                                    badge.className = 'status-badge status-available';
+                                } else {
+                                    productCard.classList.add('unavailable');
+                                    badge.textContent = 'Unavailable';
+                                    badge.className = 'status-badge status-unavailable';
+                                }
+
+                                // Show toast
+                                const toast = document.getElementById('updateToast');
+                                if (toast) {
+                                    const bsToast = new bootstrap.Toast(toast);
+                                    bsToast.show();
+                                }
+                            })
+                            .catch(err => console.error('Error updating product availability:', err));
+                    }
+                });
+
+            });
+
+
+
+            window.ingredients = <?php echo json_encode($ingredients); ?>;
+
+            const ingredientsData = <?php echo json_encode($ingredients); ?>;
+
+            // Polling interval in milliseconds
+            const POLL_INTERVAL = 5000; // every 5 seconds
+
+            function fetchProductAvailability() {
+                fetch('fetch-availability.php') // new endpoint that returns JSON of productID -> possible_count
+                    .then(res => res.json())
+                    .then(data => {
+                        data.forEach(item => {
+                            const productCard = document.querySelector(`.edit-btn[data-id="${item.productID}"]`)?.closest('.menu-item');
+                            if (!productCard) return;
+
+                            const badge = productCard.querySelector('.status-badge');
+                            const newAvailable = item.possible_count > 0 ? 1 : 0;
+
+                            // Only update if changed
+                            const isCurrentlyAvailable = badge.classList.contains('status-available');
+                            if ((newAvailable && !isCurrentlyAvailable) || (!newAvailable && isCurrentlyAvailable)) {
+                                if (newAvailable) {
+                                    productCard.classList.remove('unavailable');
+                                    badge.textContent = 'Available';
+                                    badge.className = 'status-badge status-available';
+                                } else {
+                                    productCard.classList.add('unavailable');
+                                    badge.textContent = 'Unavailable';
+                                    badge.className = 'status-badge status-unavailable';
+                                }
+                            }
+                        });
+                    })
+                    .catch(err => console.error('Error fetching availability:', err));
+            }
+
+            // Start polling
+            setInterval(fetchProductAvailability, POLL_INTERVAL);
+
         </script>
+        <?php if (isset($_SESSION['alertMessage'])): ?>
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const toastEl = document.getElementById('addToast');
+                    const toastBody = document.getElementById('toastMessage');
+                    const toastIcon = document.getElementById('toastIcon');
+                    const bsToast = new bootstrap.Toast(toastEl, { delay: 2500 });
+
+                    const message = '<?= $_SESSION['alertMessage'] ?>';
+                    const type = '<?= $_SESSION['alertType'] ?>'; // success, error, warning
+
+                    toastBody.textContent = message;
+
+                    // Use Bootstrap Icons
+                    if (type === 'error') {
+                        toastIcon.className = 'bi bi-x-circle-fill text-danger';
+                    } else if (type === 'warning') {
+                        toastIcon.className = 'bi bi-exclamation-triangle-fill';
+                    } else {
+                        toastIcon.className = 'bi bi-check-circle-fill';
+                    }
+
+                    bsToast.show();
+                });
+            </script>
+
+            <?php
+            unset($_SESSION['alertMessage']);
+            unset($_SESSION['alertType']);
+            ?>
+        <?php endif; ?>
+
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous">
+            </script>
 </body>
 
 </html>

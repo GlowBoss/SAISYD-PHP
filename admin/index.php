@@ -31,7 +31,21 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
         <div class="header-content">
           <!-- Logo Section -->
           <div class="logo-section">
-            <img src="../assets/img/saisydLogo.png" alt="Saisyd Logo" class="logo-img" />
+            <div style="
+                width:50px;
+                height:50px;
+                background-color:var(--text-color-dark); 
+                -webkit-mask-image:url('../assets/img/saisydLogo.png');
+                -webkit-mask-repeat:no-repeat;
+                -webkit-mask-size:contain;
+                -webkit-mask-position:center;
+                mask-image:url('../assets/img/saisydLogo.png');
+                mask-repeat:no-repeat;
+                mask-size:contain;
+                mask-position:center;
+                display:inline-block;
+              " role="img" aria-label="Saisyd Logo">
+            </div>
             <div class="logo-text d-none d-md-block">
               <h2 class="brand-name">SAISYD CAFE</h2>
               <p class="brand-subtitle">Admin Portal</p>
@@ -258,7 +272,7 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
     document.addEventListener("DOMContentLoaded", checkLowStock);
 
     // Run every 5 seconds
-    setInterval(checkLowStock, 5000);
+    setInterval(checkLowStock, 5000000000);
   </script>
 </body>
 

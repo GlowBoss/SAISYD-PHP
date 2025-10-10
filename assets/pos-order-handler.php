@@ -280,7 +280,7 @@ function checkout()
 
             // Handle sugar level - store as tinyint(1) or NULL
             $sugar = (isset($item['sugarLevel']) && $item['sugarLevel'] !== '' && trim($item['sugarLevel']) !== '' && $item['sugarLevel'] !== '0')
-                ? "'" . mysqli_real_escape_string($conn, $item['sugarLevel']) . "'"
+                ? "'" . mysqli_real_escape_string($conn, $item['sugarLevel']) . "% Sugar'"
                 : 'NULL';
             $ice = "'Normal'"; // default to Normal
             if (!empty($item['iceLevel']) && trim($item['iceLevel']) !== '') {
@@ -292,7 +292,7 @@ function checkout()
                 } elseif ($iceLevel === 'Extra') {
                     $ice = "'Extra'";
                 } else {
-                    $ice = "'Normal'"; // Default to Normal for any other value
+                    $ice = "'Default Ice'"; // Default to Normal for any other value
                 }
             }
 

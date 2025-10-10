@@ -1,31 +1,39 @@
 <?php
-include('../assets/connect.php');
 session_start();
-session_destroy();
-session_start();    
+include('../assets/connect.php');
 
-$error = "";
+$error = ""; // store error message
 
-if (isset($_POST['btnLogin'])) {
-  $username = $_POST['username'];
-  $password = $_POST['password'];
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $username = $_POST['username'];
+    $enteredPassword = $_POST['password'];
 
-  // Prepared stmt for SQL Injection prevention
-  $stmt = $conn->prepare("SELECT * FROM users WHERE username = ? AND password = ?");
-  $stmt->bind_param("ss", $username, $password);
-  $stmt->execute();
-  $result = $stmt->get_result();
+    // Get user by username
+    $stmt = $conn->prepare("SELECT userID, password, role FROM users WHERE username = ?");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $stmt->store_result();
 
-  if ($row = $result->fetch_assoc()) {
-    $_SESSION['userID'] = $row['userID'];
-    $_SESSION['role'] = $row['role'];
-    header("Location: index.php");
-    exit;
-  } else {
-    $error = "Invalid username or password.";
-  }
+    if ($stmt->num_rows > 0) {
+        $stmt->bind_result($userID, $storedPassword, $role);
+        $stmt->fetch();
 
+        // Check Hashed Password
+        if (password_verify($enteredPassword, $storedPassword)) {
+            $_SESSION['userID'] = $userID;
+            $_SESSION['role']   = $role;
+            header("Location: ../admin/index.php");
+            exit();
+        } else {
+            $error = "Invalid username or password.";
+        }
+    } else {
+        $error = "Invalid username or password.";
+    }
+
+    $stmt->close();
 }
+$conn->close();
 ?>
 
 <!doctype html>
@@ -99,7 +107,7 @@ if (isset($_POST['btnLogin'])) {
           <!-- Left side: Form -->
           <div class="login-left col-md-6 order-md-0">
             <h2 class="mb-3 text-center">Log in</h2>
-            <p class="text-muted text-center">Username | Email | Phone</p>
+            <p class="text-muted text-center">Username | Email</p>
             <form action="" method="post">
               <div class="mb-3">
                 <input type="text" class="form-control" name="username" placeholder="Username" required>
@@ -111,14 +119,11 @@ if (isset($_POST['btnLogin'])) {
               <div class="form-text mb-3 text-center">
                 Forgot Your <a href="#">Password?</a>
               </div>
-              <div id="errorMsg" class="text-danger text-center mb-3" style="display: none;">
-                Invalid username or password.
+              <!-- Error message -->
+              <div id="errorMsg" class="text-danger text-center mb-3"
+                   style="<?php echo empty($error) ? 'display:none;' : ''; ?>">
+                <?php echo htmlspecialchars($error); ?>
               </div>
-              <?php if (!empty($error)) { ?>
-                <div id="errorMsg" class="text-danger text-center mb-3">
-                  <?php echo htmlspecialchars($error); ?>
-                </div>
-              <?php } ?>
               <div class="text-center">
                 <button type="submit" name="btnLogin" class="btn btn-login px-4">SIGN IN</button>
               </div>

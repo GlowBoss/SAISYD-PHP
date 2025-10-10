@@ -1,6 +1,7 @@
 <?php
 include 'assets/connect.php';
-session_start();
+include 'assets/track_visits.php'; 
+
 
 if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];

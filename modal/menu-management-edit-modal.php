@@ -112,17 +112,26 @@
                         style="font-family: var(--primaryFont); color: var(--text-color-dark);">
                         Ingredients
                     </h6>
+
+                    <!-- Ingredients Container -->
                     <div id="edit-ingredients-container"
                         style="max-height: 250px; overflow-y: auto; padding-right: 5px;">
                         <!-- JS will populate rows here -->
                     </div>
 
-                    <button type="button" class="btn fw-bold px-3 py-1 mb-3" id="edit-add-ingredient" style="background: var(--text-color-dark); 
-                         color: var(--text-color-light); 
-                         border-radius: 8px; font-family: var(--primaryFont); 
-                         transition: all 0.3s ease;">
-                        +
-                    </button>
+                    <!-- Add Ingredient Button -->
+                    <div class="text-center mt-3">
+
+                        <button type="button" class="btn d-flex align-items-center justify-content-center mx-auto"
+                            id="edit-add-ingredient"
+                            style="background: transparent; border: none; color: var(--text-color-dark); transition: all 0.3s ease;">
+                            <i class="bi bi-plus-circle-fill"
+                                style="font-size: 2rem; color: var(--text-color-dark); transition: all 0.3s ease;"></i>
+                        </button>
+                    </div>
+
+
+
 
                     <div class="d-flex gap-3 justify-content-end mt-4">
                         <button type="button" class="btn fw-bold px-4 py-2" data-bs-dismiss="modal" style="
@@ -178,6 +187,27 @@
 
 
 <style>
+    /* Delete button styling */
+    .btn-del {
+        background: rgba(231, 76, 60, 0.15);
+        color: #e74c3c;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-del:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        background-color: #e74c3c;
+        color: var(--text-color-light);
+    }
+
+    /* Add Ingredient Button Hover */
+    #edit-add-ingredient:hover {
+        color: var(--primary-color);
+        transform: scale(1.15);
+    }
+
     #edit-ingredients-container {
         max-height: 250px;
         overflow-y: auto;
@@ -208,85 +238,85 @@
 </style>
 
 <script>
-   document.addEventListener('DOMContentLoaded', function () {
-    const availabilityToggle = document.getElementById('availabilityToggle');
-    const availabilityStatus = document.getElementById('availabilityStatus');
-    let currentProductId = null;
+    document.addEventListener('DOMContentLoaded', function () {
+        const availabilityToggle = document.getElementById('availabilityToggle');
+        const availabilityStatus = document.getElementById('availabilityStatus');
+        let currentProductId = null;
 
-    // When modal opens, get the product ID from the button that triggered it
-    const editModal = document.getElementById('editModal');
-    editModal.addEventListener('show.bs.modal', function (event) {
-        const button = event.relatedTarget; // element that triggered modal
-        currentProductId = button.getAttribute('data-id');
+        // When modal opens, get the product ID from the button that triggered it
+        const editModal = document.getElementById('editModal');
+        editModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget; // element that triggered modal
+            currentProductId = button.getAttribute('data-id');
 
-        // Set toggle based on product availability
-        const isAvailable = button.getAttribute('data-available') === '1';
-        availabilityToggle.checked = isAvailable;
-        updateAvailabilityStatus(isAvailable);
-    });
+            // Set toggle based on product availability
+            const isAvailable = button.getAttribute('data-available') === '1';
+            availabilityToggle.checked = isAvailable;
+            updateAvailabilityStatus(isAvailable);
+        });
 
-    // Toggle availability
-    availabilityToggle.addEventListener('change', function () {
-        const isChecked = this.checked;
-        updateAvailabilityStatus(isChecked);
+        // Toggle availability
+        availabilityToggle.addEventListener('change', function () {
+            const isChecked = this.checked;
+            updateAvailabilityStatus(isChecked);
 
-        if (currentProductId) {
-            updateProductAvailability(currentProductId, isChecked ? 1 : 0);
+            if (currentProductId) {
+                updateProductAvailability(currentProductId, isChecked ? 1 : 0);
+            }
+        });
+
+        function updateAvailabilityStatus(isAvailable) {
+            availabilityStatus.textContent = isAvailable ? 'Available' : 'Unavailable';
+            availabilityStatus.className = 'status-badge ' + (isAvailable ? 'status-available' : 'status-unavailable');
+        }
+
+        function updateProductAvailability(productId, newAvailability) {
+            fetch('menu-management.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `btnToggleAvailability=1&productID=${productId}&newAvailability=${newAvailability}`
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update product card outside modal
+                        const productCard = document.querySelector(`.edit-btn[data-id="${productId}"]`).closest('.menu-item');
+                        const badge = productCard.querySelector('.status-badge');
+                        const editBtn = document.querySelector(`.edit-btn[data-id="${productId}"]`);
+
+                        if (newAvailability == 1) {
+                            productCard.classList.remove('unavailable');
+                            badge.textContent = 'Available';
+                            badge.className = 'status-badge status-available';
+                            if (editBtn) editBtn.setAttribute('data-available', '1');
+                        } else {
+                            productCard.classList.add('unavailable');
+                            badge.textContent = 'Unavailable';
+                            badge.className = 'status-badge status-unavailable';
+                            if (editBtn) editBtn.setAttribute('data-available', '0');
+                        }
+
+                        // Optional: show toast feedback
+                        const toastEl = document.getElementById('updateToast');
+                        if (toastEl) {
+                            const bsToast = new bootstrap.Toast(toastEl);
+                            bsToast.show();
+                        }
+                    } else {
+                        console.error('Failed to update availability:', data.message);
+                        // Revert toggle if failed
+                        availabilityToggle.checked = !availabilityToggle.checked;
+                        updateAvailabilityStatus(!availabilityToggle.checked);
+                    }
+                })
+                .catch(err => {
+                    console.error('Error updating availability:', err);
+                    // Revert toggle on error
+                    availabilityToggle.checked = !availabilityToggle.checked;
+                    updateAvailabilityStatus(!availabilityToggle.checked);
+                });
         }
     });
-
-    function updateAvailabilityStatus(isAvailable) {
-        availabilityStatus.textContent = isAvailable ? 'Available' : 'Unavailable';
-        availabilityStatus.className = 'status-badge ' + (isAvailable ? 'status-available' : 'status-unavailable');
-    }
-
-    function updateProductAvailability(productId, newAvailability) {
-        fetch('menu-management.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: `btnToggleAvailability=1&productID=${productId}&newAvailability=${newAvailability}`
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Update product card outside modal
-                const productCard = document.querySelector(`.edit-btn[data-id="${productId}"]`).closest('.menu-item');
-                const badge = productCard.querySelector('.status-badge');
-                const editBtn = document.querySelector(`.edit-btn[data-id="${productId}"]`);
-
-                if (newAvailability == 1) {
-                    productCard.classList.remove('unavailable');
-                    badge.textContent = 'Available';
-                    badge.className = 'status-badge status-available';
-                    if (editBtn) editBtn.setAttribute('data-available', '1');
-                } else {
-                    productCard.classList.add('unavailable');
-                    badge.textContent = 'Unavailable';
-                    badge.className = 'status-badge status-unavailable';
-                    if (editBtn) editBtn.setAttribute('data-available', '0');
-                }
-
-                // Optional: show toast feedback
-                const toastEl = document.getElementById('updateToast');
-                if (toastEl) {
-                    const bsToast = new bootstrap.Toast(toastEl);
-                    bsToast.show();
-                }
-            } else {
-                console.error('Failed to update availability:', data.message);
-                // Revert toggle if failed
-                availabilityToggle.checked = !availabilityToggle.checked;
-                updateAvailabilityStatus(!availabilityToggle.checked);
-            }
-        })
-        .catch(err => {
-            console.error('Error updating availability:', err);
-            // Revert toggle on error
-            availabilityToggle.checked = !availabilityToggle.checked;
-            updateAvailabilityStatus(!availabilityToggle.checked);
-        });
-    }
-});
 
 
 </script>

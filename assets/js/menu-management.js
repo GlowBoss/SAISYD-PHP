@@ -47,9 +47,9 @@ document.addEventListener('DOMContentLoaded', () => {
 // CREATE INGREDIENT ROW
 function createIngredientRow(name = "", qty = "", unit = "") {
   const row = document.createElement("div");
-  row.classList.add("row", "g-2", "mb-2", "ingredient-row");
+  row.classList.add("row", "g-2", "mb-2", "ingredient-row", "align-items-center");
   row.innerHTML = `
-    <div class="col-md-5 position-relative">
+    <div class="col-12 col-md-5 position-relative">
       <input type="text" class="form-control ingredient-search" name="ingredient_name[]" value="${name}" 
              placeholder="Name" required
              style="border: 2px solid var(--primary-color); border-radius: 10px; 
@@ -60,44 +60,45 @@ function createIngredientRow(name = "", qty = "", unit = "") {
           style="position:absolute; right:8px; top:50%; transform:translateY(-50%);
                  border:none; background:none; color:#333; font-size:18px; display:none; cursor:pointer;">&times;</button>
     </div>
-    <div class="col-md-3">
+
+    <div class="col-6 col-md-3">
       <input type="number" class="form-control" name="ingredient_qty[]" value="${qty}" 
              placeholder="Quantity" required
              style="border: 2px solid var(--primary-color); border-radius: 10px; 
                     font-family: var(--secondaryFont); background: var(--card-bg-color);
                     color: var(--text-color-dark); padding: 12px;">
     </div>
-    <div class="col-md-3">
+
+    <div class="col-6 col-md-3">
       <select class="form-select measurement-select" name="ingredient_unit[]" required
               style="border: 2px solid var(--primary-color); border-radius: 10px; 
                      font-family: var(--secondaryFont); background: var(--card-bg-color);
                      color: var(--text-color-dark); padding: 12px;">
         <option value="" disabled ${unit === "" ? "selected" : ""}>Select Unit</option>
-        <option value="pcs" ${unit === "pcs" ? "selected" : ""}>pcs</option>
-        <option value="box" ${unit === "box" ? "selected" : ""}>box</option>
-        <option value="pack" ${unit === "pack" ? "selected" : ""}>pack</option>
-        <option value="g" ${unit === "g" ? "selected" : ""}>g</option>
-        <option value="kg" ${unit === "kg" ? "selected" : ""}>kg</option>
-        <option value="oz" ${unit === "oz" ? "selected" : ""}>oz</option>
-        <option value="ml" ${unit === "ml" ? "selected" : ""}>ml</option>
-        <option value="L" ${unit === "L" ? "selected" : ""}>L</option>
-        <option value="pump" ${unit === "pump" ? "selected" : ""}>pump</option>
-        <option value="tbsp" ${unit === "tbsp" ? "selected" : ""}>tbsp</option>
-        <option value="tsp" ${unit === "tsp" ? "selected" : ""}>tsp</option>
+        <option value="pcs" ${unit === "pcs" ? "selected" : ""}>Piece (pcs)</option>
+        <option value="box" ${unit === "box" ? "selected" : ""}>Box</option>
+        <option value="pack" ${unit === "pack" ? "selected" : ""}>Pack</option>
+        <option value="g" ${unit === "g" ? "selected" : ""}>Gram (g)</option>
+        <option value="kg" ${unit === "kg" ? "selected" : ""}>Kilogram (kg)</option>
+        <option value="oz" ${unit === "oz" ? "selected" : ""}>Ounce (oz)</option>
+        <option value="ml" ${unit === "ml" ? "selected" : ""}>Milliliter (ml)</option>
+        <option value="L" ${unit === "L" ? "selected" : ""}>Liter (L)</option>
+        <option value="pump" ${unit === "pump" ? "selected" : ""}>Pump</option>
+        <option value="tbsp" ${unit === "tbsp" ? "selected" : ""}>Tablespoon (tbsp)</option>
+        <option value="tsp" ${unit === "tsp" ? "selected" : ""}>Teaspoon (tsp)</option>
       </select>
     </div>
-    <div class="col-md-1 d-flex align-items-center">
-      <button type="button" class="btn btn-sm remove-ingredient"
-              style="background: var(--card-bg-color); 
-                     color: var(--text-color-dark); 
-                     border: 2px solid var(--primary-color);
-                     border-radius: 8px; font-family: var(--primaryFont);">
-        &times;
+
+    <div class="col-12 col-md-1 d-flex justify-content-center mt-2 mt-md-0">
+      <button type="button" class="btn btn-sm btn-del remove-ingredient" 
+              style="border-radius: 8px; font-family: var(--primaryFont);">
+        <i class="bi bi-trash"></i>
       </button>
     </div>
   `;
   return row;
 }
+
 
 // -----------------------------
 // AUTOCOMPLETE INIT
@@ -124,9 +125,9 @@ function initAutocompleteForRow(row) {
         });
         $(this).val("");
         $(this).siblings(".ingredient-id").val("");
-        
+
       }
-      
+
     }
   });
 }
@@ -353,7 +354,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const cancelBtn = $(this).siblings(".cancel-search");
     cancelBtn.toggle($(this).val().trim() !== "");
   });
-  
+
 
   $(document).on("click", ".cancel-search", function () {
     skipAutocompleteChange = true; // set flag
@@ -362,8 +363,8 @@ document.addEventListener("DOMContentLoaded", function () {
     input.siblings(".ingredient-id").val(""); // clear hidden ID
     $(this).hide(); // hide button
     setTimeout(() => skipAutocompleteChange = false, 10); // reset flag after event
-});
+  });
 
-  
+
 
 });
