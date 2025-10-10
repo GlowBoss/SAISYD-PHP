@@ -6,16 +6,14 @@ try {
     // First, update any products with 0 quantity to be unavailable
     $updateQuery = "UPDATE products SET isAvailable = 'No' WHERE availableQuantity <= 0";
     executeQuery($updateQuery);
-    
-    // Also update products with quantity > 0 to be available (in case they were manually set to No)
-    $updateQuery2 = "UPDATE products SET isAvailable = 'Yes' WHERE availableQuantity > 0";
-    executeQuery($updateQuery2);
 
-    // Step 1: Get all categories that have products (regardless of availability)
+
+    // Step 1: Get all categories that have available products
     $categoriesResult = executeQuery("
         SELECT DISTINCT c.categoryID, c.categoryName
         FROM categories c
         INNER JOIN products p ON c.categoryID = p.categoryID
+        WHERE p.isAvailable = 'Yes'
         ORDER BY c.categoryName ASC
     ");
 
@@ -28,11 +26,11 @@ try {
     while ($cat = $categoriesResult->fetch_assoc()) {
         $categoryID = $cat['categoryID'];
 
-        // Step 2: Get ALL products under each category (both available and unavailable)
+        // Step 2: Get ONLY AVAILABLE products under each category
         $productsResult = executeQuery("
             SELECT productID, productName, image, availableQuantity, price, isAvailable
             FROM products
-            WHERE categoryID = {$categoryID}
+            WHERE categoryID = {$categoryID} AND isAvailable = 'Yes'
             ORDER BY productName ASC
         ");
 
@@ -45,7 +43,7 @@ try {
             // Use product name exactly as stored in database
             $productName = $prod['productName'];
             $basePrice = (float) $prod['price'];
-            
+
             // Create a single size entry with the actual product name and price
             $sizes = [];
             $sizes[] = [
@@ -53,20 +51,20 @@ try {
                 "code" => "",
                 "price" => $basePrice
             ];
-            
+
             $contents[] = [
-                "productID"   => $prod['productID'],
-                "name"        => $productName, // Use exact database name
-                "code"        => "P" . $prod['productID'],
-                "img"         => $prod['image'],
-                "quantity"    => (int) $prod['availableQuantity'],
+                "productID" => $prod['productID'],
+                "name" => $productName, // Use exact database name
+                "code" => "P" . $prod['productID'],
+                "img" => $prod['image'],
+                "quantity" => (int) $prod['availableQuantity'],
                 "isAvailable" => $prod['isAvailable'],
-                "sizes"       => $sizes,
+                "sizes" => $sizes,
                 "sugarLevels" => [0, 25, 50, 75, 100] // Default sugar levels
             ];
         }
 
-        // Add all categories that have products (both available and unavailable)
+        // Only add categories that have available products
         if (!empty($contents)) {
             $categories[] = [
                 "category" => $cat['categoryName'],
@@ -76,11 +74,11 @@ try {
     }
 
     if (empty($categories)) {
-        throw new Exception("No products found");
+        throw new Exception("No available products found");
     }
 
     echo json_encode($categories);
-    
+
 } catch (Exception $e) {
     // Return error message
     echo json_encode(["error" => $e->getMessage()]);
