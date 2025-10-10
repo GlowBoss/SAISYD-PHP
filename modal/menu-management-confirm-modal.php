@@ -80,64 +80,70 @@
                         style="font-family: var(--primaryFont); color: var(--text-color-dark);">
                         Ingredients
                     </h6>
+
                     <div id="ingredients-container" style="max-height: 250px; overflow-y: auto; padding-right: 5px;">
                         <div class="row g-2 mb-2 ingredient-row">
                             <div class="col-md-5 position-relative">
                                 <input type="text" class="form-control ingredient-search"
                                     placeholder="Search Ingredient" required style="border: 2px solid var(--primary-color); border-radius: 10px; 
-                           font-family: var(--secondaryFont); background: var(--card-bg-color);
-                           color: var(--text-color-dark); padding: 12px;">
+          font-family: var(--secondaryFont); background: var(--card-bg-color);
+          color: var(--text-color-dark); padding: 12px;">
                                 <input type="hidden" name="ingredientID[]" class="ingredient-id">
-                                <button type="button" class="cancel-search"
-                                    style="position:absolute; right:8px; top:50%; transform:translateY(-50%);
-                           border:none; background:none; color:#333; font-size:18px; display:none; cursor:pointer;">&times;</button>
+                                <button type="button" class="cancel-search" style="position:absolute; right:8px; top:50%; transform:translateY(-50%);
+          border:none; background:none; color:#333; font-size:18px; display:none; cursor:pointer;">
+                                    &times;
+                                </button>
                             </div>
                             <div class="col-md-3">
                                 <input type="number" class="form-control" name="requiredQuantity[]"
                                     placeholder="Quantity" step="any" required style="border: 2px solid var(--primary-color); border-radius: 10px; 
-                                          font-family: var(--secondaryFont); background: var(--card-bg-color);
-                                          color: var(--text-color-dark); padding: 12px;">
+          font-family: var(--secondaryFont); background: var(--card-bg-color);
+          color: var(--text-color-dark); padding: 12px;">
                             </div>
                             <div class="col-md-3">
                                 <select class="form-select measurement-select" name="measurementUnit[]" required style="border: 2px solid var(--primary-color); border-radius: 10px; 
-                                          font-family: var(--secondaryFont); background: var(--card-bg-color);
-                                          color: var(--text-color-dark); padding: 12px;">
+          font-family: var(--secondaryFont); background: var(--card-bg-color);
+          color: var(--text-color-dark); padding: 12px;">
                                     <option value="" disabled selected>Select Unit</option>
-                                    <option value="pcs">pcs</option>
-                                    <option value="box">box</option>
-                                    <option value="pack">pack</option>
-                                    <option value="g">g</option>
-                                    <option value="kg">kg</option>
-                                    <option value="oz">oz</option>
-                                    <option value="ml">ml</option>
-                                    <option value="L">L</option>
-                                    <option value="pump">pump</option>
-                                    <option value="tbsp">tbsp</option>
-                                    <option value="tsp">tsp</option>
+                                    <option value="pcs">Pieces (pcs)</option>
+                                    <option value="box">Box</option>
+                                    <option value="pack">Pack</option>
+                                    <option value="g">Gram (g)</option>
+                                    <option value="kg">Kilogram (kg)</option>
+                                    <option value="oz">Ounce (oz)</option>
+                                    <option value="ml">Milliliter (ml)</option>
+                                    <option value="L">Liter (L)</option>
+                                    <option value="pump">Pump</option>
+                                    <option value="tbsp">Tablespoon (tbsp)</option>
+                                    <option value="tsp">Teaspoon (tsp)</option>
                                 </select>
+
                                 <input type="text" class="form-control mt-2 d-none custom-unit" name="customUnit[]"
                                     placeholder="Enter custom unit" style="border: 2px solid var(--primary-color); border-radius: 10px; 
-                                          font-family: var(--secondaryFont); background: var(--card-bg-color);
-                                          color: var(--text-color-dark); padding: 12px;">
+          font-family: var(--secondaryFont); background: var(--card-bg-color);
+          color: var(--text-color-dark); padding: 12px;">
+
                             </div>
-                            <div class="col-md-1 d-flex align-items-center">
-                                <!-- <button type="button" class="btn btn-sm remove-ingredient"
-                                    style="background: var(--card-bg-color); 
-                                           color: var(--text-color-dark); 
-                                           border: 2px solid var(--primary-color);
-                                           border-radius: 8px; font-family: var(--primaryFont);">
-                                    &times;
-                                </button> -->
+                            <div class="col-md-1 d-flex justify-content-center align-items-center">
+                                <button type="button"
+                                    class="btn btn-sm btn-del remove-ingredient d-flex justify-content-center align-items-center"
+                                    style="border-radius: 10px; width: 38px; height: 38px; transition: all 0.3s ease;">
+                                    <i class="bi bi-trash fs-5"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
 
-                    <button type="button" class="btn fw-bold px-3 py-1 mb-3" id="add-modal-ingredient" style="background: var(--text-color-dark); 
-                               color: var(--text-color-light); 
-                               border-radius: 8px; font-family: var(--primaryFont); 
-                               transition: all 0.3s ease;">
-                        +
-                    </button>
+                    <!-- Add Ingredient Button -->
+                    <div class="text-center mt-2">
+                        <button type="button" class="btn d-flex align-items-center justify-content-center mx-auto"
+                            id="add-modal-ingredient"
+                            style="background: transparent; border: none; color: var(--text-color-dark); transition: all 0.3s ease;">
+                            <i class="bi bi-plus-circle-fill"
+                                style="font-size: 2rem; color: var(--text-color-dark); transition: all 0.3s ease;"></i>
+                        </button>
+                    </div>
+
 
                     <!-- Action Buttons -->
                     <div class="d-flex gap-3 justify-content-end mt-4">
@@ -219,5 +225,33 @@
 
     #ingredients-container::-webkit-scrollbar-thumb:hover {
         background-color: var(--text-color-dark);
+    }
+
+    #add-modal-ingredient:hover i {
+        color: var(--primary-color);
+        transform: scale(1.15);
+    }
+
+
+
+    .remove-ingredient:hover {
+        background: var(--primary-color);
+        color: var(--text-color-light);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Custom Delete Button */
+    .btn-del {
+        background: rgba(231, 76, 60, 0.15);
+        color: #e74c3c;
+        border: none;
+    }
+
+    .btn-del:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        background-color: #e74c3c;
+        color: var(--text-color-light);
     }
 </style>

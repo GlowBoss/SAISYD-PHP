@@ -265,7 +265,7 @@
   background: var(--text-color-dark);
 }
 
-/* Card Body - Horizontal Layout */
+/* Default - Desktop / Large Screens */
 .card-body-content {
   padding: 1.25rem;
   display: grid;
@@ -273,6 +273,14 @@
   gap: 1.5rem;
   align-items: start;
 }
+
+/* iPad / Nest Hub and below */
+@media (max-width: 1200px) {
+  .card-body-content {
+    grid-template-columns: 1fr; /* alisin yung 3 columns */
+  }
+}
+
 
 /* Order Info Section */
 .order-info-section {
@@ -759,4 +767,34 @@
   .card-body-content {
     padding: 1rem;
   }
+}
+
+::-webkit-scrollbar {
+  width: 8px;              
+  height: 8px;          
+}
+
+::-webkit-scrollbar-track {
+  background: #f5f5f5;     
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-color); 
+  border-radius: 10px;
+  border: 2px solid #f5f5f5;       
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--btn-hover1);   
+}
+
+
+.items-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.items-container::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 6px;
 }

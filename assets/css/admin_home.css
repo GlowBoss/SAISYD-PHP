@@ -10,13 +10,31 @@ body {
     color: var(--text-color-dark);
     line-height: 1.4;
     height: 100vh;
+    /* Desktop: prevent scrolling */
     overflow: hidden;
+}
+
+/* Mobile: enable scrolling */
+@media (max-width: 768px) {
+    body {
+        height: auto;
+        min-height: 100vh;
+        overflow: auto;
+    }
 }
 
 .admin-wrapper {
     height: 100vh;
     display: flex;
     flex-direction: column;
+}
+
+/* Mobile: allow wrapper to be taller than viewport */
+@media (max-width: 768px) {
+    .admin-wrapper {
+        height: auto;
+        min-height: 100vh;
+    }
 }
 
 /* Header Styles */
@@ -156,6 +174,15 @@ body {
     min-height: 0;
 }
 
+/* Mobile: remove flex constraints for scrolling */
+@media (max-width: 768px) {
+    .dashboard-main {
+        flex: none;
+        min-height: auto;
+        padding: 2rem 0;
+    }
+}
+
 /* Welcome Section */
 .welcome-section {
     text-align: center;
@@ -214,9 +241,25 @@ body {
     min-height: 0;
 }
 
+/* Mobile: remove flex constraints */
+@media (max-width: 768px) {
+    .dashboard-grid {
+        flex: none;
+        min-height: auto;
+        padding: 0 1rem 2rem 1rem;
+    }
+}
+
 .dashboard-grid .row {
     flex: 1;
     margin: 0;
+}
+
+/* Mobile: remove flex constraint on row */
+@media (max-width: 768px) {
+    .dashboard-grid .row {
+        flex: none;
+    }
 }
 
 .dashboard-grid .col-12,
@@ -256,16 +299,12 @@ body {
     transition: left 0.5s ease;
 }
 
-
-
 .dashboard-card:hover {
-
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
     border-color: var(--primary-color);
     background: var(--primary-color);
     color: var(--text-color-light);
 }
-
 
 .card-icon {
     font-size: clamp(1.5rem, 3vw, 2.5rem);
@@ -322,11 +361,9 @@ body {
     background: transparent;
     color: var(--primary-color);
     text-align: center;
-    padding: 0.75rem 0;
+    padding: 1rem 0;
     flex-shrink: 0;
-    position: relative;
-    bottom: clamp(20px, 5vw, 50px);
-
+    margin-top: auto;
 }
 
 .footer-text {
@@ -432,6 +469,17 @@ body {
         flex: 0 0 50%;
         max-width: 50%;
     }
+
+    .admin-footer {
+        padding: 1rem 0;
+        margin-top: 1rem;
+        position: relative;
+        bottom: auto;
+    }
+
+    .footer-text {
+        font-size: clamp(0.8rem, 2vw, 0.9rem);
+    }
 }
 
 @media (max-width: 576px) {
@@ -465,12 +513,14 @@ body {
         flex-direction: row;
         text-align: left;
         padding: 1rem;
+        min-height: 80px;
     }
 
     .card-icon {
         margin-right: 1rem;
         margin-bottom: 0;
         flex-shrink: 0;
+        font-size: clamp(1.2rem, 4vw, 1.5rem);
     }
 
     .card-content {
@@ -481,6 +531,49 @@ body {
         margin-top: 0;
         margin-left: 0.5rem;
         flex-shrink: 0;
+    }
+
+    .admin-footer {
+        padding: 1rem 0;
+        margin-top: 1rem;
+    }
+
+    .footer-text {
+        font-size: clamp(0.75rem, 3vw, 0.85rem);
+        line-height: 1.4;
+        padding: 0 1rem;
+    }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+    .admin-footer {
+        padding: 0.75rem 0;
+        margin-top: 0.75rem;
+    }
+
+    .footer-text {
+        font-size: clamp(0.7rem, 3.5vw, 0.8rem);
+        padding: 0 0.5rem;
+    }
+
+    .welcome-section {
+        padding: 1rem 0.5rem;
+    }
+
+    .dashboard-grid {
+        padding: 0 0.5rem 1rem 0.5rem;
+    }
+}
+
+/* Large screens - ensure footer stays at bottom */
+@media (min-width: 1400px) {
+    .admin-footer {
+        padding: 2rem 0;
+    }
+
+    .footer-text {
+        font-size: 0.9rem;
     }
 }
 

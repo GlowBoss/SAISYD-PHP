@@ -4,9 +4,6 @@ session_start();
 
 // Prevent unauthorized access
 if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
-    // Redirect non-admin users to login page or a "no access" page
-
-
     header("Location: login.php");
     exit();
 }
@@ -105,15 +102,16 @@ $totalItemsSoldRow = mysqli_fetch_assoc($totalItemsSoldResult);
 $totalItemsSoldCount = $totalItemsSoldRow['total_items_sold'] ?? 0;
 
 // Today's website visits
-
-$dailyVisits = "SELECT 
-    visitDate,
-    COUNT(*) AS dailyVisits
-FROM visits
-WHERE visitDate = CURDATE()
-GROUP BY visitDate
-ORDER BY visitDate;
+$dailyVisits = "
+    SELECT 
+        DATE(visitDate) AS visitDate,
+        COUNT(DISTINCT CONCAT(ipAddress, '-', FLOOR(UNIX_TIMESTAMP(visitDate)/1800))) AS dailyVisits
+    FROM visits
+    WHERE DATE(visitDate) = CURDATE()
+    GROUP BY DATE(visitDate)
+    ORDER BY visitDate;
 ";
+
 $dailyVisitsResult = mysqli_query($conn, $dailyVisits);
 $dailyVisitsRow = mysqli_fetch_assoc($dailyVisitsResult);
 $todayVisits = $dailyVisitsRow['dailyVisits'] ?? 0;
@@ -159,40 +157,16 @@ ORDER BY o.orderDate DESC;
 ";
 $transactionResult = mysqli_query($conn, $transactionHistory);
 
-// Product Sales Data
-$productSales = "
-SELECT 
-    pr.productID,
-    pr.productName AS item_name,
-    c.categoryName AS category,
-    pr.price AS price_each,
-    SUM(oi.quantity) AS total_quantity,
-    (SUM(oi.quantity) * pr.price) AS total_sales
-FROM orderitems oi
-JOIN products pr ON oi.productID = pr.productID
-LEFT JOIN categories c ON pr.categoryID = c.categoryID
-JOIN orders o ON oi.orderID = o.orderID
-JOIN payments p ON o.orderID = p.orderID
-WHERE p.paymentStatus = 'paid'
-GROUP BY pr.productID, pr.productName, c.categoryName, pr.price
-ORDER BY total_quantity DESC;
-";
-$productResult = mysqli_query($conn, $productSales);
-
 // Capture filters
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $category_sort = isset($_GET['category_sort']) ? strtolower($_GET['category_sort']) : '';
 $price_sort = isset($_GET['price_sort']) ? strtolower($_GET['price_sort']) : '';
-$date_filter = isset($_GET['date_filter']) ? $_GET['date_filter'] : '';
 
 // Validate inputs
-$allowed = ['asc', 'desc', 'high', 'low'];
 if (!in_array($category_sort, ['asc', 'desc']))
     $category_sort = '';
 if (!in_array($price_sort, ['high', 'low']))
     $price_sort = '';
-if ($date_filter && !preg_match("/^\d{4}-\d{2}-\d{2}$/", $date_filter))
-    $date_filter = '';
 
 // Build WHERE clause
 $where = [];
@@ -204,12 +178,6 @@ if ($search) {
     $params[] = "%$search%";
     $params[] = "%$search%";
     $types .= "ss";
-}
-
-if ($date_filter) {
-    $where[] = "DATE(o.orderDate) = ?";
-    $params[] = $date_filter;
-    $types .= "s";
 }
 
 $whereSql = $where ? "AND " . implode(" AND ", $where) : "";
@@ -272,7 +240,7 @@ $productResult = $stmt->get_result();
     <link rel="stylesheet" href="../assets/css/sales-and-report.css">
     <link rel="stylesheet" href="../assets/css/admin_sidebar.css">
 
-    <!-- Bootstrap Icons (latest version so cash-register works) -->
+    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
     <!-- Font Awesome -->
@@ -289,12 +257,14 @@ $productResult = $stmt->get_result();
 </head>
 
 <body>
-    <!-- Mobile Menu Toggle Button  -->
-    <div class="d-md-none mobile-header d-flex align-items-center p-3">
+    <!-- Toast Container -->
+    <div class="toast-container"></div>
+
+    <!-- Mobile Menu Toggle Button -->
+    <div class="d-md-none mobile-header d-flex align-items-center pt-3 px-3">
         <button id="menuToggle" class="mobile-menu-toggle me-3">
             <i class="fas fa-bars"></i>
         </button>
-        <h4 class="mobile-header-title">Sales and Report</h4>
     </div>
 
     <!-- Desktop Sidebar (visible on md+ screens) -->
@@ -418,386 +388,415 @@ $productResult = $stmt->get_result();
 
     <!-- Main Content Area -->
     <div class="main-content">
-        <div class="container-fluid">
-            <div class="cardMain shadow-lg">
-                <!-- Header Row -->
-                <div class="d-none d-md-flex align-items-center justify-content-between pt-4 px-lg-3 px-2">
-                    <!-- Title -->
-                    <div class="subheading fw-bold m-1">
-                        <span style="color: var(--text-color-dark);">Sales and Report</span>
+        <div class="container-fluid px-3 px-lg-4">
+
+            <!-- Header Section -->
+            <div class="header-section">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-center align-items-md-start mb-4">
+                    <div class="text-center text-md-start w-100">
+                        <h1 class="page-title pt-lg-4 pt-0">Sales & Reports</h1>
+                       
                     </div>
 
-                    <!-- Export Button -->
-                    <div class="ms-auto">
-                        <button class="btn excelBtn" type="button" onclick="openPopup()">
-                            Export
-                        </button>
-                    </div>
-                </div>
-
-
-                <div id="modal-placeholder"></div>
-
-                <div class="container-fluid">
-                    <div class="row g-3 align-items-start">
-                        <div class="col-12 col-lg-4">
-                            <div id="smallCardCarousel" class="carousel slide " data-bs-ride="false">
-                                <div class="carousel-indicators">
-                                    <button type="button" data-bs-target="#smallCardCarousel" data-bs-slide-to="0"
-                                        class="active"></button>
-                                    <button type="button" data-bs-target="#smallCardCarousel"
-                                        data-bs-slide-to="1"></button>
-                                    <button type="button" data-bs-target="#smallCardCarousel"
-                                        data-bs-slide-to="2"></button>
-                                </div>
-                                <div class="carousel-inner">
-                                    <div class="carousel-item active">
-                                        <div class="d-flex flex-column align-items-center my-3">
-                                            <div class="card cardSmall m-2 fw-bolder p-3"
-                                                style="background-color:#C4A277; color:aliceblue">
-                                                <div class="text-center">
-                                                    <div class="sales-label fw-semibold">Total Sales:</div>
-                                                    <div class="sales-amount mt-2 fs-4">
-                                                        ₱<?php echo number_format($weeklyTotal, 2); ?>
-                                                    </div>
-                                                    <div class="sales-period mt-2">This week</div>
-                                                </div>
-                                            </div>
-
-                                            <div class="card cardSmall m-2 fw-bolder p-3">
-                                                <div class="text-center">
-                                                    <div class="sales-label fw-semibold">Total Sales:</div>
-                                                    <div class="sales-amount mt-2 fs-4">
-                                                        ₱<?php echo number_format($monthlyTotal, 2); ?>
-
-                                                    </div>
-                                                    <div class="sales-period mt-2">This month</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="carousel-item">
-                                        <div class="d-flex flex-column align-items-center my-3">
-                                            <div class="card cardSmall m-2 fw-bolder p-3"
-                                                style="background-color:#C4A277; color:aliceblue">
-                                                <div class="text-center">
-                                                    <div class="sales-label fw-semibold">Most Popular:</div>
-                                                    <div class="sales-amount mt-2 fs-5">
-                                                        <?php
-                                                        if (!empty($topProductsData)) {
-                                                            $topProduct = $topProductsData[0];
-                                                            echo "<div>" . htmlspecialchars($topProduct['productName']) . "</div>";
-                                                            echo "<div>(" . $topProduct['total_qty_sold'] . " sold)</div>";
-                                                        } else {
-                                                            echo "No sales this week";
-                                                        }
-
-                                                        ?>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="card cardSmall m-2 fw-bolder p-3">
-                                                <div class="text-center">
-                                                    <div class="sales-label fw-semibold">Avg Order Value:</div>
-                                                    <div class="sales-amount mt-2 fs-4">
-                                                        ₱<?php echo number_format($averageOrderValue, 2); ?>
-                                                    </div>
-                                                    <div class="sales-period mt-2">This month</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="carousel-item">
-                                        <div class="d-flex flex-column align-items-center my-3">
-
-                                            <div class="card cardSmall m-2 fw-bolder p-3"
-                                                style="background-color:#C4A277; color:aliceblue">
-                                                <div class="text-center">
-                                                    <div class="sales-label fw-semibold">Total Products Sold:</div>
-                                                    <div class="sales-amount mt-2 fs-4">
-                                                        <?php echo $totalItemsSoldCount ?>
-                                                    </div>
-                                                    <div class="sales-period mt-2">This week</div>
-                                                </div>
-                                            </div>
-
-                                            <div class="card cardSmall m-2 fw-bolder p-3">
-                                                <div class="text-center">
-                                                    <div class="sales-label fw-semibold">Website Visits:</div>
-                                                    <div class="sales-amount mt-2 fs-4">
-                                                        <?php echo $todayVisits ?>
-                                                    </div>
-                                                    <div class="sales-period mt-2">Today</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Carousel controls -->
-                                <button class="carousel-control-prev" type="button" data-bs-target="#smallCardCarousel"
-                                    data-bs-slide="prev">
-                                    <span class="carousel-control-prev-icon"></span>
-                                </button>
-                                <button class="carousel-control-next" type="button" data-bs-target="#smallCardCarousel"
-                                    data-bs-slide="next">
-                                    <span class="carousel-control-next-icon"></span>
-                                </button>
-                            </div>
+                    <!-- Desktop Stats Cards -->
+                    <div class="stats-cards d-none d-lg-flex">
+                        <div class="stat-card">
+                            <div class="stat-number">₱<?php echo number_format($weeklyTotal, 2); ?></div>
+                            <div class="stat-label">Weekly Sales</div>
                         </div>
-                        <!-- Right Column -->
-                        <div class="col-12 col-lg-8">
-                            <div class="row d-flex flex-wrap justify-content-center">
-                                <div class="card cardBig flex-grow-1 m-2">
-                                    <div class="card-body text-start">
-                                        <div class="subheading">Product Statistics</div>
-                                        <span class="text-muted">Track product sales</span>
-                                        <div class="cardStats mt-3">
-                                            <div class="card-body p-0">
-                                                <!-- Chart.js Canvas -->
-                                                <div class="chart-container">
-                                                    <canvas id="salesChart"></canvas>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="stat-card">
+                            <div class="stat-number">₱<?php echo number_format($monthlyTotal, 2); ?></div>
+                            <div class="stat-label">Monthly Sales</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number"><?php echo $totalItemsSoldCount; ?></div>
+                            <div class="stat-label">Items Sold</div>
                         </div>
                     </div>
                 </div>
-                <div class="row align-items-center">
-                    <div class="col-12">
-                        <div class="card cardOrders rounded-3 px-4 mt-5">
-                            <div class="card-body p-0">
-                                <div class="subheading fs-4 mb-3 text-center">Recent Transactions</div>
-                                <div class="table-responsive custom-scroll"
-                                    style="max-height: 300px; overflow-y: auto;">
-                                    <table class="table table-bordered table-hover">
-                                        <thead class="text-center">
-                                            <tr>
-                                                <th>Date</th>
-                                                <th>Order No.</th>
-                                                <th>Order Items</th>
-                                                <th>Total (₱)</th>
-                                                <th>Payment Method</th>
-                                                <th>Status</th>
-                                                <th>Customer Name</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="text-center align-middle"
-                                            style="font-size: 0.50rem; line-height: 1.2; padding: 0 !important;">
-                                            <?php
-                                            if (mysqli_num_rows($transactionResult) > 0) {
-                                                while ($row = mysqli_fetch_assoc($transactionResult)) {
-                                                    ?>
-                                                    <tr style="font-size: 0.50rem; line-height: 1.1; padding: 0 !important;">
-                                                        <td class="p-0"><?= date('M d, Y', strtotime($row['orderDate'])) ?><br>
-                                                            <?= date('H:i', strtotime($row['orderDate'])) ?>
-                                                        </td>
-                                                        <td class="p-1"><?= htmlspecialchars($row['orderNumber']) ?></td>
-                                                        <td class="p-1"><?= $row['orderItems'] ?></td>
-                                                        <td class="p-1">₱<?= number_format($row['totalAmount'], 2) ?></td>
-                                                        <td class="p-1"><?= htmlspecialchars($row['paymentMethod']) ?></td>
-                                                        <td class="p-1"><?= ucfirst($row['paymentStatus']) ?></td>
-                                                        <td class="p-1"><?= htmlspecialchars($row['displayName']) ?></td>
-                                                    </tr>
-                                                    <?php
-                                                }
-                                            } else {
-                                                echo "<tr><td colspan='7' class='text-center'>No transactions found</td></tr>";
-                                            }
-                                            ?>
-                                        </tbody>
 
-                                    </table>
-                                </div>
-
+                <!-- Mobile Stats Cards -->
+                <div class="mobile-stats d-lg-none mb-4">
+                    <div class="row g-2">
+                        <div class="col-4">
+                            <div class="stat-card">
+                                <div class="stat-number">₱<?php echo number_format($weeklyTotal, 0); ?></div>
+                                <div class="stat-label">Weekly</div>
                             </div>
                         </div>
-                    </div>
-                </div>
-                <div class="row align-items-center">
-                    <div class="col-12">
-                        <div class="card cardContainer m-2">
-                            <div class="card-body py-0 px-3 text-center">
-                                <div class="subheading fs-4 mb-3">Sales Report</div>
-                                <form method="GET" action="">
-                                    <div class="row g-3 justify-content-center">
-                                        <!-- Search Bar -->
-                                        <div class="col-12 col-md-6 col-lg-4">
-                                            <input class="form-control" type="text" name="search" placeholder="Search"
-                                                value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
-                                        </div>
-
-                                        <!-- Category Sorting -->
-                                        <div class="col-12 col-sm-6 col-md-4 col-lg-2">
-                                            <div class="dropdown-center">
-                                                <button class="btn btn-dropdown dropdown-toggle fw-semibold"
-                                                    type="button" data-bs-toggle="dropdown">
-                                                    Category
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                    <li><button class="dropdown-item" type="submit" name="category_sort"
-                                                            value="asc">A → Z</button></li>
-                                                    <li><button class="dropdown-item" type="submit" name="category_sort"
-                                                            value="desc">Z → A</button></li>
-                                                </ul>
-                                            </div>
-                                        </div>
-
-                                        <!-- Price Sorting -->
-                                        <div class="col-12 col-sm-6 col-md-4 col-lg-2">
-                                            <div class="dropdown-center">
-                                                <button class="btn btn-dropdown dropdown-toggle fw-semibold"
-                                                    type="button" data-bs-toggle="dropdown">
-                                                    Price
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                    <li><button class="dropdown-item" type="submit" name="price_sort"
-                                                            value="high">High to Low</button></li>
-                                                    <li><button class="dropdown-item" type="submit" name="price_sort"
-                                                            value="low">Low to High</button></li>
-                                                </ul>
-                                            </div>
-                                        </div>
-
-                                        <!-- Date Picker -->
-                                        <div class="col-12 col-sm-6 col-md-4 col-lg-2">
-                                            <input type="date" class="form-control" name="date_filter"
-                                                value="<?= isset($_GET['date_filter']) ? htmlspecialchars($_GET['date_filter']) : '' ?>">
-                                        </div>
-
-                                        <!-- Apply + Clear Buttons -->
-                                        <div class="col-12 col-sm-6 col-md-4 col-lg-2 d-flex gap-2">
-                                            <button type="submit" class="btn excelBtn flex-fill">Apply</button>
-                                            <a href="<?= strtok($_SERVER["REQUEST_URI"], '?') ?>"
-                                                class="btn btn-secondary flex-fill">Clear</a>
-                                        </div>
-                                    </div>
-                                </form>
-
-
+                        <div class="col-4">
+                            <div class="stat-card">
+                                <div class="stat-number">₱<?php echo number_format($monthlyTotal, 0); ?></div>
+                                <div class="stat-label">Monthly</div>
                             </div>
-                            <div class="row align-items-center">
-                                <div class="col-12">
-                                    <div class="card cardOrders rounded-3 m-3" style="min-height: 30vh;">
-                                        <div class="card-body">
-                                            <div class="table-responsive custom-scroll"
-                                                style="max-height: 400px; overflow-y: auto;">
-                                                <table class="table table-bordered table-hover">
-                                                    <thead>
-                                                        <tr></tr>
-                                                        <th>Item Name</th>
-                                                        <th>Category</th>
-                                                        <th>Price (Each)</th>
-                                                        <th>Quantity</th>
-                                                        <th>Total</th>
-                                                        <th>Product ID</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody style="font-size: 0.50rem; line-height: 1.1; padding: 0 !important;">
-                                                        <?php
-                                                        if (mysqli_num_rows($productResult) > 0) {
-                                                            while ($row = mysqli_fetch_assoc($productResult)) {
-                                                                ?>
-                                                                <tr style="font-size: 0.50rem; line-height: 1.1; padding: 0 !important;">
-                                                                    <td class="p-1"><?= htmlspecialchars($row['item_name']) ?></td>
-                                                                    <td class="p-1"><?= htmlspecialchars($row['category']) ?></td>
-                                                                    <td class="p-1">₱<?= number_format($row['price_each'], 2) ?></td>
-                                                                    <td class="p-1"><?= (int) $row['total_quantity'] ?></td>
-                                                                    <td class="p-1">₱<?= number_format($row['total_sales'], 2) ?></td>
-                                                                    <td class="p-1"><?= htmlspecialchars($row['productID']) ?></td>
-                                                                </tr>
-                                                                <?php
-                                                            }
-                                                        } else {
-                                                            echo "<tr><td colspan='7' class='text-center'>No product sales found</td></tr>";
-                                                        }
-                                                        ?>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stat-card">
+                                <div class="stat-number"><?php echo $totalItemsSoldCount; ?></div>
+                                <div class="stat-label">Items</div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Sales Overview Section -->
+            <div class="sales-overview-section mb-4">
+                <div class="row g-3">
+                    <!-- Metrics Cards -->
+                    <div class="col-12 col-lg-4">
+                        <div class="metrics-grid">
+                            <div class="metric-card primary">
+                                <div class="metric-icon">
+                                    <i class="bi bi-cash-stack"></i>
+                                </div>
+                                <div class="metric-content">
+                                    <div class="metric-label">Avg Order Value</div>
+                                    <div class="metric-value">₱<?php echo number_format($averageOrderValue, 2); ?></div>
+                                    <div class="metric-period">This Month</div>
+                                </div>
+                            </div>
+
+                            <div class="metric-card secondary">
+                                <div class="metric-icon">
+                                    <i class="bi bi-trophy"></i>
+                                </div>
+                                <div class="metric-content">
+                                    <div class="metric-label">Top Product</div>
+                                    <div class="metric-value-text">
+                                        <?php
+                                        if (!empty($topProductsData)) {
+                                            $topProduct = $topProductsData[0];
+                                            echo htmlspecialchars($topProduct['productName']);
+                                        } else {
+                                            echo "No sales";
+                                        }
+                                        ?>
+                                    </div>
+                                    <div class="metric-period">
+                                        <?php
+                                        if (!empty($topProductsData)) {
+                                            echo "(" . $topProductsData[0]['total_qty_sold'] . " sold)";
+                                        }
+                                        ?>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="metric-card accent">
+                                <div class="metric-icon">
+                                    <i class="bi bi-eye"></i>
+                                </div>
+                                <div class="metric-content">
+                                    <div class="metric-label">Website Visits</div>
+                                    <div class="metric-value"><?php echo $todayVisits; ?></div>
+                                    <div class="metric-period">Today</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sales Chart -->
+                    <div class="col-12 col-lg-8">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h5 class="chart-title">
+                                    <i class="bi bi-graph-up me-2"></i>Sales Performance
+                                </h5>
+                                <span class="chart-subtitle">Last 30 Days</span>
+                            </div>
+                            <div class="chart-body">
+                                <canvas id="salesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Transactions Section -->
+            <div class="transactions-section mb-4">
+                <div class="section-header-bar">
+                    <h5 class="section-title">
+                        <i class="bi bi-clock-history me-2"></i>Recent Transactions
+                    </h5>
+                    <button class="btn action-btn export-btn" type="button" data-bs-toggle="modal" data-bs-target="#confirmModal">
+                        <i class="bi bi-download"></i>
+                        <span class="ms-1">Export</span>
+                    </button>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-responsive custom-scroll">
+                        <table class="table sales-table">
+                            <thead class="table-header">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Order No.</th>
+                                    <th>Items</th>
+                                    <th>Total</th>
+                                    <th>Payment</th>
+                                    <th>Status</th>
+                                    <th>Customer</th>
+                                </tr>
+                            </thead>
+                            <tbody class="table-body">
+                                <?php
+                                if (mysqli_num_rows($transactionResult) > 0) {
+                                    while ($row = mysqli_fetch_assoc($transactionResult)) {
+                                        ?>
+                                        <tr>
+                                            <td class="date-cell">
+                                                <div class="date-content">
+                                                    <span class="date-value"><?= date('M d, Y', strtotime($row['orderDate'])) ?></span>
+                                                    <span class="time-value"><?= date('H:i', strtotime($row['orderDate'])) ?></span>
+                                                </div>
+                                            </td>
+                                            <td class="order-number"><?= htmlspecialchars($row['orderNumber']) ?></td>
+                                            <td class="items-cell">
+                                                <div class="items-preview"><?= $row['orderItems'] ?></div>
+                                            </td>
+                                            <td class="amount-cell">₱<?= number_format($row['totalAmount'], 2) ?></td>
+                                            <td class="payment-method"><?= htmlspecialchars($row['paymentMethod']) ?></td>
+                                            <td class="status-cell">
+                                                <span class="status-badge paid"><?= ucfirst($row['paymentStatus']) ?></span>
+                                            </td>
+                                            <td class="customer-name"><?= htmlspecialchars($row['displayName']) ?></td>
+                                        </tr>
+                                        <?php
+                                    }
+                                } else {
+                                    echo "<tr><td colspan='7' class='text-center py-4'>No transactions found</td></tr>";
+                                }
+                                ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Sales Report Section -->
+            <div class="product-sales-section">
+                <div class="section-header-bar">
+                    <h5 class="section-title">
+                        <i class="bi bi-box-seam me-2"></i>Product Sales Report
+                    </h5>
+                </div>
+
+                <!-- Filters -->
+                <div class="filter-bar">
+                    <form method="GET" action="" class="w-100">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-12 col-md-6">
+                                <label class="filter-label">Search Product</label>
+                                <input class="filter-input" type="text" name="search" placeholder="Search product or category..."
+                                    value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
+                            </div>
+
+                            <div class="col-6 col-md-2">
+                                <label class="filter-label">Category</label>
+                                <select class="filter-select" name="category_sort">
+                                    <option value="">All</option>
+                                    <option value="asc" <?= $category_sort === 'asc' ? 'selected' : '' ?>>A → Z</option>
+                                    <option value="desc" <?= $category_sort === 'desc' ? 'selected' : '' ?>>Z → A</option>
+                                </select>
+                            </div>
+
+                            <div class="col-6 col-md-2">
+                                <label class="filter-label">Price</label>
+                                <select class="filter-select" name="price_sort">
+                                    <option value="">Default</option>
+                                    <option value="high" <?= $price_sort === 'high' ? 'selected' : '' ?>>High to Low</option>
+                                    <option value="low" <?= $price_sort === 'low' ? 'selected' : '' ?>>Low to High</option>
+                                </select>
+                            </div>
+
+                            <div class="col-12 col-md-2 d-flex gap-2">
+                                <button type="submit" class="btn filter-apply-btn flex-fill">Apply</button>
+                                <a href="<?= strtok($_SERVER["REQUEST_URI"], '?') ?>" class="btn btn-clear flex-fill">Clear</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Product Sales Table -->
+                <div class="table-card">
+                    <div class="table-responsive custom-scroll">
+                        <table class="table sales-table">
+                            <thead class="table-header">
+                                <tr>
+                                    <th>Product Name</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th>Quantity Sold</th>
+                                    <th>Total Sales</th>
+                                    <th>Product ID</th>
+                                </tr>
+                            </thead>
+                            <tbody class="table-body">
+                                <?php
+                                if (mysqli_num_rows($productResult) > 0) {
+                                    while ($row = mysqli_fetch_assoc($productResult)) {
+                                        ?>
+                                        <tr>
+                                            <td class="product-name"><?= htmlspecialchars($row['item_name']) ?></td>
+                                            <td class="category-name"><?= htmlspecialchars($row['category']) ?></td>
+                                            <td class="price-cell">₱<?= number_format($row['price_each'], 2) ?></td>
+                                            <td class="quantity-cell"><?= (int) $row['total_quantity'] ?></td>
+                                            <td class="amount-cell">₱<?= number_format($row['total_sales'], 2) ?></td>
+                                            <td class="product-id"><?= htmlspecialchars($row['productID']) ?></td>
+                                        </tr>
+                                        <?php
+                                    }
+                                } else {
+                                    echo "<tr><td colspan='6' class='text-center py-4'>No product sales found</td></tr>";
+                                }
+                                ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
+   
+    <div id="modal-placeholder"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
+    <script src="../assets/js/admin_sidebar.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
+        // Load modal HTML
         fetch("../modal/sales-and-report-modal.php")
             .then(res => res.text())
             .then(data => {
                 document.getElementById("modal-placeholder").innerHTML = data;
-                document.querySelector('.addbtn').addEventListener('click', function (e) {
-                    e.preventDefault();
-                    confirmOrder();
-                    downloadReportExcel();
-                });
+
+                // Attach event listener
+                const exportBtn = document.querySelector('.addbtn.btnDownload');
+                if (exportBtn) {
+                    exportBtn.addEventListener('click', function (e) {
+                        e.preventDefault();
+
+                        // Show loading state
+                        exportBtn.disabled = true;
+                        const originalText = exportBtn.innerHTML;
+                        exportBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>Exporting...';
+
+                        setTimeout(() => {
+                            downloadReportCSV();
+
+                            // Close modal
+                            const modal = bootstrap.Modal.getInstance(document.getElementById('exportModal'));
+                            if (modal) modal.hide();
+
+                            // Show toast
+                            const toast = new bootstrap.Toast(document.getElementById('orderToast'));
+                            toast.show();
+
+                            // Reset button
+                            setTimeout(() => {
+                                exportBtn.disabled = false;
+                                exportBtn.innerHTML = originalText;
+                            }, 500);
+                        }, 1000);
+                    });
+                }
             });
 
-        function openPopup() {
-            const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
-            modal.show();
-        }
+        function downloadReportCSV() {
+            let csvContent = "";
 
-        function confirmOrder() {
-            const modal = bootstrap.Modal.getInstance(document.getElementById('confirmModal'));
-            modal.hide();
+            // Add Summary Section
+            csvContent += "SALES SUMMARY\n";
+            csvContent += "Metric,Value\n";
+            csvContent += "Weekly Total Sales,₱<?= number_format($weeklyTotal, 2); ?>\n";
+            csvContent += "Monthly Total Sales,₱<?= number_format($monthlyTotal, 2); ?>\n";
+            csvContent += "Average Order Value,₱<?= number_format($averageOrderValue, 2); ?>\n";
+            csvContent += "Top Product,<?= !empty($topProductsData) ? htmlspecialchars($topProductsData[0]['productName']) : 'No sales'; ?>\n";
+            csvContent += "Total Items Sold (This Week),<?= $totalItemsSoldCount ?>\n";
+            csvContent += "Website Visits (Today),<?= $todayVisits ?>\n\n\n";
 
-            const toastElement = document.getElementById('orderToast');
-            const toast = new bootstrap.Toast(toastElement);
-            toast.show();
-        }
-
-        function downloadReportExcel() {
-            const wb = XLSX.utils.book_new();
-
-            // Export Recent Transactions Table
-            const transactionTable = document.querySelector(".cardOrders table");
+            // Add Recent Transactions
+            csvContent += "RECENT TRANSACTIONS\n";
+            const transactionTable = document.querySelector(".transactions-section table");
             if (transactionTable) {
-                const ws1 = XLSX.utils.table_to_sheet(transactionTable);
-                XLSX.utils.book_append_sheet(wb, ws1, "Transactions");
+                const rows = transactionTable.querySelectorAll("tr");
+                rows.forEach((row) => {
+                    const cells = row.querySelectorAll("th, td");
+                    const rowData = [];
+                    cells.forEach(cell => {
+                        let text = cell.innerText.replace(/"/g, '""').replace(/\n/g, ' ');
+                        rowData.push('"' + text + '"');
+                    });
+                    csvContent += rowData.join(",") + "\n";
+                });
             }
 
-            // Export Sales Report Table
-            const salesReportTable = document.querySelector(".cardContainer table");
+            csvContent += "\n\n";
+
+            // Add Sales Report
+            csvContent += "PRODUCT SALES REPORT\n";
+            const salesReportTable = document.querySelector(".product-sales-section table");
             if (salesReportTable) {
-                const ws2 = XLSX.utils.table_to_sheet(salesReportTable);
-                XLSX.utils.book_append_sheet(wb, ws2, "Sales Report");
+                const rows = salesReportTable.querySelectorAll("tr");
+                rows.forEach((row) => {
+                    const cells = row.querySelectorAll("th, td");
+                    const rowData = [];
+                    cells.forEach(cell => {
+                        let text = cell.innerText.replace(/"/g, '""').replace(/\n/g, ' ');
+                        rowData.push('"' + text + '"');
+                    });
+                    csvContent += rowData.join(",") + "\n";
+                });
             }
 
-            // Export Small Card Statistics (weekly, monthly, etc.)
-            const stats = [
-                ["Weekly Total Sales", "₱<?= number_format($weeklyTotal, 2); ?>"],
-                ["Monthly Total Sales", "₱<?= number_format($monthlyTotal, 2); ?>"],
-                ["Average Order Value", "₱<?= number_format($averageOrderValue, 2); ?>"],
-                ["Top Product", "<?= !empty($topProductsData) ? htmlspecialchars($topProductsData[0]['productName']) : 'No sales'; ?>"],
-                ["Total Items Sold (This Week)", "<?= $totalItemsSoldCount ?>"],
-                ["Website Visits (Today)", "<?= $todayVisits ?>"]
-            ];
-            const ws3 = XLSX.utils.aoa_to_sheet(stats);
-            XLSX.utils.book_append_sheet(wb, ws3, "Summary");
-
-            // Download Excel File
-            XLSX.writeFile(wb, "sales_and_report.xlsx");
+            // Create download link
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", "sales_and_report.csv");
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
-    </script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
-    <script src="../assets/js/admin_sidebar.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous">
-        </script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        // Toast Notification System
+        function showToast(message, type = 'success') {
+            const toastContainer = document.querySelector('.toast-container');
+            const toastId = 'toast-' + Date.now();
 
-    <script>
+            const toastHtml = `
+                <div class="toast ${type}" role="alert" aria-live="assertive" aria-atomic="true" id="${toastId}" data-bs-autohide="true" data-bs-delay="5000">
+                    <div class="toast-header">
+                        <i class="bi ${type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'} me-2"></i>
+                        <strong class="me-auto">${type === 'success' ? 'Success' : 'Error'}</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                </div>
+            `;
+
+            toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+
+            const toast = new bootstrap.Toast(document.getElementById(toastId));
+            toast.show();
+
+            // Remove toast element after it's hidden
+            document.getElementById(toastId).addEventListener('hidden.bs.toast', function () {
+                this.remove();
+            });
+        }
+
+        // Chart.js Sales Chart
         const labels = <?php echo json_encode($salesDates); ?>;
         const dataValues = <?php echo json_encode($salesTotals); ?>;
 
@@ -810,21 +809,94 @@ $productResult = $stmt->get_result();
                     label: 'Daily Sales (₱)',
                     data: dataValues,
                     fill: true,
-                    borderColor: "#9e6320ff",
-                    backgroundColor: "#e6d1abff",
-                    borderWidth: 2,
-                    tension: 0.3
+                    borderColor: "#C4A277",
+                    backgroundColor: "rgba(196, 162, 119, 0.1)",
+                    borderWidth: 3,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: "#C4A277",
+                    pointBorderColor: "#fff",
+                    pointBorderWidth: 2
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { display: true }
+                    legend: { 
+                        display: true,
+                        labels: {
+                            font: {
+                                family: 'Poppins',
+                                size: 12
+                            },
+                            color: '#2E1A00'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(46, 26, 0, 0.9)',
+                        titleFont: {
+                            family: 'Poppins',
+                            size: 13
+                        },
+                        bodyFont: {
+                            family: 'ABeeZee',
+                            size: 12
+                        },
+                        padding: 12,
+                        cornerRadius: 8
+                    }
                 },
                 scales: {
-                    x: { title: { display: true, text: "Date" } },
-                    y: { beginAtZero: true, title: { display: true, text: "Sales (₱)" } }
+                    x: { 
+                        title: { 
+                            display: true, 
+                            text: "Date",
+                            font: {
+                                family: 'Poppins',
+                                size: 12,
+                                weight: '600'
+                            },
+                            color: '#2E1A00'
+                        },
+                        ticks: {
+                            font: {
+                                family: 'ABeeZee',
+                                size: 11
+                            },
+                            color: '#666'
+                        },
+                        grid: {
+                            color: 'rgba(196, 162, 119, 0.1)'
+                        }
+                    },
+                    y: { 
+                        beginAtZero: true, 
+                        title: { 
+                            display: true, 
+                            text: "Sales (₱)",
+                            font: {
+                                family: 'Poppins',
+                                size: 12,
+                                weight: '600'
+                            },
+                            color: '#2E1A00'
+                        },
+                        ticks: {
+                            font: {
+                                family: 'ABeeZee',
+                                size: 11
+                            },
+                            color: '#666',
+                            callback: function(value) {
+                                return '₱' + value.toLocaleString();
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(196, 162, 119, 0.1)'
+                        }
+                    }
                 }
             }
         });
@@ -833,6 +905,10 @@ $productResult = $stmt->get_result();
             salesChart.resize();
         });
 
+        
+        if (typeof WOW !== 'undefined') {
+            new WOW().init();
+        }
     </script>
 
 </body>

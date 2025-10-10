@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <!doctype html>
 <html lang="en">
 
@@ -10,6 +13,7 @@
     <link rel="stylesheet" href="../assets/css/styles.css">
     <link rel="stylesheet" href="../assets/css/pos.css">
     <link rel="stylesheet" href="../assets/css/admin_sidebar.css">
+    <link rel="stylesheet" href="../assets/css/pos-offcanvas.css">
 
     <!-- bootstrap icon -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
@@ -29,18 +33,19 @@
 <body>
     <div class="container-fluid mainContainer p-2">
         <div class="row p-0">
-            <!-- Offcanvas Sidebar  -->
-            <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasSidebar"
+            <!-- Offcanvas Sidebar -->
+            <div class="offcanvas offcanvas-start admin-sidebar-offcanvas" tabindex="-1" id="offcanvasSidebar"
                 aria-labelledby="offcanvasSidebarLabel">
 
                 <div class="offcanvas-header d-flex align-items-center justify-content-between">
-                    <img src="../assets/img/saisydLogo.png" alt="Saisyd Cafe Logo" class="admin-logo"
-                        style="max-height: 70px; width: auto;" />
+                    <img src="../assets/img/saisydLogo.png" alt="Saisyd Cafe Logo" class="admin-logo me-2 me-md-0"
+                        style="max-height: clamp(50px, 6vh, 70px); width: auto;" />
                     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                 </div>
 
+
                 <!-- Body with Admin Navigation Design -->
-                <div class="offcanvas-body">
+                <div class="offcanvas-body" id="sidebarNav">
                     <!-- MENU Section -->
                     <div class="section-header">Menu</div>
                     <div class="mb-3">
@@ -51,7 +56,7 @@
                         </a>
                         <a href="orders.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
                             data-wow-delay="0.15s">
-                            <i class="bi bi-bell"></i>
+                            <i class="bi bi-clipboard-check"></i>
                             <span>Order Management</span>
                         </a>
                         <a href="point-of-sales.php"
@@ -279,9 +284,9 @@
 
                                 // Ice options that map to database enum values
                                 const iceOptions = [
-                                    { display: "Less Ice", value: "Less" },
-                                    { display: "Normal Ice", value: "Normal" }, 
-                                    { display: "Extra Ice", value: "Extra" }
+                                    { display: "Less Ice ", value: "Less Ice" },
+                                    { display: "Default Ice ", value: "Default Ice " },
+                                    { display: "Extra Ice ", value: "Extra Ice" }
                                 ].map(ice =>
                                     `<li><a class="dropdown-item" data-value="${ice.value}">${ice.display}</a></li>`
                                 ).join('');
@@ -378,11 +383,11 @@
                         }
                     }
 
-                    let iceLevel = 'Normal'; // Default to Normal
+                    let iceLevel = 'Default Ice'; // Default to Default Ice
                     if (iceSelectId) {
                         const iceDropdown = document.getElementById(iceSelectId);
                         if (iceDropdown) {
-                            iceLevel = iceDropdown.getAttribute('data-value') || 'Normal';
+                            iceLevel = iceDropdown.getAttribute('data-value') || 'Default Ice';
                         }
                     }
 
@@ -441,14 +446,20 @@
                                     const iceText = item.iceLevel ? ` | ${item.iceLevel}` : '';
 
                                     receiptContainer.innerHTML += `
-                    <div class="d-flex flex-row justify-content-between align-items-center mb-1 receipt-item">
-                        <div class="flex-grow-1 item-name">
-                            <small><span style="font-weight: bold;">${item.productName} | ${item.quantity}x</span>${sugarText}${iceText}</small>
-                        </div>
-                        <div class="item-price">
-                            <small>₱ ${item.totalPrice.toFixed(2)}</small>
-                        </div>
+                    <div class="d-flex flex-row align-items-center mb-1 receipt-item">
+  <div class="flex-grow-1 item-name">
+    <small>
+      <span style="font-weight: bold;">
+        ${item.productName} | ${item.quantity}x
+      </span>
+      ${sugarText}${iceText}
+    </small>
+  </div>
+  <div class="item-price" style="margin-left: 15px;">
+    <small>₱ ${item.totalPrice.toFixed(2)}</small>
+  </div>
                     </div>`;
+
                                 });
                             }
                         })
@@ -497,14 +508,21 @@
                             data.cart.forEach(item => {
                                 const sugarText = item.sugarLevel ? ` (${item.sugarLevel}% Sugar)` : '';
                                 const iceText = item.iceLevel ? ` (${item.iceLevel})` : '';
-                                summaryList.innerHTML += `<li>${item.productName} (${item.quantity}x)${sugarText}${iceText} - ₱${item.totalPrice.toFixed(2)}</li>`;
+                                summaryList.innerHTML += `
+                    <div class="mb-2 pb-2" style="border-bottom: 1px dashed #ddd;">
+                        <div class="d-flex justify-content-between">
+                            <span>${item.productName} (${item.quantity}x)${sugarText}${iceText}</span>
+                            <span class="fw-bold">₱${item.totalPrice.toFixed(2)}</span>
+                        </div>
+                    </div>`;
                             });
 
-                            const paymentModeElement = document.getElementById('paymentModeInput');
-                            selectedPaymentMode = paymentModeElement ? paymentModeElement.value : 'Cash';
-
-                            summaryList.innerHTML += `<li class="fw-bold">Total: ₱${data.total.toFixed(2)}</li>`;
-                            summaryList.innerHTML += `<li class="fw-bold">Payment Mode: ${selectedPaymentMode}</li>`;
+                            // Display total with spacing
+                            summaryList.innerHTML += `
+                <div class="fw-bold mt-3 pt-2 d-flex justify-content-between" style="font-size: 1.1rem; color: var(--primary-color);">
+                    <span>TOTAL:</span>
+                    <span>₱${data.total.toFixed(2)}</span>
+                </div>`;
 
                             const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
                             modal.show();
@@ -611,7 +629,7 @@
                                     const price = parseFloat(document.getElementById('modal-product-price').value);
                                     const quantity = parseInt(document.getElementById('modal-quantity-input').value);
                                     const sugarLevel = document.getElementById('modal-sugar-input').value;
-                                    const iceLevel = document.getElementById('modal-ice-input').value || 'Normal';
+                                    const iceLevel = document.getElementById('modal-ice-input').value || 'Default Ice';
 
                                     // Get the modal instance before hiding it
                                     const quantityModal = document.getElementById('quantityModal');
