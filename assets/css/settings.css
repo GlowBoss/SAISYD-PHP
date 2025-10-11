@@ -2,8 +2,39 @@ body,
 html {
   height: auto;
   overflow-x: hidden;
-  overflow-y: auto;
-  background-color: var(--secondary-color);
+  background-color: var(--card-bg-color);
+  overflow-y: scroll;
+}
+
+h4.heading {
+  font-size: var(--heading);
+  font-weight: 700;
+  color: var(--text-color-dark);
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.header-stats {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  text-align: center;
+}
+
+.stat-number {
+  color: var(--primary-color);
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.subheading {
+  font-size: var(--subheading);
+  font-weight: 700;
+  color: var(--text-color-dark);
+  letter-spacing: -0.5px;
 }
 
 .cardMain {
@@ -20,17 +51,31 @@ html {
 #customerMenuSwitch.form-check-input:checked {
   background-color: var(--primary-color) !important;
   border-color: var(--primary-color) !important;
-
 }
 
-.btnAdd {
+.btn-add {
   background-color: var(--primary-color);
   border-radius: 12px;
   font-family: var(--secondaryFont);
   font-size: var(--lead);
   color: var(--text-color-light);
-  padding-block: 0.3rem;
-  padding-inline: clamp(1rem, 5vw, 3.5rem);
+
+}
+
+.btn-add-user{
+    background: var(--primary-color);
+    border: 2px solid var(--primary-color);
+    color: var(--text-color-light);
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--primaryFont);
+    justify-content: center;
+    width: 100%;
 }
 
 button.btn.btnAdd:hover {
@@ -38,79 +83,107 @@ button.btn.btnAdd:hover {
   color: white !important;
 }
 
-select.form-select {
-  border-radius: 12px !important;
-  font-family: var(--secondaryFont) !important;
-  font-size: var(--lead) !important;
+.settings-table-container {
+  border-radius: 1rem;
+  padding: 1rem;
+}
+
+.settings-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 1rem 1rem 0 0;
+  overflow: hidden;
+}
+
+/* Top corners */
+.settings-table thead th:first-child {
+  border-top-left-radius: 1rem;
+}
+.settings-table thead th:last-child {
+  border-top-right-radius: 1rem;
+}
+
+/* Bottom corners */
+.settings-table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 1rem;
+}
+.settings-table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 1rem;
+}
+
+.table-header th {
+  background-color: #e9e5da;
+  color: var(--text-color-dark);
+  font-family: var(--primaryFont);
+  font-weight: bold;
+  text-align: center;
+  border: none;
+  padding: 1rem;
+}
+
+.user-card {
+  background: rgba(196, 162, 119, 0.15);
+  border: 1px solid #eee;
+}
+
+.settings-table tbody td {
+  background-color: transparent;
+  padding: 1rem;
+  vertical-align: middle;
+}
+
+.settings-table tbody tr td {
+  border-bottom: 1px solid rgba(196, 162, 119, 0.15);
+}
+
+.role-badge {
+  color: var(--text-color-dark);
+  font-size: 0.9rem;
+}
+
+.action-btn {
+  border: none;
+  border-radius: 12px;
+  font-family: var(--secondaryFont);
+}
+
+.action-btn:hover {
+  background-color: var(--btn-hover1) !important;
+  color: var(--text-color-light) !important;
+ 
+}
+
+.action-btn:active {
+  background-color: var(--btn-hover1) !important;
+  color: var(--text-color-light) !important;
+  
+}
+
+.btn-add-user:hover {
+  background-color: var(--btn-hover1) !important;
+  color: var(--text-color-light) !important;
+  
+}
+
+.btn-add-user:active {
+  background-color: var(--btn-hover1) !important;
+  color: var(--text-color-light) !important;
+ 
+}
+
+.edit-btn {
+  background: color-mix(in srgb, var(--primary-color) 20%, transparent);
   color: var(--text-color-dark);
 }
 
-.btn-action {
-  border: none;
-  border-radius: 12px;
-  font-family: var(--secondaryFont);
-
-}
-
-.btn-action:hover {
-  background-color: var(--primary-color);
-  color: var(--text-color-light) !important;
-  border-radius: 12px;
-}
-
-.btn-action:active {
-  background-color: var(--btn-hover1) !important;
-  color: var(--text-color-light) !important;
-  border-radius: 12px;
-}
-
-.btn-action-del {
-  border: none;
-  border-radius: 12px;
-  font-family: var(--secondaryFont);
-
-}
-
-.btn-action-del:hover {
-  background-color: var(--btn-hover1) !important;
-  color: var(--text-color-light) !important;
-  border-radius: 12px;
-}
-
-.btn-action-del:active {
-  background-color: var(--btn-hover2) !important;
-  color: var(--text-color-light) !important;
-  border-radius: 12px;
-}
-
-.btn-dropdown {
-  background-color: var(--primary-color);
-  border-radius: 12px;
-  font-family: var(--secondaryFont);
-  font-size: var(--lead);
+.action-btn-del:hover {
+  background: #e74c3c;
   color: var(--text-color-light);
 }
 
-.btn-dropdown.show,
-.btn-dropdown:active {
-  background-color: var(--primary-color) !important;
-  color: var(--text-color-light) !important;
-}
-
-button.btn.btn-dropdown:hover {
-  background-color: var(--btn-hover1) !important;
-  color: white !important;
-}
-
-
-.dropdown-item {
-  transition: background-color 0.2s ease, color 0.2s ease;
-  font-family: var(--secondaryFont);
-}
-
-.dropdown-item:hover {
-  background-color: #4a2800;
-  color: #fff;
+.action-btn-del:active {
+  background: #e74c3c;
+  color: var(--text-color-light);
 }
 
 .btn-add {
@@ -119,6 +192,7 @@ button.btn.btn-dropdown:hover {
   border-radius: 12px;
   font-family: var(--secondaryFont);
   color: var(--text-color-light);
+  padding: 0.6rem 1.2rem;
 }
 
 .btn-add:hover {
@@ -131,26 +205,9 @@ button.btn.btn-dropdown:hover {
   color: var(--text-color-light) !important;
 }
 
-.btn-del {
-  background-color: var(--btn-hover1);
-  border-radius: 12px;
-  font-family: var(--secondaryFont);
-  color: var(--text-color-light);
-}
-
-.btn-del:hover {
-  background-color: var(--btn-hover2);
-  color: var(--text-color-light);
-}
-
-.table {
-  background-color: var(--card-bg-color);
-  border: 1px solid var(--bs-border-color);
-}
-
-.table th,
-.table td {
-  background-color: var(--card-bg-color) !important;
+.delete-btn {
+  background: rgba(231, 76, 60, 0.15);
+  color: #e74c3c;
 }
 
 .modalText {
@@ -158,23 +215,23 @@ button.btn.btn-dropdown:hover {
 }
 
 .swal2-border-radius {
-  border-radius: 12px; 
-}
-
-.swal2-confirm-radius, .swal2-cancel-radius{
   border-radius: 12px;
 }
 
+.swal2-confirm-radius,
+.swal2-cancel-radius {
+  border-radius: 12px;
+}
 
 .custom-alert {
   position: fixed;
   top: 20px;
   right: 20px;
-  background-color: #f44336; /* Red for error */
+  background-color: #f44336;
   color: white;
   padding: 15px 20px;
   border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   font-weight: bold;
   opacity: 0;
   pointer-events: none;
@@ -188,4 +245,5 @@ button.btn.btn-dropdown:hover {
   pointer-events: auto;
   transform: translateY(0);
 }
+
 
