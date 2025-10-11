@@ -2,10 +2,10 @@
 include('../assets/connect.php');
 session_start();
 
-// Prevent unauthorized access
-if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
-    // Redirect non-admin users to login page or a "no access" page
-    header("Location: login.php");
+// Prevent unauthorized access - Only userID 1 can access settings
+if (!isset($_SESSION['userID']) || $_SESSION['userID'] != 4) {
+    // Redirect users who are not userID 1
+    header("Location: index.php"); // or login.php
     exit();
 }
 
