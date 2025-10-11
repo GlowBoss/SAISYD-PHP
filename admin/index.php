@@ -61,7 +61,7 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
             </button>
 
             <!-- Visit Site Button -->
-            <a href="../index.html" class="action-btn visit-btn">
+            <a href="../index.php" class="action-btn visit-btn">
               <i class="bi bi-globe"></i>
               <span class="btn-text d-none d-lg-inline">Visit Site</span>
             </a>
@@ -90,7 +90,24 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
         <!-- Dashboard Grid -->
         <section class="dashboard-grid">
           <div class="row g-3 h-100">
-            <!-- Point of Sale -->
+           
+           <!-- Order Management -->
+            <div class="col-12 col-sm-6 col-lg-4">
+              <a href="orders.php" class="dashboard-card">
+                <div class="card-icon">
+                  <i class="bi bi-people"></i>
+                </div>
+                <div class="card-content">
+                  <h3 class="card-title">Order Management</h3>
+                  <p class="card-description">View and track customer orders</p>
+                </div>
+                <div class="card-arrow">
+                  <i class="bi bi-arrow-right"></i>
+                </div>
+              </a>
+            </div>
+          
+          <!-- Point of Sale -->
             <div class="col-12 col-sm-6 col-lg-4">
               <a href="point-of-sales.php" class="dashboard-card">
                 <div class="card-icon">
@@ -122,23 +139,7 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
               </a>
             </div>
 
-            <!-- Sales & Reports -->
-            <div class="col-12 col-sm-6 col-lg-4">
-              <a href="sales-and-report.php" class="dashboard-card">
-                <div class="card-icon">
-                  <i class="bi bi-graph-up"></i>
-                </div>
-                <div class="card-content">
-                  <h3 class="card-title">Sales & Reports</h3>
-                  <p class="card-description">Analytics & insights</p>
-                </div>
-                <div class="card-arrow">
-                  <i class="bi bi-arrow-right"></i>
-                </div>
-              </a>
-            </div>
-
-            <!-- Menu Management -->
+             <!-- Menu Management -->
             <div class="col-12 col-sm-6 col-lg-4">
               <a href="menu-management.php" class="dashboard-card">
                 <div class="card-icon">
@@ -154,15 +155,15 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
               </a>
             </div>
 
-            <!-- Order Management -->
+            <!-- Sales & Reports -->
             <div class="col-12 col-sm-6 col-lg-4">
-              <a href="orders.php" class="dashboard-card">
+              <a href="sales-and-report.php" class="dashboard-card">
                 <div class="card-icon">
-                  <i class="bi bi-people"></i>
+                  <i class="bi bi-graph-up"></i>
                 </div>
                 <div class="card-content">
-                  <h3 class="card-title">Order Management</h3>
-                  <p class="card-description">View and track customer orders</p>
+                  <h3 class="card-title">Sales & Reports</h3>
+                  <p class="card-description">Analytics & insights</p>
                 </div>
                 <div class="card-arrow">
                   <i class="bi bi-arrow-right"></i>
@@ -253,8 +254,9 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
             }
 
             // Show modal if not dismissed
-            if (!modalDismissed) {
+            if (!modalDismissed && !sessionStorage.getItem('lowStockShown')) {
               stockModalInstance.show();
+              sessionStorage.setItem('lowStockShown', 'true');
             }
 
             // Save latest signature
@@ -271,8 +273,8 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
     // Run immediately on page load
     document.addEventListener("DOMContentLoaded", checkLowStock);
 
-    // Run every 5 seconds
-    setInterval(checkLowStock, 5000000000);
+    // Run every 3 minutes
+    setInterval(checkLowStock, 300000);
   </script>
 </body>
 

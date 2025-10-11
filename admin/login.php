@@ -2,7 +2,7 @@
 session_start();
 include('../assets/connect.php');
 
-$error = ""; // store error message
+$error = ""; 
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
@@ -45,109 +45,95 @@ $conn->close();
   <title>Saisyd Café Login</title>
   <link rel="icon" href="../assets/img/round_logo.png" type="image/png">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/styles.css">
   <link rel="stylesheet" href="../assets/css/admin_login.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
 </head>
 
-<body class="loading">
-
-  <!-- Loading Screen -->
-  <div id="loading-screen">
-    <div class="loading-logo">
-      <div class="coffee-cup-container">
-        <div class="steam">
-          <div class="steam-line"></div>
-          <div class="steam-line"></div>
-          <div class="steam-line"></div>
-        </div>
-        <div class="coffee-cup">
-          <div class="cup">
-            <div class="cup-handle"></div>
-          </div>
-          <div class="saucer"></div>
-        </div>
-      </div>
-
-      <div class="loading-text">
-        <div class="cafe-name">SAISYD CAFÉ</div>
-        <div class="tagline">THE HIDDEN FARM</div>
-      </div>
-    </div>
-
-    <div class="loading-progress">
-      <div class="progress-bar-container">
-        <div class="progress-bar" id="progress-bar"></div>
-      </div>
-      <div class="loading-percentage" id="loading-percentage">0%</div>
-    </div>
-
-    <div class="loading-dots">
-      <div class="dot"></div>
-      <div class="dot"></div>
-      <div class="dot"></div>
-    </div>
-
-    <div class="loading-message">
-      Brewing the perfect experience...
-    </div>
-  </div>
+<body>
 
   <!-- Login Content -->
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-12 col-md-10 col-lg-8">
-        <div class="login-card d-flex flex-column justify-content-center align-items-center flex-md-row">
-          <!-- Right side: Logo -->
-          <div class="login-logo col-md-6 order-md-1">
-            <img src="../assets/img/round_logo.png" alt="Saisyd Café Logo">
-          </div>
+  <div class="login-wrapper">
+    <!-- Background Message -->
+    <div class="background-message">
+      <h1 class="bg-title">SAISYD CAFÉ</h1>
+      <p class="bg-subtitle">THE HIDDEN FARM</p>
+      <div class="bg-decoration">
+        <div class="decoration-line"></div>
+        <i class="bi bi-cup-hot-fill decoration-icon"></i>
+        <div class="decoration-line"></div>
+      </div>
+      <p class="bg-tagline">Unlock your potential. Let earnings follow.</p>
+    </div>
 
-          <!-- Left side: Form -->
-          <div class="login-left col-md-6 order-md-0">
-            <h2 class="mb-3 text-center">Log in</h2>
-            <p class="text-muted text-center">Username | Email</p>
-            <form action="" method="post">
-              <div class="mb-3">
-                <input type="text" class="form-control" name="username" placeholder="Username" required>
-              </div>
-              <p class="text-muted text-center">Password</p>
-              <div class="mb-2">
-                <input type="password" class="form-control" name="password" placeholder="Password" required>
-              </div>
-              <div class="form-text mb-3 text-center">
-                Forgot Your <a href="#">Password?</a>
-              </div>
-              <!-- Error message -->
-              <div id="errorMsg" class="text-danger text-center mb-3"
-                   style="<?php echo empty($error) ? 'display:none;' : ''; ?>">
-                <?php echo htmlspecialchars($error); ?>
-              </div>
-              <div class="text-center">
-                <button type="submit" name="btnLogin" class="btn btn-login px-4">SIGN IN</button>
-              </div>
-            </form>
+    <!-- Login Card Container -->
+    <div class="login-container">
+      <div class="login-card">
+        <!-- Logo Section -->
+        <div class="login-header">
+          <div class="logo-container">
+            <div style="
+                width:70px;
+                height:70px;
+                background-color:var(--primary-color); 
+                -webkit-mask-image:url('../assets/img/saisydLogo.png');
+                -webkit-mask-repeat:no-repeat;
+                -webkit-mask-size:contain;
+                -webkit-mask-position:center;
+                mask-image:url('../assets/img/saisydLogo.png');
+                mask-repeat:no-repeat;
+                mask-size:contain;
+                mask-position:center;
+                display:inline-block;
+              " role="img" aria-label="Saisyd Logo">
+            </div>
           </div>
+          <h1 class="login-title">ADMIN PORTAL</h1>
+          <p class="login-subtitle">Saisyd Café Management</p>
         </div>
+
+        <!-- Form Section -->
+        <div class="login-form">
+          <h2 class="form-title">Welcome Back</h2>
+          <p class="form-subtitle">Sign in to access your dashboard</p>
+
+          <form action="" method="post">
+            <div class="form-group">
+              <label class="form-label">Username</label>
+              <div class="input-wrapper">
+                <i class="bi bi-person input-icon"></i>
+                <input type="text" class="form-control form-input" name="username" placeholder="Enter your username" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <div class="input-wrapper">
+                <i class="bi bi-lock input-icon"></i>
+                <input type="password" class="form-control form-input" name="password" placeholder="Enter your password" required>
+              </div>
+            </div>
+
+            <!-- Error message -->
+            <?php if (!empty($error)): ?>
+            <div class="error-message">
+              <i class="bi bi-exclamation-circle"></i>
+              <?php echo htmlspecialchars($error); ?>
+            </div>
+            <?php endif; ?>
+
+            <button type="submit" name="btnLogin" class="btn-login mt-3 mb-0">
+              <span>SIGN IN</span>
+              <i class="bi bi-arrow-right"></i>
+            </button>
+          </form>
+        </div>
+
       </div>
     </div>
   </div>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      let hasLoaded = localStorage.getItem("loginLoaded");
 
-      if (!hasLoaded) {
-        document.body.classList.add("loading"); // show loader
-        localStorage.setItem("loginLoaded", "true"); // mark as seen
-      } else {
-        document.getElementById("loading-screen").style.display = "none"; // skip loader
-      }
-    });
-  </script>
-
-  <!-- JS: Remove Loader After Simulated Load -->
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       let progress = 0;
@@ -167,7 +153,7 @@ $conn->close();
       }, 20);
     });
   </script>
-  <!-- Bootstrap Bundle -->
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
