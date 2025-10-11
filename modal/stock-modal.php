@@ -8,10 +8,10 @@ if ($conn->connect_error) {
 
 // query low stock items (adjust threshold as needed, e.g. < 10)
 $sql = "
-    SELECT i.ingredientName, inv.quantity, inv.unit
+    SELECT i.ingredientName, inv.quantity, inv.unit, inv.threshold
     FROM ingredients i
     INNER JOIN inventory inv ON i.ingredientID = inv.ingredientID
-    WHERE inv.quantity < 10
+    WHERE inv.quantity <= inv.threshold
     ORDER BY inv.quantity ASC
 ";
 
