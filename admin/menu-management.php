@@ -493,7 +493,7 @@ if ($categoryFilterId !== null) {
 
 
 
-                <div id="productGrid" class="row g-3 m-2 row g-3 m-2 justify-content-start align-items-start">
+                <div id="productGrid" class="row g-3 m-2 row g-3 m-2 justify-content-start align-items-stretch ">
                     <?php
                     if (!empty($menuItems)) {
                         foreach ($menuItems as $row) {
@@ -510,8 +510,8 @@ if ($categoryFilterId !== null) {
                             $statusText = $isAvailable ? 'Available' : 'Unavailable';
 
                             echo "
-            <div class='col-6 col-md-6 col-lg-4 col-xl-2 d-flex px-3 py-2'>
-                <div class='menu-item w-100 text-center$unavailableClass'>
+            <div class='col-6 col-md-6 col-lg-4 col-xl-2 d-flex  px-3 py-2'>
+                <div class='menu-item w-100 text-center $unavailableClass'>
                     <div class='mb-2'>
                         <span class='status-badge $statusBadgeClass'>$statusText</span>
                     </div>
@@ -522,7 +522,7 @@ if ($categoryFilterId !== null) {
                             class='img-fluid menu-img " . ($isAvailable ? "" : "img-unavailable") . "'>
                     </div>
 
-                    <div class='menu-name'>" . htmlspecialchars($name) . "</div>
+                    <div class='menu-name' title='" . htmlspecialchars($name) . "'>" . htmlspecialchars($name) . "</div>
                     <div class='menu-price'>₱" . number_format($price, 2) . "</div>
                     <div class='menu-stock'>Available: " . (int) $possibleCount . " pcs</div>
 
