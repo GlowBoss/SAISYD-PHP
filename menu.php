@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
     // Set success message
     $_SESSION['cart_message'] = 'Item added to cart successfully!';
 
-    // Redirect to prevent form resubmission
+   
     header('Location: ' . $_SERVER['PHP_SELF'] . '?' . http_build_query($_GET));
     exit();
 }
@@ -217,21 +217,20 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
     <nav id="mainNavbar" class="navbar navbar-expand-lg navbar-custom fixed-top py-2">
         <div class="container-fluid px-3">
 
-            <!-- Mobile Layout: Burger (left) - Logo (center) - Cart (right) -->
+            <!-- Mobile  -->
             <div class="d-flex d-lg-none align-items-center w-100 position-relative" style="min-height: 50px;">
-                <!-- Left: Burger menu -->
+               
                 <button id="openSidebarBtn" class="navbar-toggler border-0 p-1">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <!-- Center: Logo  -->
                 <div class="position-absolute top-50 translate-middle" style="left: 53%;">
                     <a class="navbar-brand fw-bold mb-0">
                         <img src="assets/img/saisydLogo.png" alt="SAISYD Logo" style="height: 45px;" />
                     </a>
                 </div>
 
-                <!-- Mobile: Right Cart -->
+             
                 <div class="ms-auto d-flex align-items-center">
                     <a href="cart.php" class="d-flex align-items-center text-decoration-none position-relative">
                         <i class="bi bi-cart3 fs-5 me-2 " style="color: var(--text-color-dark);"></i>
@@ -252,7 +251,6 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
 
             </div>
 
-            <!-- Desktop Layout: Logo on left -->
             <a class="navbar-brand fw-bold d-none d-lg-block">
                 <img src="assets/img/saisydLogo.png" alt="SAISYD Logo" style="height: 45px;" />
             </a>
@@ -337,7 +335,7 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
         </div>
 
         <?php
-        // Make sure to reset categories result for the pills
+        
         mysqli_data_seek($categories, 0);
         ?>
 
@@ -349,7 +347,7 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
             </a>
 
             <?php
-            // Generate category pills
+         
             if (mysqli_num_rows($categories) > 0) {
                 while ($category = mysqli_fetch_assoc($categories)) {
                     $categoryName = htmlspecialchars($category['categoryName']);
@@ -397,7 +395,7 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                             </div>
 
                             <div class="subheading menu-name"
-                                style="font-size: clamp(0.9rem, 2.5vw, 1.2rem); font-weight: 500; color: #4b2e2e; margin-top: 10px;">
+                                style="font-size: clamp(0.9rem, 2.5vw, 1rem); font-weight: 500; color: #4b2e2e; margin-top: 10px;">
                                 <?php echo htmlspecialchars($product['productName']); ?>
                             </div>
 
@@ -440,6 +438,11 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
 
     <!-- Include External Modal -->
     <?php include 'modal/item-customization.php'; ?>
+
+    <!-- Ordering Unavailable Modal -->
+    <?php if (!$customerMenuEnabled): ?>
+        <?php include 'modal/ordering-unavailable-modal.php'; ?>
+    <?php endif; ?>
 
     <!-- Footer -->
     <footer class="bg-footer text-dark pt-5 pb-3">
@@ -587,7 +590,7 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
         </div>
     </footer>
 
-    <!-- Bootstrap and External Scripts -->
+   
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO"
         crossorigin="anonymous"></script>
@@ -595,28 +598,27 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
 
     <script>
-        // Modal Functions
+       
         function openPopup(button) {
             const modal = new bootstrap.Modal(document.getElementById('item-customization'));
             modal.show();
 
-            // Get product data
+          
             const productName = button.getAttribute('data-name');
             const productPrice = button.getAttribute('data-price');
             const productId = button.getAttribute('data-product-id');
             const category = button.getAttribute('data-category');
 
-            // Update modal content
             document.querySelector('.itemName').textContent = productName;
             document.querySelector('.itemPrice').textContent = '₱' + parseFloat(productPrice).toFixed(2);
 
-            // Hidden fields
+        
             document.getElementById('modal_product_id').value = productId;
             document.getElementById('modal_product_name').value = productName;
             document.getElementById('modal_price').value = productPrice;
             document.getElementById('modal_category').value = category;
 
-            // Show/hide sugar & ice depende sa category
+            
             updateModalOptions(category);
         }
 
@@ -636,7 +638,7 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
             }
         }
 
-        // Quantity logic
+      
         function decreaseQuantity() {
             const quantityInput = document.getElementById('quantity');
             let currentValue = parseInt(quantityInput.value);
@@ -649,12 +651,12 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
             if (currentValue < 999) quantityInput.value = currentValue + 1;
         }
 
-        // Reset form when modal hides
+        
         document.getElementById('item-customization').addEventListener('hidden.bs.modal', function () {
             document.getElementById('quantity').value = 1;
             document.getElementById('customer_notes').value = '';
 
-            // Reset radio buttons
+         
             if (document.querySelector('input[name="sugar"][value="100% Sugar"]')) {
                 document.querySelector('input[name="sugar"][value="100% Sugar"]').checked = true;
             }
@@ -663,23 +665,23 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
             }
         });
 
-        // Prevent freeze bug when closing modal
+      
         document.getElementById('item-customization').addEventListener('hidden.bs.modal', function () {
             document.body.classList.remove('modal-open');
             document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
         });
 
-        // 🚀 ENHANCED MENU SYSTEM - Preserves category scroll position during sorting
+       
         document.addEventListener('DOMContentLoaded', function () {
 
-            // Get elements
+          
             const categoryPills = document.querySelectorAll('.category-pill');
             const productGrid = document.getElementById('productGrid');
             const productItems = document.querySelectorAll('.product-item');
             const categoryScroll = document.querySelector('.category-scroll');
             const customSelect = document.querySelector('.custom-select');
 
-            // Store original product data for sorting
+     
             let allProductsData = [];
             productItems.forEach(item => {
                 allProductsData.push({
@@ -690,66 +692,65 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                 });
             });
 
-            // CATEGORY FILTERING - with preserved scroll position
             categoryPills.forEach(pill => {
                 pill.addEventListener('click', function (e) {
                     e.preventDefault();
 
                     const selectedCategory = this.textContent.trim();
 
-                    // Store current scroll position
+                    
                     const currentScrollPosition = categoryScroll.scrollLeft;
 
-                    // Update active state
+                  
                     categoryPills.forEach(p => p.classList.remove('active'));
                     this.classList.add('active');
 
-                    // Store selected category in sessionStorage
+                  
                     sessionStorage.setItem('selectedCategory', selectedCategory);
                     sessionStorage.setItem('categoryScrollPosition', currentScrollPosition);
 
-                    // Filter products smoothly
+                 
                     smoothFilterProducts(selectedCategory);
 
-                    // Restore scroll position after filtering
+                  
                     setTimeout(() => {
                         categoryScroll.scrollLeft = currentScrollPosition;
                     }, 100);
                 });
             });
 
-            // SMOOTH SORTING SYSTEM - No page reload required
+       
             function handleSortChange(sortOption) {
-                // Get current active category and scroll position
+               
                 const activeCategory = document.querySelector('.category-pill.active');
                 const selectedCategory = activeCategory ? activeCategory.textContent.trim() : 'All';
                 const currentScrollPosition = categoryScroll.scrollLeft;
 
-                // Store positions
+              
                 sessionStorage.setItem('selectedCategory', selectedCategory);
                 sessionStorage.setItem('categoryScrollPosition', currentScrollPosition);
                 sessionStorage.setItem('currentSort', sortOption);
 
-                // Apply smooth sorting
+                
                 smoothSortProducts(sortOption, selectedCategory);
 
-                // Update sort dropdown display
+               
                 updateSortDropdownDisplay(sortOption);
 
-                // Maintain scroll position
+           
                 setTimeout(() => {
                     categoryScroll.scrollLeft = currentScrollPosition;
                 }, 200);
             }
 
-            // SMOOTH SORT FUNCTION
+        
             function smoothSortProducts(sortOption, activeCategory = 'All') {
-                // Fade out effect
+               
                 productGrid.style.opacity = '0.5';
                 productGrid.style.transition = 'opacity 0.3s ease';
 
                 setTimeout(() => {
-                    // Sort the products data
+                    
                     let sortedData = [...allProductsData];
 
                     switch (sortOption) {
@@ -769,13 +770,13 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                             sortedData.sort((a, b) => a.name.localeCompare(b.name));
                     }
 
-                    // Clear and re-append in sorted order
+                
                     productGrid.innerHTML = '';
 
                     sortedData.forEach((productData, index) => {
                         productGrid.appendChild(productData.element);
 
-                        // Apply category filter
+                  
                         const shouldShow = activeCategory === 'All' || productData.category === activeCategory;
 
                         if (shouldShow) {
@@ -783,7 +784,7 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                             productData.element.style.opacity = '0';
                             productData.element.style.transform = 'translateY(30px)';
 
-                            // Staggered animation
+                          
                             setTimeout(() => {
                                 productData.element.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
                                 productData.element.style.opacity = '1';
@@ -794,7 +795,7 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                         }
                     });
 
-                    // Restore grid opacity
+                
                     setTimeout(() => {
                         productGrid.style.opacity = '1';
                     }, 200);
@@ -802,21 +803,21 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                 }, 150);
             }
 
-            // SMOOTH FILTER FUNCTION - preserves current sort order
+          
             function smoothFilterProducts(selectedCategory) {
                 const currentScrollPosition = categoryScroll.scrollLeft;
 
-                // Fade out effect
+              
                 productGrid.style.opacity = '0.5';
                 productGrid.style.transition = 'opacity 0.3s ease';
 
                 setTimeout(() => {
                     let visibleCount = 0;
 
-                    // Get current sort option
+                
                     const currentSort = sessionStorage.getItem('currentSort') || 'name-asc';
 
-                    // Re-sort and filter
+                 
                     let sortedData = [...allProductsData];
                     switch (currentSort) {
                         case 'name-asc':
@@ -833,7 +834,7 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                             break;
                     }
 
-                    // Clear and re-append in sorted order
+                    
                     productGrid.innerHTML = '';
 
                     sortedData.forEach((productData, index) => {
@@ -858,7 +859,7 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                         }
                     });
 
-                    // Restore grid opacity and scroll position
+                    
                     setTimeout(() => {
                         productGrid.style.opacity = '1';
                         categoryScroll.scrollLeft = currentScrollPosition;
@@ -867,7 +868,7 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                 }, 150);
             }
 
-            // UPDATE SORT DROPDOWN DISPLAY
+          
             function updateSortDropdownDisplay(sortOption) {
                 const selectedText = document.querySelector('.selected-text');
                 if (!selectedText) return;
@@ -888,36 +889,36 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                 selectedText.textContent = displayText;
             }
 
-            // DROPDOWN FUNCTIONALITY - Enhanced for smooth sorting
+           
             if (customSelect) {
                 const selected = customSelect.querySelector('.selected');
                 const options = customSelect.querySelector('.options');
 
-                // Toggle dropdown
+               
                 selected.addEventListener('click', () => {
                     options.classList.toggle('show');
                     customSelect.classList.toggle('open');
                 });
 
-                // Handle option clicks - NO PAGE RELOAD
+               
                 const optionLinks = options.querySelectorAll('a');
                 optionLinks.forEach(link => {
                     link.addEventListener('click', function (e) {
-                        e.preventDefault(); // Prevent page reload
+                        e.preventDefault(); 
 
-                        // Get sort option from data attribute
+                      
                         const sortOption = this.getAttribute('data-sort') || 'name-asc';
 
-                        // Apply smooth sorting
+                      
                         handleSortChange(sortOption);
 
-                        // Close dropdown
+                       
                         options.classList.remove('show');
                         customSelect.classList.remove('open');
                     });
                 });
 
-                // Close when clicking outside
+               
                 document.addEventListener('click', (e) => {
                     if (!customSelect.contains(e.target)) {
                         options.classList.remove('show');
@@ -926,15 +927,15 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                 });
             }
 
-            // RESTORE STATE ON PAGE LOAD
+            
             function restoreMenuState() {
-                // Restore selected category
+                
                 const savedCategory = sessionStorage.getItem('selectedCategory');
                 const savedScrollPosition = sessionStorage.getItem('categoryScrollPosition');
                 const savedSort = sessionStorage.getItem('currentSort');
 
                 if (savedCategory && savedCategory !== 'All') {
-                    // Update active category pill
+                    
                     categoryPills.forEach(pill => {
                         pill.classList.remove('active');
                         if (pill.textContent.trim() === savedCategory) {
@@ -942,7 +943,7 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                         }
                     });
 
-                    // Apply sort and filter
+                   
                     if (savedSort) {
                         updateSortDropdownDisplay(savedSort);
                         smoothSortProducts(savedSort, savedCategory);
@@ -950,12 +951,12 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                         smoothFilterProducts(savedCategory);
                     }
                 } else if (savedSort) {
-                    // Just apply sorting if no category filter
+                  
                     updateSortDropdownDisplay(savedSort);
                     smoothSortProducts(savedSort, 'All');
                 }
 
-                // Restore scroll position
+                
                 if (savedScrollPosition) {
                     setTimeout(() => {
                         categoryScroll.scrollLeft = parseInt(savedScrollPosition);
@@ -963,7 +964,7 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                 }
             }
 
-            // ENHANCED MENU HOVER EFFECTS
+            //  MENU HOVER EFFECTS
             const menuItems = document.querySelectorAll('.menu-item');
             menuItems.forEach(item => {
                 item.addEventListener('mouseenter', function () {
@@ -978,20 +979,20 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                 });
             });
 
-            // Initialize state restoration
+            
             setTimeout(() => {
                 restoreMenuState();
             }, 100);
 
-            // Make functions globally accessible
+          
             window.smoothFilterProducts = smoothFilterProducts;
             window.handleSortChange = handleSortChange;
             window.smoothSortProducts = smoothSortProducts;
         });
     </script>
 
+  
     <?php if (!$customerMenuEnabled): ?>
-        <?php include 'modal/ordering-unavailable-modal.php'; ?>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 showOrderingUnavailableModal();
@@ -999,7 +1000,7 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
         </script>
     <?php endif; ?>
 
-    <!-- External Scripts -->
+  
     <script src="assets/js/main.js"></script>
     <script src="assets/js/navbar.js"></script>
 
