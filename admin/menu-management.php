@@ -5,8 +5,8 @@ session_start();
 
 // Check if user is logged in and is an admin 
 if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
-  header("Location: login.php");
-  exit();
+    header("Location: login.php");
+    exit();
 }
 
 
@@ -622,12 +622,24 @@ if ($categoryFilterId !== null) {
                 });
             });
 
-
-
             document.addEventListener('DOMContentLoaded', () => {
                 $(document).ready(function () {
                     var ingredients = <?php echo json_encode($ingredients); ?>;
                     let skipAutocompleteChange = false; // flag to skip alert
+
+                    const allowedUnits = {
+                        "g": ["g", "kg", "oz"],
+                        "kg": ["kg", "g"],
+                        "oz": ["oz", "g"],
+                        "ml": ["ml", "L", "pump", "tbsp", "tsp"],
+                        "L": ["L", "ml"],
+                        "pump": ["pump", "ml"],
+                        "tbsp": ["tbsp", "ml"],
+                        "tsp": ["tsp", "ml"],
+                        "pcs": ["pcs", "box", "pack"],
+                        "box": ["box", "pcs"],
+                        "pack": ["pack", "pcs"]
+                    };
 
                     function initAutocomplete(selector) {
                         $(selector).autocomplete({
@@ -637,9 +649,23 @@ if ($categoryFilterId !== null) {
                             select: function (event, ui) {
                                 $(this).val(ui.item.label);
                                 $(this).siblings(".ingredient-id").val(ui.item.id);
-                                $(this).closest(".ingredient-row")
-                                    .find(".measurement-select")
-                                    .data("correct-unit", ui.item.unit);
+
+                                const ingredientUnit = ui.item.unit;
+                                const $select = $(this).closest(".ingredient-row").find(".measurement-select");
+
+                                // clear and repopulate dropdown
+                                $select.empty();
+                                $select.append('<option value="" disabled selected>Select Unit</option>');
+
+                                if (allowedUnits[ingredientUnit]) {
+                                    allowedUnits[ingredientUnit].forEach(unit => {
+                                        $select.append(`<option value="${unit}">${unit}</option>`);
+                                    });
+                                } else {
+                                    // fallback: just show its base unit
+                                    $select.append(`<option value="${ingredientUnit}">${ingredientUnit}</option>`);
+                                }
+
                                 return false;
                             },
                             change: function (event, ui) {
