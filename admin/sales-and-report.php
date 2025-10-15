@@ -392,10 +392,11 @@ $productResult = $stmt->get_result();
 
             <!-- Header Section -->
             <div class="header-section">
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-center align-items-md-start mb-4">
+                <div
+                    class="d-flex flex-column flex-md-row justify-content-between align-items-center align-items-md-start mb-4">
                     <div class="text-center text-md-start w-100">
                         <h1 class="page-title pt-lg-4 pt-0">Sales & Reports</h1>
-                       
+
                     </div>
 
                     <!-- Desktop Stats Cards -->
@@ -489,8 +490,21 @@ $productResult = $stmt->get_result();
                                 </div>
                                 <div class="metric-content">
                                     <div class="metric-label">Website Visits</div>
-                                    <div class="metric-value"><?php echo $todayVisits; ?></div>
-                                    <div class="metric-period">Today</div>
+
+                                    <div class="row text-center">
+                                        <div class="col-4">
+                                            <div class="metric-value">1,240</div>
+                                            <div class="metric-period">Weekly</div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="metric-value">180</div>
+                                            <div class="metric-period">Today</div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="metric-value">12,450</div>
+                                            <div class="metric-period">Overall</div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -519,7 +533,8 @@ $productResult = $stmt->get_result();
                     <h5 class="section-title">
                         <i class="bi bi-clock-history me-2"></i>Recent Transactions
                     </h5>
-                    <button class="btn action-btn export-btn" type="button" data-bs-toggle="modal" data-bs-target="#confirmModal">
+                    <button class="btn action-btn export-btn" type="button" data-bs-toggle="modal"
+                        data-bs-target="#confirmModal">
                         <i class="bi bi-download"></i>
                         <span class="ms-1">Export</span>
                     </button>
@@ -530,27 +545,57 @@ $productResult = $stmt->get_result();
                         <table class="table sales-table">
                             <thead class="table-header">
                                 <tr>
-                                    <th>Date</th>
-                                    <th>Order No.</th>
-                                    <th>Items</th>
-                                    <th>Total</th>
-                                    <th>Payment</th>
-                                    <th>Status</th>
-                                    <th>Customer</th>
+                                    <th scope="col">
+                                        <div class="th-content">
+                                            <span>Order No.</span>
+                                            <i class="bi bi-chevron-expand sort-icon"></i>
+                                        </div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="th-content">
+                                            <span>Items</span>
+                                            <i class="bi bi-chevron-expand sort-icon"></i>
+                                        </div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="th-content">
+                                            <span>Total</span>
+                                            <i class="bi bi-chevron-expand sort-icon"></i>
+                                        </div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="th-content">
+                                            <span>Payment</span>
+                                            <i class="bi bi-chevron-expand sort-icon"></i>
+                                        </div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="th-content">
+                                            <span>Status</span>
+                                            <i class="bi bi-chevron-expand sort-icon"></i>
+                                        </div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="th-content">
+                                            <span>Customer</span>
+                                            <i class="bi bi-chevron-expand sort-icon"></i>
+                                        </div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="th-content">
+                                            <span>Date</span>
+                                            <i class="bi bi-chevron-expand sort-icon"></i>
+                                        </div>
+                                    </th>
                                 </tr>
                             </thead>
+
                             <tbody class="table-body">
                                 <?php
                                 if (mysqli_num_rows($transactionResult) > 0) {
                                     while ($row = mysqli_fetch_assoc($transactionResult)) {
                                         ?>
                                         <tr>
-                                            <td class="date-cell">
-                                                <div class="date-content">
-                                                    <span class="date-value"><?= date('M d, Y', strtotime($row['orderDate'])) ?></span>
-                                                    <span class="time-value"><?= date('H:i', strtotime($row['orderDate'])) ?></span>
-                                                </div>
-                                            </td>
                                             <td class="order-number"><?= htmlspecialchars($row['orderNumber']) ?></td>
                                             <td class="items-cell">
                                                 <div class="items-preview"><?= $row['orderItems'] ?></div>
@@ -561,6 +606,14 @@ $productResult = $stmt->get_result();
                                                 <span class="status-badge paid"><?= ucfirst($row['paymentStatus']) ?></span>
                                             </td>
                                             <td class="customer-name"><?= htmlspecialchars($row['displayName']) ?></td>
+                                            <td class="date-cell">
+                                                <div class="date-content">
+                                                    <span
+                                                        class="date-value"><?= date('m/j/Y', strtotime($row['orderDate'])) ?></span>
+                                                    <span
+                                                        class="time-value"><?= date('H:i', strtotime($row['orderDate'])) ?></span>
+                                                </div>
+                                            </td>
                                         </tr>
                                         <?php
                                     }
@@ -588,31 +641,37 @@ $productResult = $stmt->get_result();
                         <div class="row g-3 align-items-end">
                             <div class="col-12 col-md-6">
                                 <label class="filter-label">Search Product</label>
-                                <input class="filter-input" type="text" name="search" placeholder="Search product or category..."
+                                <input class="filter-input" type="text" name="search"
+                                    placeholder="Search product or category..."
                                     value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
                             </div>
 
                             <div class="col-6 col-md-2">
                                 <label class="filter-label">Category</label>
-                                <select class="filter-select" name="category_sort">
+                                <select class="filter-select" name="category_filter">
                                     <option value="">All</option>
-                                    <option value="asc" <?= $category_sort === 'asc' ? 'selected' : '' ?>>A → Z</option>
-                                    <option value="desc" <?= $category_sort === 'desc' ? 'selected' : '' ?>>Z → A</option>
+                                    <option value="Iced Coffee">Iced Coffee</option>
+                                    <option value="Non-Coffee">Non-Coffee</option>
+                                    <option value="Frappé">Frappé</option>
+                                    <option value="Milktea">Milktea</option>
                                 </select>
                             </div>
+
 
                             <div class="col-6 col-md-2">
                                 <label class="filter-label">Price</label>
                                 <select class="filter-select" name="price_sort">
                                     <option value="">Default</option>
-                                    <option value="high" <?= $price_sort === 'high' ? 'selected' : '' ?>>High to Low</option>
+                                    <option value="high" <?= $price_sort === 'high' ? 'selected' : '' ?>>High to Low
+                                    </option>
                                     <option value="low" <?= $price_sort === 'low' ? 'selected' : '' ?>>Low to High</option>
                                 </select>
                             </div>
 
                             <div class="col-12 col-md-2 d-flex gap-2">
                                 <button type="submit" class="btn filter-apply-btn flex-fill">Apply</button>
-                                <a href="<?= strtok($_SERVER["REQUEST_URI"], '?') ?>" class="btn btn-clear flex-fill">Clear</a>
+                                <a href="<?= strtok($_SERVER["REQUEST_URI"], '?') ?>"
+                                    class="btn btn-clear flex-fill">Clear</a>
                             </div>
                         </div>
                     </form>
@@ -624,12 +683,42 @@ $productResult = $stmt->get_result();
                         <table class="table sales-table">
                             <thead class="table-header">
                                 <tr>
-                                    <th>Product Name</th>
-                                    <th>Category</th>
-                                    <th>Price</th>
-                                    <th>Quantity Sold</th>
-                                    <th>Total Sales</th>
-                                    <th>Product ID</th>
+                                    <th scope="col">
+                                        <div class="th-content">
+                                            <span>Product Name</span>
+                                            <i class="bi bi-chevron-expand sort-icon"></i>
+                                        </div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="th-content">
+                                            <span>Category</span>
+                                            <i class="bi bi-chevron-expand sort-icon"></i>
+                                        </div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="th-content">
+                                            <span>Price</span>
+                                            <i class="bi bi-chevron-expand sort-icon"></i>
+                                        </div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="th-content">
+                                            <span>Quantity Sold</span>
+                                            <i class="bi bi-chevron-expand sort-icon"></i>
+                                        </div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="th-content">
+                                            <span>Total Sales</span>
+                                            <i class="bi bi-chevron-expand sort-icon"></i>
+                                        </div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="th-content">
+                                            <span>Product ID</span>
+                                            <i class="bi bi-chevron-expand sort-icon"></i>
+                                        </div>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody class="table-body">
@@ -660,7 +749,7 @@ $productResult = $stmt->get_result();
         </div>
     </div>
 
-   
+
     <div id="modal-placeholder"></div>
 
     <!-- Scripts -->
@@ -824,7 +913,7 @@ $productResult = $stmt->get_result();
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { 
+                    legend: {
                         display: true,
                         labels: {
                             font: {
@@ -849,9 +938,9 @@ $productResult = $stmt->get_result();
                     }
                 },
                 scales: {
-                    x: { 
-                        title: { 
-                            display: true, 
+                    x: {
+                        title: {
+                            display: true,
                             text: "Date",
                             font: {
                                 family: 'Poppins',
@@ -871,10 +960,10 @@ $productResult = $stmt->get_result();
                             color: 'rgba(196, 162, 119, 0.1)'
                         }
                     },
-                    y: { 
-                        beginAtZero: true, 
-                        title: { 
-                            display: true, 
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
                             text: "Sales (₱)",
                             font: {
                                 family: 'Poppins',
@@ -889,7 +978,7 @@ $productResult = $stmt->get_result();
                                 size: 11
                             },
                             color: '#666',
-                            callback: function(value) {
+                            callback: function (value) {
                                 return '₱' + value.toLocaleString();
                             }
                         },
@@ -905,7 +994,7 @@ $productResult = $stmt->get_result();
             salesChart.resize();
         });
 
-        
+
         if (typeof WOW !== 'undefined') {
             new WOW().init();
         }
