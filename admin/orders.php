@@ -119,13 +119,14 @@ function getStatusCountsData() {
 
 function generateOrderCard($order) {
     $items = getOrderItemsData($order['orderID']);
+    $orderNumber = $order['orderNumber'] ?: str_pad($order['orderID'], 3, '0', STR_PAD_LEFT);
     
     $html = '<div class="modern-order-card" data-order-id="' . $order['orderID'] . '">
                 <!-- Card Header -->
                 <div class="card-header-gradient">
                     <div class="order-title-section">
                         <h3 class="order-number-modern">
-                            Order #' . ($order['orderNumber'] ?: str_pad($order['orderID'], 3, '0', STR_PAD_LEFT)) . '
+                            Order #' . $orderNumber . '
                         </h3>
                         <div class="order-datetime">
                             <i class="bi bi-clock"></i>
@@ -249,7 +250,7 @@ function generateOrderCard($order) {
                 <div class="card-actions">';
     
     if ($order['status'] === 'completed') {
-        $html .= '<button class="action-btn archive-action" onclick="archiveOrder(' . $order['orderID'] . ')">
+        $html .= '<button class="action-btn archive-action" onclick="showArchiveModal(' . $order['orderID'] . ', \'' . $orderNumber . '\')">
                     <i class="bi bi-archive"></i>
                     <span>Archive</span>
                   </button>';
@@ -369,7 +370,6 @@ $statusCounts = getStatusCountsData();
         <button id="menuToggle" class="mobile-menu-toggle me-3">
             <i class="fas fa-bars"></i>
         </button>
-        <!-- <h4 class="mobile-header-title">Order Management</h4> -->
     </div>
 
     <!-- Desktop Sidebar -->
@@ -429,7 +429,7 @@ $statusCounts = getStatusCountsData();
         </div>
     </div>
 
-      <!-- Sidebar Overlay -->
+    <!-- Sidebar Overlay -->
     <div id="sidebarOverlay" class="sidebar-overlay"></div>
 
     <!-- Mobile Sidebar -->
@@ -485,65 +485,64 @@ $statusCounts = getStatusCountsData();
         </div>
     </div>
 
-
     <!-- Alert Container for AJAX responses -->
     <div id="alertContainer"></div>
 
     <!-- Main Content Area -->
     <div class="main-content">
         <div class="container-fluid">
-            <!-- <div class="cardMain shadow-lg no-shadow-mobile"> -->
-                
-                <!-- Enhanced Header -->
-                <div class="enhanced-page-header">
-                    <div class="header-content">
-                        <div class="header-title">
-                            <h1 class="page-title-text">Order Management</h1>
-                        </div>
-                        <div class="header-stats">
-                            <div class="stat-item">
-                                <span class="stat-number" id="totalOrders"><?php echo array_sum($statusCounts); ?></span>
-                                <span class="stat-label">Total Orders</span>
-                            </div>
+            <!-- Enhanced Header -->
+            <div class="enhanced-page-header">
+                <div class="header-content">
+                    <div class="header-title">
+                        <h1 class="page-title-text">Order Management</h1>
+                    </div>
+                    <div class="header-stats">
+                        <div class="stat-item">
+                            <span class="stat-number" id="totalOrders"><?php echo array_sum($statusCounts); ?></span>
+                            <span class="stat-label">Total Orders</span>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Enhanced Filter Section -->
-                <div class="enhanced-filter-section">
-                    <div class="filter-container" id="filterTabs">
-                        <button class="filter-btn active" onclick="filterOrders('pending')" data-status="pending">
-                            <i class="bi bi-clock-history"></i>
-                            <span class="filter-text">Pending</span>
-                            <span class="count-badge"><?php echo $statusCounts['pending']; ?></span>
-                        </button>
-                        <button class="filter-btn" onclick="filterOrders('preparing')" data-status="preparing">
-                            <i class="bi bi-gear-fill"></i>
-                            <span class="filter-text">Preparing</span>
-                            <span class="count-badge"><?php echo $statusCounts['preparing']; ?></span>
-                        </button>
-                        <button class="filter-btn" onclick="filterOrders('ready')" data-status="ready">
-                            <i class="bi bi-check-circle"></i>
-                            <span class="filter-text">Ready</span>
-                            <span class="count-badge"><?php echo $statusCounts['ready']; ?></span>
-                        </button>
-                        <button class="filter-btn" onclick="filterOrders('completed')" data-status="completed">
-                            <i class="bi bi-check-all"></i>
-                            <span class="filter-text">Completed</span>
-                            <span class="count-badge"><?php echo $statusCounts['completed']; ?></span>
-                        </button>
-                    </div>
+            <!-- Enhanced Filter Section -->
+            <div class="enhanced-filter-section">
+                <div class="filter-container" id="filterTabs">
+                    <button class="filter-btn active" onclick="filterOrders('pending')" data-status="pending">
+                        <i class="bi bi-clock-history"></i>
+                        <span class="filter-text">Pending</span>
+                        <span class="count-badge"><?php echo $statusCounts['pending']; ?></span>
+                    </button>
+                    <button class="filter-btn" onclick="filterOrders('preparing')" data-status="preparing">
+                        <i class="bi bi-gear-fill"></i>
+                        <span class="filter-text">Preparing</span>
+                        <span class="count-badge"><?php echo $statusCounts['preparing']; ?></span>
+                    </button>
+                    <button class="filter-btn" onclick="filterOrders('ready')" data-status="ready">
+                        <i class="bi bi-check-circle"></i>
+                        <span class="filter-text">Ready</span>
+                        <span class="count-badge"><?php echo $statusCounts['ready']; ?></span>
+                    </button>
+                    <button class="filter-btn" onclick="filterOrders('completed')" data-status="completed">
+                        <i class="bi bi-check-all"></i>
+                        <span class="filter-text">Completed</span>
+                        <span class="count-badge"><?php echo $statusCounts['completed']; ?></span>
+                    </button>
                 </div>
+            </div>
 
-                <!-- Enhanced Orders Container -->
-                <div class="enhanced-orders-container">
-                    <div class="orders-content" id="ordersContainer">
-                        <?php echo getOrdersHTML($currentFilter); ?>
-                    </div>
+            <!-- Enhanced Orders Container -->
+            <div class="enhanced-orders-container">
+                <div class="orders-content" id="ordersContainer">
+                    <?php echo getOrdersHTML($currentFilter); ?>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Include Archive Modal -->
+    <?php include '../modal/archive-order-modal.php'; ?>
 
     <!-- JavaScript -->
     <script>
@@ -629,34 +628,6 @@ $statusCounts = getStatusCountsData();
                 }
             };
             xhr.send('update_status=1&orderID=' + orderID + '&status=' + newStatus);
-        }
-
-        // Archive completed order
-        function archiveOrder(orderID) {
-            if (!confirm('Archive this order? This will remove it from the orders list.')) {
-                return;
-            }
-            
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', 'orders.php', true);
-            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    // Show success/error message
-                    const alertContainer = document.getElementById('alertContainer');
-                    alertContainer.innerHTML = xhr.responseText;
-                    
-                    // Auto-hide alert after 3 seconds
-                    setTimeout(() => {
-                        alertContainer.innerHTML = '';
-                    }, 3000);
-                    
-                    // Refresh current view and counts
-                    fetchOrders(currentFilter);
-                    updateStatusCounts();
-                }
-            };
-            xhr.send('archive_order=1&orderID=' + orderID);
         }
 
         // Start polling every 5 seconds
