@@ -4,10 +4,9 @@ session_start();
 
 // Check if user is logged in and is an admin 
 if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
-  header("Location: login.php");
-  exit();
+    header("Location: login.php");
+    exit();
 }
-
 
 $userToEdit = null;
 
@@ -95,10 +94,10 @@ if (isset($_POST['btnUpdateUser'])) {
     exit();
 }
 
+// DELETE USER
 if (isset($_POST['btnDeleteUser'])) {
     $id = $_POST['userID'];
 
-    // Prevent deleting current logged-in user
     if ($id == $_SESSION['userID']) {
         $_SESSION['alertMessage'] = "You cannot delete your own account.";
         $_SESSION['alertType'] = "error";
@@ -112,12 +111,12 @@ if (isset($_POST['btnDeleteUser'])) {
     header("Location: settings.php");
     exit();
 }
+
 // CHANGE ROLE
 if (isset($_POST['userID']) && isset($_POST['role'])) {
     $id = $_POST['userID'];
     $role = $_POST['role'];
 
-    // Prevent changing your own role
     if ($id == $_SESSION['userID']) {
         $_SESSION['alertMessage'] = "You cannot change your own role.";
         $_SESSION['alertType'] = "error";
@@ -136,10 +135,9 @@ $userResult = executeQuery("
     SELECT * FROM users 
     ORDER BY (userID = {$_SESSION['userID']}) DESC, userID DESC
 ");
+
+$totalUsers = mysqli_num_rows($userResult);
 ?>
-
-
-
 
 <!doctype html>
 <html lang="en">
@@ -158,7 +156,7 @@ $userResult = executeQuery("
     <link rel="stylesheet" href="../assets/css/settings.css">
     <link rel="stylesheet" href="../assets/css/admin_sidebar.css">
 
-    <!-- Bootstrap Icons (latest version so cash-register works) -->
+    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
     <!-- Font Awesome -->
@@ -174,14 +172,15 @@ $userResult = executeQuery("
     <link rel="icon" href="../assets/img/round_logo.png" type="image/png">
 </head>
 
-
 <body>
-    <!-- Mobile Menu Toggle Button  -->
-    <div class="d-md-none mobile-header d-flex align-items-center p-3">
+    <!-- Toast Container -->
+    <div class="toast-container"></div>
+
+    <!-- Mobile Menu Toggle Button -->
+    <div class="d-md-none mobile-header d-flex align-items-center pt-3 px-3">
         <button id="menuToggle" class="mobile-menu-toggle me-3">
             <i class="fas fa-bars"></i>
         </button>
-
     </div>
 
     <!-- Desktop Sidebar (visible on md+ screens) -->
@@ -262,7 +261,7 @@ $userResult = executeQuery("
             </a>
             <a href="orders.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
                 data-wow-delay="0.15s">
-                <i class="bi bi-bell"></i>
+                <i class="bi bi-clipboard-check"></i>
                 <span>Order Management</span>
             </a>
             <a href="point-of-sales.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
@@ -305,210 +304,260 @@ $userResult = executeQuery("
 
     <!-- Main Content Area -->
     <div class="main-content">
-        <div class="container-fluid">
+        <div class="container-fluid px-3 px-lg-4">
 
-
-            <h4 class="heading mt-2 d-flex d-md-none justify-content-center w-100">
-                <span>Settings</span>
-            </h4>
-
-            <!-- Header Row -->
-            <div class="d-flex align-items-center justify-content-between py-4 px-lg-3 px-2">
-
-
-                <h4 class="heading ms-3 mt-2 d-none d-md-flex align-items-center">
-                    <span>Settings</span>
-                </h4>
-
+            <!-- Header Section -->
+            <div class="header-section">
                 <div
-                    class="header-stats d-flex justify-content-center justify-content-md-end flex-grow-1 flex-md-grow-0">
-                    <div class="stat-item text-center">
-                        <span class="stat-number" id="totalUsers"><?= mysqli_num_rows($userResult) ?></span>
-                        <span class="stat-label d-block">Total Users</span>
+                    class="d-flex flex-column flex-md-row justify-content-between align-items-center align-items-md-start mb-4">
+                    <div class="text-center text-md-start w-100">
+                        <h1 class="page-title pt-lg-4 pt-0">Settings</h1>
+                    </div>
+
+                    <div class="stats-cards d-none d-lg-flex">
+                        <div class="stat-card">
+                            <div class="stat-number" id="totalUsers"><?php echo $totalUsers; ?></div>
+                            <div class="stat-label">Total Users</div>
+                        </div>
                     </div>
                 </div>
 
-            </div>
-
-
-
-            <div class="row g-2 align-items-center mb-3 px-2 px-lg-3">
-
-                <div class="col-6 col-sm-auto p-3">
-                    <h1 class="subheading">User Management</h1>
-                </div>
-                <div class="col-6 col-sm-auto ms-auto">
-                    <!-- add button -->
-                    <button class="btn btn-add w-100" type="button" data-bs-toggle="modal"
-                        data-bs-target="#confirmModal">
-                        <i class="bi bi-plus-circle"></i> Add User
-                    </button>
-
-
+                <!-- Mobile Stats Cards -->
+                <div class="mobile-stats d-lg-none mb-4">
+                    <div class="row g-2">
+                        <div class="col-12">
+                            <div class="stat-card">
+                                <div class="stat-number" id="totalUsersMobile"><?php echo $totalUsers; ?></div>
+                                <div class="stat-label">Total Users</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-
 
             <?php if ($userToEdit): ?>
-                <form method="POST" id="updateUserForm">
-                    <input type="hidden" name="userID" value="<?= $userToEdit['userID'] ?>">
-
-                    <div class="row align-items-center mb-3 g-2">
-                        <!-- Name + Email -->
-                        <div class="col-12 col-md-auto p-3">
-                            <h5 class="card-title">
-                                <?= $userToEdit['fullName'] ?> | <i><?= $userToEdit['email'] ?></i>
-                            </h5>
+                <!-- Edit User Section -->
+                <div class="edit-section">
+                    <div class="edit-card">
+                        <div class="edit-header">
+                            <div class="edit-header-content">
+                                <h2 class="edit-title">
+                                    <i class="bi bi-person-circle me-2"></i><?= htmlspecialchars($userToEdit['fullName']) ?>
+                                </h2>
+                                <p class="edit-subtitle">
+                                    <i class="bi bi-envelope me-2"></i><?= htmlspecialchars($userToEdit['email']) ?>
+                                </p>
+                            </div>
+                            <button class="btn btn-back" type="button" onclick="window.history.back()">
+                                <i class="bi bi-arrow-left me-1"></i> Back
+                            </button>
                         </div>
 
-                        <!-- Back Button -->
-                        <div class="col-12 col-md-auto ms-md-auto p-3">
-                            <button class="btn btn-add w-100 w-md-auto" type="button" onclick="window.history.back()">
-                                <i class="bi bi-arrow-left "></i> Back
+                        <form method="POST" id="updateUserForm">
+                            <input type="hidden" name="userID" value="<?= $userToEdit['userID'] ?>">
+
+                            <div class="form-section">
+                                <h5 class="form-section-title">
+                                    <i class="bi bi-info-circle me-2"></i>Personal Information
+                                </h5>
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label">Full Name</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text form-icon"><i class="bi bi-person"></i></span>
+                                            <input type="text" class="form-control"
+                                                value="<?= htmlspecialchars($userToEdit['fullName']) ?>" disabled>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label">Username</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text form-icon"><i class="bi bi-at"></i></span>
+                                            <input type="text" class="form-control" name="username"
+                                                value="<?= htmlspecialchars($userToEdit['username']) ?>"
+                                                placeholder="Enter username" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label">Email Address</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text form-icon"><i class="bi bi-envelope"></i></span>
+                                            <input type="email" class="form-control" name="email"
+                                                value="<?= htmlspecialchars($userToEdit['email']) ?>"
+                                                placeholder="Enter email address" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label">Phone Number</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text form-icon"><i class="bi bi-telephone"></i></span>
+                                            <input type="text" class="form-control" name="accNumber"
+                                                value="<?= htmlspecialchars($userToEdit['accNumber']) ?>"
+                                                placeholder="Enter phone number" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h5 class="form-section-title">
+                                    <i class="bi bi-lock me-2"></i>Security
+                                </h5>
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label">Current Password</label>
+                                        <div class="input-group position-relative">
+                                            <span class="input-group-text form-icon"><i class="bi bi-key"></i></span>
+                                            <input type="password" class="form-control pe-5" id="oldPassword"
+                                                name="old_password" value="<?= htmlspecialchars($userToEdit['password']) ?>"
+                                                placeholder="Current password" readonly title="Password display only">
+                                            <span class="password-toggle"
+                                                onclick="togglePassword('oldPassword','oldPasswordIcon')">
+                                                <i class="bi bi-eye" id="oldPasswordIcon"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-md-6">
+                                    </div>
+
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label">New Password</label>
+                                        <div class="input-group position-relative">
+                                            <span class="input-group-text form-icon"><i class="bi bi-key"></i></span>
+                                            <input type="password" class="form-control pe-5" id="newPassword"
+                                                name="new_password" placeholder="Leave blank to keep current password">
+                                            <span class="password-toggle"
+                                                onclick="togglePassword('newPassword','newPasswordIcon')">
+                                                <i class="bi bi-eye" id="newPasswordIcon"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label">Confirm New Password</label>
+                                        <div class="input-group position-relative">
+                                            <span class="input-group-text form-icon"><i class="bi bi-key"></i></span>
+                                            <input type="password" class="form-control pe-5" id="confirmPassword"
+                                                name="confirm_password" placeholder="Confirm new password">
+                                            <span class="password-toggle"
+                                                onclick="togglePassword('confirmPassword','confirmPasswordIcon')">
+                                                <i class="bi bi-eye" id="confirmPasswordIcon"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button class="btn btn-save" type="submit" name="btnUpdateUser">
+                                    <i class="bi bi-check-circle me-2"></i>Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            <?php else: ?>
+                <!-- User Management Section -->
+                <div class="action-bar mb-4">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-12 col-lg-8">
+                            <h2 class="section-title">
+                                <i class="bi bi-people-fill me-2"></i>User Management
+                            </h2>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <button class="btn btn-add w-100" type="button" data-bs-toggle="modal"
+                                data-bs-target="#confirmModal">
+                                <i class="bi bi-plus-circle me-1"></i>Add New User
                             </button>
                         </div>
                     </div>
+                </div>
 
-                    <div class="card rounded-3 p-3" style="border:none;">
-                        <div class="row g-3 position-relative">
-
-                            <!-- Row 1 -->
-                            <div class="col-12 col-md-6">
-                                <div class="mb-2">
-                                    <label class="form-label">Change Email Address</label>
-                                    <input type="email" class="form-control" name="email"
-                                        value="<?= $userToEdit['email'] ?>" placeholder="Enter new email" required>
-                                </div>
-                            </div>
-                            <!-- Old Password -->
-                            <div class="col-12 col-md-6">
-                                <label class="form-label">Old Password</label>
-                                <div class="mb-2 position-relative">
-
-                                    <input type="password" class="form-control pe-5" id="oldPassword" name="old_password"
-                                        value="<?= htmlspecialchars($userToEdit['password']) ?>"
-                                        placeholder="Enter old password" readonly title="Password cannot be typed directly">
-
-
-                                    <span class="position-absolute top-50 end-0 translate-middle-y me-3"
-                                        style="cursor:pointer;" onclick="togglePassword('oldPassword','oldPasswordIcon')">
-                                        <i class="bi bi-eye" id="oldPasswordIcon"></i>
-                                    </span>
-                                </div>
-                            </div>
-
-
-                            <!-- Row 2 -->
-                            <div class="col-12 col-md-6">
-                                <div class="mb-2">
-                                    <label class="form-label">Change Username</label>
-                                    <input type="text" class="form-control" name="username"
-                                        value="<?= $userToEdit['username'] ?>" placeholder="Enter new username" required>
-                                </div>
-                            </div>
-                            <!-- New Password -->
-                            <div class="col-12 col-md-6">
-                                <label class="form-label">New Password</label>
-                                <div class="mb-2 position-relative">
-
-                                    <input type="password" class="form-control pe-5" id="newPassword" name="new_password"
-                                        placeholder="Enter new password">
-                                    <span class="position-absolute top-50 end-0 translate-middle-y me-3"
-                                        style="cursor:pointer;" onclick="togglePassword('newPassword','newPasswordIcon')">
-                                        <i class="bi bi-eye" id="newPasswordIcon"></i>
-                                    </span>
-                                </div>
-                            </div>
-
-                            <!-- Row 3 -->
-                            <div class="col-12 col-md-6">
-                                <div class="mb-2">
-                                    <label class="form-label">Change Phone Number</label>
-                                    <input type="text" class="form-control" name="accNumber"
-                                        value="<?= $userToEdit['accNumber'] ?>" placeholder="Enter new phone number"
-                                        required>
-                                </div>
-                            </div>
-                            <!-- Confirm Password -->
-                            <div class="col-12 col-md-6">
-                                <label class="form-label">Confirm New Password</label>
-                                <div class="mb-2 position-relative">
-
-                                    <input type="password" class="form-control pe-5" id="confirmPassword"
-                                        name="confirm_password" placeholder="Confirm new password">
-                                    <span class="position-absolute top-50 end-0 translate-middle-y me-3"
-                                        style="cursor:pointer;"
-                                        onclick="togglePassword('confirmPassword','confirmPasswordIcon')">
-                                        <i class="bi bi-eye" id="confirmPasswordIcon"></i>
-                                    </span>
-                                </div>
-                            </div>
-
-                            <div class="col-12 col-md-6">
-                                <button class="btn btn-add text-white px-4" type="submit" name="btnUpdateUser">Save</button>
-                            </div>
-
-                        </div>
-                    </div>
-                </form>
-            <?php else: ?>
-
-                <div class="settings-table-container">
+                <!-- Users Table -->
+                <div class="users-table-container">
                     <div class="table-responsive">
-                        <table class="table settings-table">
+                        <table class="table users-table" id="usersTable">
                             <thead class="table-header">
                                 <tr>
-                                    <th scope="col">Users</th>
-                                    <th scope="col">Role</th>
-                                    <th scope="col">Action</th>
+                                    <th scope="col">
+                                        <div class="th-content">
+                                            <span>User Information</span>
+                                        </div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="th-content">
+                                            <span>Contact</span>
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="actions-col">
+                                        <div class="th-content">
+                                            <span>Actions</span>
+                                        </div>
+                                    </th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody class="table-body">
                                 <?php if (mysqli_num_rows($userResult) > 0): ?>
                                     <?php while ($row = mysqli_fetch_assoc($userResult)): ?>
                                         <tr>
-                                            <!-- User Card -->
+                                            <!-- User Info -->
                                             <td>
-                                                <div class="user-card shadow-sm rounded-4 p-3">
-                                                    <h5 class="fw-bold mb-1 d-flex align-items-center">
-                                                        <?= htmlspecialchars($row['username']); ?>
-                                                        <?php if ($row['userID'] == $_SESSION['userID']): ?>
-                                                            <span class="badge ms-2 px-2 py-1"
-                                                                style=" color:var(--primary-color);">You</span>
-                                                        <?php endif; ?>
-                                                    </h5>
-                                                    <p class="mb-1"><i class="bi bi-person-fill me-2"></i>Full Name:
-                                                        <?= htmlspecialchars($row['fullName']); ?>
+                                                <div class="user-info-cell">
+                                                    <div class="user-avatar">
+                                                        <i class="bi bi-person-fill"></i>
+                                                    </div>
+                                                    <div class="user-details">
+                                                        <h6 class="user-name">
+                                                            <?= htmlspecialchars($row['username']); ?>
+                                                            <?php if ($row['userID'] == $_SESSION['userID']): ?>
+                                                                <span class="badge badge-you">You</span>
+                                                            <?php endif; ?>
+                                                        </h6>
+                                                        <p class="user-fullname">
+                                                            <?= htmlspecialchars($row['fullName']); ?>
+                                                        </p>
+                                                        <span class="role-badge">
+                                                            <i
+                                                                class="bi bi-shield-check me-1"></i><?= htmlspecialchars($row['role']); ?>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </td>
+
+                                            <!-- Contact Info -->
+                                            <td>
+                                                <div class="contact-info">
+                                                    <p class="contact-item">
+                                                        <i class="bi bi-envelope me-2"></i>
+                                                        <span class="contact-text"><?= htmlspecialchars($row['email']); ?></span>
                                                     </p>
-                                                    <p class="mb-1"><i class="bi bi-telephone-fill me-2"></i>Contact:
-                                                        <?= htmlspecialchars($row['accNumber']); ?>
-                                                    </p>
-                                                    <p class="mb-0"><i class="bi bi-envelope-fill me-2"></i>Email:
-                                                        <?= htmlspecialchars($row['email']); ?>
+                                                    <p class="contact-item">
+                                                        <i class="bi bi-telephone me-2"></i>
+                                                        <span
+                                                            class="contact-text"><?= htmlspecialchars($row['accNumber']); ?></span>
                                                     </p>
                                                 </div>
                                             </td>
 
-                                            <!-- Role -->
-                                            <td class="align-middle text-center">
-                                                <span class="role-badge px-3 py-2 rounded-pill fw-semibold">
-                                                    <?= htmlspecialchars($row['role']); ?>
-                                                </span>
-                                            </td>
-
                                             <!-- Actions -->
-                                            <td class="align-middle text-center">
-                                                <div class="d-flex justify-content-center gap-2">
-                                                    <form method="GET">
+                                            <td class="actions-cell">
+                                                <div class="action-buttons">
+                                                    <form method="GET" style="display: inline;">
                                                         <input type="hidden" name="editUser" value="<?= $row['userID']; ?>">
-                                                        <button class="btn btn-sm action-btn edit-btn" type="submit">
+                                                        <button class="btn action-btn edit-btn" type="submit" title="Edit User">
                                                             <i class="bi bi-pencil"></i>
                                                         </button>
                                                     </form>
-                                                    <form method="POST" class="deleteUserForm">
+                                                    <form method="POST" class="deleteUserForm" style="display: inline;">
                                                         <input type="hidden" name="userID" value="<?= $row['userID']; ?>">
                                                         <input type="hidden" name="btnDeleteUser" value="1">
-                                                        <button type="submit" class="btn btn-sm action-btn delete-btn">
+                                                        <button type="submit" class="btn action-btn delete-btn" title="Delete User">
                                                             <i class="bi bi-trash"></i>
                                                         </button>
                                                     </form>
@@ -518,13 +567,15 @@ $userResult = executeQuery("
                                     <?php endwhile; ?>
                                 <?php else: ?>
                                     <tr>
-                                        <td colspan="3" class="text-center py-4">
-                                            <i class="bi bi-inbox fs-1"></i>
-                                            <p>No users found</p>
-                                            <button class="btn btn-primary" data-bs-toggle="modal"
-                                                data-bs-target="#confirmModal">
-                                                <i class="bi bi-plus-circle"></i> Add First User
-                                            </button>
+                                        <td colspan="3" class="no-records">
+                                            <div class="no-records-content">
+                                                <i class="bi bi-inbox"></i>
+                                                <p>No users found</p>
+                                                <button class="btn btn-add" data-bs-toggle="modal"
+                                                    data-bs-target="#confirmModal">
+                                                    <i class="bi bi-plus-circle"></i> Add First User
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 <?php endif; ?>
@@ -533,47 +584,110 @@ $userResult = executeQuery("
                     </div>
                 </div>
 
-            <?php endif; ?>
+                <!-- Menu Settings Section -->
+                <div class="menu-settings-section">
+                    <div class="action-bar mb-4">
+                        <h2 class="section-title">
+                            <i class="bi bi-menu-button-wide me-2"></i>Menu Configuration
+                        </h2>
+                    </div>
 
-            <hr>
+                    <div class="row g-3">
+                        <!-- Customer Menu Toggle Card -->
+                        <div class="col-12 col-md-6">
+                            <div class="settings-card">
+                                <div class="settings-card-header">
+                                    <div class="settings-card-title">
+                                        <i class="bi bi-menu-button-wide"></i>
+                                        <span>Customer Menu</span>
+                                    </div>
+                                </div>
+                                <div class="settings-card-body">
+                                    <p class="settings-description">Enable or disable customer access to the online menu</p>
+                                    <div class="toggle-wrapper">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" role="switch"
+                                                id="customerMenuSwitch" <?php
+                                                $settingResult = executeQuery("SELECT settingValue FROM menusettings WHERE settingName='customer_menu_enabled'");
+                                                $row = mysqli_fetch_assoc($settingResult);
+                                                if ($row && $row['settingValue'] == '1')
+                                                    echo "checked";
+                                                ?>>
+                                            <label class="form-check-label" for="customerMenuSwitch">
+                                                <span id="toggleStatus">
+                                                    <?php echo ($row && $row['settingValue'] == '1') ? 'Enabled' : 'Disabled'; ?>
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-            <div class="row align-items-center mb-3 px-2 px-lg-3">
-                <div class="col-12 col-sm-auto px-3">
-                    <h1 class="subheading">Menu Settings</h1>
-                </div>
-            </div>
-            <div class="card rounded-3 mx-3 mb-4">
-                <div class="card-body d-flex align-items-center justify-content-between">
-                    <label class="form-check-label fw-bold mb-0" for="customerMenuSwitch">Enable Customer Menu</label>
-                    <div class="form-check form-switch m-0">
-                        <input class="form-check-input" type="checkbox" role="switch" id="customerMenuSwitch" <?php
-                        $settingResult = executeQuery("SELECT settingValue FROM menusettings WHERE settingName='customer_menu_enabled'");
-                        $row = mysqli_fetch_assoc($settingResult);
-                        if ($row && $row['settingValue'] == '1')
-                            echo "checked";
-                        ?>>
+                        <!-- QR Code Card -->
+                        <div class="col-12 col-md-6">
+                            <div class="settings-card">
+                                <div class="settings-card-header">
+                                    <div class="settings-card-title">
+                                        <i class="bi bi-qr-code"></i>
+                                        <span>QR Code</span>
+                                    </div>
+                                </div>
+                                <div class="settings-card-body">
+                                    <p class="settings-description">Display customer menu QR code for easy access</p>
+                                    <button class="btn btn-qr w-100" type="button" data-bs-toggle="modal"
+                                        data-bs-target="#qrModal">
+                                        <i class="bi bi-qr-code me-2"></i>Show QR Code
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="card rounded-3 mx-3 mb-4">
-                <div class="card-body fw-bold d-flex justify-content-between align-items-center">
-                    <span>Customer Menu QR Code</span>
-                    <button class="btn btn-add" type="button" data-bs-toggle="modal" data-bs-target="#qrModal">
-                        <i class="bi bi-qr-code"></i> Show QR Code
-                    </button>
-                </div>
-            </div>
+            <?php endif; ?>
+
         </div>
-
     </div>
 
-
-    <!-- add user modal -->
+    <!-- Modals -->
     <?php include '../modal/add-user-modal.php'; ?>
     <?php include '../modal/qr-modal.php'; ?>
     <?php include '../modal/confirm-toggle-modal.php'; ?>
+
+    <!-- Toast Notifications -->
+    <?php if (isset($_SESSION['alertMessage'])): ?>
+        <?php
+        $isSuccess = $_SESSION['alertType'] === 'success';
+        $icon = $isSuccess ? 'bi-check-circle-fill' : 'bi-x-circle-fill';
+        $iconColor = $isSuccess ? 'var(--accent-color)' : '#e74c3c';
+        ?>
+
+        <div id="alertToast" class="toast align-items-center border-0 fade show position-fixed top-0 end-0 m-3" role="alert"
+            aria-live="assertive" aria-atomic="true" data-bs-delay="2000" data-bs-autohide="true"
+            style="background-color: var(--text-color-dark); color: var(--text-color-light); border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.25); z-index: 9999;">
+            <div class="d-flex align-items-center">
+                <i class="<?= $icon ?> ms-3" style="font-size: 1.2rem; color: <?= $iconColor ?>;"></i>
+                <div class="toast-body" style="font-family: var(--secondaryFont);">
+                    <?= htmlspecialchars($_SESSION['alertMessage']) ?>
+                </div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"
+                    style="filter: invert(1);"></button>
+            </div>
+        </div>
+
+        <?php
+        unset($_SESSION['alertMessage']);
+        unset($_SESSION['alertType']);
+        ?>
+    <?php endif; ?>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
+    <script src="../assets/js/admin_sidebar.js"></script>
+
     <script>
         // Toggle password visibility
         function togglePassword(inputId, iconId) {
@@ -588,25 +702,156 @@ $userResult = executeQuery("
             }
         }
 
+        // Function to show toast dynamically
+        function showToast(message, type = 'success') {
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+
+            const isSuccess = type === 'success';
+            const icon = isSuccess ? 'bi-check-circle-fill' : 'bi-x-circle-fill';
+            const iconColor = isSuccess ? 'var(--accent-color)' : '#e74c3c';
+
+            const toastHTML = `
+        <div id="dynamicToast" class="toast align-items-center border-0 fade show position-fixed top-0 end-0 m-3" 
+             role="alert" aria-live="assertive" aria-atomic="true" 
+             data-bs-delay="3000" data-bs-autohide="true"
+             style="background-color: var(--text-color-dark); color: var(--text-color-light); border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.25); z-index: 9999;">
+            <div class="d-flex align-items-center">
+                <i class="${icon} ms-3" style="font-size: 1.2rem; color: ${iconColor};"></i>
+                <div class="toast-body" style="font-family: var(--secondaryFont);">
+                    ${message}
+                </div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"
+                        style="filter: invert(1);"></button>
+            </div>
+        </div>
+    `;
+
+            document.body.insertAdjacentHTML('beforeend', toastHTML);
+
+            const toastElement = document.getElementById('dynamicToast');
+            const toast = new bootstrap.Toast(toastElement);
+            toast.show();
+
+            toastElement.addEventListener('hidden.bs.toast', function () {
+                toastElement.remove();
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
+            // Initialize WOW animations
+            if (typeof WOW !== 'undefined') {
+                new WOW().init();
+            }
+
+            // Initialize and show toast if exists
+            const toastElement = document.getElementById('alertToast');
+            if (toastElement) {
+                const toast = new bootstrap.Toast(toastElement);
+                toast.show();
+            }
 
             // Delete User Confirmation
             document.querySelectorAll('.deleteUserForm').forEach(form => {
                 form.addEventListener('submit', function (e) {
                     e.preventDefault();
                     Swal.fire({
-                        title: 'Are you sure?',
-                        text: "This user will be deleted!",
-                        icon: 'warning',
+                        title: '<span style="font-family: var(--primaryFont); color: var(--primary-color); letter-spacing: 1px; font-weight: bold;">Confirm Delete</span>',
+                        html: `
+                        <div style="text-align: center; padding: 1rem 0;">
+                            <i class="bi bi-exclamation-triangle-fill" style="font-size: 4rem; color: #dc3545; display: block; margin-bottom: 1.5rem;"></i>
+                            <p style="font-family: var(--secondaryFont); color: var(--text-color-dark); font-size: 1.1rem; margin-bottom: 0.5rem; line-height: 1.5;">
+                                Are you sure you want to delete this user?
+                            </p>
+                            <p style="color: #dc3545; font-family: var(--secondaryFont); font-weight: 600; margin-top: 1rem; margin-bottom: 0; font-size: 0.95rem;">
+                                This action cannot be undone!
+                            </p>
+                        </div>
+                    `,
+                        icon: false,
                         showCancelButton: true,
-                        confirmButtonText: 'Yes, delete it!',
-                        cancelButtonText: 'Cancel',
-                        confirmButtonColor: 'var(--primary-color)',
-                        cancelButtonColor: 'var(--btn-hover2)',
+                        confirmButtonText: '<i class="bi bi-trash-fill" style="margin-right: 8px;"></i>DELETE',
+                        cancelButtonText: 'CANCEL',
+                        reverseButtons: true,
+                        width: '450px',
+                        padding: '2rem 1.5rem 1.5rem',
+                        background: 'var(--bg-color)',
                         customClass: {
                             popup: 'swal2-border-radius',
                             confirmButton: 'swal2-confirm-radius',
-                            cancelButton: 'swal2-cancel-radius'
+                            cancelButton: 'swal2-cancel-radius',
+                            actions: 'swal-actions-custom'
+                        },
+                        buttonsStyling: false,
+                        didOpen: () => {
+                            // Add custom styles to actions container
+                            const actionsContainer = document.querySelector('.swal-actions-custom');
+                            if (actionsContainer) {
+                                actionsContainer.style.cssText = `
+                                display: flex !important;
+                                gap: 12px !important;
+                                justify-content: center !important;
+                                width: 100% !important;
+                                margin-top: 1.5rem !important;
+                            `;
+                            }
+
+                            // Style cancel button
+                            const cancelBtn = Swal.getCancelButton();
+                            cancelBtn.style.cssText = `
+                            background: var(--card-bg-color);
+                            color: var(--text-color-dark);
+                            border: 2px solid var(--primary-color);
+                            border-radius: 10px;
+                            font-family: var(--primaryFont);
+                            letter-spacing: 1px;
+                            font-weight: bold;
+                            padding: 10px 24px;
+                            transition: all 0.3s ease;
+                            min-width: 120px;
+                            font-size: 0.95rem;
+                            cursor: pointer;
+                        `;
+                            cancelBtn.onmouseover = () => {
+                                cancelBtn.style.background = 'var(--primary-color)';
+                                cancelBtn.style.color = 'var(--text-color-light)';
+                                cancelBtn.style.transform = 'translateY(-2px)';
+                            };
+                            cancelBtn.onmouseout = () => {
+                                cancelBtn.style.background = 'var(--card-bg-color)';
+                                cancelBtn.style.color = 'var(--text-color-dark)';
+                                cancelBtn.style.transform = 'translateY(0)';
+                            };
+
+                            // Style confirm button
+                            const confirmBtn = Swal.getConfirmButton();
+                            confirmBtn.style.cssText = `
+                            background: #dc3545;
+                            color: white;
+                            border: none;
+                            border-radius: 10px;
+                            font-family: var(--primaryFont);
+                            letter-spacing: 1px;
+                            font-weight: bold;
+                            padding: 10px 24px;
+                            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+                            transition: all 0.3s ease;
+                            min-width: 120px;
+                            font-size: 0.95rem;
+                            cursor: pointer;
+                        `;
+                            confirmBtn.onmouseover = () => {
+                                confirmBtn.style.background = '#b02a37';
+                                confirmBtn.style.transform = 'translateY(-2px)';
+                                confirmBtn.style.boxShadow = '0 6px 12px rgba(220, 53, 69, 0.4)';
+                            };
+                            confirmBtn.onmouseout = () => {
+                                confirmBtn.style.background = '#dc3545';
+                                confirmBtn.style.transform = 'translateY(0)';
+                                confirmBtn.style.boxShadow = '0 4px 8px rgba(220, 53, 69, 0.3)';
+                            };
                         }
                     }).then((result) => {
                         if (result.isConfirmed) {
@@ -615,87 +860,63 @@ $userResult = executeQuery("
                     });
                 });
             });
-        });
 
-        document.addEventListener('DOMContentLoaded', function () {
-            <?php if (isset($_SESSION['alertMessage'])): ?>
-                Swal.fire({
-                    icon: '<?= $_SESSION['alertType'] ?>',
-                    title: '<?= $_SESSION['alertMessage'] ?>',
-                    showConfirmButton: false,
-                    timer: 2500,
-                    timerProgressBar: true,
-                    toast: true,
-                    position: 'top-end'
-                });
-                <?php
-                unset($_SESSION['alertMessage']);
-                unset($_SESSION['alertType']);
-                ?>
-            <?php endif; ?>
-        });
-
-        document.getElementById('customerMenuSwitch').addEventListener('change', function () {
-            let status = this.checked ? 1 : 0;
-
-            fetch('toggle-config.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: 'status=' + status
-            })
-                .then(res => res.text())
-                .then(data => console.log(data));
-        });
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
+            // Customer Menu Toggle with Confirmation
             const switchInput = document.getElementById('customerMenuSwitch');
-            const confirmModal = new bootstrap.Modal(document.getElementById('confirmToggleModal'));
-            const confirmBtn = document.getElementById('confirmToggle');
-            const cancelBtn = document.getElementById('cancelToggle');
-            const confirmText = document.getElementById('confirmToggleText');
+            if (switchInput) {
+                const confirmModal = new bootstrap.Modal(document.getElementById('confirmToggleModal'));
+                const confirmBtn = document.getElementById('confirmToggle');
+                const cancelBtn = document.getElementById('cancelToggle');
+                const confirmText = document.getElementById('confirmToggleText');
 
-            let intendedState = switchInput.checked; // current state
+                let intendedState = switchInput.checked;
 
-            switchInput.addEventListener('change', function (e) {
-                e.preventDefault(); // stop instant toggle
-                intendedState = switchInput.checked;
-                switchInput.checked = !intendedState; // revert until confirmed
+                switchInput.addEventListener('change', function (e) {
+                    e.preventDefault();
+                    intendedState = switchInput.checked;
+                    switchInput.checked = !intendedState;
 
-                confirmText.textContent = intendedState
-                    ? "Are you sure you want to ENABLE the Customer Menu?"
-                    : "Are you sure you want to DISABLE the Customer Menu?";
+                    confirmText.textContent = intendedState
+                        ? "Are you sure you want to ENABLE the Customer Menu?"
+                        : "Are you sure you want to DISABLE the Customer Menu?";
 
-                confirmModal.show();
-            });
+                    confirmModal.show();
+                });
 
-            confirmBtn.addEventListener('click', function () {
-                switchInput.checked = intendedState;
+                confirmBtn.addEventListener('click', function () {
+                    switchInput.checked = intendedState;
 
-                let status = intendedState ? 1 : 0;
-                fetch('toggle-config.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: 'status=' + status
-                })
-                    .then(res => res.text())
-                    .then(data => console.log(data));
+                    // Update the toggle status text
+                    const toggleStatus = document.getElementById('toggleStatus');
+                    if (toggleStatus) {
+                        toggleStatus.textContent = intendedState ? 'Enabled' : 'Disabled';
+                    }
 
-                confirmModal.hide();
-            });
+                    let status = intendedState ? 1 : 0;
+                    fetch('toggle-config.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: 'status=' + status
+                    })
+                        .then(res => res.text())
+                        .then(data => {
+                            console.log(data);
+                            showToast('Customer Menu ' + (intendedState ? 'enabled' : 'disabled') + ' successfully!', 'success');
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            showToast('An error occurred. Please try again.', 'error');
+                        });
 
-            cancelBtn.addEventListener('click', function () {
-                switchInput.checked = !intendedState;
-            });
+                    confirmModal.hide();
+                });
+
+                cancelBtn.addEventListener('click', function () {
+                    switchInput.checked = !intendedState;
+                });
+            }
         });
     </script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
-    <script src="../assets/js/admin_sidebar.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous">
-        </script>
-
 
 </body>
 
