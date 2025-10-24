@@ -2,8 +2,8 @@
 include('../assets/connect.php');
 session_start();
 
-// Check if user is logged in and is an admin 
-if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
+// Prevent unauthorized access
+if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin' && $_SESSION['role'] !== 'Staff') {
     header("Location: login.php");
     exit();
 }
@@ -335,317 +335,324 @@ $totalUsers = mysqli_num_rows($userResult);
                 </div>
             </div>
 
-            <?php if ($userToEdit): ?>
-                <!-- Edit User Section -->
-                <div class="edit-section">
-                    <div class="edit-card">
-                        <div class="edit-header">
-                            <div class="edit-header-content">
-                                <h2 class="edit-title">
-                                    <i class="bi bi-person-circle me-2"></i><?= htmlspecialchars($userToEdit['fullName']) ?>
-                                </h2>
-                                <p class="edit-subtitle">
-                                    <i class="bi bi-envelope me-2"></i><?= htmlspecialchars($userToEdit['email']) ?>
-                                </p>
-                            </div>
-                            <button class="btn btn-back" type="button" onclick="window.history.back()">
-                                <i class="bi bi-arrow-left me-1"></i> Back
-                            </button>
-                        </div>
+            <!-- USER MANAGEMENT SECTION - ONLY FOR ADMINS -->
+            <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'Admin'): ?>
 
-                        <form method="POST" id="updateUserForm">
-                            <input type="hidden" name="userID" value="<?= $userToEdit['userID'] ?>">
-
-                            <div class="form-section">
-                                <h5 class="form-section-title">
-                                    <i class="bi bi-info-circle me-2"></i>Personal Information
-                                </h5>
-                                <div class="row g-3">
-                                    <div class="col-12 col-md-6">
-                                        <label class="form-label">Full Name</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text form-icon"><i class="bi bi-person"></i></span>
-                                            <input type="text" class="form-control"
-                                                value="<?= htmlspecialchars($userToEdit['fullName']) ?>" disabled>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-12 col-md-6">
-                                        <label class="form-label">Username</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text form-icon"><i class="bi bi-at"></i></span>
-                                            <input type="text" class="form-control" name="username"
-                                                value="<?= htmlspecialchars($userToEdit['username']) ?>"
-                                                placeholder="Enter username" required>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-12 col-md-6">
-                                        <label class="form-label">Email Address</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text form-icon"><i class="bi bi-envelope"></i></span>
-                                            <input type="email" class="form-control" name="email"
-                                                value="<?= htmlspecialchars($userToEdit['email']) ?>"
-                                                placeholder="Enter email address" required>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-12 col-md-6">
-                                        <label class="form-label">Phone Number</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text form-icon"><i class="bi bi-telephone"></i></span>
-                                            <input type="text" class="form-control" name="accNumber"
-                                                value="<?= htmlspecialchars($userToEdit['accNumber']) ?>"
-                                                placeholder="Enter phone number" required>
-                                        </div>
-                                    </div>
+                <?php if ($userToEdit): ?>
+                    <!-- Edit User Section -->
+                    <div class="edit-section">
+                        <div class="edit-card">
+                            <div class="edit-header">
+                                <div class="edit-header-content">
+                                    <h2 class="edit-title">
+                                        <i class="bi bi-person-circle me-2"></i><?= htmlspecialchars($userToEdit['fullName']) ?>
+                                    </h2>
+                                    <p class="edit-subtitle">
+                                        <i class="bi bi-envelope me-2"></i><?= htmlspecialchars($userToEdit['email']) ?>
+                                    </p>
                                 </div>
-                            </div>
-
-                            <div class="form-section">
-                                <h5 class="form-section-title">
-                                    <i class="bi bi-lock me-2"></i>Security
-                                </h5>
-                                <div class="row g-3">
-                                    <div class="col-12 col-md-6">
-                                        <label class="form-label">Current Password</label>
-                                        <div class="input-group position-relative">
-                                            <span class="input-group-text form-icon"><i class="bi bi-key"></i></span>
-                                            <input type="password" class="form-control pe-5" id="oldPassword"
-                                                name="old_password" value="<?= htmlspecialchars($userToEdit['password']) ?>"
-                                                placeholder="Current password" readonly title="Password display only">
-                                            <span class="password-toggle"
-                                                onclick="togglePassword('oldPassword','oldPasswordIcon')">
-                                                <i class="bi bi-eye" id="oldPasswordIcon"></i>
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-12 col-md-6">
-                                    </div>
-
-                                    <div class="col-12 col-md-6">
-                                        <label class="form-label">New Password</label>
-                                        <div class="input-group position-relative">
-                                            <span class="input-group-text form-icon"><i class="bi bi-key"></i></span>
-                                            <input type="password" class="form-control pe-5" id="newPassword"
-                                                name="new_password" placeholder="Leave blank to keep current password">
-                                            <span class="password-toggle"
-                                                onclick="togglePassword('newPassword','newPasswordIcon')">
-                                                <i class="bi bi-eye" id="newPasswordIcon"></i>
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-12 col-md-6">
-                                        <label class="form-label">Confirm New Password</label>
-                                        <div class="input-group position-relative">
-                                            <span class="input-group-text form-icon"><i class="bi bi-key"></i></span>
-                                            <input type="password" class="form-control pe-5" id="confirmPassword"
-                                                name="confirm_password" placeholder="Confirm new password">
-                                            <span class="password-toggle"
-                                                onclick="togglePassword('confirmPassword','confirmPasswordIcon')">
-                                                <i class="bi bi-eye" id="confirmPasswordIcon"></i>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="form-actions">
-                                <button class="btn btn-save" type="submit" name="btnUpdateUser">
-                                    <i class="bi bi-check-circle me-2"></i>Save Changes
+                                <button class="btn btn-back" type="button" onclick="window.history.back()">
+                                    <i class="bi bi-arrow-left me-1"></i> Back
                                 </button>
                             </div>
-                        </form>
-                    </div>
-                </div>
 
-            <?php else: ?>
-                <!-- User Management Section -->
-                <div class="action-bar mb-4">
-                    <div class="row g-3 align-items-end">
-                        <div class="col-12 col-lg-8">
-                            <h2 class="section-title">
-                                <i class="bi bi-people-fill me-2"></i>User Management
-                            </h2>
-                        </div>
-                        <div class="col-12 col-lg-4">
-                            <button class="btn btn-add w-100" type="button" data-bs-toggle="modal"
-                                data-bs-target="#confirmModal">
-                                <i class="bi bi-plus-circle me-1"></i>Add New User
-                            </button>
+                            <form method="POST" id="updateUserForm">
+                                <input type="hidden" name="userID" value="<?= $userToEdit['userID'] ?>">
+
+                                <div class="form-section">
+                                    <h5 class="form-section-title">
+                                        <i class="bi bi-info-circle me-2"></i>Personal Information
+                                    </h5>
+                                    <div class="row g-3">
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label">Full Name</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text form-icon"><i class="bi bi-person"></i></span>
+                                                <input type="text" class="form-control"
+                                                    value="<?= htmlspecialchars($userToEdit['fullName']) ?>" disabled>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label">Username</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text form-icon"><i class="bi bi-at"></i></span>
+                                                <input type="text" class="form-control" name="username"
+                                                    value="<?= htmlspecialchars($userToEdit['username']) ?>"
+                                                    placeholder="Enter username" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label">Email Address</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text form-icon"><i class="bi bi-envelope"></i></span>
+                                                <input type="email" class="form-control" name="email"
+                                                    value="<?= htmlspecialchars($userToEdit['email']) ?>"
+                                                    placeholder="Enter email address" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label">Phone Number</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text form-icon"><i class="bi bi-telephone"></i></span>
+                                                <input type="text" class="form-control" name="accNumber"
+                                                    value="<?= htmlspecialchars($userToEdit['accNumber']) ?>"
+                                                    placeholder="Enter phone number" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-section">
+                                    <h5 class="form-section-title">
+                                        <i class="bi bi-lock me-2"></i>Security
+                                    </h5>
+                                    <div class="row g-3">
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label">Current Password</label>
+                                            <div class="input-group position-relative">
+                                                <span class="input-group-text form-icon"><i class="bi bi-key"></i></span>
+                                                <input type="password" class="form-control pe-5" id="oldPassword"
+                                                    name="old_password" value="<?= htmlspecialchars($userToEdit['password']) ?>"
+                                                    placeholder="Current password" readonly title="Password display only">
+                                                <span class="password-toggle"
+                                                    onclick="togglePassword('oldPassword','oldPasswordIcon')">
+                                                    <i class="bi bi-eye" id="oldPasswordIcon"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 col-md-6">
+                                        </div>
+
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label">New Password</label>
+                                            <div class="input-group position-relative">
+                                                <span class="input-group-text form-icon"><i class="bi bi-key"></i></span>
+                                                <input type="password" class="form-control pe-5" id="newPassword"
+                                                    name="new_password" placeholder="Leave blank to keep current password">
+                                                <span class="password-toggle"
+                                                    onclick="togglePassword('newPassword','newPasswordIcon')">
+                                                    <i class="bi bi-eye" id="newPasswordIcon"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label">Confirm New Password</label>
+                                            <div class="input-group position-relative">
+                                                <span class="input-group-text form-icon"><i class="bi bi-key"></i></span>
+                                                <input type="password" class="form-control pe-5" id="confirmPassword"
+                                                    name="confirm_password" placeholder="Confirm new password">
+                                                <span class="password-toggle"
+                                                    onclick="togglePassword('confirmPassword','confirmPasswordIcon')">
+                                                    <i class="bi bi-eye" id="confirmPasswordIcon"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button class="btn btn-save" type="submit" name="btnUpdateUser">
+                                        <i class="bi bi-check-circle me-2"></i>Save Changes
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
-                </div>
 
-                <!-- Users Table -->
-                <div class="users-table-container">
-                    <div class="table-responsive">
-                        <table class="table users-table" id="usersTable">
-                            <thead class="table-header">
-                                <tr>
-                                    <th scope="col">
-                                        <div class="th-content">
-                                            <span>User Information</span>
-                                        </div>
-                                    </th>
-                                    <th scope="col">
-                                        <div class="th-content">
-                                            <span>Contact</span>
-                                        </div>
-                                    </th>
-                                    <th scope="col" class="actions-col">
-                                        <div class="th-content">
-                                            <span>Actions</span>
-                                        </div>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody class="table-body">
-                                <?php if (mysqli_num_rows($userResult) > 0): ?>
-                                    <?php while ($row = mysqli_fetch_assoc($userResult)): ?>
-                                        <tr>
-                                            <!-- User Info -->
-                                            <td>
-                                                <div class="user-info-cell">
-                                                    <div class="user-avatar">
-                                                        <i class="bi bi-person-fill"></i>
+                <?php else: ?>
+                    <!-- User Management Section -->
+                    <div class="action-bar mb-4">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-12 col-lg-8">
+                                <h2 class="section-title">
+                                    <i class="bi bi-people-fill me-2"></i>User Management
+                                </h2>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <button class="btn btn-add w-100" type="button" data-bs-toggle="modal"
+                                    data-bs-target="#confirmModal">
+                                    <i class="bi bi-plus-circle me-1"></i>Add New User
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Users Table -->
+                    <div class="users-table-container">
+                        <div class="table-responsive">
+                            <table class="table users-table" id="usersTable">
+                                <thead class="table-header">
+                                    <tr>
+                                        <th scope="col">
+                                            <div class="th-content">
+                                                <span>User Information</span>
+                                            </div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="th-content">
+                                                <span>Contact</span>
+                                            </div>
+                                        </th>
+                                        <th scope="col" class="actions-col">
+                                            <div class="th-content">
+                                                <span>Actions</span>
+                                            </div>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="table-body">
+                                    <?php if (mysqli_num_rows($userResult) > 0): ?>
+                                        <?php while ($row = mysqli_fetch_assoc($userResult)): ?>
+                                            <tr>
+                                                <!-- User Info -->
+                                                <td>
+                                                    <div class="user-info-cell">
+                                                        <div class="user-avatar">
+                                                            <i class="bi bi-person-fill"></i>
+                                                        </div>
+                                                        <div class="user-details">
+                                                            <h6 class="user-name">
+                                                                <?= htmlspecialchars($row['username']); ?>
+                                                                <?php if ($row['userID'] == $_SESSION['userID']): ?>
+                                                                    <span class="badge badge-you">You</span>
+                                                                <?php endif; ?>
+                                                            </h6>
+                                                            <p class="user-fullname">
+                                                                <?= htmlspecialchars($row['fullName']); ?>
+                                                            </p>
+                                                            <span class="role-badge">
+                                                                <i
+                                                                    class="bi bi-shield-check me-1"></i><?= htmlspecialchars($row['role']); ?>
+                                                            </span>
+                                                        </div>
                                                     </div>
-                                                    <div class="user-details">
-                                                        <h6 class="user-name">
-                                                            <?= htmlspecialchars($row['username']); ?>
-                                                            <?php if ($row['userID'] == $_SESSION['userID']): ?>
-                                                                <span class="badge badge-you">You</span>
-                                                            <?php endif; ?>
-                                                        </h6>
-                                                        <p class="user-fullname">
-                                                            <?= htmlspecialchars($row['fullName']); ?>
+                                                </td>
+
+                                                <!-- Contact Info -->
+                                                <td>
+                                                    <div class="contact-info">
+                                                        <p class="contact-item">
+                                                            <i class="bi bi-envelope me-2"></i>
+                                                            <span class="contact-text"><?= htmlspecialchars($row['email']); ?></span>
                                                         </p>
-                                                        <span class="role-badge">
-                                                            <i
-                                                                class="bi bi-shield-check me-1"></i><?= htmlspecialchars($row['role']); ?>
-                                                        </span>
+                                                        <p class="contact-item">
+                                                            <i class="bi bi-telephone me-2"></i>
+                                                            <span
+                                                                class="contact-text"><?= htmlspecialchars($row['accNumber']); ?></span>
+                                                        </p>
                                                     </div>
-                                                </div>
-                                            </td>
+                                                </td>
 
-                                            <!-- Contact Info -->
-                                            <td>
-                                                <div class="contact-info">
-                                                    <p class="contact-item">
-                                                        <i class="bi bi-envelope me-2"></i>
-                                                        <span class="contact-text"><?= htmlspecialchars($row['email']); ?></span>
-                                                    </p>
-                                                    <p class="contact-item">
-                                                        <i class="bi bi-telephone me-2"></i>
-                                                        <span
-                                                            class="contact-text"><?= htmlspecialchars($row['accNumber']); ?></span>
-                                                    </p>
-                                                </div>
-                                            </td>
-
-                                            <!-- Actions -->
-                                            <td class="actions-cell">
-                                                <div class="action-buttons">
-                                                    <form method="GET" style="display: inline;">
-                                                        <input type="hidden" name="editUser" value="<?= $row['userID']; ?>">
-                                                        <button class="btn action-btn edit-btn" type="submit" title="Edit User">
-                                                            <i class="bi bi-pencil"></i>
-                                                        </button>
-                                                    </form>
-                                                    <form method="POST" class="deleteUserForm" style="display: inline;">
-                                                        <input type="hidden" name="userID" value="<?= $row['userID']; ?>">
-                                                        <input type="hidden" name="btnDeleteUser" value="1">
-                                                        <button type="submit" class="btn action-btn delete-btn" title="Delete User">
-                                                            <i class="bi bi-trash"></i>
-                                                        </button>
-                                                    </form>
+                                                <!-- Actions -->
+                                                <td class="actions-cell">
+                                                    <div class="action-buttons">
+                                                        <form method="GET" style="display: inline;">
+                                                            <input type="hidden" name="editUser" value="<?= $row['userID']; ?>">
+                                                            <button class="btn action-btn edit-btn" type="submit" title="Edit User">
+                                                                <i class="bi bi-pencil"></i>
+                                                            </button>
+                                                        </form>
+                                                        <form method="POST" class="deleteUserForm" style="display: inline;">
+                                                            <input type="hidden" name="userID" value="<?= $row['userID']; ?>">
+                                                            <input type="hidden" name="btnDeleteUser" value="1">
+                                                            <button type="submit" class="btn action-btn delete-btn" title="Delete User">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <?php endwhile; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="3" class="no-records">
+                                                <div class="no-records-content">
+                                                    <i class="bi bi-inbox"></i>
+                                                    <p>No users found</p>
+                                                    <button class="btn btn-add" data-bs-toggle="modal"
+                                                        data-bs-target="#confirmModal">
+                                                        <i class="bi bi-plus-circle"></i> Add First User
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>
-                                    <?php endwhile; ?>
-                                <?php else: ?>
-                                    <tr>
-                                        <td colspan="3" class="no-records">
-                                            <div class="no-records-content">
-                                                <i class="bi bi-inbox"></i>
-                                                <p>No users found</p>
-                                                <button class="btn btn-add" data-bs-toggle="modal"
-                                                    data-bs-target="#confirmModal">
-                                                    <i class="bi bi-plus-circle"></i> Add First User
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Menu Settings Section -->
-                <div class="menu-settings-section">
-                    <div class="action-bar mb-4">
-                        <h2 class="section-title">
-                            <i class="bi bi-menu-button-wide me-2"></i>Menu Configuration
-                        </h2>
-                    </div>
-
-                    <div class="row g-3">
-                        <!-- Customer Menu Toggle Card -->
-                        <div class="col-12 col-md-6">
-                            <div class="settings-card">
-                                <div class="settings-card-header">
-                                    <div class="settings-card-title">
-                                        <i class="bi bi-menu-button-wide"></i>
-                                        <span>Customer Menu</span>
-                                    </div>
-                                </div>
-                                <div class="settings-card-body">
-                                    <p class="settings-description">Enable or disable customer access to the online menu</p>
-                                    <div class="toggle-wrapper">
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" role="switch"
-                                                id="customerMenuSwitch" <?php
-                                                $settingResult = executeQuery("SELECT settingValue FROM menusettings WHERE settingName='customer_menu_enabled'");
-                                                $row = mysqli_fetch_assoc($settingResult);
-                                                if ($row && $row['settingValue'] == '1')
-                                                    echo "checked";
-                                                ?>>
-                                            <label class="form-check-label" for="customerMenuSwitch">
-                                                <span id="toggleStatus">
-                                                    <?php echo ($row && $row['settingValue'] == '1') ? 'Enabled' : 'Disabled'; ?>
-                                                </span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- QR Code Card -->
-                        <div class="col-12 col-md-6">
-                            <div class="settings-card">
-                                <div class="settings-card-header">
-                                    <div class="settings-card-title">
-                                        <i class="bi bi-qr-code"></i>
-                                        <span>QR Code</span>
-                                    </div>
-                                </div>
-                                <div class="settings-card-body">
-                                    <p class="settings-description">Display customer menu QR code for easy access</p>
-                                    <button class="btn btn-qr w-100" type="button" data-bs-toggle="modal"
-                                        data-bs-target="#qrModal">
-                                        <i class="bi bi-qr-code me-2"></i>Show QR Code
-                                    </button>
-                                </div>
-                            </div>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                </div>
+
+                    <hr>
+
+                <?php endif; ?>
 
             <?php endif; ?>
+
+            <!-- Menu Settings Section - VISIBLE TO ALL ADMINS -->
+            <div class="menu-settings-section">
+                <div class="action-bar mb-4">
+                    <h2 class="section-title">
+                        <i class="bi bi-menu-button-wide me-2"></i>Menu Configuration
+                    </h2>
+                </div>
+
+                <div class="row g-3">
+                    <!-- Customer Menu Toggle Card -->
+                    <div class="col-12 col-md-6">
+                        <div class="settings-card">
+                            <div class="settings-card-header">
+                                <div class="settings-card-title">
+                                    <i class="bi bi-menu-button-wide"></i>
+                                    <span>Customer Menu</span>
+                                </div>
+                            </div>
+                            <div class="settings-card-body">
+                                <p class="settings-description">Enable or disable customer access to the online menu</p>
+                                <div class="toggle-wrapper">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" role="switch"
+                                            id="customerMenuSwitch" <?php
+                                            $settingResult = executeQuery("SELECT settingValue FROM menusettings WHERE settingName='customer_menu_enabled'");
+                                            $row = mysqli_fetch_assoc($settingResult);
+                                            if ($row && $row['settingValue'] == '1')
+                                                echo "checked";
+                                            ?>>
+                                        <label class="form-check-label" for="customerMenuSwitch">
+                                            <span id="toggleStatus">
+                                                <?php echo ($row && $row['settingValue'] == '1') ? 'Enabled' : 'Disabled'; ?>
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- QR Code Card -->
+                    <div class="col-12 col-md-6">
+                        <div class="settings-card">
+                            <div class="settings-card-header">
+                                <div class="settings-card-title">
+                                    <i class="bi bi-qr-code"></i>
+                                    <span>QR Code</span>
+                                </div>
+                            </div>
+                            <div class="settings-card-body">
+                                <p class="settings-description">Display customer menu QR code for easy access</p>
+                                <button class="btn btn-qr w-100" type="button" data-bs-toggle="modal"
+                                    data-bs-target="#qrModal">
+                                    <i class="bi bi-qr-code me-2"></i>Show QR Code
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
         </div>
     </div>
@@ -786,7 +793,6 @@ $totalUsers = mysqli_num_rows($userResult);
                         },
                         buttonsStyling: false,
                         didOpen: () => {
-                            // Add custom styles to actions container
                             const actionsContainer = document.querySelector('.swal-actions-custom');
                             if (actionsContainer) {
                                 actionsContainer.style.cssText = `
@@ -798,7 +804,6 @@ $totalUsers = mysqli_num_rows($userResult);
                             `;
                             }
 
-                            // Style cancel button
                             const cancelBtn = Swal.getCancelButton();
                             cancelBtn.style.cssText = `
                             background: var(--card-bg-color);
@@ -825,7 +830,6 @@ $totalUsers = mysqli_num_rows($userResult);
                                 cancelBtn.style.transform = 'translateY(0)';
                             };
 
-                            // Style confirm button
                             const confirmBtn = Swal.getConfirmButton();
                             confirmBtn.style.cssText = `
                             background: #dc3545;
@@ -886,7 +890,6 @@ $totalUsers = mysqli_num_rows($userResult);
                 confirmBtn.addEventListener('click', function () {
                     switchInput.checked = intendedState;
 
-                    // Update the toggle status text
                     const toggleStatus = document.getElementById('toggleStatus');
                     if (toggleStatus) {
                         toggleStatus.textContent = intendedState ? 'Enabled' : 'Disabled';

@@ -292,15 +292,15 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
 
                                 // Ice options that map to database enum values
                                 const iceOptions = [
-                                    { display: "Less Ice ", value: "Less Ice" },
-                                    { display: "Default Ice ", value: "Default Ice " },
-                                    { display: "Extra Ice ", value: "Extra Ice" }
+                                    { display: "Less Ice", value: "Less Ice" },
+                                    { display: "Default Ice", value: "Default Ice" },
+                                    { display: "Extra Ice", value: "Extra Ice" }
                                 ].map(ice =>
                                     `<li><a class="dropdown-item" data-value="${ice.value}">${ice.display}</a></li>`
                                 ).join('');
 
                                 sugarIceDropdowns = `
-                    <div class="dropdown mb-2">
+                    <div class="dropdown mb-2" onclick="event.stopPropagation();">
                         <button class="btn btn-outline-dark dropdown-toggle w-100" type="button" 
                                 id="${sugarSelectId}" data-bs-toggle="dropdown" aria-expanded="false">
                             Sugar Level
@@ -310,7 +310,7 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
                         </ul>
                     </div>
 
-                    <div class="dropdown mb-2">
+                    <div class="dropdown mb-2" onclick="event.stopPropagation();">
                         <button class="btn btn-outline-dark dropdown-toggle w-100" type="button" 
                                 id="${iceSelectId}" data-bs-toggle="dropdown" aria-expanded="false">
                             Ice Level
@@ -323,9 +323,11 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
 
                             maincontainer.innerHTML += `
                 <div class="col-12 col-sm-6 col-md-4 col-lg-2">
-                    <div class="menu-item border p-3 rounded shadow text-center width-auto card-hover" style="cursor: pointer;">
+                    <div class="menu-item border p-3 rounded shadow text-center width-auto card-hover" 
+                         style="cursor: pointer;"
+                         onclick="showQuantityModal('${content.productID}', '${content.name} ${size.name}', '${size.price}', '${size.name}', '${sugarSelectId}', '${iceSelectId}')">
                         <img src="../assets/img/img-menu/${content.img}" alt="${content.name}" 
-                             class="img-fluid mb-2" style="max-height: 170px; min-height: 120px">
+                             class="img-fluid mb-2" style="max-height: 170px; min-height: 120px; pointer-events: none;">
                         <div class="lead menu-name fw-bold">${content.name}</div>
                         <div class="d-flex justify-content-center align-items-center gap-2 my-2">
                             <span class="lead fw-bold menu-price">₱${size.price}</span>
@@ -333,11 +335,6 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
                         </div>
                        
                         ${sugarIceDropdowns}
-
-                        <button class="btn btn-dark btn-sm mt-1"
-                            onclick="showQuantityModal('${content.productID}', '${content.name} ${size.name}', '${size.price}', '${size.name}', '${sugarSelectId}', '${iceSelectId}')">
-                            Add to Order
-                        </button>
                     </div>
                 </div>`;
                         });
@@ -348,6 +345,7 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
                         document.querySelectorAll(".dropdown-menu .dropdown-item").forEach(item => {
                             item.addEventListener("click", function (e) {
                                 e.preventDefault();
+                                e.stopPropagation(); // Prevent card click when selecting dropdown
                                 const btn = this.closest(".dropdown").querySelector("button");
                                 btn.textContent = this.textContent;
                                 btn.setAttribute("data-value", this.getAttribute("data-value"));
@@ -448,27 +446,38 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
                             total = data.total || 0;
                             document.getElementById("totalValue").innerHTML = total.toFixed(2);
 
+                            // Get the Order Now button
+                            const orderButton = document.querySelector('.btn-dark-order');
+
                             if (data.cart && data.cart.length > 0) {
+                                // Enable button when cart has items
+                                if (orderButton) {
+                                    orderButton.disabled = false;
+                                    orderButton.style.opacity = '1';
+                                    orderButton.style.cursor = 'pointer';
+                                }
+
                                 data.cart.forEach(item => {
-                                    const sugarText = item.sugarLevel ? ` | ${item.sugarLevel}% Sugar` : '';
+                                    const sugarText = item.sugarLevel ? ` | ${item.sugarLevel} Sugar` : '';
                                     const iceText = item.iceLevel ? ` | ${item.iceLevel}` : '';
 
                                     receiptContainer.innerHTML += `
-                    <div class="d-flex flex-row align-items-center mb-1 receipt-item">
-  <div class="flex-grow-1 item-name">
-    <small>
-      <span style="font-weight: bold;">
-        ${item.productName} | ${item.quantity}x
-      </span>
-      ${sugarText}${iceText}
-    </small>
-  </div>
-  <div class="item-price" style="margin-left: 15px;">
-    <small>₱ ${item.totalPrice.toFixed(2)}</small>
-  </div>
+                    <div class="d-flex flex-row justify-content-between align-items-center mb-1 receipt-item">
+                        <div class="flex-grow-1 item-name">
+                            <small><span style="font-weight: bold;">${item.productName} | ${item.quantity}x</span>${sugarText}${iceText}</small>
+                        </div>
+                        <div class="item-price">
+                            <small>₱ ${item.totalPrice.toFixed(2)}</small>
+                        </div>
                     </div>`;
-
                                 });
+                            } else {
+                                // Disable button when cart is empty
+                                if (orderButton) {
+                                    orderButton.disabled = true;
+                                    orderButton.style.opacity = '0.5';
+                                    orderButton.style.cursor = 'not-allowed';
+                                }
                             }
                         })
                         .catch(error => {
@@ -514,23 +523,16 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
                             summaryList.innerHTML = '';
 
                             data.cart.forEach(item => {
-                                const sugarText = item.sugarLevel ? ` (${item.sugarLevel}% Sugar)` : '';
+                                const sugarText = item.sugarLevel ? ` (${item.sugarLevel} Sugar)` : '';
                                 const iceText = item.iceLevel ? ` (${item.iceLevel})` : '';
-                                summaryList.innerHTML += `
-                    <div class="mb-2 pb-2" style="border-bottom: 1px dashed #ddd;">
-                        <div class="d-flex justify-content-between">
-                            <span>${item.productName} (${item.quantity}x)${sugarText}${iceText}</span>
-                            <span class="fw-bold">₱${item.totalPrice.toFixed(2)}</span>
-                        </div>
-                    </div>`;
+                                summaryList.innerHTML += `<li>${item.productName} (${item.quantity}x)${sugarText}${iceText} - ₱${item.totalPrice.toFixed(2)}</li>`;
                             });
 
-                            // Display total with spacing
-                            summaryList.innerHTML += `
-                <div class="fw-bold mt-3 pt-2 d-flex justify-content-between" style="font-size: 1.1rem; color: var(--primary-color);">
-                    <span>TOTAL:</span>
-                    <span>₱${data.total.toFixed(2)}</span>
-                </div>`;
+                            const paymentModeElement = document.getElementById('paymentModeInput');
+                            selectedPaymentMode = paymentModeElement ? paymentModeElement.value : 'Cash';
+
+                            summaryList.innerHTML += `<li class="fw-bold">Total: ₱${data.total.toFixed(2)}</li>`;
+                            summaryList.innerHTML += `<li class="fw-bold">Payment Mode: ${selectedPaymentMode}</li>`;
 
                             const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
                             modal.show();
