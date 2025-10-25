@@ -145,7 +145,7 @@
                             CANCEL
                         </button>
 
-                        <button type="submit" class="btn fw-bold px-4 py-2" style="
+                        <button type="submit" id="refresh" class="btn fw-bold px-4 py-2" style="
                         background: var(--text-color-dark); 
                         color: var(--text-color-light); 
                         border: none;
@@ -226,30 +226,53 @@
 </style>
 
 <script>
+document.getElementById('refresh').addEventListener('click', function () {
+    setTimeout(() => {
+        location.reload();
+    }, 800); 
+});
+</script>
+
+<script>
+    // NEW JS HERE 
     document.addEventListener('DOMContentLoaded', function () {
         const availabilityToggle = document.getElementById('availabilityToggle');
         const availabilityStatus = document.getElementById('availabilityStatus');
+        const availabilityToggleLabel = document.querySelector('.availability-toggle');
         let currentProductId = null;
 
-        // When modal opens, get the product ID from the button that triggered it
+        // When modal opens
         const editModal = document.getElementById('editModal');
         editModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget; // element that triggered modal
+            const button = event.relatedTarget;
             currentProductId = button.getAttribute('data-id');
-
-            // Set toggle based on product availability
             const isAvailable = button.getAttribute('data-available') === '1';
+            const possibleCount = button.closest('.menu-item')
+                .querySelector('.menu-stock').textContent.match(/\d+/)[0];
+
+            // Set initial toggle + status
             availabilityToggle.checked = isAvailable;
             updateAvailabilityStatus(isAvailable);
+
+            // Hide toggle if stock = 0
+            if (parseInt(possibleCount) === 0) {
+                availabilityToggleLabel.style.display = 'none';
+                availabilityStatus.textContent = 'Unavailable (No Stock)';
+                availabilityStatus.className = 'status-badge status-unavailable';
+
+                // Auto-save as "No" in DB if not already
+                updateProductAvailability(currentProductId, 'No');
+            } else {
+                availabilityToggleLabel.style.display = 'inline-block';
+            }
         });
 
-        // Toggle availability
+        // Handle toggle change
         availabilityToggle.addEventListener('change', function () {
             const isChecked = this.checked;
             updateAvailabilityStatus(isChecked);
-
             if (currentProductId) {
-                updateProductAvailability(currentProductId, isChecked ? 1 : 0);
+                updateProductAvailability(currentProductId, isChecked ? 'Yes' : 'No');
             }
         });
 
@@ -258,21 +281,20 @@
             availabilityStatus.className = 'status-badge ' + (isAvailable ? 'status-available' : 'status-unavailable');
         }
 
-        function updateProductAvailability(productId, newAvailability) {
-            fetch('menu-management.php', {
+        function updateProductAvailability(productId, availabilityValue) {
+            fetch('../assets/menu-availability.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `btnToggleAvailability=1&productID=${productId}&newAvailability=${newAvailability}`
+                body: `btnToggleAvailability=1&productID=${productId}&newAvailability=${availabilityValue}`
             })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Update product card outside modal
                         const productCard = document.querySelector(`.edit-btn[data-id="${productId}"]`).closest('.menu-item');
                         const badge = productCard.querySelector('.status-badge');
                         const editBtn = document.querySelector(`.edit-btn[data-id="${productId}"]`);
 
-                        if (newAvailability == 1) {
+                        if (availabilityValue === 'Yes') {
                             productCard.classList.remove('unavailable');
                             badge.textContent = 'Available';
                             badge.className = 'status-badge status-available';
@@ -284,7 +306,6 @@
                             if (editBtn) editBtn.setAttribute('data-available', '0');
                         }
 
-                        // Optional: show toast feedback
                         const toastEl = document.getElementById('updateToast');
                         if (toastEl) {
                             const bsToast = new bootstrap.Toast(toastEl);
@@ -292,19 +313,12 @@
                         }
                     } else {
                         console.error('Failed to update availability:', data.message);
-                        // Revert toggle if failed
-                        availabilityToggle.checked = !availabilityToggle.checked;
-                        updateAvailabilityStatus(!availabilityToggle.checked);
                     }
                 })
-                .catch(err => {
-                    console.error('Error updating availability:', err);
-                    // Revert toggle on error
-                    availabilityToggle.checked = !availabilityToggle.checked;
-                    updateAvailabilityStatus(!availabilityToggle.checked);
-                });
+                .catch(err => console.error('Error updating availability:', err));
         }
     });
+
 
 
 </script>
