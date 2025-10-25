@@ -282,6 +282,28 @@ document.addEventListener("DOMContentLoaded", function () {
       .then(resp => {
         if (resp.success) {
           new bootstrap.Toast(document.getElementById("updateToast")).show();
+
+          fetch("../assets/menu-availability.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: `productID=${productId}`
+          })
+            .then(res => res.json())
+            .then(availResp => {
+              if (availResp.success && currentEditingCard) {
+                const availEl = currentEditingCard.querySelector(".text-muted");
+                if (availEl)
+                  availEl.textContent = `Available: ${availResp.product.availableQuantity} pcs`;
+
+                const statusEl = currentEditingCard.querySelector(".availability-status");
+                if (statusEl)
+                  statusEl.textContent = availResp.product.isAvailable === "Yes"
+                    ? "Available"
+                    : "Unavailable";
+              }
+            })
+            .catch(err => console.error("Availability update error:", err));
+
           if (currentEditingCard) {
             currentEditingCard.querySelector(".menu-name").textContent = name;
             currentEditingCard.querySelector(".menu-price").textContent = `₱${price}`;
