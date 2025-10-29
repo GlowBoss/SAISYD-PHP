@@ -41,9 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// -----------------------------
-// ALLOWED UNITS MAP + HELPERS
-// -----------------------------
 const allowedUnits = {
   "g": ["g", "kg", "oz"],
   "kg": ["kg", "g"],
@@ -56,6 +53,21 @@ const allowedUnits = {
   "pcs": ["pcs", "box", "pack"],
   "box": ["box", "pcs"],
   "pack": ["pack", "pcs"]
+};
+
+// readable labels (only for display)
+const unitLabels = {
+  "g": "g (grams)",
+  "kg": "kg (kilograms)",
+  "oz": "oz (ounces)",
+  "ml": "ml (milliliters)",
+  "l": "L (liters)",
+  "pump": "pump (pumps)",
+  "tbsp": "tbsp (tablespoons)",
+  "tsp": "tsp (teaspoons)",
+  "pcs": "pcs (pieces)",
+  "box": "box (boxes)",
+  "pack": "pack (packs)"
 };
 
 function getConvertibleUnits(baseUnit) {
@@ -81,8 +93,8 @@ function enforceAllowedUnitsForRow(rowEl, baseUnitCandidate, selectedUnitCandida
 
   allowed.forEach(u => {
     const opt = document.createElement("option");
-    opt.value = u;
-    opt.textContent = u === "l" ? "L" : u;
+    opt.value = u; // only saves short code
+    opt.textContent = unitLabels[u] || u; // shows readable label
     if (selected && selected === u.toLowerCase()) opt.selected = true;
     selectEl.appendChild(opt);
   });
@@ -282,6 +294,28 @@ document.addEventListener("DOMContentLoaded", function () {
       .then(resp => {
         if (resp.success) {
           new bootstrap.Toast(document.getElementById("updateToast")).show();
+
+          fetch("../assets/menu-availability.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: `productID=${productId}`
+          })
+            .then(res => res.json())
+            .then(availResp => {
+              if (availResp.success && currentEditingCard) {
+                const availEl = currentEditingCard.querySelector(".text-muted");
+                if (availEl)
+                  availEl.textContent = `Available: ${availResp.product.availableQuantity} pcs`;
+
+                const statusEl = currentEditingCard.querySelector(".availability-status");
+                if (statusEl)
+                  statusEl.textContent = availResp.product.isAvailable === "Yes"
+                    ? "Available"
+                    : "Unavailable";
+              }
+            })
+            .catch(err => console.error("Availability update error:", err));
+
           if (currentEditingCard) {
             currentEditingCard.querySelector(".menu-name").textContent = name;
             currentEditingCard.querySelector(".menu-price").textContent = `₱${price}`;
