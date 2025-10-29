@@ -48,7 +48,6 @@
   font-family: var(--primaryFont);
   line-height: 1.2;
   font-size: clamp(1rem, 2.5vw, 1.25rem);
-  /* 2-line ellipsis */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -185,13 +184,12 @@
   color: #4b2e2e;
   margin-top: clamp(6px, 1.5vw, 10px);
   line-height: 1.3;
-  /* 2-line ellipsis */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-height: 2.6em; /* Maintains consistent height */
+  min-height: 2.6em;
 }
 
 /* Price styling */
@@ -298,17 +296,41 @@
   color: var(--text-color-dark);
 }
 
-/* Custom Select Dropdown - More Responsive */
+/* ===== UPDATED RESPONSIVE CUSTOM SELECT DROPDOWN ===== */
 .custom-select-wrapper {
-  font-size: clamp(0.85rem, 2vw, 1rem) !important;
-  padding: clamp(6px, 1.5vw, 10px) clamp(12px, 2.5vw, 16px) !important;
-  gap: clamp(6px, 1.5vw, 10px) !important;
+  display: flex;
+  align-items: center;
+  gap: clamp(6px, 1.5vw, 12px);
+  padding: clamp(8px, 1.5vw, 12px) clamp(12px, 2.5vw, 18px);
+  border-radius: 50px;
+  border: 1px solid var(--primary-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-family: var(--primaryFont);
+  font-weight: 500;
+  color: var(--text-color-dark);
+  width: fit-content;
+  max-width: 100%;
+}
+
+.filter-icon {
+  color: var(--text-color-dark);
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  flex-shrink: 0;
+}
+
+.sort-label {
+  margin: 0;
+  font-weight: 600;
+  font-size: clamp(0.85rem, 2vw, 1rem);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .custom-select {
   position: relative;
   display: inline-block;
-  min-width: clamp(140px, 25vw, 160px);
+  min-width: clamp(120px, 25vw, 180px);
+  max-width: 100%;
   font-family: var(--primaryFont);
   font-weight: 600;
   color: var(--text-color-dark);
@@ -319,24 +341,26 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: clamp(4px, 1vw, 6px) clamp(8px, 1.5vw, 10px);
+  gap: clamp(4px, 1vw, 8px);
+  padding: clamp(4px, 1vw, 6px) clamp(6px, 1.5vw, 10px);
   border-radius: clamp(4px, 1vw, 6px);
   background: transparent;
   line-height: 1.2;
-  white-space: nowrap;
-  font-size: clamp(0.85rem, 1.8vw, 0.95rem);
+  font-size: clamp(0.8rem, 1.8vw, 0.95rem);
 }
 
 .custom-select .selected-text {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
+  min-width: 0;
 }
 
 .custom-select .dropdown-icon {
   flex-shrink: 0;
-  margin-left: clamp(6px, 1.5vw, 8px);
-  font-size: clamp(0.8rem, 1.5vw, 0.9rem);
+  margin-left: clamp(4px, 1vw, 6px);
+  font-size: clamp(0.75rem, 1.5vw, 0.85rem);
   transition: transform 0.2s ease;
 }
 
@@ -351,6 +375,9 @@
   top: 110%;
   left: 0;
   right: 0;
+  min-width: 100%;
+  width: max-content;
+  max-width: 280px;
   border: 1px solid var(--text-color-dark);
   border-radius: clamp(6px, 1.5vw, 8px);
   background: white;
@@ -358,12 +385,10 @@
   z-index: 99;
   transform: translateY(-5px);
   transition: opacity 0.25s ease, transform 0.25s ease;
-  max-width: 100%;
 }
 
 .custom-select .options div {
   transition: all 0.2s ease;
-  white-space: nowrap;
 }
 
 .custom-select .options div:hover {
@@ -381,13 +406,68 @@
   display: block;
   text-decoration: none;
   color: inherit;
-  padding: clamp(6px, 1.5vw, 8px) clamp(8px, 2vw, 10px);
-  font-size: clamp(0.85rem, 1.8vw, 0.95rem);
+  padding: clamp(8px, 1.5vw, 10px) clamp(10px, 2vw, 14px);
+  font-size: clamp(0.8rem, 1.8vw, 0.9rem);
+  white-space: nowrap;
 }
 
 .custom-select .options div a:hover {
   background: var(--btn-hover1);
   color: var(--text-color-light);
+}
+
+/* Mobile responsiveness for sort dropdown */
+@media (max-width: 576px) {
+  .custom-select-wrapper {
+    padding: 8px 12px;
+    gap: 6px;
+  }
+
+  .sort-label {
+    font-size: 0.8rem;
+  }
+
+  .custom-select {
+    min-width: 110px;
+  }
+
+  .custom-select .selected {
+    padding: 4px 6px;
+    font-size: 0.75rem;
+  }
+
+  .custom-select .options {
+    max-width: 200px;
+    font-size: 0.8rem;
+  }
+
+  .custom-select .options div a {
+    padding: 8px 10px;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .custom-select-wrapper {
+    padding: 6px 10px;
+  }
+
+  .sort-label {
+    font-size: 0.75rem;
+  }
+
+  .custom-select {
+    min-width: 100px;
+  }
+
+  .custom-select .selected {
+    font-size: 0.7rem;
+  }
+
+  .custom-select .options div a {
+    font-size: 0.7rem;
+    padding: 6px 8px;
+  }
 }
 
 body {
@@ -411,15 +491,6 @@ body {
 
   #productGrid .col:nth-last-child(-n+2) .menu-item {
     margin-bottom: 30px;
-  }
-
-  .custom-select {
-    min-width: 120px;
-  }
-
-  .custom-select-wrapper {
-    flex-wrap: wrap;
-    justify-content: center;
   }
 }
 
@@ -494,19 +565,16 @@ body.modal-blur-active .modal {
   filter: none;
 }
 
-/* Alternative: Blur specific sections only */
 .blur-background {
   filter: blur(8px);
   transition: filter 0.3s ease;
   pointer-events: none;
 }
 
-/* Prevent scrolling when modal is open */
 body.modal-open {
   overflow: hidden;
 }
 
-/* Enhanced modal backdrop */
 .modal-backdrop.show {
   backdrop-filter: blur(5px);
   background-color: rgba(0, 0, 0, 0.6);

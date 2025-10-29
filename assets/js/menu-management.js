@@ -100,6 +100,16 @@ function enforceAllowedUnitsForRow(rowEl, baseUnitCandidate, selectedUnitCandida
   });
 
   $(selectEl).data("correct-unit", baseUnit);
+  
+  // DISABLE THE UNIT DROPDOWN IN EDIT MODAL
+  const editContainer = document.getElementById('edit-ingredients-container');
+  if (editContainer && editContainer.contains(rowEl)) {
+    selectEl.disabled = true;
+    selectEl.style.backgroundColor = '#e9ecef';
+    selectEl.style.cursor = 'not-allowed';
+    selectEl.style.opacity = '0.6';
+    selectEl.style.pointerEvents = 'none';
+  }
 }
 
 // -----------------------------
@@ -202,6 +212,18 @@ function initIngredientContainer(containerId, addBtnId) {
       const newRow = createIngredientRow();
       container.appendChild(newRow);
       initAutocompleteForRow(newRow);
+      
+      // If in edit modal, disable the unit dropdown
+      if (containerId === 'edit-ingredients-container') {
+        const unitSelect = newRow.querySelector('.measurement-select');
+        if (unitSelect) {
+          unitSelect.disabled = true;
+          unitSelect.style.backgroundColor = '#e9ecef';
+          unitSelect.style.cursor = 'not-allowed';
+          unitSelect.style.opacity = '0.6';
+          unitSelect.style.pointerEvents = 'none';
+        }
+      }
     });
 
     container.addEventListener("click", (e) => {
@@ -267,6 +289,13 @@ document.addEventListener("DOMContentLoaded", function () {
   document.querySelector("#editModal form").addEventListener("submit", function (e) {
     e.preventDefault();
     const form = this;
+
+    // RE-ENABLE UNIT DROPDOWNS BEFORE SUBMIT
+    const editContainer = document.getElementById('edit-ingredients-container');
+    const unitSelects = editContainer.querySelectorAll('select[name="ingredient_unit[]"]');
+    unitSelects.forEach(select => {
+      select.disabled = false;
+    });
 
     const productId = form.product_id.value;
     const name = form.item_name.value.trim();

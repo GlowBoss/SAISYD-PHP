@@ -48,7 +48,7 @@
                                     }
                                     ?>
                                 </select>
-                            </div>
+                            </div>  
 
                             <!-- Availability Toggle Section -->
                             <div class="mb-3">
@@ -234,7 +234,7 @@ document.getElementById('refresh').addEventListener('click', function () {
 </script>
 
 <script>
-    // NEW JS HERE 
+    // Availability Toggle Logic
     document.addEventListener('DOMContentLoaded', function () {
         const availabilityToggle = document.getElementById('availabilityToggle');
         const availabilityStatus = document.getElementById('availabilityStatus');
@@ -318,7 +318,50 @@ document.getElementById('refresh').addEventListener('click', function () {
                 .catch(err => console.error('Error updating availability:', err));
         }
     });
+</script>
 
-
-
+<script>
+    // Disable Unit Dropdowns but keep them in form submission
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('edit-ingredients-container');
+        
+        // Function to disable unit dropdowns
+        function disableUnitDropdowns() {
+            const unitSelects = container.querySelectorAll('select[name="unit[]"]');
+            unitSelects.forEach(select => {
+                select.disabled = true;
+                select.style.backgroundColor = '#e9ecef';
+                select.style.cursor = 'not-allowed';
+                select.style.opacity = '0.6';
+                select.style.pointerEvents = 'none';
+                // Also disable via attribute
+                select.setAttribute('disabled', 'disabled');
+            });
+        }
+        
+        // Watch for new ingredients being added
+        const observer = new MutationObserver(function() {
+            disableUnitDropdowns();
+        });
+        
+        observer.observe(container, {
+            childList: true,
+            subtree: true
+        });
+        
+        // Initial disable on modal open
+        const editModal = document.getElementById('editModal');
+        editModal.addEventListener('show.bs.modal', function() {
+            setTimeout(disableUnitDropdowns, 200);
+        });
+        
+        // Re-enable before form submit para ma-include sa POST data
+        document.getElementById('editItemForm').addEventListener('submit', function(e) {
+            const unitSelects = container.querySelectorAll('select[name="unit[]"]');
+            unitSelects.forEach(select => {
+                select.disabled = false;
+                select.removeAttribute('disabled');
+            });
+        });
+    });
 </script>
