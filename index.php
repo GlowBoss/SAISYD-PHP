@@ -1,6 +1,6 @@
 <?php
 include 'assets/connect.php';
-include 'assets/track_visits.php'; 
+include 'assets/track_visits.php';
 
 
 // Function to get cart item count
@@ -444,7 +444,7 @@ function getCartItemCount()
             <!-- ABOUT US -->
             <section id="about" class="about-us-section py-5 animate__animated animate__fadeIn wow"
                 data-wow-delay="0.1s"
-                style="background-image: url('assets/img/sampleImage9.jpg'); background-size: cover; background-position: center;">
+                style="background-image: url('assets/img/samplebg3.jpg'); background-size: cover; background-position: center;">
                 <div class="container">
                     <div class="row align-items-center">
                         <!-- SPAGHETTI -->
@@ -618,9 +618,9 @@ function getCartItemCount()
             </div>
 
             <!-- LOCATION -->
-            <section id="location" class="location-section py-4 mb-4">
+            <section id="location" class="location-section pt-4 pb-5">
                 <div class="container">
-                    <div class="heading2 heading h3 mb-4 text-center animate__animated animate__fadeInDown wow">
+                    <div class="heading2 heading h3 mb-3 text-center animate__animated animate__fadeInDown wow">
                         LOCATION
                     </div>
 
@@ -634,53 +634,63 @@ function getCartItemCount()
 
                     <!-- Suplang Branch -->
                     <div id="branch-suplang" class="branch-content animate__animated animate__fadeInUp wow">
-                        <div class="row align-items-stretch gy-4">
-                            <div class="col-lg-5 h-50">
-                                <div class="h-100">
+                        <div class="row g-4">
+                            <!-- Branch Image -->
+                            <div class="col-lg-5">
+                                <div class="location-img-wrapper">
                                     <img src="assets/img/sampleImage5.jpg" alt="Suplang Branch" class="location-img">
                                 </div>
                             </div>
+
+                            <!-- Branch Details -->
                             <div class="col-lg-7">
-                                <div class="branch-title">Brgy. Suplang</div>
-                                <div class="info-text">
-                                    <p class="lead location-text">
-                                        Sitio Mistica Purok 5<br>Tanauan City Batangas.<br>Located at AEJ Gamefarm
-                                    </p>
-                                </div>
+                                <div class="branch-details-card">
+                                    <h3 class="branch-title mb-3">Brgy. Suplang</h3>
 
-                                <!-- Toggle Button for Mobile -->
-                                <div class="d-md-none text-center my-4">
-                                    <button id="toggleSuplangBtn" class="btn btn-location" type="button"
-                                        data-bs-toggle="collapse" data-bs-target="#suplangDetails" aria-expanded="false"
-                                        aria-controls="suplangDetails">
-                                        View More
-                                    </button>
-                                </div>
-
-                                <!-- Collapsible Content -->
-                                <div class="row collapse d-md-flex" id="suplangDetails">
-                                    <div class="col-md-6 mb-3 mb-md-0">
-                                        <div class="map-card">
-                                            <img src="assets/img/sampleImage7.jpg" alt="Map" class="img-fluid rounded">
-                                        </div>
+                                    <div class="branch-address mb-4">
+                                        <i class="fas fa-map-marker-alt me-2"></i>
+                                        <span>Sitio Mistica Purok 5, Tanauan City Batangas<br>
+                                            <small class="text-muted">Located at AEJ Gamefarm</small></span>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="hours-box text-center">
-                                            <h5 class="subheading3">Hours</h5>
-                                            <div class="hours-line-box d-flex flex-column">
-                                                <div class="d-flex justify-content-between">
-                                                    <strong>Mon – Sat:</strong>
-                                                    <span>10am - 10pm</span>
+
+                                    <div class="row g-3">
+                                        <!-- Hours Card -->
+                                        <div class="col-md-6">
+                                            <div class="info-card hours-card">
+                                                <div class="info-card-icon">
+                                                    <i class="fas fa-clock"></i>
                                                 </div>
-                                                <div class="d-flex justify-content-between">
-                                                    <strong>Sunday:</strong>
-                                                    <span>10am - 10pm</span>
+                                                <h5 class="info-card-title">Operating Hours</h5>
+                                                <div class="hours-details">
+                                                    <div class="hour-row">
+                                                        <span class="day">Monday - Sunday</span>
+                                                        <span class="time">12:00 NN - 8:00 PM</span>
+                                                    </div>
+                                                    <div class="hour-row closed">
+                                                        <span class="day">Every Tuesday</span>
+                                                        <span class="time">CLOSED</span>
+                                                    </div>
+
                                                 </div>
                                             </div>
-                                            <button class="btn-location mt-2"
-                                                onclick="window.open('https:maps.app.goo.gl/VSnnLPFNB5ofu9Ky8', '_blank')">
-                                                View Location
-                                            </button>
+                                        </div>
+
+                                        <!-- Map Card -->
+                                        <div class="col-md-6">
+                                            <div class="info-card map-card">
+                                                <div class="info-card-icon">
+                                                    <i class="fas fa-location-dot"></i>
+                                                </div>
+                                                <h5 class="info-card-title">Find Us</h5>
+                                                <div class="map-preview">
+                                                    <img src="assets/img/sampleImage7.jpg" alt="Map"
+                                                        class="img-fluid rounded mb-3">
+                                                </div>
+                                                <button class="btn-location w-100"
+                                                    onclick="window.open('https://maps.app.goo.gl/VSnnLPFNB5ofu9Ky8', '_blank')">
+                                                    <i class="fas fa-directions me-2"></i>Get Directions
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -690,51 +700,61 @@ function getCartItemCount()
 
                     <!-- Santor Branch -->
                     <div id="branch-santor" class="branch-content d-none animate__animated animate__fadeInUp wow">
-                        <div class="row align-items-stretch gy-4">
-                            <div class="col-lg-5 h-50">
-                                <div class="h-100">
+                        <div class="row g-4">
+                            <!-- Branch Image -->
+                            <div class="col-lg-5">
+                                <div class="location-img-wrapper">
                                     <img src="assets/img/sampleImage4.jpg" alt="Santor Branch" class="location-img">
                                 </div>
                             </div>
+
+                            <!-- Branch Details -->
                             <div class="col-lg-7">
-                                <div class="branch-title">Brgy. Santor</div>
-                                <div class="info-text">
-                                    <p class="lead location-text">Purok 2, Brgy. Santor<br>Tanauan City Batangas.</p>
-                                </div>
+                                <div class="branch-details-card">
+                                    <h3 class="branch-title mb-3">Brgy. Santor</h3>
 
-                                <!-- Toggle Button for Mobile -->
-                                <div class="d-md-none text-center my-3">
-                                    <button id="toggleSantorBtn" class="btn btn-location" type="button"
-                                        data-bs-toggle="collapse" data-bs-target="#santorDetails" aria-expanded="false"
-                                        aria-controls="santorDetails">
-                                        View More
-                                    </button>
-                                </div>
-
-                                <!-- Collapsible Content -->
-                                <div class="row collapse d-md-flex" id="santorDetails">
-                                    <div class="col-md-6 mb-3 mb-md-0">
-                                        <div class="map-card">
-                                            <img src="assets/img/sampleImage7.jpg" alt="Map" class="img-fluid rounded">
-                                        </div>
+                                    <div class="branch-address mb-4">
+                                        <i class="fas fa-map-marker-alt me-2"></i>
+                                        <span>Purok 2, Brgy. Santor, Tanauan City Batangas</span>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="hours-box text-center">
-                                            <h5 class="subheading3">Hours</h5>
-                                            <div class="hours-line-box d-flex flex-column">
-                                                <div class="d-flex justify-content-between">
-                                                    <strong>Mon – Sat:</strong>
-                                                    <span>11am - 9pm</span>
+
+                                    <div class="row g-3">
+                                        <!-- Hours Card -->
+                                        <div class="col-md-6">
+                                            <div class="info-card hours-card">
+                                                <div class="info-card-icon">
+                                                    <i class="fas fa-clock"></i>
                                                 </div>
-                                                <div class="d-flex justify-content-between">
-                                                    <strong>Sunday:</strong>
-                                                    <span>11am - 8pm</span>
+                                                <h5 class="info-card-title">Operating Hours</h5>
+                                                <div class="hours-details">
+                                                    <div class="hour-row">
+                                                        <span class="day">Open Daily</span>
+                                                        <span class="time">1:00 PM - 9:00 PM</span>
+                                                    </div>
+                                                </div>
+                                                <div class="open-badge">
+                                                    <i class="fas fa-check-circle me-1"></i>
+                                                    Open Every Day
                                                 </div>
                                             </div>
-                                            <button class="btn-location mt-2"
-                                                onclick="window.open('https://maps.app.goo.gl/pK8bs5HG3mU7m51AA', '_blank')">
-                                                View Location
-                                            </button>
+                                        </div>
+
+                                        <!-- Map Card -->
+                                        <div class="col-md-6">
+                                            <div class="info-card map-card">
+                                                <div class="info-card-icon">
+                                                    <i class="fas fa-location-dot"></i>
+                                                </div>
+                                                <h5 class="info-card-title">Find Us</h5>
+                                                <div class="map-preview">
+                                                    <img src="assets/img/sampleImage7.jpg" alt="Map"
+                                                        class="img-fluid rounded mb-3">
+                                                </div>
+                                                <button class="btn-location w-100"
+                                                    onclick="window.open('https://maps.app.goo.gl/pK8bs5HG3mU7m51AA', '_blank')">
+                                                    <i class="fas fa-directions me-2"></i>Get Directions
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -747,7 +767,7 @@ function getCartItemCount()
 
             <!-- SIMPLIFIED PAYMENT -->
             <section class="py-5 text-center simplified-payment-section position-relative"
-                style="background-image: url('assets/img/sampleImage8.jpg'); background-size: cover; background-position: center; color:var(--card-bg-color)">
+                style="background-image: url('assets/img/samplebg5.jpg'); background-size: cover; background-position: center; color:var(--card-bg-color)">
                 <div class="container position-relative z-2">
                     <h2 class="heading2 heading mb-5 animate__animated animate__fadeInDown wow" data-wow-delay="0.1s">
                         SIMPLIFIED PAYMENT</h2>
@@ -820,62 +840,90 @@ function getCartItemCount()
                     </div>
                 </div>
                 <div class="position-absolute top-0 start-0 w-100 h-100"
-                    style="background-color: rgba(0, 0, 0, 0.3); z-index: 1;"></div>
+                    style="background-color: rgba(0, 0, 0, 0.5); z-index: 1;"></div>
             </section>
 
-            <!-- MORE WAYS -->
-            <section class="py-5 text-center">
+            <!-- CONTACT & CONNECT SECTION - REPLACE the "Connect With Saisyd Café Online" section -->
+            <section id="contact" class="pt-5 pb-1 text-center">
                 <div class="container">
+                    <!-- Main Title -->
                     <h2 class="heading payment-h2 fw-bold animate__animated animate__fadeInDown wow"
                         data-wow-delay="0.1s">
-                        Connect With Saisyd Café Online
+                        Contact & Connect With Us
                     </h2>
                     <p class="lead payment-p animate__animated animate__fadeInUp wow" data-wow-delay="0.2s">
-                        Stay in the loop with our latest drinks, promos, and cozy café moments.
+                        Stay in the loop with our latest drinks, promos, and cozy café moments. Reach out anytime!
                     </p>
 
-                    <!-- Desktop View -->
-                    <div class="row justify-content-center mt-5 d-none d-md-flex">
-                        <div class="col-6 col-md-3 mb-4 animate__animated animate__fadeInUp wow" data-wow-delay="0.3s">
-                            <a href="https://www.instagram.com" target="_blank" class="social-circle instagram">
-                                <i class="fab fa-instagram fa-2x"></i>
-                            </a>
-                            <p class="lead more-p mt-3">Follow us on Instagram</p>
+                    <!-- Contact Info Cards -->
+                    <div class="row g-4 justify-content-center mt-4 mb-5">
+                        <!-- Phone Card -->
+                        <div class="col-lg-3 col-md-4 col-sm-6 animate__animated animate__fadeInUp wow"
+                            data-wow-delay="0.25s">
+                            <div class="contact-mini-card">
+                                <div class="contact-mini-icon">
+                                    <i class="bi bi-telephone-fill"></i>
+                                </div>
+                                <h6 class="fw-bold mt-3 mb-2"
+                                    style="font-family: var(--primaryFont); color: var(--text-color-dark);">Call Us</h6>
+                                <p class="small mb-1" style="color: var(--text-color-dark);">+63 912 345 6789</p>
+                                <p class="small mb-0" style="color: var(--text-color-dark);">+63 998 765 4321</p>
+                            </div>
                         </div>
-                        <div class="col-6 col-md-3 mb-4 animate__animated animate__fadeInUp wow" data-wow-delay="0.4s">
-                            <a href="https://www.facebook.com" target="_blank" class="social-circle facebook">
-                                <i class="fab fa-facebook-f fa-2x"></i>
-                            </a>
-                            <p class="lead more-p mt-3">Like us on Facebook</p>
-                        </div>
-                        <div class="col-6 col-md-3 mb-4 animate__animated animate__fadeInUp wow" data-wow-delay="0.5s">
-                            <a href="https://www.tiktok.com" target="_blank" class="social-circle tiktok">
-                                <i class="fab fa-tiktok fa-2x"></i>
-                            </a>
-                            <p class="lead more-p mt-3">Watch on TikTok</p>
-                        </div>
-                    </div>
 
-                    <!-- Mobile Carousel -->
-                    <div id="connectCarousel"
-                        class="carousel slide d-md-none mt-5 animate__animated animate__fadeInUp wow"
-                        data-bs-ride="carousel" data-wow-delay="0.3s">
-                        <div class="carousel-inner text-center">
-                            <div class="carousel-item active" data-bs-interval="5000">
+                        <!-- Email Card -->
+                        <div class="col-lg-3 col-md-4 col-sm-6 animate__animated animate__fadeInUp wow"
+                            data-wow-delay="0.3s">
+                            <div class="contact-mini-card">
+                                <div class="contact-mini-icon">
+                                    <i class="bi bi-envelope-fill"></i>
+                                </div>
+                                <h6 class="fw-bold mt-3 mb-2"
+                                    style="font-family: var(--primaryFont); color: var(--text-color-dark);">Email Us
+                                </h6>
+                                <p class="small mb-0" style="color: var(--text-color-dark);">saisydcafe@gmail.com</p>
+                            </div>
+                        </div>
+
+                        <!-- Location Card -->
+                        <div class="col-lg-3 col-md-4 col-sm-6 animate__animated animate__fadeInUp wow"
+                            data-wow-delay="0.35s">
+                            <div class="contact-mini-card">
+                                <div class="contact-mini-icon">
+                                    <i class="bi bi-geo-alt-fill"></i>
+                                </div>
+                                <h6 class="fw-bold mt-3 mb-2"
+                                    style="font-family: var(--primaryFont); color: var(--text-color-dark);">Visit Us
+                                </h6>
+                                <p class="small mb-1" style="color: var(--text-color-dark);"><strong>Suplang:</strong>
+                                    Tanauan City</p>
+                                <p class="small mb-0" style="color: var(--text-color-dark);"><strong>Santor:</strong>
+                                    Tanauan City</p>
+                            </div>
+                        </div>
+
+
+
+                        <!-- Social Media Section (Desktop View) -->
+                        <div class="row justify-content-center mt-5 d-none d-md-flex">
+                            <div class="col-6 col-md-3 mb-4 animate__animated animate__fadeInUp wow"
+                                data-wow-delay="0.45s">
                                 <a href="https://www.instagram.com/saisydcafe?utm_source=ig_web_button_share_sheet&igsh=MTY4eXNldmtzejk3NA=="
                                     target="_blank" class="social-circle instagram">
                                     <i class="fab fa-instagram fa-2x"></i>
                                 </a>
                                 <p class="lead more-p mt-3">Follow us on Instagram</p>
                             </div>
-                            <div class="carousel-item" data-bs-interval="4000">
+                            <div class="col-6 col-md-3 mb-4 animate__animated animate__fadeInUp wow"
+                                data-wow-delay="0.5s">
                                 <a href="https://www.facebook.com/saisydcafethehiddenfarm" target="_blank"
                                     class="social-circle facebook">
                                     <i class="fab fa-facebook-f fa-2x"></i>
                                 </a>
                                 <p class="lead more-p mt-3">Like us on Facebook</p>
                             </div>
-                            <div class="carousel-item" data-bs-interval="4000">
+                            <div class="col-6 col-md-3 mb-4 animate__animated animate__fadeInUp wow"
+                                data-wow-delay="0.55s">
                                 <a href="https://www.tiktok.com/@saisyd.cafe?is_from_webapp=1&sender_device=pc"
                                     target="_blank" class="social-circle tiktok">
                                     <i class="fab fa-tiktok fa-2x"></i>
@@ -884,17 +932,45 @@ function getCartItemCount()
                             </div>
                         </div>
 
-                        <!-- Carousel Controls -->
-                        <button class="carousel-control-prev" type="button" data-bs-target="#connectCarousel"
-                            data-bs-slide="prev" style="opacity: 0; pointer-events: auto;">
-                            <span class="carousel-control-prev-icon"></span>
-                        </button>
-                        <button class="carousel-control-next" type="button" data-bs-target="#connectCarousel"
-                            data-bs-slide="next" style="opacity: 0; pointer-events: auto;">
-                            <span class="carousel-control-next-icon"></span>
-                        </button>
+                        <!-- Social Media Section (Mobile Carousel) -->
+                        <div id="connectCarousel"
+                            class="carousel slide d-md-none mt-5 animate__animated animate__fadeInUp wow"
+                            data-bs-ride="carousel" data-wow-delay="0.45s">
+                            <div class="carousel-inner text-center">
+                                <div class="carousel-item active" data-bs-interval="5000">
+                                    <a href="https://www.instagram.com/saisydcafe?utm_source=ig_web_button_share_sheet&igsh=MTY4eXNldmtzejk3NA=="
+                                        target="_blank" class="social-circle instagram">
+                                        <i class="fab fa-instagram fa-2x"></i>
+                                    </a>
+                                    <p class="lead more-p mt-3">Follow us on Instagram</p>
+                                </div>
+                                <div class="carousel-item" data-bs-interval="4000">
+                                    <a href="https://www.facebook.com/saisydcafethehiddenfarm" target="_blank"
+                                        class="social-circle facebook">
+                                        <i class="fab fa-facebook-f fa-2x"></i>
+                                    </a>
+                                    <p class="lead more-p mt-3">Like us on Facebook</p>
+                                </div>
+                                <div class="carousel-item" data-bs-interval="4000">
+                                    <a href="https://www.tiktok.com/@saisyd.cafe?is_from_webapp=1&sender_device=pc"
+                                        target="_blank" class="social-circle tiktok">
+                                        <i class="fab fa-tiktok fa-2x"></i>
+                                    </a>
+                                    <p class="lead more-p mt-3">Watch on TikTok</p>
+                                </div>
+                            </div>
+
+                            <!-- Carousel Controls -->
+                            <button class="carousel-control-prev" type="button" data-bs-target="#connectCarousel"
+                                data-bs-slide="prev" style="opacity: 0; pointer-events: auto;">
+                                <span class="carousel-control-prev-icon"></span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#connectCarousel"
+                                data-bs-slide="next" style="opacity: 0; pointer-events: auto;">
+                                <span class="carousel-control-next-icon"></span>
+                            </button>
+                        </div>
                     </div>
-                </div>
             </section>
 
             <div class="px-5 animate__animated animate__fadeIn wow" data-wow-delay="0.2s">
@@ -903,160 +979,49 @@ function getCartItemCount()
                 </div>
             </div>
 
-            <!-- Feedback Section -->
+            <!-- Google Reviews & Feedback Section -->
             <section class="py-5 position-relative text-center mt-5"
-                style="background: url('assets/img/sampleImage9.jpg') center/cover no-repeat; color:var(--card-bg-color);">
+                style="background: url('assets/img/samplebg.jpg') center/cover no-repeat; color:var(--card-bg-color);">
                 <div class="container position-relative z-2">
-                    <h2 class="heading2 heading fw-bold mb-5 animate__animated animate__fadeInDown wow"
+                    <h2 class="heading2 heading fw-bold mb-4 animate__animated animate__fadeInDown wow"
                         data-wow-delay="0.1s">
-                        Feedback
+                        What Our Customers Say
                     </h2>
+                    <p class="lead mb-5 animate__animated animate__fadeInUp wow" data-wow-delay="0.15s">
+                        Real reviews from our Google Business Profile
+                    </p>
 
-                    <!-- Desktop View -->
-                    <div class="row justify-content-center g-3 d-none d-md-flex">
-                        <div class="col-md-4 animate__animated animate__fadeIn wow" data-wow-delay="0.2s">
-                            <div class="p-3 rounded-4 shadow"
-                                style="background-color: var(--gray); color: var(--text-color-light); height: 170px;">
-                                <div class="d-flex align-items-center mb-3">
-                                    <img src="assets/img/louis.jpg" alt="User" class="rounded-circle me-3"
-                                        style="width: 48px; height: 48px; object-fit: cover;">
-                                    <div>
-                                        <h6 class="mb-0 fw-bold"
-                                            style="text-align: justify; font-size: var(--h6); font-family: var(--primaryFont);">
-                                            Louis Santos </h6>
-                                    </div>
+                    <!-- Google Reviews Embed -->
+                    <div class="row justify-content-center animate__animated animate__fadeInUp wow"
+                        data-wow-delay="0.2s">
+                        <div class="col-lg-10">
+                            <div class="google-reviews-container p-4 rounded-4 shadow"
+                                style="background-color: rgba(255, 255, 255, 0.95); min-height: 400px;">
+
+                                <!-- Elfsight Widget  -->
+
+                                <div class="elfsight-wrapper">
+
+                                    <script
+                                        src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.2.10/iframeResizer.min.js"></script>
+                                    <iframe onload="iFrameResize(this)" src="https://62bd0c75c9a34489b26278d71cf40cfe.elf.site"
+                                        style="border:none;width:100%;"></iframe>
                                 </div>
-                                <p class="mb-0"
-                                    style="text-align: justify; font-family: var(--primaryFont); font-size: var(--h6);">
-                                    Saisyd Café is my favorite spot to study and unwind. Their drinks never disappoint,
-                                    and
-                                    the cozy vibe always helps me focus.</p>
-                            </div>
-                        </div>
 
-                        <div class="col-md-4 animate__animated animate__fadeIn wow" data-wow-delay="0.3s">
-                            <div class="p-3 rounded-4 shadow"
-                                style="background-color: var(--gray); color: var(--text-color-light); height: 170px;">
-                                <div class="d-flex align-items-center mb-3">
-                                    <img src="assets/img/thea.jpg" alt="User" class="rounded-circle me-3"
-                                        style="width: 48px; height: 48px; object-fit: cover;">
-                                    <div>
-                                        <h6 class="mb-0 fw-bold"
-                                            style="text-align: justify; font-size: var(--h6); font-family: var(--primaryFont);">
-                                            Ma. Althea R Alberto</h6>
-                                    </div>
-                                </div>
-                                <p class="mb-0"
-                                    style="text-align: justify; font-family: var(--primaryFont); font-size: var(--h6);">
-                                    Saisyd Café makes the perfect matcha! It's my favorite spot to chill and
-                                    brainstorm
-                                    ideas with friends.</p>
-                            </div>
-                        </div>
-
-                        <div class="col-md-4 animate__animated animate__fadeIn wow" data-wow-delay="0.4s">
-                            <div class="p-3 rounded-4 shadow"
-                                style="background-color: var(--gray); color: var(--text-color-light); height: 170px;">
-                                <div class="d-flex align-items-center mb-3">
-                                    <img src="assets/img/brandon.jpg" alt="User" class="rounded-circle me-3"
-                                        style="width: 48px; height: 48px; object-fit: cover;">
-                                    <div>
-                                        <h6 class="mb-0 fw-bold"
-                                            style="text-align: justify; font-size: var(--h6); font-family: var(--primaryFont);">
-                                            Brandon Mauricio </h6>
-                                    </div>
-                                </div>
-                                <p class="mb-0"
-                                    style="text-align: justify; font-family: var(--primaryFont); font-size: var(--h6);">
-                                    Their coffee and the vibe always help me stay focused during hectic weeks.
-                                    Highly
-                                    recommended!</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Mobile Carousel -->
-                    <div id="feedbackCarousel" class="carousel slide d-md-none animate__animated animate__fadeInUp wow"
-                        data-wow-delay="0.2s" data-bs-ride="carousel">
-                        <div class="carousel-inner">
-                            <div class="carousel-item active" data-bs-interval="8000">
-                                <div class="p-3 rounded-4 shadow"
-                                    style="background-color: var(--gray); color: var(--text-color-light); height: 170px;">
-                                    <div class="d-flex align-items-center mb-3">
-                                        <img src="assets/img/louis.jpg" alt="User" class="rounded-circle me-3"
-                                            style="width: 48px; height: 48px; object-fit: cover;">
-                                        <div>
-                                            <h6 class="mb-0 fw-bold"
-                                                style="text-align: justify; font-size: var(--h6); font-family: var(--primaryFont);">
-                                                Louis Santos </h6>
-                                        </div>
-                                    </div>
-                                    <p class="mb-0"
-                                        style="text-align: justify; font-family: var(--primaryFont); font-size: var(--h6);">
-                                        Saisyd Café is my favorite spot to study and unwind. Their drinks never
-                                        disappoint,and the cozy vibe always helps me focus.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div class="carousel-item" data-bs-interval="8000">
-                                <div class="p-3 rounded-4 shadow"
-                                    style="background-color: var(--gray); color: var(--text-color-light); height: 170px;">
-                                    <div class="d-flex align-items-center mb-3">
-                                        <img src="assets/img/thea.jpg" alt="User" class="rounded-circle me-3"
-                                            style="width: 48px; height: 48px; object-fit: cover;">
-                                        <div>
-                                            <h6 class="mb-0 fw-bold"
-                                                style="text-align: justify; font-size: var(--h6); font-family: var(--primaryFont);">
-                                                Ma. Althea R Alberto </h6>
-                                        </div>
-                                    </div>
-                                    <p class="mb-0"
-                                        style="text-align: justify; font-family: var(--primaryFont); font-size: var(--h6);">
-                                        Saisyd Café makes the perfect matcha! It's my favorite spot to chill and
-                                        brainstorm
-                                        ideas with friends.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div class="carousel-item" data-bs-interval="8000">
-                                <div class="p-3 rounded-4 shadow"
-                                    style="background-color: var(--gray); color: var(--text-color-light); height: 170px;">
-                                    <div class="d-flex align-items-center mb-3">
-                                        <img src="assets/img/brandon.jpg" alt="User" class="rounded-circle me-3"
-                                            style="width: 48px; height: 48px; object-fit: cover;">
-                                        <div>
-                                            <h6 class="mb-0 fw-bold"
-                                                style="text-align: justify; font-size: var(--h6); font-family: var(--primaryFont);">
-                                                Brandon Mauricio
-                                            </h6>
-                                        </div>
-                                    </div>
-                                    <p class="mb-0"
-                                        style=" text-align: justify; font-family: var(--primaryFont); font-size: var(--h6);">
-                                        Their coffee and the vibe always help me stay focused during hectic weeks.
-                                        Highly
-                                        recommended!
-                                    </p>
+                                <!-- Link to Google Reviews -->
+                                <div class="text-center mt-3">
+                                    <a href="https://www.google.com/search?sca_esv=76b1d1510d0b1bcc&sxsrf=AE3TifNsCqtRWIRoVQcEkf13eogDNkSdQg:1760461641771&si=AMgyJEtREmoPL4P1I5IDCfuA8gybfVI2d5Uj7QMwYCZHKDZ-E8NeGm16Wf5iLjUdHkTC6DS7dvpne5IUFtWL0q84c6MYqJeUTT2YZx0qDLDT7Dmd8ZrVq4IeLzOJWkdelOfftPLAYP6fYBLuLSgoULKlATlYfig15Q%3D%3D&q=Saisyd+Caf%C3%A9:+The+Hidden+Farm+Reviews&sa=X&ved=2ahUKEwjJubHWlqSQAxX9b_UHHR4iCWYQ0bkNegQIIxAE&cshid=1760461720250268&biw=1745&bih=859&dpr=1.1"
+                                        target="_blank" class="btn btn-fill">
+                                        <i class="fab fa-google me-2"></i>Read All Reviews on Google
+                                    </a>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Controls -->
-                    <button class="carousel-control-prev" type="button" data-bs-target="#feedbackCarousel"
-                        data-bs-slide="prev" style="opacity: 0; pointer-events: auto;">
-                        <span class="carousel-control-prev-icon"></span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#feedbackCarousel"
-                        data-bs-slide="next" style="opacity: 0; pointer-events: auto;">
-                        <span class="carousel-control-next-icon"></span>
-                    </button>
                 </div>
 
                 <div class="position-absolute top-0 start-0 w-100 h-100"
-                    style="background-color: rgba(0, 0, 0, 0.5); z-index: 1;"></div>
+                    style="background-color: rgba(0, 0, 0, 0.6); z-index: 1;"></div>
             </section>
         </div>
     </div>
@@ -1177,7 +1142,7 @@ function getCartItemCount()
                     <ul class="list-unstyled">
                         <li><a href="#" class="text-dark text-decoration-none footer-link">About Serve It</a></li>
                         <li><a href="#" class="text-dark text-decoration-none footer-link">Help Center</a></li>
-                        <li><a href="#" class="text-dark text-decoration-none footer-link">Contact Us</a></li>
+                        <li><a href="#contact" class="text-dark text-decoration-none footer-link">Contact Us</a></li>
                     </ul>
                 </div>
                 <div class="col-lg-3 offset-lg-1">

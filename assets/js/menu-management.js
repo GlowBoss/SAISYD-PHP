@@ -1,7 +1,8 @@
 let currentEditingCard = null;
 
-
+// -----------------------------
 // IMAGE RESIZE
+// -----------------------------
 document.addEventListener('DOMContentLoaded', () => {
   const fileInput = document.getElementById('productImage');
   const finalSize = 1200;
@@ -14,18 +15,15 @@ document.addEventListener('DOMContentLoaded', () => {
     reader.onload = function (event) {
       const img = new Image();
       img.onload = function () {
-        // Create square canvas
         const canvas = document.createElement('canvas');
         canvas.width = finalSize;
         canvas.height = finalSize;
         const ctx = canvas.getContext('2d');
 
-        // Calculate scale to fill the square
         const scale = Math.max(finalSize / img.width, finalSize / img.height);
         const x = (finalSize - img.width * scale) / 2;
         const y = (finalSize - img.height * scale) / 2;
         ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
-
 
         canvas.toBlob(function (blob) {
           const resizedFile = new File([blob], file.name, {
@@ -35,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const dataTransfer = new DataTransfer();
           dataTransfer.items.add(resizedFile);
           fileInput.files = dataTransfer.files;
-        }, file.type, 0.9); // 90% quality
+        }, file.type, 0.9);
       };
       img.src = event.target.result;
     };
@@ -43,8 +41,70 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+const allowedUnits = {
+  "g": ["g", "kg", "oz"],
+  "kg": ["kg", "g"],
+  "oz": ["oz", "g"],
+  "ml": ["ml", "L", "pump", "tbsp", "tsp"],
+  "l": ["L", "ml"],
+  "pump": ["pump", "ml"],
+  "tbsp": ["tbsp", "ml"],
+  "tsp": ["tsp", "ml"],
+  "pcs": ["pcs", "box", "pack"],
+  "box": ["box", "pcs"],
+  "pack": ["pack", "pcs"]
+};
 
+// readable labels (only for display)
+const unitLabels = {
+  "g": "g (grams)",
+  "kg": "kg (kilograms)",
+  "oz": "oz (ounces)",
+  "ml": "ml (milliliters)",
+  "l": "L (liters)",
+  "pump": "pump (pumps)",
+  "tbsp": "tbsp (tablespoons)",
+  "tsp": "tsp (teaspoons)",
+  "pcs": "pcs (pieces)",
+  "box": "box (boxes)",
+  "pack": "pack (packs)"
+};
+
+function getConvertibleUnits(baseUnit) {
+  const normalized = baseUnit ? baseUnit.toLowerCase() : "";
+  return allowedUnits[normalized] || [baseUnit];
+}
+
+function enforceAllowedUnitsForRow(rowEl, baseUnitCandidate, selectedUnitCandidate) {
+  const selectEl = rowEl.querySelector('.measurement-select');
+  if (!selectEl) return;
+
+  const baseUnit = baseUnitCandidate ? baseUnitCandidate.toLowerCase() : "";
+  const allowed = getConvertibleUnits(baseUnit);
+
+  selectEl.innerHTML = "";
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.disabled = true;
+  placeholder.textContent = "Select Unit";
+  selectEl.appendChild(placeholder);
+
+  const selected = (selectedUnitCandidate || "").toLowerCase();
+
+  allowed.forEach(u => {
+    const opt = document.createElement("option");
+    opt.value = u; // only saves short code
+    opt.textContent = unitLabels[u] || u; // shows readable label
+    if (selected && selected === u.toLowerCase()) opt.selected = true;
+    selectEl.appendChild(opt);
+  });
+
+  $(selectEl).data("correct-unit", baseUnit);
+}
+
+// -----------------------------
 // CREATE INGREDIENT ROW
+// -----------------------------
 function createIngredientRow(name = "", qty = "", unit = "") {
   const row = document.createElement("div");
   row.classList.add("row", "g-2", "mb-2", "ingredient-row", "align-items-center");
@@ -99,7 +159,6 @@ function createIngredientRow(name = "", qty = "", unit = "") {
   return row;
 }
 
-
 // -----------------------------
 // AUTOCOMPLETE INIT
 // -----------------------------
@@ -111,8 +170,9 @@ function initAutocompleteForRow(row) {
     select: function (event, ui) {
       $(this).val(ui.item.label);
       $(this).siblings(".ingredient-id").val(ui.item.id);
-      $(this).closest(".ingredient-row").find(".measurement-select")
-        .data("correct-unit", ui.item.unit);
+      const rowEl = $(this).closest(".ingredient-row")[0];
+      const baseUnit = ui.item.unit || "";
+      enforceAllowedUnitsForRow(rowEl, baseUnit, "");
       return false;
     },
     change: function (event, ui) {
@@ -125,14 +185,12 @@ function initAutocompleteForRow(row) {
         });
         $(this).val("");
         $(this).siblings(".ingredient-id").val("");
-
       }
-
     }
   });
 }
 
-// ----------------------------
+// -----------------------------
 // INIT INGREDIENT CONTAINER
 // -----------------------------
 function initIngredientContainer(containerId, addBtnId) {
@@ -174,12 +232,10 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(data => {
           const product = data.product;
           const ingredients = data.ingredients;
-
           if (!product) return;
 
           const modal = document.getElementById("editModal");
           const form = modal.querySelector("form");
-
           form.product_id.value = product.productID;
           form.item_name.value = product.productName;
           form.menu_price.value = product.price;
@@ -191,14 +247,15 @@ document.addEventListener("DOMContentLoaded", function () {
           const editContainer = document.getElementById("edit-ingredients-container");
           editContainer.innerHTML = "";
 
-          // After creating row in edit modal
           ingredients.forEach((ing) => {
-            const row = createIngredientRow(ing.ingredientName, ing.requiredQuantity, ing.measurementUnit);
-            row.querySelector(".measurement-select").dataset.correctUnit = ing.measurementUnit;
+            const row = createIngredientRow(ing.ingredientName, ing.requiredQuantity, "");
+            row.querySelector(".ingredient-id").value = ing.ingredientID || "";
             editContainer.appendChild(row);
             initAutocompleteForRow(row);
+            const baseFromServer = ing.baseUnit || ing.unit || ing.measurementUnit || "";
+            const savedUnit = ing.measurementUnit || ing.unit || "";
+            enforceAllowedUnitsForRow(row, baseFromServer, savedUnit);
           });
-
         })
         .catch(err => console.error("Fetch error:", err));
     });
@@ -220,9 +277,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const ingredientQtys = Array.from(form.querySelectorAll('input[name="ingredient_qty[]"]')).map(i => i.value.trim());
     const ingredientUnits = Array.from(form.querySelectorAll('select[name="ingredient_unit[]"]')).map(i => i.value.trim());
 
-    const ingredients = ingredientNames.map((name, i) => ({
-      name, qty: ingredientQtys[i], unit: ingredientUnits[i]
-    }));
+    const ingredients = ingredientNames.map((name, i) => ({ name, qty: ingredientQtys[i], unit: ingredientUnits[i] }));
 
     const formData = new FormData();
     formData.append("productID", productId);
@@ -240,6 +295,27 @@ document.addEventListener("DOMContentLoaded", function () {
         if (resp.success) {
           new bootstrap.Toast(document.getElementById("updateToast")).show();
 
+          fetch("../assets/menu-availability.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: `productID=${productId}`
+          })
+            .then(res => res.json())
+            .then(availResp => {
+              if (availResp.success && currentEditingCard) {
+                const availEl = currentEditingCard.querySelector(".text-muted");
+                if (availEl)
+                  availEl.textContent = `Available: ${availResp.product.availableQuantity} pcs`;
+
+                const statusEl = currentEditingCard.querySelector(".availability-status");
+                if (statusEl)
+                  statusEl.textContent = availResp.product.isAvailable === "Yes"
+                    ? "Available"
+                    : "Unavailable";
+              }
+            })
+            .catch(err => console.error("Availability update error:", err));
+
           if (currentEditingCard) {
             currentEditingCard.querySelector(".menu-name").textContent = name;
             currentEditingCard.querySelector(".menu-price").textContent = `₱${price}`;
@@ -249,7 +325,6 @@ document.addEventListener("DOMContentLoaded", function () {
             if (availEl && resp.product && resp.product.availableQuantity !== undefined)
               availEl.textContent = `Available: ${resp.product.availableQuantity} pcs`;
           }
-
           bootstrap.Modal.getInstance(document.getElementById("editModal")).hide();
         } else {
           alert("Error updating product: " + resp.message);
@@ -298,47 +373,25 @@ document.addEventListener("DOMContentLoaded", function () {
       </div>
     `;
     document.getElementById("productGrid").insertAdjacentHTML("beforeend", productHTML);
-
-    // Reattach handlers for new elements
     document.querySelectorAll(".edit-btn").forEach(button => button.addEventListener("click", editButtonHandler));
     document.querySelectorAll(".delete-btn").forEach(button => button.addEventListener("click", deleteButtonHandler));
-
     bootstrap.Modal.getInstance(document.getElementById("confirmModal")).hide();
     form.reset();
   });
 
-  // -----------------------------
-  // HANDLERS FOR DYNAMIC ELEMENTS
-  // -----------------------------
   function editButtonHandler() {
     const productId = this.dataset.id;
     currentEditingCard = this.closest(".menu-item");
-    // Fetch and populate modal (handled above)
   }
 
   // -----------------------------
   // UNIT VALIDATION
   // -----------------------------
   $(document).on("change", ".measurement-select", function () {
-    const correctUnit = $(this).data("correct-unit"); // now always exists
+    const correctUnit = $(this).data("correct-unit");
     const chosenUnit = $(this).val();
     if (!correctUnit) return;
-
-    const allowedUnits = {
-      "g": ["g", "kg", "oz"],
-      "kg": ["kg", "g"],
-      "oz": ["oz", "g"],
-      "ml": ["ml", "L", "pump", "tbsp", "tsp"],
-      "L": ["L", "ml"],
-      "pump": ["pump", "ml"],
-      "tbsp": ["tbsp", "ml"],
-      "tsp": ["tsp", "ml"],
-      "pcs": ["pcs", "box", "pack"],
-      "box": ["box", "pcs"],
-      "pack": ["pack", "pcs"]
-    };
-
-    const validUnits = allowedUnits[correctUnit] || [correctUnit];
+    const validUnits = getConvertibleUnits(correctUnit);
     if (!validUnits.includes(chosenUnit)) {
       Swal.fire({
         icon: 'error',
@@ -355,16 +408,10 @@ document.addEventListener("DOMContentLoaded", function () {
     cancelBtn.toggle($(this).val().trim() !== "");
   });
 
-
   $(document).on("click", ".cancel-search", function () {
-    skipAutocompleteChange = true; // set flag
     const input = $(this).siblings(".ingredient-search");
-    input.val(""); // clear input
-    input.siblings(".ingredient-id").val(""); // clear hidden ID
-    $(this).hide(); // hide button
-    setTimeout(() => skipAutocompleteChange = false, 10); // reset flag after event
+    input.val("");
+    input.siblings(".ingredient-id").val("");
+    $(this).hide();
   });
-
-
-
 });
