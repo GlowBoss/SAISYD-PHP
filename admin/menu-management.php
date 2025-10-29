@@ -156,16 +156,26 @@ $menuItemsResults = mysqli_query($conn, $menuItemsQuery);
 
 $menuItems = [];
 while ($row = mysqli_fetch_assoc($menuItemsResults)) {
-    $menuItems[] = $row;
-}
-
-while ($row = mysqli_fetch_assoc($menuItemsResults)) {
     $productID = $row['productID'];
-    $availableQuantity = $row['availableQuantity'] ?? 0;
 
-    if ($possibleCount == 0 && $row['isAvailable'] == 1) {
-        mysqli_query($conn, "UPDATE products SET isAvailable = 0 WHERE productID = $productID");
-        $row['isAvailable'] = 0; // update for display
+    // Calculate available quantity based on inventory + recipe
+    $stockCheck = mysqli_query($conn, "
+        SELECT MIN(FLOOR(i.quantity / pr.requiredQuantity)) AS availableQuantity
+        FROM productrecipe pr
+        JOIN inventory i ON i.ingredientID = pr.ingredientID
+        WHERE pr.productID = $productID
+    ");
+    $stockData = mysqli_fetch_assoc($stockCheck);
+    $availableQuantity = intval($stockData['availableQuantity'] ?? 0);
+
+    // Update product availability in DB
+    if ($availableQuantity <= 0 && $row['isAvailable'] == 1) {
+        mysqli_query($conn, "UPDATE products SET isAvailable = 0, availableQuantity = 0 WHERE productID = $productID");
+        $row['isAvailable'] = 0;
+        $row['availableQuantity'] = 0;
+    } else {
+        mysqli_query($conn, "UPDATE products SET availableQuantity = $availableQuantity WHERE productID = $productID");
+        $row['availableQuantity'] = $availableQuantity;
     }
 
     $menuItems[] = $row;
