@@ -83,6 +83,47 @@
         font-size: 0.9rem;
     }
 
+    #ingredientNameEdit {
+        pointer-events: none;
+        background-color: #e0e0e0;
+        color: #6c6c6c;
+        border-color: #c0c0c0;
+        cursor: not-allowed;
+
+    }
+
+    #ingredientNameEdit:focus {
+        border-color: #c0c0c0;
+        box-shadow: none;
+        outline: none;
+    }
+
+    #ingredientDropdownEdit:focus {
+        border-color: var(--primary-color) !important;
+        box-shadow: none;
+    }
+
+    #quantityEdit:focus {
+        border-color: var(--primary-color) !important;
+        box-shadow: none;
+    }
+
+    #unitEdit:focus {
+        border-color: var(--primary-color) !important;
+        box-shadow: none;
+    }
+
+    #expirationEdit:focus {
+        border-color: var(--primary-color) !important;
+        box-shadow: none;
+    }
+
+    #thresholdEdit:focus {
+        border-color: var(--primary-color) !important;
+        box-shadow: none;
+    }
+
+
     @keyframes slideDown {
         from {
             opacity: 0;
@@ -125,13 +166,16 @@
                             <div class="mb-4 position-relative">
                                 <label for="ingredientName" class="form-label fw-bold mb-2"
                                     style="font-family: var(--primaryFont); color: var(--text-color-dark);">
-                                    Ingredient <span style="color: #dc3545;">*</span>
+                                    Ingredient
                                 </label>
                                 <input type="text" class="form-control" id="ingredientNameEdit"
                                     name="ingredientNameEdit" required placeholder="Type ingredient name..."
-                                    autocomplete="on" style="border: 2px solid var(--primary-color); border-radius: 10px; 
-                                              font-family: var(--secondaryFont); background: var(--card-bg-color);
-                                              color: var(--text-color-dark); padding: 12px;">
+                                    autocomplete="on" readonly style="border: 2px solid var(--primary-color); border-radius: 10px; 
+                                    font-family: var(--secondaryFont); 
+                                    background-color: #e0e0e0; 
+                                    color: #6c6c6c;           
+                                    padding: 12px;
+                                    cursor: not-allowed;">
 
                                 <!-- Autocomplete Dropdown -->
                                 <div id="ingredientDropdownEdit" class="autocomplete-dropdown position-absolute w-100"
@@ -140,17 +184,14 @@
                                             border-top: none; border-radius: 0 0 10px 10px; display: none; ">
                                 </div>
 
-                                <div class="form-text mt-2"
-                                    style="font-family: var(--secondaryFont); color: var(--gray); font-size: 0.85rem;">
-                                    Start typing to search existing ingredients or add new one
-                                </div>
+
                             </div>
 
                             <!-- Quantity -->
                             <div class="mb-4">
                                 <label for="quantity" class="form-label fw-bold mb-2"
                                     style="font-family: var(--primaryFont); color: var(--text-color-dark);">
-                                    Quantity <span style="color: #dc3545;">*</span>
+                                    Quantity 
                                 </label>
                                 <input type="number" class="form-control" id="quantityEdit" name="quantityEdit" min="0"
                                     step="0.01" required placeholder="Enter quantity" style="border: 2px solid var(--primary-color); border-radius: 10px; 
@@ -162,7 +203,7 @@
                             <div class="mb-4">
                                 <label for="unit" class="form-label fw-bold mb-2"
                                     style="font-family: var(--primaryFont); color: var(--text-color-dark);">
-                                    Unit <span style="color: #dc3545;">*</span>
+                                    Unit 
                                 </label>
                                 <select class="form-select" id="unitEdit" name="unitEdit" required style="border: 2px solid var(--primary-color); border-radius: 10px; 
                                                font-family: var(--secondaryFont); background: var(--card-bg-color);
@@ -209,7 +250,7 @@
                             <div class="mb-4">
                                 <label for="expirationDate" class="form-label fw-bold mb-2"
                                     style="font-family: var(--primaryFont); color: var(--text-color-dark);">
-                                    Expiration Date <span style="color: #dc3545;">*</span>
+                                    Expiration Date 
                                 </label>
                                 <input type="date" class="form-control" id="expirationEdit" name="expirationEdit"
                                     required style="border: 2px solid var(--primary-color); border-radius: 10px; 
@@ -221,7 +262,7 @@
                             <div class="mb-4">
                                 <label for="threshold" class="form-label fw-bold mb-2"
                                     style="font-family: var(--primaryFont); color: var(--text-color-dark);">
-                                    Low Stock Threshold <span style="color: #dc3545;">*</span>
+                                    Low Stock Threshold 
                                 </label>
                                 <input type="number" class="form-control" id="thresholdEdit" name="thresholdEdit"
                                     min="0" step="0.01" required placeholder="Enter threshold amount" style="border: 2px solid var(--primary-color); border-radius: 10px; 
@@ -356,22 +397,22 @@
             const name = ingredientName.toLowerCase();
 
             // LIQUIDS - anything liquid/fluid
-            const liquidKeywords = ['milk', 'water', 'syrup', 'juice', 'espresso', 
-                                   'cream', 'latte', 'tea', 'oil', 'sauce', 'broth', 'soda',
-                                   'coke', 'sprite', 'drink', 'beverage', 'liquid', 'coffee',
-                                   'mocha', 'vanilla', 'caramel', 'hazelnut', 'chocolate sauce'];
+            const liquidKeywords = ['milk', 'water', 'syrup', 'juice', 'espresso',
+                'cream', 'latte', 'tea', 'oil', 'sauce', 'broth', 'soda',
+                'coke', 'sprite', 'drink', 'beverage', 'liquid', 'coffee',
+                'mocha', 'vanilla', 'caramel', 'hazelnut', 'chocolate sauce'];
 
             // SOLIDS - dry/powder/granular/solid items
             const solidKeywords = ['sugar', 'flour', 'powder', 'salt', 'beans', 'leaves',
-                                  'cocoa', 'chocolate', 'spice', 'grain', 'rice', 'cheese',
-                                  'butter', 'matcha', 'taro', 'ube', 'caramel powder', 'cookie',
-                                  'biscuit', 'pastry', 'cake', 'bread'];
+                'cocoa', 'chocolate', 'spice', 'grain', 'rice', 'cheese',
+                'butter', 'matcha', 'taro', 'ube', 'caramel powder', 'cookie',
+                'biscuit', 'pastry', 'cake', 'bread'];
 
             // COUNTABLE - by pieces/whole items
             const countableKeywords = ['egg', 'potato', 'fries', 'cup', 'piece', 'slice',
-                                      'patty', 'bun', 'bottle', 'can', 'bag', 'pack', 'box',
-                                      'sachet', 'tablet', 'capsule', 'carrot', 'muffin', 'donut',
-                                      'croissant', 'sandwich', 'wrap'];
+                'patty', 'bun', 'bottle', 'can', 'bag', 'pack', 'box',
+                'sachet', 'tablet', 'capsule', 'carrot', 'muffin', 'donut',
+                'croissant', 'sandwich', 'wrap'];
 
             // Check which category (priority: countable > liquid > solid)
             if (countableKeywords.some(keyword => name.includes(keyword))) {
@@ -384,8 +425,8 @@
                 return 'solid';
             }
 
-            
-            return 'solid'; 
+
+            return 'solid';
         }
 
         // Define allowed units per category - UPDATED WITH NEW UNITS
@@ -419,7 +460,7 @@
             return unitNames[unit] || unit;
         }
 
-       
+
         function validateUnitMatch(ingredientName, selectedUnit) {
             if (!ingredientName || !selectedUnit) {
                 return { valid: true };
@@ -441,7 +482,7 @@
             return { valid: true };
         }
 
-      
+
         function showUnitMismatchModal(validation) {
             document.getElementById('mismatchMessage').textContent = validation.message;
             document.getElementById('allowedUnitsText').textContent = validation.allowedUnits;
@@ -453,7 +494,7 @@
             mismatchModal.show();
         }
 
-        
+
         document.addEventListener('click', function (e) {
             if (e.target && e.target.id === 'fixUnitMismatchBtn') {
                 const mismatchModal = bootstrap.Modal.getInstance(document.getElementById('unitMismatchModal'));
@@ -469,7 +510,7 @@
             }
         });
 
-      
+
         function showUnitWarning(message) {
             const warning = document.getElementById('unitWarningEdit');
             const warningText = document.getElementById('unitWarningTextEdit');
@@ -478,7 +519,7 @@
             warning.classList.add('show');
         }
 
-      
+
         function hideUnitWarning() {
             const warning = document.getElementById('unitWarningEdit');
             warning.classList.remove('show');
@@ -488,7 +529,7 @@
 
         const ingredients = [
             <?php foreach ($ingredients as $ingredient): ?>
-                {
+                                        {
                     ingredientID: <?= $ingredient['ingredientID'] ?>,
                     ingredientName: '<?= addslashes($ingredient['ingredientName']) ?>'
                 },
@@ -501,7 +542,7 @@
         const unitSelectEdit = document.getElementById('unitEdit');
         let selectedIndexEdit = -1;
 
-       
+
         ingredientInputEdit.addEventListener('input', function () {
             const query = this.value.toLowerCase().trim();
 
@@ -519,7 +560,7 @@
             showDropdownEdit(filtered, query);
             selectedIndexEdit = -1;
 
-            
+
             const currentUnit = unitSelectEdit.value;
             if (currentUnit) {
                 const validation = validateUnitMatch(this.value, currentUnit);
@@ -531,7 +572,7 @@
             }
         });
 
-      
+
         unitSelectEdit.addEventListener('change', function () {
             const ingredientName = ingredientInputEdit.value.trim();
             const selectedUnit = this.value;
@@ -549,7 +590,7 @@
             }
         });
 
-        
+
         ingredientInputEdit.addEventListener('keydown', function (e) {
             const items = dropdownEdit.querySelectorAll('.autocomplete-item');
 
@@ -571,7 +612,7 @@
             }
         });
 
-        
+
         document.addEventListener('click', function (e) {
             if (!ingredientInputEdit.contains(e.target) && !dropdownEdit.contains(e.target)) {
                 hideDropdownEdit();
@@ -638,7 +679,7 @@
             hideDropdownEdit();
             selectedIndexEdit = -1;
 
-            
+
             const currentUnit = unitSelectEdit.value;
             if (currentUnit) {
                 const validation = validateUnitMatch(ingredientName, currentUnit);
@@ -664,7 +705,7 @@
         // ==================== FORM SUBMIT WITH VALIDATION ====================
 
         document.getElementById('updateForm').addEventListener('submit', function (e) {
-            
+
             e.preventDefault();
             e.stopPropagation();
 
@@ -673,7 +714,7 @@
 
             console.log('Edit Form - Validating:', ingredientName, 'with unit:', selectedUnit);
 
-            
+
             const validation = validateUnitMatch(ingredientName, selectedUnit);
 
             console.log('Edit Form - Validation result:', validation);
@@ -683,21 +724,21 @@
                 console.log('BLOCKING EDIT SUBMISSION - Unit mismatch detected!');
                 showUnitMismatchModal(validation);
 
-               
+
                 unitSelectEdit.style.borderColor = '#dc3545';
                 unitSelectEdit.style.boxShadow = '0 0 0 0.2rem rgba(220, 53, 69, 0.25)';
 
-          
+
                 return false;
             }
 
             console.log('Edit Form - Validation passed - Proceeding with submission');
 
-            
+
             unitSelectEdit.style.borderColor = 'var(--primary-color)';
             unitSelectEdit.style.boxShadow = 'none';
 
-          
+
             const formData = new FormData(this);
 
             fetch("../assets/inventory-update-product.php", {
@@ -742,14 +783,14 @@
                 document.getElementById('expirationEdit').value = expiration;
                 document.getElementById('thresholdEdit').value = threshold;
 
-               
+
                 hideUnitWarning();
 
-                
+
                 unitSelectEdit.style.borderColor = 'var(--primary-color)';
                 unitSelectEdit.style.boxShadow = 'none';
 
-               
+
                 const validation = validateUnitMatch(ingredient, unit);
                 if (!validation.valid) {
                     showUnitWarning(validation.message);
@@ -757,10 +798,10 @@
             });
         });
 
-        document.getElementById('editItemModal').addEventListener('hidden.bs.modal', function() {
+        document.getElementById('editItemModal').addEventListener('hidden.bs.modal', function () {
             hideUnitWarning();
-            
-            
+
+
             unitSelectEdit.style.borderColor = 'var(--primary-color)';
             unitSelectEdit.style.boxShadow = 'none';
         });
