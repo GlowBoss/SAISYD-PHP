@@ -356,22 +356,54 @@
             const name = ingredientName.toLowerCase();
 
             // LIQUIDS - anything liquid/fluid
-            const liquidKeywords = ['milk', 'water', 'syrup', 'juice', 'espresso', 
-                                   'cream', 'latte', 'tea', 'oil', 'sauce', 'broth', 'soda',
-                                   'coke', 'sprite', 'drink', 'beverage', 'liquid', 'coffee',
-                                   'mocha', 'vanilla', 'caramel', 'hazelnut', 'chocolate sauce'];
+            const liquidKeywords = [
+                'milk', 'fresh milk', 'full cream milk', 'oat milk', 'soy milk',
+                'almond milk', 'condensed milk', 'evaporated milk', 'whipping cream',
+                'all purpose cream', 'cream', 'syrup', 'caramel syrup',
+                'hazelnut syrup', 'vanilla syrup', 'brown sugar syrup',
+                'chocolate syrup', 'strawberry syrup', 'blueberry syrup',
+                'green apple syrup', 'lychee syrup', 'peach syrup', 'lemon syrup',
+                'fructose', 'espresso', 'coffee', 'latte', 'americano', 'macchiato',
+                'mocha', 'matcha', 'tea', 'black tea', 'milk tea', 'fruit tea',
+                'juice', 'water', 'ice', 'soda', 'sprite', 'drink', 'beverage',
+                'liquid', 'ketchup', 'mayo', 'sriracha', 'soy sauce', 'fish sauce',
+                'oyster sauce', 'worcestershire sauce', 'caramel sauce',
+                'chocolate sauce', 'vanilla extract', 'honey', 'vinegar', 'oil',
+                'cooking oil', 'gravy', 'lemonade', 'cold brew', 'espresso shot',
+                'flavored syrup', 'hazelnut', 'caramel', 'vanilla', 'mocha sauce',
+                'yogurt', 'frappe base'
+            ];
+
 
             // SOLIDS - dry/powder/granular/solid items
-            const solidKeywords = ['sugar', 'flour', 'powder', 'salt', 'beans', 'leaves',
-                                  'cocoa', 'chocolate', 'spice', 'grain', 'rice', 'cheese',
-                                  'butter', 'matcha', 'taro', 'ube', 'caramel powder', 'cookie',
-                                  'biscuit', 'pastry', 'cake', 'bread'];
+            const solidKeywords = [
+                'sugar', 'brown sugar', 'white sugar', 'powder', 'cocoa powder',
+                'chocolate powder', 'milo powder', 'matcha powder', 'caramel powder',
+                'cookies and cream powder', 'coffee beans', 'arabica beans',
+                'tea leaves', 'assam tea', 'frappe powder', 'topping', 'spice',
+                'salt', 'flour', 'butter', 'cheese', 'parmesan', 'cheese block',
+                'breadcrumbs', 'cornstarch', 'oats', 'nuts', 'almond', 'cashew',
+                'hazelnut', 'grain', 'rice', 'bread crumbs', 'pasta', 'macaroni',
+                'spaghetti', 'herb', 'pepper', 'seasoning', 'instant coffee',
+                'yeast', 'dry mix', 'matcha', 'taro', 'ube', 'chips', 'cookies',
+                'biscuit', 'pastry', 'cake', 'brownie', 'muffin', 'croissant',
+                'toast', 'waffle', 'bread', 'crackers'
+            ];
+
 
             // COUNTABLE - by pieces/whole items
-            const countableKeywords = ['egg', 'potato', 'fries', 'cup', 'piece', 'slice',
-                                      'patty', 'bun', 'bottle', 'can', 'bag', 'pack', 'box',
-                                      'sachet', 'tablet', 'capsule', 'carrot', 'muffin', 'donut',
-                                      'croissant', 'sandwich', 'wrap'];
+            const countableKeywords = [
+                'egg', 'eggs', 'ice cube', 'cup', 'piece', 'slice', 'bun',
+                'bread', 'sandwich', 'croissant', 'muffin', 'donut', 'wrap',
+                'pita', 'burger bun', 'hotdog', 'sausage', 'patty', 'nugget',
+                'fries', 'wings', 'ham', 'spam', 'bacon', 'beef', 'porkloin',
+                'chicken', 'lettuce', 'tomato', 'onion', 'garlic', 'cucumber',
+                'cup lid', 'cup sleeve', 'straw', 'tissue', 'napkin', 'fork',
+                'spoon', 'tray', 'plate', 'container', 'bottle', 'can', 'pack',
+                'box', 'bag', 'sachet', 'cup holder', 'stirrer', 'stick', 'toothpick',
+                'plastic cup', 'bottle cap', 'take-out box'
+            ];
+
 
             // Check which category (priority: countable > liquid > solid)
             if (countableKeywords.some(keyword => name.includes(keyword))) {
@@ -384,8 +416,8 @@
                 return 'solid';
             }
 
-            
-            return 'solid'; 
+
+            return 'solid';
         }
 
         // Define allowed units per category - UPDATED WITH NEW UNITS
@@ -419,7 +451,7 @@
             return unitNames[unit] || unit;
         }
 
-       
+
         function validateUnitMatch(ingredientName, selectedUnit) {
             if (!ingredientName || !selectedUnit) {
                 return { valid: true };
@@ -441,7 +473,7 @@
             return { valid: true };
         }
 
-      
+
         function showUnitMismatchModal(validation) {
             document.getElementById('mismatchMessage').textContent = validation.message;
             document.getElementById('allowedUnitsText').textContent = validation.allowedUnits;
@@ -453,7 +485,7 @@
             mismatchModal.show();
         }
 
-        
+
         document.addEventListener('click', function (e) {
             if (e.target && e.target.id === 'fixUnitMismatchBtn') {
                 const mismatchModal = bootstrap.Modal.getInstance(document.getElementById('unitMismatchModal'));
@@ -469,7 +501,7 @@
             }
         });
 
-      
+
         function showUnitWarning(message) {
             const warning = document.getElementById('unitWarningEdit');
             const warningText = document.getElementById('unitWarningTextEdit');
@@ -478,7 +510,7 @@
             warning.classList.add('show');
         }
 
-      
+
         function hideUnitWarning() {
             const warning = document.getElementById('unitWarningEdit');
             warning.classList.remove('show');
@@ -488,7 +520,7 @@
 
         const ingredients = [
             <?php foreach ($ingredients as $ingredient): ?>
-                {
+                        {
                     ingredientID: <?= $ingredient['ingredientID'] ?>,
                     ingredientName: '<?= addslashes($ingredient['ingredientName']) ?>'
                 },
@@ -501,7 +533,7 @@
         const unitSelectEdit = document.getElementById('unitEdit');
         let selectedIndexEdit = -1;
 
-       
+
         ingredientInputEdit.addEventListener('input', function () {
             const query = this.value.toLowerCase().trim();
 
@@ -519,7 +551,7 @@
             showDropdownEdit(filtered, query);
             selectedIndexEdit = -1;
 
-            
+
             const currentUnit = unitSelectEdit.value;
             if (currentUnit) {
                 const validation = validateUnitMatch(this.value, currentUnit);
@@ -531,7 +563,7 @@
             }
         });
 
-      
+
         unitSelectEdit.addEventListener('change', function () {
             const ingredientName = ingredientInputEdit.value.trim();
             const selectedUnit = this.value;
@@ -549,7 +581,7 @@
             }
         });
 
-        
+
         ingredientInputEdit.addEventListener('keydown', function (e) {
             const items = dropdownEdit.querySelectorAll('.autocomplete-item');
 
@@ -571,7 +603,7 @@
             }
         });
 
-        
+
         document.addEventListener('click', function (e) {
             if (!ingredientInputEdit.contains(e.target) && !dropdownEdit.contains(e.target)) {
                 hideDropdownEdit();
@@ -638,7 +670,7 @@
             hideDropdownEdit();
             selectedIndexEdit = -1;
 
-            
+
             const currentUnit = unitSelectEdit.value;
             if (currentUnit) {
                 const validation = validateUnitMatch(ingredientName, currentUnit);
@@ -664,7 +696,7 @@
         // ==================== FORM SUBMIT WITH VALIDATION ====================
 
         document.getElementById('updateForm').addEventListener('submit', function (e) {
-            
+
             e.preventDefault();
             e.stopPropagation();
 
@@ -673,7 +705,7 @@
 
             console.log('Edit Form - Validating:', ingredientName, 'with unit:', selectedUnit);
 
-            
+
             const validation = validateUnitMatch(ingredientName, selectedUnit);
 
             console.log('Edit Form - Validation result:', validation);
@@ -683,21 +715,21 @@
                 console.log('BLOCKING EDIT SUBMISSION - Unit mismatch detected!');
                 showUnitMismatchModal(validation);
 
-               
+
                 unitSelectEdit.style.borderColor = '#dc3545';
                 unitSelectEdit.style.boxShadow = '0 0 0 0.2rem rgba(220, 53, 69, 0.25)';
 
-          
+
                 return false;
             }
 
             console.log('Edit Form - Validation passed - Proceeding with submission');
 
-            
+
             unitSelectEdit.style.borderColor = 'var(--primary-color)';
             unitSelectEdit.style.boxShadow = 'none';
 
-          
+
             const formData = new FormData(this);
 
             fetch("../assets/inventory-update-product.php", {
@@ -742,14 +774,14 @@
                 document.getElementById('expirationEdit').value = expiration;
                 document.getElementById('thresholdEdit').value = threshold;
 
-               
+
                 hideUnitWarning();
 
-                
+
                 unitSelectEdit.style.borderColor = 'var(--primary-color)';
                 unitSelectEdit.style.boxShadow = 'none';
 
-               
+
                 const validation = validateUnitMatch(ingredient, unit);
                 if (!validation.valid) {
                     showUnitWarning(validation.message);
@@ -757,10 +789,10 @@
             });
         });
 
-        document.getElementById('editItemModal').addEventListener('hidden.bs.modal', function() {
+        document.getElementById('editItemModal').addEventListener('hidden.bs.modal', function () {
             hideUnitWarning();
-            
-            
+
+
             unitSelectEdit.style.borderColor = 'var(--primary-color)';
             unitSelectEdit.style.boxShadow = 'none';
         });
