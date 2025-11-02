@@ -4,8 +4,8 @@ session_start();
 
 // Check if user is logged in and is an admin 
 if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
-  header("Location: login.php");
-  exit();
+    header("Location: login.php");
+    exit();
 }
 
 // Handle form submissions
@@ -320,7 +320,8 @@ foreach ($rows as $row) {
 
             <!-- TOOLS Section -->
             <div class="section-header">Tools</div>
-            <a href="settings.php" class="admin-nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.4s">
+            <a href="settings.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
+                data-wow-delay="0.4s">
                 <i class="bi bi-gear"></i>
                 <span>Settings</span>
             </a>
@@ -479,10 +480,10 @@ foreach ($rows as $row) {
                         </div>
 
                         <div class="filter-group">
-                            <label class="filter-label">Sort Order</label>
+                            <label class="filter-label">Sort By Date</label>
                             <select class="filter-select" id="filterSortOrder">
-                                <option value="desc">Newest First (Descending)</option>
-                                <option value="asc">Oldest First (Ascending)</option>
+                                <option value="desc">Newest to Oldest</option>
+                                <option value="asc">Oldest to Newest</option>
                             </select>
                         </div>
 
@@ -607,7 +608,7 @@ foreach ($rows as $row) {
                                                     data-expiration="<?= $row['expirationDate'] ?>"
                                                     data-threshold="<?= $row['threshold'] ?>" data-bs-toggle="modal"
                                                     data-bs-target="#editItemModal">
-                                                    <i class = "bi bi-pencil"></i>
+                                                    <i class="bi bi-pencil"></i>
                                                 </button>
                                                 <button class="btn action-btn-sm delete-btn" title="Delete Item"
                                                     onclick="confirmDelete(<?= $row['inventoryID'] ?>, '<?= addslashes($row['ingredientName']) ?>')">
