@@ -480,10 +480,10 @@ foreach ($rows as $row) {
                         </div>
 
                         <div class="filter-group">
-                            <label class="filter-label">Sort By Date</label>
+                            <label class="filter-label">Sort By Name</label>
                             <select class="filter-select" id="filterSortOrder">
-                                <option value="desc">Newest to Oldest</option>
-                                <option value="asc">Oldest to Newest</option>
+                                <option value="asc">Name: A → Z</option>
+                                <option value="desc">Name: Z → A</option>
                             </select>
                         </div>
 
@@ -699,31 +699,6 @@ foreach ($rows as $row) {
             });
         });
 
-        // document.getElementById("updateForm").addEventListener("submit", function (e) {
-        //     e.preventDefault();
-
-        //     const formData = new FormData(this);
-
-        //     fetch("../assets/inventory-update-product.php", {
-        //         method: "POST",
-        //         body: formData
-        //     })
-        //         .then(res => res.json())
-        //         .then(resp => {
-        //             if (resp.success) {
-        //                 showToast("Inventory updated successfully", "success");
-        //                 bootstrap.Modal.getInstance(document.getElementById("editItemModal")).hide();
-        //                 setTimeout(() => {
-        //                     location.reload();
-        //                 }, 800);
-        //             } else {
-        //                 showToast("Error: " + resp.message, "danger");
-        //             }
-        //         })
-        //         .catch(err => console.error("AJAX Error:", err));
-
-        // });
-
         // Toast Notification System
         function showToast(message, type = 'success') {
             const toastContainer = document.querySelector('.toast-container');
@@ -910,13 +885,17 @@ foreach ($rows as $row) {
                     return true;
                 });
 
-                // Apply sorting
+                // Apply sorting by name
                 if (filters.sortOrder) {
                     this.filteredRows.sort((a, b) => {
-                        const dateA = new Date(a.dataset.purchaseDate || a.dataset.lastUpdated);
-                        const dateB = new Date(b.dataset.purchaseDate || b.dataset.lastUpdated);
-
-                        return filters.sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+                        const nameA = a.querySelector('.item-name').textContent.toLowerCase();
+                        const nameB = b.querySelector('.item-name').textContent.toLowerCase();
+                        
+                        if (filters.sortOrder === 'asc') {
+                            return nameA.localeCompare(nameB);
+                        } else {
+                            return nameB.localeCompare(nameA);
+                        }
                     });
                 }
 
@@ -928,7 +907,7 @@ foreach ($rows as $row) {
                 showToast(`Filters applied. Showing ${this.filteredRows.length} of ${this.originalRows.length} items.`);
             }
 
-            // NEW: Remove individual filter
+            // Remove individual filter
             removeFilter(filterType) {
                 switch (filterType) {
                     case 'search':
@@ -944,8 +923,8 @@ foreach ($rows as $row) {
                         this.activeFilters.expiryStatus = '';
                         break;
                     case 'sortOrder':
-                        document.getElementById('filterSortOrder').value = 'desc';
-                        this.activeFilters.sortOrder = 'desc';
+                        document.getElementById('filterSortOrder').value = 'asc';
+                        this.activeFilters.sortOrder = 'asc';
                         break;
                 }
 
@@ -955,7 +934,7 @@ foreach ($rows as $row) {
                 showToast(`${this.getFilterDisplayName(filterType)} filter removed.`, 'success');
             }
 
-            // NEW: Get display name for filter types
+            // Get display name for filter types
             getFilterDisplayName(filterType) {
                 const displayNames = {
                     'search': 'Search',
@@ -966,7 +945,7 @@ foreach ($rows as $row) {
                 return displayNames[filterType] || filterType;
             }
 
-            // NEW: Get display value for filter
+            // Get display value for filter
             getFilterDisplayValue(filterType, value) {
                 switch (filterType) {
                     case 'stockStatus':
@@ -986,7 +965,7 @@ foreach ($rows as $row) {
                         return expiryDisplays[value] || value;
 
                     case 'sortOrder':
-                        return value === 'asc' ? 'Oldest First' : 'Newest First';
+                        return value === 'asc' ? 'A to Z' : 'Z to A';
 
                     case 'search':
                         return `"${value}"`;
@@ -1000,7 +979,7 @@ foreach ($rows as $row) {
                 // Clear all filter inputs
                 document.getElementById('filterStockStatus').value = '';
                 document.getElementById('filterExpiryStatus').value = '';
-                document.getElementById('filterSortOrder').value = 'desc';
+                document.getElementById('filterSortOrder').value = 'asc';
                 document.getElementById('searchInput').value = '';
 
                 // Reset state
@@ -1034,12 +1013,12 @@ foreach ($rows as $row) {
                 if (this.activeFilters.search) count++;
                 if (this.activeFilters.stockStatus) count++;
                 if (this.activeFilters.expiryStatus) count++;
-                if (this.activeFilters.sortOrder && this.activeFilters.sortOrder !== 'desc') count++;
+                if (this.activeFilters.sortOrder && this.activeFilters.sortOrder !== 'asc') count++;
 
                 return count;
             }
 
-            // UPDATED: Enhanced active filters display with individual remove buttons
+            // Enhanced active filters display with individual remove buttons
             updateActiveFiltersDisplay() {
                 const activeFiltersDiv = document.getElementById('activeFilters');
                 const activeFilterTags = document.getElementById('activeFilterTags');
@@ -1070,7 +1049,7 @@ foreach ($rows as $row) {
                     });
                 }
 
-                if (this.activeFilters.sortOrder && this.activeFilters.sortOrder !== 'desc') {
+                if (this.activeFilters.sortOrder && this.activeFilters.sortOrder !== 'asc') {
                     tags.push({
                         type: 'sortOrder',
                         label: 'Sort',
