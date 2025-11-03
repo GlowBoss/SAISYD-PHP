@@ -55,7 +55,7 @@ $stmt->bind_param("idssdi", $ingredientID, $quantity, $unit, $expiration, $thres
 if ($stmt->execute()) {
     echo json_encode(["success" => true, "message" => "Inventory updated successfully"]);
 } else {
-    echo json_encode(["success" => false, "message" => "Error updating: " . $conn->error]);
+    echo json_encode(["success" => false, "message" => "Error updating: " . $conn->error]); 
 }
 
 $stmt->close();
