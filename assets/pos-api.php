@@ -7,9 +7,6 @@ try {
     $updateQuery = "UPDATE products SET isAvailable = 'No' WHERE availableQuantity <= 0";
     executeQuery($updateQuery);
 
-    // Update products with quantity greater than 0 to available
-    $updateQuery2 = "UPDATE products SET isAvailable = 'Yes' WHERE availableQuantity > 0";
-    executeQuery($updateQuery2);
 
     // Step 1: Get all categories that have available products
     $categoriesResult = executeQuery("
