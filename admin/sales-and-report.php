@@ -193,6 +193,10 @@ if ($category_sort) {
     $orderBy = "ORDER BY pr.price ASC";
 }
 
+// Fetch categories 
+$sql = "SELECT categoryName FROM categories ORDER BY categoryName ASC";
+$result = $conn->query($sql);
+
 // Final SQL
 $sql = "
     SELECT 
@@ -211,6 +215,7 @@ $sql = "
       AND o.orderID IN (SELECT orderID FROM payments WHERE paymentStatus = 'paid')
     $whereSql
     GROUP BY pr.productID, pr.productName, c.categoryName, pr.price
+    HAVING SUM(oi.quantity) > 0
     $orderBy
 ";
 
@@ -650,10 +655,13 @@ $productResult = $stmt->get_result();
                                 <label class="filter-label">Category</label>
                                 <select class="filter-select" name="category_filter">
                                     <option value="">All</option>
-                                    <option value="Iced Coffee">Iced Coffee</option>
-                                    <option value="Non-Coffee">Non-Coffee</option>
-                                    <option value="Frappé">Frappé</option>
-                                    <option value="Milktea">Milktea</option>
+                                    <?php
+                                    if ($result->num_rows > 0) {
+                                        while ($row = $result->fetch_assoc()) {
+                                            echo '<option value="' . htmlspecialchars($row["categoryName"]) . '">' . htmlspecialchars($row["categoryName"]) . '</option>';
+                                        }
+                                    }
+                                    ?>
                                 </select>
                             </div>
 
