@@ -1,11 +1,23 @@
 <?php
 session_start();
+include '../assets/connect.php';
 
 // Check if user is logged in and is an admin 
 if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
-  header("Location: login.php");
-  exit();
+    header("Location: login.php");
+    exit();
 }
+
+//Count Pending Orders
+$pendingOrdersQuery = "SELECT COUNT(*) AS pending_count FROM orders WHERE status = 'Pending'";
+$result = mysqli_query($conn, $pendingOrdersQuery);
+
+$pendingCount = 0;
+if ($result && mysqli_num_rows($result) > 0) {
+    $row = mysqli_fetch_assoc($result);
+    $pendingCount = $row['pending_count'];
+}
+
 ?>
 
 
@@ -50,7 +62,6 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
                         style="max-height: clamp(50px, 6vh, 70px); width: auto;" />
                     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                 </div>
-
 
                 <!-- Body with Admin Navigation Design -->
                 <div class="offcanvas-body" id="sidebarNav">
@@ -119,7 +130,7 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
                     <div class="flex-fill">
                         <div class="card p-2 topcontainer mb-3">
                             <div class="container-fluid">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="d-flex mt-2 justify-content-between align-items-center mb-2">
                                     <div class="d-flex align-items-center gap-3">
                                         <button class="btn btn-sm mobile-menu-toggle pt-2" data-bs-toggle="offcanvas"
                                             data-bs-target="#offcanvasSidebar" aria-controls="offcanvasSidebar"
@@ -129,14 +140,14 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
                                         <h5 class="heading fw-semibold mb-0 pt-2 text-center text-lg-start">Point of
                                             Sale System</h5>
                                     </div>
-                                    <a href="orders.php" class="btn btn-light position-relative">
-                                        <i class="bi bi-bell-fill"></i>
+                                    <a href="orders.php" class="notification-btn position-relative p-2">
+                                        <i class="bi bi-bell fs-4"></i>
                                         <span
                                             class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                            <!-- 3 -->
-                                            <span class="visually-hidden">unread messages</span>
+                                            <?php echo $pendingCount; ?>
                                         </span>
                                     </a>
+
                                 </div>
                                 <div class="subheading py-3 px-2">Category</div>
 
@@ -703,6 +714,15 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
                     if (e.target.id === 'paymentModeInput') {
                         selectedPaymentMode = e.target.value;
                     }
+                });
+            </script>
+
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    // Reload Page every 30 seconds to fetch new orders
+                    setInterval(function () {
+                        location.reload();
+                    }, 30000);
                 });
             </script>
 

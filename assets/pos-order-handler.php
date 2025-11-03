@@ -334,7 +334,7 @@ function checkout()
 
         // Insert payment - matching your payments table structure
         $insertPaymentQuery = "INSERT INTO payments (orderID, paymentMethod, paymentStatus, referenceNumber) 
-                              VALUES ('$orderID', '$paymentMethod', 'Paid', NULL)";
+                              VALUES ('$orderID', '$paymentMethod', 'Unpaid', NULL)";
 
         $paymentResult = executeQuery($insertPaymentQuery);
         if (!$paymentResult) {

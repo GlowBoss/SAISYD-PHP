@@ -20,6 +20,14 @@ if (isset($_POST['update_status'])) {
     $updateQuery = "UPDATE orders SET status='$status_raw' WHERE orderID=$orderID";
     if (mysqli_query($conn, $updateQuery)) {
 
+        // ✅ If it changed to "preparing", update payment status to "Paid"
+        if ($status_lc === 'preparing' && $prevStatus !== 'preparing') {
+            $updatePayment = "UPDATE payments SET paymentStatus = 'Paid' WHERE orderID = $orderID";
+            if (!mysqli_query($conn, $updatePayment)) {
+                error_log('Payment update failed for order ' . $orderID . ': ' . mysqli_error($conn));
+            }
+        }
+
         // If it changed to completed then deduct inventory stocks
         if ($status_lc === 'completed' && $prevStatus !== 'completed') {
             $deductQuery = "

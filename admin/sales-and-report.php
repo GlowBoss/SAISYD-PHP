@@ -15,7 +15,8 @@ $dailySales = "
         SUM(o.totalAmount) AS total_sales
     FROM orders o
     JOIN payments p ON o.orderID = p.orderID
-    WHERE p.paymentStatus = 'paid'
+    WHERE o.status = 'completed'
+      AND p.paymentStatus = 'Paid'
       AND o.orderDate >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
     GROUP BY sale_date
     ORDER BY sale_date;
@@ -36,6 +37,7 @@ $weeklySales = "SELECT
 FROM orders o
 JOIN payments p ON o.orderID = p.orderID
 WHERE p.paymentStatus = 'paid'
+AND o.status = 'completed'
   AND YEARWEEK(o.orderDate, 1) = YEARWEEK(CURDATE(), 1)";
 
 $weeklyResult = mysqli_query($conn, $weeklySales);
@@ -48,23 +50,27 @@ $monthlySales = "SELECT
 FROM orders o
 JOIN payments p ON o.orderID = p.orderID
 WHERE p.paymentStatus = 'paid'
+AND o.status = 'completed'
   AND YEAR(o.orderDate) = YEAR(CURDATE())
   AND MONTH(o.orderDate) = MONTH(CURDATE())";
 $monthlyResult = mysqli_query($conn, $monthlySales);
 $monthlyRow = mysqli_fetch_assoc($monthlyResult);
 $monthlyTotal = $monthlyRow['total_sales'] ?? 0;
 
-// Avg order value
-$avgOrderValue = "SELECT 
-    ROUND(AVG(o.totalAmount), 2) AS avg_order_value
-FROM orders o
-JOIN payments p ON o.orderID = p.orderID
-WHERE p.paymentStatus = 'paid'
-  AND MONTH(o.orderDate) = MONTH(CURDATE())
-  AND YEAR(o.orderDate) = YEAR(CURDATE());";
+$avgOrderValue = "
+    SELECT 
+        ROUND(AVG(o.totalAmount), 2) AS avg_order_value
+    FROM orders o
+    JOIN payments p ON o.orderID = p.orderID
+    WHERE p.paymentStatus = 'Paid'
+      AND o.status = 'Completed'
+      AND YEAR(o.orderDate) = YEAR(CURDATE())
+      AND MONTH(o.orderDate) = MONTH(CURDATE())
+";
 $avgOrderValueResult = mysqli_query($conn, $avgOrderValue);
 $avgOrderValueRow = mysqli_fetch_assoc($avgOrderValueResult);
 $averageOrderValue = $avgOrderValueRow['avg_order_value'] ?? 0;
+
 
 // Top selling product (most popular)
 $topProducts = "SELECT 
@@ -76,6 +82,7 @@ JOIN products pr ON oi.productID = pr.productID
 JOIN orders o ON oi.orderID = o.orderID
 JOIN payments p ON o.orderID = p.orderID
 WHERE p.paymentStatus = 'paid'
+AND o.status = 'completed'
   AND YEARWEEK(o.orderDate, 1) = YEARWEEK(CURDATE(), 1)
 GROUP BY pr.productID, pr.productName
 ORDER BY total_qty_sold DESC
@@ -93,7 +100,8 @@ SELECT
 FROM orderitems oi
 JOIN orders o ON oi.orderID = o.orderID
 JOIN payments p ON o.orderID = p.orderID
-WHERE p.paymentStatus = 'paid'
+WHERE o.status = 'completed'
+AND p.paymentStatus = 'paid'
   AND YEARWEEK(o.orderDate, 1) = YEARWEEK(CURDATE(), 1);
 ";
 
@@ -143,7 +151,7 @@ JOIN payments p    ON o.orderID = p.orderID
 JOIN orderitems oi ON oi.orderID = o.orderID
 LEFT JOIN products pr ON pr.productID = oi.productID
 LEFT JOIN users u  ON u.userID = o.userID
-WHERE p.paymentStatus = 'paid'
+WHERE o.status = 'completed'
 GROUP BY
   o.orderID,
   o.orderNumber,
@@ -192,6 +200,9 @@ if ($category_sort) {
 } elseif ($price_sort === 'low') {
     $orderBy = "ORDER BY pr.price ASC";
 }
+
+$weekStart = date('M j', strtotime('monday this week'));
+$weekEnd = date('M j, Y', strtotime('sunday this week'));
 
 // Final SQL
 $sql = "
@@ -392,10 +403,11 @@ $productResult = $stmt->get_result();
 
             <!-- Header Section -->
             <div class="header-section">
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-center align-items-md-start mb-4">
+                <div
+                    class="d-flex flex-column flex-md-row justify-content-between align-items-center align-items-md-start mb-4">
                     <div class="text-center text-md-start w-100">
                         <h1 class="page-title pt-lg-4 pt-0">Sales & Reports</h1>
-                       
+
                     </div>
 
                     <!-- Desktop Stats Cards -->
@@ -403,10 +415,13 @@ $productResult = $stmt->get_result();
                         <div class="stat-card">
                             <div class="stat-number">₱<?php echo number_format($weeklyTotal, 2); ?></div>
                             <div class="stat-label">Weekly Sales</div>
+                            <div class="stat-subtext text-muted">
+                                <?php echo $weekStart . ' – ' . $weekEnd; ?>
+                            </div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-number">₱<?php echo number_format($monthlyTotal, 2); ?></div>
-                            <div class="stat-label">Monthly Sales</div>
+                            <div class="stat-subtext text-muted">Monthly Sales (<?php echo date('F'); ?>)</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-number"><?php echo $totalItemsSoldCount; ?></div>
@@ -519,7 +534,8 @@ $productResult = $stmt->get_result();
                     <h5 class="section-title">
                         <i class="bi bi-clock-history me-2"></i>Recent Transactions
                     </h5>
-                    <button class="btn action-btn export-btn" type="button" data-bs-toggle="modal" data-bs-target="#confirmModal">
+                    <button class="btn action-btn export-btn" type="button" data-bs-toggle="modal"
+                        data-bs-target="#confirmModal">
                         <i class="bi bi-download"></i>
                         <span class="ms-1">Export</span>
                     </button>
@@ -547,8 +563,10 @@ $productResult = $stmt->get_result();
                                         <tr>
                                             <td class="date-cell">
                                                 <div class="date-content">
-                                                    <span class="date-value"><?= date('M d, Y', strtotime($row['orderDate'])) ?></span>
-                                                    <span class="time-value"><?= date('H:i', strtotime($row['orderDate'])) ?></span>
+                                                    <span
+                                                        class="date-value"><?= date('M d, Y', strtotime($row['orderDate'])) ?></span>
+                                                    <span
+                                                        class="time-value"><?= date('H:i', strtotime($row['orderDate'])) ?></span>
                                                 </div>
                                             </td>
                                             <td class="order-number"><?= htmlspecialchars($row['orderNumber']) ?></td>
@@ -588,7 +606,8 @@ $productResult = $stmt->get_result();
                         <div class="row g-3 align-items-end">
                             <div class="col-12 col-md-6">
                                 <label class="filter-label">Search Product</label>
-                                <input class="filter-input" type="text" name="search" placeholder="Search product or category..."
+                                <input class="filter-input" type="text" name="search"
+                                    placeholder="Search product or category..."
                                     value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
                             </div>
 
@@ -605,14 +624,16 @@ $productResult = $stmt->get_result();
                                 <label class="filter-label">Price</label>
                                 <select class="filter-select" name="price_sort">
                                     <option value="">Default</option>
-                                    <option value="high" <?= $price_sort === 'high' ? 'selected' : '' ?>>High to Low</option>
+                                    <option value="high" <?= $price_sort === 'high' ? 'selected' : '' ?>>High to Low
+                                    </option>
                                     <option value="low" <?= $price_sort === 'low' ? 'selected' : '' ?>>Low to High</option>
                                 </select>
                             </div>
 
                             <div class="col-12 col-md-2 d-flex gap-2">
                                 <button type="submit" class="btn filter-apply-btn flex-fill">Apply</button>
-                                <a href="<?= strtok($_SERVER["REQUEST_URI"], '?') ?>" class="btn btn-clear flex-fill">Clear</a>
+                                <a href="<?= strtok($_SERVER["REQUEST_URI"], '?') ?>"
+                                    class="btn btn-clear flex-fill">Clear</a>
                             </div>
                         </div>
                     </form>
@@ -660,7 +681,7 @@ $productResult = $stmt->get_result();
         </div>
     </div>
 
-   
+
     <div id="modal-placeholder"></div>
 
     <!-- Scripts -->
@@ -824,7 +845,7 @@ $productResult = $stmt->get_result();
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { 
+                    legend: {
                         display: true,
                         labels: {
                             font: {
@@ -849,9 +870,9 @@ $productResult = $stmt->get_result();
                     }
                 },
                 scales: {
-                    x: { 
-                        title: { 
-                            display: true, 
+                    x: {
+                        title: {
+                            display: true,
                             text: "Date",
                             font: {
                                 family: 'Poppins',
@@ -871,10 +892,10 @@ $productResult = $stmt->get_result();
                             color: 'rgba(196, 162, 119, 0.1)'
                         }
                     },
-                    y: { 
-                        beginAtZero: true, 
-                        title: { 
-                            display: true, 
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
                             text: "Sales (₱)",
                             font: {
                                 family: 'Poppins',
@@ -889,7 +910,7 @@ $productResult = $stmt->get_result();
                                 size: 11
                             },
                             color: '#666',
-                            callback: function(value) {
+                            callback: function (value) {
                                 return '₱' + value.toLocaleString();
                             }
                         },
@@ -905,7 +926,7 @@ $productResult = $stmt->get_result();
             salesChart.resize();
         });
 
-        
+
         if (typeof WOW !== 'undefined') {
             new WOW().init();
         }
