@@ -161,6 +161,8 @@ $transactionResult = mysqli_query($conn, $transactionHistory);
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $category_sort = isset($_GET['category_sort']) ? strtolower($_GET['category_sort']) : '';
 $price_sort = isset($_GET['price_sort']) ? strtolower($_GET['price_sort']) : '';
+$category_filter = isset($_GET['category_filter']) ? trim($_GET['category_filter']) : '';
+
 
 // Validate inputs
 if (!in_array($category_sort, ['asc', 'desc']))
@@ -179,6 +181,13 @@ if ($search) {
     $params[] = "%$search%";
     $types .= "ss";
 }
+
+if ($category_filter) {
+    $where[] = "c.categoryName = ?";
+    $params[] = $category_filter;
+    $types .= "s";
+}
+
 
 $whereSql = $where ? "AND " . implode(" AND ", $where) : "";
 
@@ -658,11 +667,14 @@ $productResult = $stmt->get_result();
                                     <?php
                                     if ($result->num_rows > 0) {
                                         while ($row = $result->fetch_assoc()) {
-                                            echo '<option value="' . htmlspecialchars($row["categoryName"]) . '">' . htmlspecialchars($row["categoryName"]) . '</option>';
+                                            $selected = ($category_filter === $row["categoryName"]) ? 'selected' : '';
+                                            echo '<option value="' . htmlspecialchars($row["categoryName"]) . '" ' . $selected . '>'
+                                                . htmlspecialchars($row["categoryName"]) . '</option>';
                                         }
                                     }
                                     ?>
                                 </select>
+
                             </div>
 
 
