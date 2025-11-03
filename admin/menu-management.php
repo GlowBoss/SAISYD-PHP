@@ -3,11 +3,8 @@
 include('../assets/connect.php');
 session_start();
 
-// Prevent unauthorized access
+// Check if user is logged in and is an admin 
 if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
-    // Redirect non-admin users to login page or a "no access" page
-
-
     header("Location: login.php");
     exit();
 }
@@ -135,82 +132,21 @@ if (!empty($_GET['categoryID'])) {
     $categoryFilterId = (int) $_GET['categoryID'];
 }
 
-// TOGGLE AVAILABILITY
-if (isset($_POST['btnToggleAvailability'])) {
-    $productID = intval($_POST['productID']);
-    $newAvailability = intval($_POST['newAvailability']);
-    $response = [];
-
-    if ($productID > 0) {
-        $updateQuery = "UPDATE products SET isAvailable = '$newAvailability' WHERE productID = '$productID'";
-
-        if (mysqli_query($conn, $updateQuery)) {
-            $statusText = $newAvailability ? 'enabled' : 'disabled';
-            $response['success'] = true;
-            $response['message'] = "Product availability has been $statusText successfully!";
-        } else {
-            $response['success'] = false;
-            $response['message'] = "Failed to update product availability!";
-        }
-    } else {
-        $response['success'] = false;
-        $response['message'] = "Invalid product ID!";
-    }
-
-    // Return JSON instead of redirecting
-    header('Content-Type: application/json');
-    echo json_encode($response);
-    exit();
-}
-
-
-
-// Fetch menu items
 $menuItemsQuery = "
     SELECT 
-        p.*, 
-        c.categoryName AS category_name,
-        COALESCE(pc.possible_count, 0) AS possible_count
+        p.*,
+        c.categoryName AS category_name
     FROM 
         products p
     JOIN 
         categories c ON p.categoryID = c.categoryID
-    LEFT JOIN (
-        SELECT 
-            pr.productID,
-            MIN(FLOOR(inv.total_quantity / NULLIF(
-                CASE 
-                    WHEN pr.measurementUnit = 'g' AND inv.unit = 'kg' THEN pr.requiredQuantity / 1000
-                    WHEN pr.measurementUnit = 'kg' AND inv.unit = 'g' THEN pr.requiredQuantity * 1000
-                    WHEN pr.measurementUnit = 'oz' AND inv.unit = 'g' THEN pr.requiredQuantity * 28.35
-                    WHEN pr.measurementUnit = 'g' AND inv.unit = 'oz' THEN pr.requiredQuantity / 28.35
-                    WHEN pr.measurementUnit = 'ml' AND inv.unit = 'L' THEN pr.requiredQuantity / 1000
-                    WHEN pr.measurementUnit = 'L' AND inv.unit = 'ml' THEN pr.requiredQuantity * 1000
-                    WHEN pr.measurementUnit = 'pump' AND inv.unit = 'ml' THEN pr.requiredQuantity * 10
-                    WHEN pr.measurementUnit = 'tbsp' AND inv.unit = 'ml' THEN pr.requiredQuantity * 15
-                    WHEN pr.measurementUnit = 'tsp' AND inv.unit = 'ml' THEN pr.requiredQuantity * 5
-                    WHEN pr.measurementUnit = 'pcs' AND inv.unit = 'box' THEN pr.requiredQuantity / 12
-                    WHEN pr.measurementUnit = 'box' AND inv.unit = 'pcs' THEN pr.requiredQuantity * 12
-                    WHEN pr.measurementUnit = 'pack' AND inv.unit = 'pcs' THEN pr.requiredQuantity * 6
-                    WHEN pr.measurementUnit = 'pcs' AND inv.unit = 'pack' THEN pr.requiredQuantity / 6
-                    WHEN pr.measurementUnit = inv.unit THEN pr.requiredQuantity
-                    ELSE pr.requiredQuantity 
-                END, 0
-            ))) AS possible_count
-        FROM productrecipe pr
-        JOIN (
-            SELECT ingredientID, SUM(quantity) AS total_quantity, MAX(unit) AS unit
-            FROM inventory
-            GROUP BY ingredientID
-        ) inv ON pr.ingredientID = inv.ingredientID
-        GROUP BY pr.productID
-    ) pc ON p.productID = pc.productID
     WHERE 1=1
 ";
 
 if ($searchProductTerm !== '') {
     $menuItemsQuery .= " AND (p.productName LIKE '%$searchProductTerm%' OR c.categoryName LIKE '%$searchProductTerm%')";
 }
+
 if ($categoryFilterId !== null) {
     $menuItemsQuery .= " AND p.categoryID = $categoryFilterId";
 }
@@ -219,15 +155,27 @@ $menuItemsQuery .= " ORDER BY p.productID DESC";
 $menuItemsResults = mysqli_query($conn, $menuItemsQuery);
 
 $menuItems = [];
-
-// Update availability if possible_count is 0
 while ($row = mysqli_fetch_assoc($menuItemsResults)) {
     $productID = $row['productID'];
-    $possibleCount = $row['possible_count'] ?? 0;
 
-    if ($possibleCount == 0 && $row['isAvailable'] == 1) {
-        mysqli_query($conn, "UPDATE products SET isAvailable = 0 WHERE productID = $productID");
-        $row['isAvailable'] = 0; // update for display
+    // Calculate available quantity based on inventory + recipe
+    $stockCheck = mysqli_query($conn, "
+        SELECT MIN(FLOOR(i.quantity / pr.requiredQuantity)) AS availableQuantity
+        FROM productrecipe pr
+        JOIN inventory i ON i.ingredientID = pr.ingredientID
+        WHERE pr.productID = $productID
+    ");
+    $stockData = mysqli_fetch_assoc($stockCheck);
+    $availableQuantity = intval($stockData['availableQuantity'] ?? 0);
+
+    // Update product availability in DB
+    if ($availableQuantity <= 0 && $row['isAvailable'] == 1) {
+        mysqli_query($conn, "UPDATE products SET isAvailable = 0, availableQuantity = 0 WHERE productID = $productID");
+        $row['isAvailable'] = 0;
+        $row['availableQuantity'] = 0;
+    } else {
+        mysqli_query($conn, "UPDATE products SET availableQuantity = $availableQuantity WHERE productID = $productID");
+        $row['availableQuantity'] = $availableQuantity;
     }
 
     $menuItems[] = $row;
@@ -502,9 +450,12 @@ if ($categoryFilterId !== null) {
                             $image = $row['image'];
                             $price = $row['price'];
                             $categoryName = $row['category_name'];
-                            $possibleCount = $row['possible_count'] ?? 0;
+                            $availableQuantity = $row['availableQuantity'] ?? 0;
+                            $dbAvailability = $row['isAvailable'];
 
-                            $isAvailable = $possibleCount > 0 ? 1 : 0;
+                            //  must have stock AND manually marked as available
+                            $isAvailable = ($dbAvailability === 'Yes' && $availableQuantity > 0) ? 1 : 0;
+
                             $unavailableClass = $isAvailable ? '' : ' unavailable';
                             $statusBadgeClass = $isAvailable ? 'status-available' : 'status-unavailable';
                             $statusText = $isAvailable ? 'Available' : 'Unavailable';
@@ -519,21 +470,21 @@ if ($categoryFilterId !== null) {
                     <div class='menu-img-container'>
                         <img src='../assets/img/img-menu/" . htmlspecialchars($image) . "'
                             alt='" . htmlspecialchars($name) . "'
-                            class='img-fluid menu-img " . ($isAvailable ? "" : "img-unavailable") . "'>
+                            class='img-fluid menu-img " . ($isAvailable ? "" : "Available") . "'>
                     </div>
 
                     <div class='menu-name' title='" . htmlspecialchars($name) . "'>" . htmlspecialchars($name) . "</div>
-                    <div class='menu-price'>₱" . number_format($price, 2) . "</div>
-                    <div class='menu-stock'>Available: " . (int) $possibleCount . " pcs</div>
+                    <div class='menu-price'>₱" . number_format($price) . "</div>
+                    <div class='menu-stock'>Available: " . (int) $availableQuantity . " pcs</div>
 
                     <div class='d-flex flex-wrap justify-content-center gap-2 mt-2'>
-                        <button class='btn btn-sm edit-btn'
-                            data-bs-toggle='modal'
-                            data-bs-target='#editModal'
-                            data-id='$id'
-                            data-available='" . ($isAvailable ? "1" : "0") . "'>
-                            <i class='bi bi-pencil-square'></i> 
-                        </button>
+                    <button class='btn btn-sm edit-btn'
+                        data-bs-toggle='modal'
+                        data-bs-target='#editModal'
+                        data-id='$id'
+                        data-available='" . ($dbAvailability === 'Yes' ? '1' : '0') . "'>
+                        <i class='bi bi-pencil-square'></i>
+                    </button>
 
                         <button type='button' class='btn btn-del' 
                             data-bs-toggle='modal' 
@@ -625,12 +576,24 @@ if ($categoryFilterId !== null) {
                 });
             });
 
-
-
             document.addEventListener('DOMContentLoaded', () => {
                 $(document).ready(function () {
                     var ingredients = <?php echo json_encode($ingredients); ?>;
                     let skipAutocompleteChange = false; // flag to skip alert
+
+                    const allowedUnits = {
+                        "g": ["g", "kg", "oz"],
+                        "kg": ["kg", "g"],
+                        "oz": ["oz", "g"],
+                        "ml": ["ml", "L", "pump", "tbsp", "tsp"],
+                        "L": ["L", "ml"],
+                        "pump": ["pump", "ml"],
+                        "tbsp": ["tbsp", "ml"],
+                        "tsp": ["tsp", "ml"],
+                        "pcs": ["pcs", "box", "pack"],
+                        "box": ["box", "pcs"],
+                        "pack": ["pack", "pcs"]
+                    };
 
                     function initAutocomplete(selector) {
                         $(selector).autocomplete({
@@ -640,9 +603,23 @@ if ($categoryFilterId !== null) {
                             select: function (event, ui) {
                                 $(this).val(ui.item.label);
                                 $(this).siblings(".ingredient-id").val(ui.item.id);
-                                $(this).closest(".ingredient-row")
-                                    .find(".measurement-select")
-                                    .data("correct-unit", ui.item.unit);
+
+                                const ingredientUnit = ui.item.unit;
+                                const $select = $(this).closest(".ingredient-row").find(".measurement-select");
+
+                                // clear and repopulate dropdown
+                                $select.empty();
+                                $select.append('<option value="" disabled selected>Select Unit</option>');
+
+                                if (allowedUnits[ingredientUnit]) {
+                                    allowedUnits[ingredientUnit].forEach(unit => {
+                                        $select.append(`<option value="${unit}">${unit}</option>`);
+                                    });
+                                } else {
+                                    // fallback: just show its base unit
+                                    $select.append(`<option value="${ingredientUnit}">${ingredientUnit}</option>`);
+                                }
+
                                 return false;
                             },
                             change: function (event, ui) {

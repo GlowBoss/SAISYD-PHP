@@ -390,7 +390,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const countableKeywords = ['egg', 'potato', 'fries', 'cup', 'piece', 'slice',
                                   'patty', 'bun', 'bottle', 'can', 'bag', 'pack', 'box',
                                   'sachet', 'tablet', 'capsule', 'carrot', 'muffin', 'donut',
-                                  'croissant', 'sandwich', 'wrap'];
+                                  'croissant', 'sandwich', 'wrap',];
         
         // Check which category (priority: countable > liquid > solid)
         if (countableKeywords.some(keyword => name.includes(keyword))) {
