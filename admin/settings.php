@@ -30,21 +30,33 @@ if (isset($_POST['btnAddUser'])) {
         $_SESSION['alertMessage'] = "Passwords do not match.";
         $_SESSION['alertType'] = "error";
     } else {
-        $checkQuery = "SELECT * FROM users WHERE email='$email' OR username='$username' LIMIT 1";
-        $checkResult = executeQuery($checkQuery);
+        // Check if email or username already exists
+        $checkQuery = "SELECT * FROM users WHERE email = ? OR username = ? LIMIT 1";
+        $stmt = $conn->prepare($checkQuery);
+        $stmt->bind_param("ss", $email, $username);
+        $stmt->execute();
+        $checkResult = $stmt->get_result();
 
-        if ($checkResult && mysqli_num_rows($checkResult) > 0) {
+        if ($checkResult && $checkResult->num_rows > 0) {
             $_SESSION['alertMessage'] = "Email or username already exists.";
             $_SESSION['alertType'] = "error";
         } else {
+            // ✅ Hash the password before inserting
+            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+            // Use prepared statement for security
             $insertQuery = "
-                INSERT INTO users (fullName, email, username, accNumber, password, role) 
-                VALUES ('$fullName', '$email', '$username', '$accNumber', '$password', '$role')";
-            executeQuery($insertQuery);
+                INSERT INTO users (fullName, email, username, accNumber, password, role)
+                VALUES (?, ?, ?, ?, ?, ?)";
+            $stmt = $conn->prepare($insertQuery);
+            $stmt->bind_param("ssssss", $fullName, $email, $username, $accNumber, $hashedPassword, $role);
+            $stmt->execute();
+
             $_SESSION['alertMessage'] = "User added successfully!";
             $_SESSION['alertType'] = "success";
         }
     }
+
     header("Location: settings.php");
     exit();
 }
