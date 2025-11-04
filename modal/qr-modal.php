@@ -39,21 +39,25 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     var qrContainer = document.getElementById("qrcode");
-
-    // Bootstrap "shown.bs.modal" event
     var qrModal = document.getElementById("qrModal");
+
     qrModal.addEventListener("shown.bs.modal", function () {
         qrContainer.innerHTML = "";
 
-        // Generate QR code for your local menu
-        new QRCode(qrContainer, {
-            text: "http://localhost/Capstone/SAISYD-PHP/menu.php",
-            width: 200,
-            height: 200,
-            colorDark : "#000000",
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.H
-        });
+        // The URL you want the QR code to open
+        var menuUrl = "http://localhost/Capstone/SAISYD-PHP/menu.php";
+
+        // API endpoint with parameters
+        var apiUrl = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(menuUrl);
+
+        var qrImage = document.createElement("img");
+        qrImage.src = apiUrl;
+        qrImage.alt = "QR Code";
+        qrImage.width = 200;
+        qrImage.height = 200;
+        qrImage.classList.add("rounded", "shadow-sm");
+
+        qrContainer.appendChild(qrImage);
     });
 });
 </script>

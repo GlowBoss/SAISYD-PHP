@@ -29,6 +29,23 @@ if (isset($_POST['update_status'])) {
         }
 
         // Deduct inventory only if paymentStatus is NOT unpaid
+        // ✅ If it changed to "preparing", update payment status to "Paid"
+        if ($status_lc === 'preparing' && $prevStatus !== 'preparing') {
+            $updatePayment = "UPDATE payments SET paymentStatus = 'Paid' WHERE orderID = $orderID";
+            if (!mysqli_query($conn, $updatePayment)) {
+                error_log('Payment update failed for order ' . $orderID . ': ' . mysqli_error($conn));
+            }
+        }
+
+        // Get payment status
+        $paymentStatus = null;
+        $payRes = mysqli_query($conn, "SELECT paymentStatus FROM payments WHERE orderID = $orderID LIMIT 1");
+        if ($payRes && mysqli_num_rows($payRes) > 0) {
+            $payRow = mysqli_fetch_assoc($payRes);
+            $paymentStatus = strtolower(trim((string)($payRow['paymentStatus'] ?? '')));
+        }
+
+        // Deduct inventory only if paymentStatus is NOT unpaid
         if ($status_lc === 'completed' && $prevStatus !== 'completed') {
             if ($paymentStatus === 'unpaid') {
                 echo "<div class='alert alert-warning'>Order #$orderID is Unpaid — inventory not deducted.</div>";
