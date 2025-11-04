@@ -798,3 +798,19 @@
   background: var(--primary-color);
   border-radius: 6px;
 }
+
+
+.dropdown-menu .dropdown-item.dropdown-item-danger {
+    color: #d4574e !important;
+}
+
+.dropdown-menu .dropdown-item.dropdown-item-danger:hover,
+.dropdown-menu .dropdown-item.dropdown-item-danger:focus {
+    background: #d4574e !important;
+    color: #ffffff !important;
+}
+
+.dropdown-menu .dropdown-item.dropdown-item-danger:hover i,
+.dropdown-menu .dropdown-item.dropdown-item-danger:focus i {
+    color: #ffffff !important;
+}

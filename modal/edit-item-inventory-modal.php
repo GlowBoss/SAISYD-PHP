@@ -83,6 +83,47 @@
         font-size: 0.9rem;
     }
 
+    #ingredientNameEdit {
+        pointer-events: none;
+        background-color: #e0e0e0;
+        color: #6c6c6c;
+        border-color: #c0c0c0;
+        cursor: not-allowed;
+
+    }
+
+    #ingredientNameEdit:focus {
+        border-color: #c0c0c0;
+        box-shadow: none;
+        outline: none;
+    }
+
+    #ingredientDropdownEdit:focus {
+        border-color: var(--primary-color) !important;
+        box-shadow: none;
+    }
+
+    #quantityEdit:focus {
+        border-color: var(--primary-color) !important;
+        box-shadow: none;
+    }
+
+    #unitEdit:focus {
+        border-color: var(--primary-color) !important;
+        box-shadow: none;
+    }
+
+    #expirationEdit:focus {
+        border-color: var(--primary-color) !important;
+        box-shadow: none;
+    }
+
+    #thresholdEdit:focus {
+        border-color: var(--primary-color) !important;
+        box-shadow: none;
+    }
+
+
     @keyframes slideDown {
         from {
             opacity: 0;
@@ -125,13 +166,16 @@
                             <div class="mb-4 position-relative">
                                 <label for="ingredientName" class="form-label fw-bold mb-2"
                                     style="font-family: var(--primaryFont); color: var(--text-color-dark);">
-                                    Ingredient <span style="color: #dc3545;">*</span>
+                                    Ingredient
                                 </label>
                                 <input type="text" class="form-control" id="ingredientNameEdit"
                                     name="ingredientNameEdit" required placeholder="Type ingredient name..."
-                                    autocomplete="on" style="border: 2px solid var(--primary-color); border-radius: 10px; 
-                                              font-family: var(--secondaryFont); background: var(--card-bg-color);
-                                              color: var(--text-color-dark); padding: 12px;">
+                                    autocomplete="on" readonly style="border: 2px solid var(--primary-color); border-radius: 10px; 
+                                    font-family: var(--secondaryFont); 
+                                    background-color: #e0e0e0; 
+                                    color: #6c6c6c;           
+                                    padding: 12px;
+                                    cursor: not-allowed;">
 
                                 <!-- Autocomplete Dropdown -->
                                 <div id="ingredientDropdownEdit" class="autocomplete-dropdown position-absolute w-100"
@@ -140,17 +184,14 @@
                                             border-top: none; border-radius: 0 0 10px 10px; display: none; ">
                                 </div>
 
-                                <div class="form-text mt-2"
-                                    style="font-family: var(--secondaryFont); color: var(--gray); font-size: 0.85rem;">
-                                    Start typing to search existing ingredients or add new one
-                                </div>
+
                             </div>
 
                             <!-- Quantity -->
                             <div class="mb-4">
                                 <label for="quantity" class="form-label fw-bold mb-2"
                                     style="font-family: var(--primaryFont); color: var(--text-color-dark);">
-                                    Quantity <span style="color: #dc3545;">*</span>
+                                    Quantity
                                 </label>
                                 <input type="number" class="form-control" id="quantityEdit" name="quantityEdit" min="0"
                                     step="0.01" required placeholder="Enter quantity" style="border: 2px solid var(--primary-color); border-radius: 10px; 
@@ -162,7 +203,7 @@
                             <div class="mb-4">
                                 <label for="unit" class="form-label fw-bold mb-2"
                                     style="font-family: var(--primaryFont); color: var(--text-color-dark);">
-                                    Unit <span style="color: #dc3545;">*</span>
+                                    Unit
                                 </label>
                                 <select class="form-select" id="unitEdit" name="unitEdit" required style="border: 2px solid var(--primary-color); border-radius: 10px; 
                                                font-family: var(--secondaryFont); background: var(--card-bg-color);
@@ -209,7 +250,7 @@
                             <div class="mb-4">
                                 <label for="expirationDate" class="form-label fw-bold mb-2"
                                     style="font-family: var(--primaryFont); color: var(--text-color-dark);">
-                                    Expiration Date <span style="color: #dc3545;">*</span>
+                                    Expiration Date
                                 </label>
                                 <input type="date" class="form-control" id="expirationEdit" name="expirationEdit"
                                     required style="border: 2px solid var(--primary-color); border-radius: 10px; 
@@ -221,7 +262,7 @@
                             <div class="mb-4">
                                 <label for="threshold" class="form-label fw-bold mb-2"
                                     style="font-family: var(--primaryFont); color: var(--text-color-dark);">
-                                    Low Stock Threshold <span style="color: #dc3545;">*</span>
+                                    Low Stock Threshold
                                 </label>
                                 <input type="number" class="form-control" id="thresholdEdit" name="thresholdEdit"
                                     min="0" step="0.01" required placeholder="Enter threshold amount" style="border: 2px solid var(--primary-color); border-radius: 10px; 
@@ -404,7 +445,6 @@
                 'plastic cup', 'bottle cap', 'take-out box'
             ];
 
-
             // Check which category (priority: countable > liquid > solid)
             if (countableKeywords.some(keyword => name.includes(keyword))) {
                 return 'countable';
@@ -520,7 +560,7 @@
 
         const ingredients = [
             <?php foreach ($ingredients as $ingredient): ?>
-                        {
+                                            {
                     ingredientID: <?= $ingredient['ingredientID'] ?>,
                     ingredientName: '<?= addslashes($ingredient['ingredientName']) ?>'
                 },
