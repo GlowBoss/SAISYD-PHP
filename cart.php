@@ -105,7 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 // Insert payment
-                $paymentStatus = 'paid';
+                $paymentStatus = 'Unpaid';
                 $refNumberEscaped = $refNumber ? "'" . mysqli_real_escape_string($conn, $refNumber) . "'" : "NULL";
                 $paymentMethodEscaped = mysqli_real_escape_string($conn, $paymentMethod);
 
