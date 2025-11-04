@@ -20,6 +20,15 @@ if (isset($_POST['update_status'])) {
     $updateQuery = "UPDATE orders SET status='$status_raw' WHERE orderID=$orderID";
     if (mysqli_query($conn, $updateQuery)) {
 
+        // Get payment status
+        $paymentStatus = null;
+        $payRes = mysqli_query($conn, "SELECT paymentStatus FROM payments WHERE orderID = $orderID LIMIT 1");
+        if ($payRes && mysqli_num_rows($payRes) > 0) {
+            $payRow = mysqli_fetch_assoc($payRes);
+            $paymentStatus = strtolower(trim((string)($payRow['paymentStatus'] ?? '')));
+        }
+
+        // Deduct inventory only if paymentStatus is NOT unpaid
         // ✅ If it changed to "preparing", update payment status to "Paid"
         if ($status_lc === 'preparing' && $prevStatus !== 'preparing') {
             $updatePayment = "UPDATE payments SET paymentStatus = 'Paid' WHERE orderID = $orderID";
@@ -28,18 +37,33 @@ if (isset($_POST['update_status'])) {
             }
         }
 
-        // If it changed to completed then deduct inventory stocks
+        // Get payment status
+        $paymentStatus = null;
+        $payRes = mysqli_query($conn, "SELECT paymentStatus FROM payments WHERE orderID = $orderID LIMIT 1");
+        if ($payRes && mysqli_num_rows($payRes) > 0) {
+            $payRow = mysqli_fetch_assoc($payRes);
+            $paymentStatus = strtolower(trim((string)($payRow['paymentStatus'] ?? '')));
+        }
+
+        // Deduct inventory only if paymentStatus is NOT unpaid
         if ($status_lc === 'completed' && $prevStatus !== 'completed') {
-            $deductQuery = "
-                UPDATE inventory i
-                JOIN productrecipe pr ON i.ingredientID = pr.ingredientID
-                JOIN orderitems oi ON pr.productID = oi.productID
-                SET i.quantity = i.quantity - (pr.requiredQuantity * oi.quantity)
-                WHERE oi.orderID = $orderID
-            ";
-            if (!mysqli_query($conn, $deductQuery)) {
-                // Log deduction failure
-                error_log('Inventory deduction failed for order ' . $orderID . ': ' . mysqli_error($conn));
+            if ($paymentStatus === 'unpaid') {
+                echo "<div class='alert alert-warning'>Order #$orderID is Unpaid — inventory not deducted.</div>";
+                error_log("Skipped inventory deduction for order $orderID because paymentStatus='$paymentStatus'");
+            } else {
+                $deductQuery = "
+                    UPDATE inventory i
+                    JOIN productrecipe pr ON i.ingredientID = pr.ingredientID
+                    JOIN orderitems oi ON pr.productID = oi.productID
+                    SET i.quantity = i.quantity - (pr.requiredQuantity * oi.quantity)
+                    WHERE oi.orderID = $orderID
+                ";
+                if (!mysqli_query($conn, $deductQuery)) {
+                    error_log('Inventory deduction failed for order ' . $orderID . ': ' . mysqli_error($conn));
+                    echo "<div class='alert alert-danger'>Inventory deduction failed for order #$orderID.</div>";
+                } else {
+                    echo "<div class='alert alert-success'>Inventory deducted for order #$orderID.</div>";
+                }
             }
         }
 
