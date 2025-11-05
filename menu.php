@@ -1,6 +1,6 @@
 <?php
 include 'assets/connect.php';
-include 'assets/track_visits.php'; 
+include 'assets/track_visits.php';
 
 // Initialize cart session if it doesn't exist
 if (!isset($_SESSION['cart'])) {
@@ -32,7 +32,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
     $quantity = intval($_POST['quantity'] ?? 1);
 
     // Get categories that need sugar/ice from database
-    $categoriesQuery = "SELECT categoryName FROM categories WHERE categoryID IN (2, 3, 4, 5)";
+    $categoriesQuery = "SELECT categoryName FROM categories 
+    WHERE categoryName IN ('Espresso Based', 'Non-Coffee', 'Frappé', 'Milktea', 'Fruit Tea')";
     $categoriesResult = executeQuery($categoriesQuery);
     $categoriesWithSugarIce = [];
     while ($cat = mysqli_fetch_assoc($categoriesResult)) {
@@ -138,7 +139,8 @@ $categoryQuery = "SELECT * FROM categories ORDER BY categoryName";
 $categories = executeQuery($categoryQuery);
 
 // Get categories that need sugar/ice customization
-$sugarIceCategoriesQuery = "SELECT categoryName FROM categories WHERE categoryID IN (2, 3, 4, 5)";
+$sugarIceCategoriesQuery = "SELECT categoryName FROM categories 
+    WHERE categoryName IN ('Espresso Based', 'Non-Coffee', 'Frappé', 'Milktea', 'Fruit Tea')";
 $sugarIceCategories = executeQuery($sugarIceCategoriesQuery);
 $sugarIceCategoryList = [];
 while ($cat = mysqli_fetch_assoc($sugarIceCategories)) {
@@ -231,7 +233,7 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
 
             <!-- Mobile  -->
             <div class="d-flex d-lg-none align-items-center w-100 position-relative" style="min-height: 50px;">
-               
+
                 <button id="openSidebarBtn" class="navbar-toggler border-0 p-1">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -374,8 +376,7 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                     <div class="col product-item"
                         data-category="<?php echo htmlspecialchars($product['categoryName'] ?? 'Uncategorized'); ?>"
                         data-name="<?php echo htmlspecialchars($product['productName']); ?>"
-                        data-price="<?php echo $product['price']; ?>"
-                        data-available="<?php echo $isAvailable ? '1' : '0'; ?>">
+                        data-price="<?php echo $product['price']; ?>" data-available="<?php echo $isAvailable ? '1' : '0'; ?>">
 
                         <div class="menu-item <?php echo !$isAvailable ? 'unavailable-item' : ''; ?> text-center" style="
                 height: clamp(260px, 40vw, 320px);
@@ -655,7 +656,9 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
             if (currentValue < 999) quantityInput.value = currentValue + 1;
         }
 
+        // FIXED: Modal close event - removes duplicate and fixes scrolling
         document.getElementById('item-customization').addEventListener('hidden.bs.modal', function () {
+            // Reset form values
             document.getElementById('quantity').value = 1;
             document.getElementById('customer_notes').value = '';
 
@@ -665,11 +668,14 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
             if (document.querySelector('input[name="ice"][value="Default Ice"]')) {
                 document.querySelector('input[name="ice"][value="Default Ice"]').checked = true;
             }
-        });
 
-        document.getElementById('item-customization').addEventListener('hidden.bs.modal', function () {
-            document.body.classList.remove('modal-open');
-            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            // Fix scrolling issue - THIS IS THE FIX
+            setTimeout(() => {
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+                document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            }, 100);
         });
 
         document.addEventListener('DOMContentLoaded', function () {
@@ -740,7 +746,7 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                         if (a.available !== b.available) {
                             return b.available - a.available;
                         }
-                        
+
                         switch (sortOption) {
                             case 'name-asc':
                                 return a.name.localeCompare(b.name);
@@ -795,12 +801,12 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                     const currentSort = sessionStorage.getItem('currentSort') || 'name-asc';
 
                     let sortedData = [...allProductsData];
-                    
+
                     sortedData.sort((a, b) => {
                         if (a.available !== b.available) {
                             return b.available - a.available;
                         }
-                        
+
                         switch (currentSort) {
                             case 'name-asc':
                                 return a.name.localeCompare(b.name);

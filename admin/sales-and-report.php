@@ -165,14 +165,20 @@ ORDER BY o.orderDate DESC;
 ";
 $transactionResult = mysqli_query($conn, $transactionHistory);
 
+// Fetch all categories for filter dropdown
+$categoriesQuery = "SELECT categoryID, categoryName FROM categories ORDER BY categoryName ASC";
+$categoriesResult = mysqli_query($conn, $categoriesQuery);
+$categories = [];
+while ($row = mysqli_fetch_assoc($categoriesResult)) {
+    $categories[] = $row;
+}
+
 // Capture filters
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
-$category_sort = isset($_GET['category_sort']) ? strtolower($_GET['category_sort']) : '';
+$category_filter = isset($_GET['category_filter']) ? intval($_GET['category_filter']) : '';
 $price_sort = isset($_GET['price_sort']) ? strtolower($_GET['price_sort']) : '';
 
 // Validate inputs
-if (!in_array($category_sort, ['asc', 'desc']))
-    $category_sort = '';
 if (!in_array($price_sort, ['high', 'low']))
     $price_sort = '';
 
@@ -188,14 +194,19 @@ if ($search) {
     $types .= "ss";
 }
 
+// Add category filter
+if ($category_filter) {
+    $where[] = "c.categoryID = ?";
+    $params[] = $category_filter;
+    $types .= "i";
+}
+
 $whereSql = $where ? "AND " . implode(" AND ", $where) : "";
 
 // Default ordering
 $orderBy = "ORDER BY total_quantity DESC";
 
-if ($category_sort) {
-    $orderBy = "ORDER BY c.categoryName " . strtoupper($category_sort);
-} elseif ($price_sort === 'high') {
+if ($price_sort === 'high') {
     $orderBy = "ORDER BY pr.price DESC";
 } elseif ($price_sort === 'low') {
     $orderBy = "ORDER BY pr.price ASC";
@@ -403,52 +414,36 @@ $productResult = $stmt->get_result();
 
             <!-- Header Section -->
             <div class="header-section">
-                <div
-                    class="d-flex flex-column flex-md-row justify-content-between align-items-center align-items-md-start mb-4">
-                    <div class="text-center text-md-start w-100">
+                <div class="row align-items-center mb-4">
+                    <div class="col-12 col-lg-6 text-center text-lg-start mb-3 mb-lg-0">
                         <h1 class="page-title pt-lg-4 pt-0">Sales & Reports</h1>
-
                     </div>
 
-                    <!-- Desktop Stats Cards -->
-                    <div class="stats-cards d-none d-lg-flex">
-                        <div class="stat-card">
-                            <div class="stat-number">₱<?php echo number_format($weeklyTotal, 2); ?></div>
-                            <div class="stat-label">Weekly Sales</div>
-                            <div class="stat-subtext text-muted">
-                                <?php echo $weekStart . ' – ' . $weekEnd; ?>
+                    <!-- Desktop & Tablet Stats Cards -->
+                    <div class="col-12 col-lg-6">
+                        <div class="row g-2">
+                            <div class="col-12 col-md-4">
+                                <div class="stat-card">
+                                    <div class="stat-number">₱<?php echo number_format($weeklyTotal, 0); ?></div>
+                                    <div class="stat-label">Weekly Sales</div>
+                                    <div class="stat-subtext text-muted small">
+                                        <?php echo $weekStart . ' – ' . $weekEnd; ?>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number">₱<?php echo number_format($monthlyTotal, 2); ?></div>
-                            <div class="stat-subtext text-muted">Monthly Sales (<?php echo date('F'); ?>)</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number"><?php echo $totalItemsSoldCount; ?></div>
-                            <div class="stat-label">Items Sold</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Mobile Stats Cards -->
-                <div class="mobile-stats d-lg-none mb-4">
-                    <div class="row g-2">
-                        <div class="col-4">
-                            <div class="stat-card">
-                                <div class="stat-number">₱<?php echo number_format($weeklyTotal, 0); ?></div>
-                                <div class="stat-label">Weekly</div>
+                            <div class="col-12 col-md-4">
+                                <div class="stat-card">
+                                    <div class="stat-number">₱<?php echo number_format($monthlyTotal, 0); ?></div>
+                                    <div class="stat-label">Monthly Sales</div>
+                                    <div class="stat-subtext text-muted small"><?php echo date('F'); ?></div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="stat-card">
-                                <div class="stat-number">₱<?php echo number_format($monthlyTotal, 0); ?></div>
-                                <div class="stat-label">Monthly</div>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="stat-card">
-                                <div class="stat-number"><?php echo $totalItemsSoldCount; ?></div>
-                                <div class="stat-label">Items</div>
+                            <div class="col-12 col-md-4">
+                                <div class="stat-card">
+                                    <div class="stat-number"><?php echo $totalItemsSoldCount; ?></div>
+                                    <div class="stat-label">Items Sold</div>
+                                    <div class="stat-subtext text-muted small">This Week</div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -559,6 +554,7 @@ $productResult = $stmt->get_result();
                                 <?php
                                 if (mysqli_num_rows($transactionResult) > 0) {
                                     while ($row = mysqli_fetch_assoc($transactionResult)) {
+                                        $statusClass = strtolower($row['paymentStatus']) === 'paid' ? 'paid' : 'unpaid';
                                         ?>
                                         <tr>
                                             <td class="date-cell">
@@ -576,7 +572,7 @@ $productResult = $stmt->get_result();
                                             <td class="amount-cell">₱<?= number_format($row['totalAmount'], 2) ?></td>
                                             <td class="payment-method"><?= htmlspecialchars($row['paymentMethod']) ?></td>
                                             <td class="status-cell">
-                                                <span class="status-badge paid"><?= ucfirst($row['paymentStatus']) ?></span>
+                                                <span class="status-badge <?= $statusClass ?>"><?= ucfirst($row['paymentStatus']) ?></span>
                                             </td>
                                             <td class="customer-name"><?= htmlspecialchars($row['displayName']) ?></td>
                                         </tr>
@@ -613,10 +609,14 @@ $productResult = $stmt->get_result();
 
                             <div class="col-6 col-md-2">
                                 <label class="filter-label">Category</label>
-                                <select class="filter-select" name="category_sort">
-                                    <option value="">All</option>
-                                    <option value="asc" <?= $category_sort === 'asc' ? 'selected' : '' ?>>A → Z</option>
-                                    <option value="desc" <?= $category_sort === 'desc' ? 'selected' : '' ?>>Z → A</option>
+                                <select class="filter-select" name="category_filter">
+                                    <option value="">All Categories</option>
+                                    <?php foreach ($categories as $cat): ?>
+                                        <option value="<?= $cat['categoryID'] ?>" 
+                                            <?= $category_filter == $cat['categoryID'] ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($cat['categoryName']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
                                 </select>
                             </div>
 

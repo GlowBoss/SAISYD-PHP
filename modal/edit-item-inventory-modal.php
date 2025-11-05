@@ -191,7 +191,7 @@
                             <div class="mb-4">
                                 <label for="quantity" class="form-label fw-bold mb-2"
                                     style="font-family: var(--primaryFont); color: var(--text-color-dark);">
-                                    Quantity 
+                                    Quantity
                                 </label>
                                 <input type="number" class="form-control" id="quantityEdit" name="quantityEdit" min="0"
                                     step="0.01" required placeholder="Enter quantity" style="border: 2px solid var(--primary-color); border-radius: 10px; 
@@ -203,7 +203,7 @@
                             <div class="mb-4">
                                 <label for="unit" class="form-label fw-bold mb-2"
                                     style="font-family: var(--primaryFont); color: var(--text-color-dark);">
-                                    Unit 
+                                    Unit
                                 </label>
                                 <select class="form-select" id="unitEdit" name="unitEdit" required style="border: 2px solid var(--primary-color); border-radius: 10px; 
                                                font-family: var(--secondaryFont); background: var(--card-bg-color);
@@ -250,7 +250,7 @@
                             <div class="mb-4">
                                 <label for="expirationDate" class="form-label fw-bold mb-2"
                                     style="font-family: var(--primaryFont); color: var(--text-color-dark);">
-                                    Expiration Date 
+                                    Expiration Date
                                 </label>
                                 <input type="date" class="form-control" id="expirationEdit" name="expirationEdit"
                                     required style="border: 2px solid var(--primary-color); border-radius: 10px; 
@@ -262,7 +262,7 @@
                             <div class="mb-4">
                                 <label for="threshold" class="form-label fw-bold mb-2"
                                     style="font-family: var(--primaryFont); color: var(--text-color-dark);">
-                                    Low Stock Threshold 
+                                    Low Stock Threshold
                                 </label>
                                 <input type="number" class="form-control" id="thresholdEdit" name="thresholdEdit"
                                     min="0" step="0.01" required placeholder="Enter threshold amount" style="border: 2px solid var(--primary-color); border-radius: 10px; 
@@ -397,22 +397,53 @@
             const name = ingredientName.toLowerCase();
 
             // LIQUIDS - anything liquid/fluid
-            const liquidKeywords = ['milk', 'water', 'syrup', 'juice', 'espresso',
-                'cream', 'latte', 'tea', 'oil', 'sauce', 'broth', 'soda',
-                'coke', 'sprite', 'drink', 'beverage', 'liquid', 'coffee',
-                'mocha', 'vanilla', 'caramel', 'hazelnut', 'chocolate sauce'];
+            const liquidKeywords = [
+                'milk', 'fresh milk', 'full cream milk', 'oat milk', 'soy milk',
+                'almond milk', 'condensed milk', 'evaporated milk', 'whipping cream',
+                'all purpose cream', 'cream', 'syrup', 'caramel syrup',
+                'hazelnut syrup', 'vanilla syrup', 'brown sugar syrup',
+                'chocolate syrup', 'strawberry syrup', 'blueberry syrup',
+                'green apple syrup', 'lychee syrup', 'peach syrup', 'lemon syrup',
+                'fructose', 'espresso', 'coffee', 'latte', 'americano', 'macchiato',
+                'mocha', 'matcha', 'tea', 'black tea', 'milk tea', 'fruit tea',
+                'juice', 'water', 'ice', 'soda', 'sprite', 'drink', 'beverage',
+                'liquid', 'ketchup', 'mayo', 'sriracha', 'soy sauce', 'fish sauce',
+                'oyster sauce', 'worcestershire sauce', 'caramel sauce',
+                'chocolate sauce', 'vanilla extract', 'honey', 'vinegar', 'oil',
+                'cooking oil', 'gravy', 'lemonade', 'cold brew', 'espresso shot',
+                'flavored syrup', 'hazelnut', 'caramel', 'vanilla', 'mocha sauce',
+                'yogurt', 'frappe base'
+            ];
+
 
             // SOLIDS - dry/powder/granular/solid items
-            const solidKeywords = ['sugar', 'flour', 'powder', 'salt', 'beans', 'leaves',
-                'cocoa', 'chocolate', 'spice', 'grain', 'rice', 'cheese',
-                'butter', 'matcha', 'taro', 'ube', 'caramel powder', 'cookie',
-                'biscuit', 'pastry', 'cake', 'bread'];
+            const solidKeywords = [
+                'sugar', 'brown sugar', 'white sugar', 'powder', 'cocoa powder',
+                'chocolate powder', 'milo powder', 'matcha powder', 'caramel powder',
+                'cookies and cream powder', 'coffee beans', 'arabica beans',
+                'tea leaves', 'assam tea', 'frappe powder', 'topping', 'spice',
+                'salt', 'flour', 'butter', 'cheese', 'parmesan', 'cheese block',
+                'breadcrumbs', 'cornstarch', 'oats', 'nuts', 'almond', 'cashew',
+                'hazelnut', 'grain', 'rice', 'bread crumbs', 'pasta', 'macaroni',
+                'spaghetti', 'herb', 'pepper', 'seasoning', 'instant coffee',
+                'yeast', 'dry mix', 'matcha', 'taro', 'ube', 'chips', 'cookies',
+                'biscuit', 'pastry', 'cake', 'brownie', 'muffin', 'croissant',
+                'toast', 'waffle', 'bread', 'crackers'
+            ];
+
 
             // COUNTABLE - by pieces/whole items
-            const countableKeywords = ['egg', 'potato', 'fries', 'cup', 'piece', 'slice',
-                'patty', 'bun', 'bottle', 'can', 'bag', 'pack', 'box',
-                'sachet', 'tablet', 'capsule', 'carrot', 'muffin', 'donut',
-                'croissant', 'sandwich', 'wrap'];
+            const countableKeywords = [
+                'egg', 'eggs', 'ice cube', 'cup', 'piece', 'slice', 'bun',
+                'bread', 'sandwich', 'croissant', 'muffin', 'donut', 'wrap',
+                'pita', 'burger bun', 'hotdog', 'sausage', 'patty', 'nugget',
+                'fries', 'wings', 'ham', 'spam', 'bacon', 'beef', 'porkloin',
+                'chicken', 'lettuce', 'tomato', 'onion', 'garlic', 'cucumber',
+                'cup lid', 'cup sleeve', 'straw', 'tissue', 'napkin', 'fork',
+                'spoon', 'tray', 'plate', 'container', 'bottle', 'can', 'pack',
+                'box', 'bag', 'sachet', 'cup holder', 'stirrer', 'stick', 'toothpick',
+                'plastic cup', 'bottle cap', 'take-out box'
+            ];
 
             // Check which category (priority: countable > liquid > solid)
             if (countableKeywords.some(keyword => name.includes(keyword))) {
@@ -529,7 +560,7 @@
 
         const ingredients = [
             <?php foreach ($ingredients as $ingredient): ?>
-                                        {
+                                            {
                     ingredientID: <?= $ingredient['ingredientID'] ?>,
                     ingredientName: '<?= addslashes($ingredient['ingredientName']) ?>'
                 },
