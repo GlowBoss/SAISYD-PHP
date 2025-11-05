@@ -35,6 +35,30 @@ switch ($action) {
 }
 
 /**
+ * Get staff name from database based on userID in session
+ */
+function getStaffName()
+{
+    global $conn;
+    
+    // Check if user is logged in
+    if (!isset($_SESSION['userID'])) {
+        return 'POS: Walk-in Customer';
+    }
+    
+    $userID = intval($_SESSION['userID']);
+    $query = "SELECT fullName FROM users WHERE userID = $userID";
+    $result = executeQuery($query);
+    
+    if ($result && mysqli_num_rows($result) > 0) {
+        $user = mysqli_fetch_assoc($result);
+        return 'POS: ' . $user['fullName'];
+    }
+    
+    return 'POS: Walk-in Customer';
+}
+
+/**
  * Updates product availability based on quantity
  */
 function updateProductAvailability($productID = null)
@@ -95,9 +119,9 @@ function addToCart()
     $productName = $_POST['productName'] ?? '';
     $price = (float) ($_POST['price'] ?? 0);
     $quantity = (int) ($_POST['quantity'] ?? 1);
-    $sugarLevel = $_POST['sugarLevel'] ?? '';
-    $iceLevel = $_POST['iceLevel'] ?? '';
-    $size = $_POST['size'] ?? 'Regular'; // Default to Regular since API only provides Regular size
+    $sugarLevel = $_POST['sugarLevel'] ?? null;
+    $iceLevel = $_POST['iceLevel'] ?? null;
+    $size = $_POST['size'] ?? 'Regular';
 
     if (empty($productID) || empty($productName) || $price <= 0 || $quantity <= 0) {
         echo json_encode(['error' => 'Invalid product data']);
@@ -111,8 +135,16 @@ function addToCart()
         return;
     }
 
-    // Create unique key for cart item - simplified since size is always Regular
-    $itemKey = $productID . '_' . $sugarLevel . '_' . $iceLevel;
+    // Convert empty strings to null
+    if ($sugarLevel === '' || $sugarLevel === '0') {
+        $sugarLevel = null;
+    }
+    if ($iceLevel === '') {
+        $iceLevel = null;
+    }
+
+    // Create unique key for cart item
+    $itemKey = $productID . '_' . ($sugarLevel ?? 'none') . '_' . ($iceLevel ?? 'none');
 
     // Check if item already exists in cart
     if (isset($_SESSION['cart'][$itemKey])) {
@@ -129,12 +161,12 @@ function addToCart()
     } else {
         $_SESSION['cart'][$itemKey] = [
             'productID' => $productID,
-            'productName' => $productName, // This now contains the full name with size from database
+            'productName' => $productName,
             'price' => $price,
             'quantity' => $quantity,
             'sugarLevel' => $sugarLevel,
             'iceLevel' => $iceLevel,
-            'size' => $size, // Will always be 'Regular' now
+            'size' => $size,
             'totalPrice' => $price * $quantity
         ];
     }
@@ -212,7 +244,10 @@ function checkout()
     global $conn;
 
     $paymentMethod = $_POST['paymentMethod'] ?? 'Cash';
-    $customerName = $_POST['customerName'] ?? 'Walk-in Customer';
+    
+    // Get staff name from database - this will be the customer name
+    $customerName = getStaffName();
+    
     $orderType = $_POST['orderType'] ?? 'dine-in';
     $contactNumber = $_POST['contactNumber'] ?? null;
 
@@ -258,11 +293,14 @@ function checkout()
             $contactNumber = mysqli_real_escape_string($conn, $contactNumber);
         }
 
+        // Get userID from session, default to 1 if not set
+        $userID = isset($_SESSION['userID']) ? intval($_SESSION['userID']) : 1;
+
         // Insert order - matching your database schema exactly
         $insertOrderQuery = "INSERT INTO orders (orderDate, customerName, orderContactNumber, totalAmount, orderType, orderNumber, status, isDone, userID) 
                            VALUES (NOW(), '$customerName', " .
             ($contactNumber ? "'$contactNumber'" : "NULL") . ", 
-                           '$total', '$orderType', '$orderNumber', 'pending', 0, 1)";
+                           '$total', '$orderType', '$orderNumber', 'pending', 0, $userID)";
 
         $orderResult = executeQuery($insertOrderQuery);
 
@@ -277,23 +315,33 @@ function checkout()
             $productID = (int) $item['productID'];
             $quantity = (int) $item['quantity'];
 
-
-            // Handle sugar level - store as tinyint(1) or NULL
-            $sugar = (isset($item['sugarLevel']) && $item['sugarLevel'] !== '' && trim($item['sugarLevel']) !== '' && $item['sugarLevel'] !== '0')
-                ? "'" . mysqli_real_escape_string($conn, $item['sugarLevel']) . "% Sugar'"
-                : 'NULL';
-            $ice = "'Normal'"; // default to Normal
-            if (!empty($item['iceLevel']) && trim($item['iceLevel']) !== '') {
-                $iceLevel = trim($item['iceLevel']); // Don't lowercase, keep exact value
-
-                // Exact match to database enum values
+            // Handle sugar level - store as varchar or NULL
+            $sugar = 'NULL';
+            if (isset($item['sugarLevel']) && $item['sugarLevel'] !== null && $item['sugarLevel'] !== '' && $item['sugarLevel'] !== '0') {
+                $sugarValue = trim((string)$item['sugarLevel']);
+                if ($sugarValue !== '' && $sugarValue !== '0') {
+                    $sugar = "'" . mysqli_real_escape_string($conn, $sugarValue) . "% Sugar'";
+                }
+            }
+            
+            // Handle ice level - only for drinks (if iceLevel is set and not null in the item)
+            $ice = 'NULL'; // default to NULL for food items
+            
+            // Check if iceLevel exists and has a meaningful value
+            if (array_key_exists('iceLevel', $item) && $item['iceLevel'] !== null && $item['iceLevel'] !== '') {
+                $iceLevel = trim((string)$item['iceLevel']);
+                
+                // Only set ice if it's a valid value
                 if ($iceLevel === 'Less') {
                     $ice = "'Less'";
                 } elseif ($iceLevel === 'Extra') {
                     $ice = "'Extra'";
-                } else {
-                    $ice = "'Default Ice'"; // Default to Normal for any other value
+                } elseif ($iceLevel === 'Normal') {
+                    $ice = "'Normal'";
+                } elseif ($iceLevel === 'Default Ice') {
+                    $ice = "'Default Ice'";
                 }
+                // If it's any other value or empty, $ice remains NULL
             }
 
             // Handle notes - only store if there's actual content (not size)
