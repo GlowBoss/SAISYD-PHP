@@ -251,8 +251,19 @@ if ($result && mysqli_num_rows($result) > 0) {
             </div>`;
                     });
 
-                    // Select first category by default
-                    if (products.length > 0) {
+                    // Check if there's a saved category selection
+                    const savedCategory = sessionStorage.getItem('selectedCategory');
+
+                    if (savedCategory !== null) {
+                        const categoryIndex = parseInt(savedCategory);
+                        const categoryPills = document.querySelectorAll('.category-pill');
+                        if (categoryPills[categoryIndex]) {
+                            categoryPills[categoryIndex].classList.add('active');
+                            loadProducts(categoryIndex);
+                        }
+                        sessionStorage.removeItem('selectedCategory'); // Clear after use
+                    } else if (products.length > 0) {
+                        // Select first category by default if no saved selection
                         const firstCategory = document.querySelector('.category-pill');
                         if (firstCategory) {
                             firstCategory.classList.add('active');
@@ -262,9 +273,8 @@ if ($result && mysqli_num_rows($result) > 0) {
                 }
 
                 function selectCategory(element, index) {
-                    document.querySelectorAll('.category-pill').forEach(pill => pill.classList.remove('active'));
-                    element.classList.add('active');
-                    loadProducts(index);
+                    sessionStorage.setItem('selectedCategory', index);
+                    location.reload();
                 }
 
                 function loadProducts(categoryIndex) {
@@ -329,26 +339,28 @@ if ($result && mysqli_num_rows($result) > 0) {
                             }
 
                             maincontainer.innerHTML += `
-                <div class="col-12 col-sm-6 col-md-4 col-lg-2">
-                    <div class="menu-item border p-3 rounded shadow text-center width-auto card-hover" 
-                         style="cursor: pointer;"
-                         onclick="showQuantityModal('${content.productID}', '${content.name} ${size.name}', '${size.price}', '${size.name}', '${sugarSelectId}', '${iceSelectId}')">
-                        <img src="../assets/img/img-menu/${content.img}" alt="${content.name}" 
-                             class="img-fluid mb-2" style="max-height: 170px; min-height: 120px; pointer-events: none;">
-                        <div class="lead menu-name fw-bold">${content.name}</div>
-                        <div class="d-flex justify-content-center align-items-center gap-2 my-2">
-                            <span class="lead fw-bold menu-price">₱${size.price}</span>
-                            <span class="lead menu-size">${size.name}</span>
-                        </div>
-                       
-                        ${sugarIceDropdowns}
-                    </div>
-                </div>`;
+    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+        <div class="menu-item border p-3 rounded shadow text-center width-auto card-hover d-flex flex-column" 
+             style="cursor: pointer; height: 100%;">
+            <div onclick="showQuantityModal('${content.productID}', '${content.name} ${size.name}', '${size.price}', '${size.name}', '${sugarSelectId}', '${iceSelectId}')">
+                <img src="../assets/img/img-menu/${content.img}" alt="${content.name}" 
+                     class="img-fluid mb-2" style="max-height: 170px; min-height: 120px; pointer-events: none;">
+                <div class="lead menu-name fw-bold">${content.name}</div>
+                <div class="d-flex justify-content-center align-items-center gap-2 my-2">
+                    <span class="lead fw-bold menu-price">₱${size.price}</span>
+                    <span class="lead menu-size">${size.name}</span>
+                </div>
+            </div>
+            
+            <div class="mt-auto">
+                ${sugarIceDropdowns}
+            </div>
+        </div>
+    </div>`;
                         });
                     });
 
-                    // Set up dropdown functionality after a short delay
-                    // Set up dropdown functionality after a short delay
+
                     setTimeout(() => {
                         document.querySelectorAll(".dropdown-menu .dropdown-item").forEach(item => {
                             item.addEventListener("click", function (e) {
@@ -735,14 +747,14 @@ if ($result && mysqli_num_rows($result) > 0) {
                 });
             </script>
 
-            <script>
+            <!-- <script>
                 document.addEventListener("DOMContentLoaded", function () {
                     // Reload Page every 30 seconds to fetch new orders
                     setInterval(function () {
                         location.reload();
                     }, 30000);
                 });
-            </script>
+            </script> -->
 
             <script src="../assets/js/admin_sidebar.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
