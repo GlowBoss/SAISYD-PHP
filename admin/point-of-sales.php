@@ -339,24 +339,21 @@ if ($result && mysqli_num_rows($result) > 0) {
                             }
 
                             maincontainer.innerHTML += `
-    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
-        <div class="menu-item border p-3 rounded shadow text-center width-auto card-hover d-flex flex-column" 
-             style="cursor: pointer; height: 100%;">
-            <div onclick="showQuantityModal('${content.productID}', '${content.name} ${size.name}', '${size.price}', '${size.name}', '${sugarSelectId}', '${iceSelectId}')">
-                <img src="../assets/img/img-menu/${content.img}" alt="${content.name}" 
-                     class="img-fluid mb-2" style="max-height: 170px; min-height: 120px; pointer-events: none;">
-                <div class="lead menu-name fw-bold">${content.name}</div>
-                <div class="d-flex justify-content-center align-items-center gap-2 my-2">
-                    <span class="lead fw-bold menu-price">₱${size.price}</span>
-                    <span class="lead menu-size">${size.name}</span>
-                </div>
-            </div>
-            
-            <div class="mt-auto">
-                ${sugarIceDropdowns}
-            </div>
-        </div>
-    </div>`;
+                <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                    <div class="menu-item border p-3 rounded shadow text-center width-auto card-hover" 
+                         style="cursor: pointer;"
+                         onclick="showQuantityModal('${content.productID}', '${content.name} ${size.name}', '${size.price}', '${size.name}', '${sugarSelectId}', '${iceSelectId}')">
+                        <img src="../assets/img/img-menu/${content.img}" alt="${content.name}" 
+                             class="img-fluid mb-2" style="max-height: 170px; min-height: 120px; pointer-events: none;">
+                        <div class="lead menu-name fw-bold">${content.name}</div>
+                        <div class="d-flex justify-content-center align-items-center gap-2 my-2">
+                            <span class="lead fw-bold menu-price">₱${size.price}</span>
+                            <span class="lead menu-size">${size.name}</span>
+                        </div>
+                       
+                        ${sugarIceDropdowns}
+                    </div>
+                </div>`;
                         });
                     });
 

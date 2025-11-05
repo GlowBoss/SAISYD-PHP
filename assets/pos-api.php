@@ -8,6 +8,7 @@ try {
     executeQuery($updateQuery);
 
     // Define which categories should have sugar/ice options based on database categoryIDs
+    // Based on your database:
     // 1=Espresso Based, 2=Non-Coffee, 3=Frappé, 4=Milktea, 5=Fruit Tea, 6=Fruit Soda
     // 7=Pasta, 8=Korean Egg-Drop Sandwich, 9=Mini Korean Egg-Drop Sandwich
     // 10=Rice Meals, 11=Wings (Ala Carte), 12=Combo Meals, 13=Snacks
@@ -43,11 +44,11 @@ try {
             WHERE categoryID = ? AND isAvailable = 'Yes'
             ORDER BY productName ASC
         ");
-        
+
         if (!$stmt) {
             throw new Exception("Failed to prepare statement");
         }
-        
+
         $stmt->bind_param("i", $categoryID);
         $stmt->execute();
         $productsResult = $stmt->get_result();
@@ -63,11 +64,13 @@ try {
             $productID = $prod['productID'];
 
             // For now, using single Regular size
-            $sizes = [[
-                "name" => "Regular",
-                "code" => "",
-                "price" => $basePrice
-            ]];
+            $sizes = [
+                [
+                    "name" => "",
+                    "code" => "",
+                    "price" => $basePrice
+                ]
+            ];
 
             // Build product object
             $product = [
@@ -89,7 +92,7 @@ try {
 
             $contents[] = $product;
         }
-        
+
         $stmt->close();
 
         // Only add categories that have available products
@@ -116,7 +119,7 @@ try {
 } catch (Exception $e) {
     // Log error for debugging
     error_log("POS API Error: " . $e->getMessage());
-    
+
     // Return error message
     http_response_code(500);
     echo json_encode([
