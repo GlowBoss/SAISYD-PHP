@@ -7,6 +7,11 @@ try {
     $updateQuery = "UPDATE products SET isAvailable = 'No' WHERE availableQuantity <= 0";
     executeQuery($updateQuery);
 
+    // Define which categories should have sugar/ice options based on database categoryIDs
+    // 1=Espresso Based, 2=Non-Coffee, 3=Frappé, 4=Milktea, 5=Fruit Tea, 6=Fruit Soda
+    // 7=Pasta, 8=Korean Egg-Drop Sandwich, 9=Mini Korean Egg-Drop Sandwich
+    // 10=Rice Meals, 11=Wings (Ala Carte), 12=Combo Meals, 13=Snacks
+    $beverageCategories = [1, 2, 3, 4, 5, 6]; // IDs for beverage categories
 
     // Step 1: Get all categories that have available products
     $categoriesResult = executeQuery("
@@ -14,7 +19,7 @@ try {
         FROM categories c
         INNER JOIN products p ON c.categoryID = p.categoryID
         WHERE p.isAvailable = 'Yes'
-        ORDER BY c.categoryName ASC
+        ORDER BY c.categoryID ASC
     ");
 
     if (!$categoriesResult) {
@@ -27,17 +32,8 @@ try {
         $categoryID = $cat['categoryID'];
         $categoryName = $cat['categoryName'];
 
-        // Determine if this category should have sugar/ice options
-        $categoryLower = strtolower($categoryName);
-        $hasSugarIce = (
-            strpos($categoryLower, 'coffee') !== false ||
-            strpos($categoryLower, 'tea') !== false ||
-            strpos($categoryLower, 'frappe') !== false ||
-            strpos($categoryLower, 'milktea') !== false ||
-            strpos($categoryLower, 'soda') !== false ||
-            strpos($categoryLower, 'drink') !== false ||
-            strpos($categoryLower, 'beverage') !== false
-        );
+        // Check if this category should have sugar/ice options based on categoryID
+        $hasSugarIce = in_array($categoryID, $beverageCategories);
 
         // Step 2: Get ONLY AVAILABLE products under each category
         // Use prepared statement to prevent SQL injection
@@ -65,39 +61,6 @@ try {
             $productName = $prod['productName'];
             $basePrice = (float) $prod['price'];
             $productID = $prod['productID'];
-
-            // Check if product has specific sizes in database
-            // If you have a product_sizes table, uncomment this:
-            /*
-            $sizesStmt = $conn->prepare("
-                SELECT sizeName, priceModifier 
-                FROM product_sizes 
-                WHERE productID = ?
-                ORDER BY priceModifier ASC
-            ");
-            $sizesStmt->bind_param("i", $productID);
-            $sizesStmt->execute();
-            $sizesResult = $sizesStmt->get_result();
-            
-            $sizes = [];
-            if ($sizesResult->num_rows > 0) {
-                while ($size = $sizesResult->fetch_assoc()) {
-                    $sizes[] = [
-                        "name" => $size['sizeName'],
-                        "code" => substr($size['sizeName'], 0, 1),
-                        "price" => $basePrice + $size['priceModifier']
-                    ];
-                }
-            } else {
-                // Default to Regular if no sizes defined
-                $sizes[] = [
-                    "name" => "Regular",
-                    "code" => "",
-                    "price" => $basePrice
-                ];
-            }
-            $sizesStmt->close();
-            */
 
             // For now, using single Regular size
             $sizes = [[
@@ -133,6 +96,8 @@ try {
         if (!empty($contents)) {
             $categories[] = [
                 "category" => $categoryName,
+                "categoryID" => $categoryID,
+                "hasSugarIce" => $hasSugarIce,
                 "contents" => $contents
             ];
         }

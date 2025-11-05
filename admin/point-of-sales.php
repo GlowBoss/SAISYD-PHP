@@ -289,11 +289,7 @@ if ($result && mysqli_num_rows($result) > 0) {
                             const sugarSelectId = `sugar-${uniqueId}`;
                             const iceSelectId = `ice-${uniqueId}`;
 
-                            // Determine if product should have sugar/ice options (beverages)
-                            const categoryName = products[categoryIndex].category.toLowerCase();
-                            const hasSugarIce = categoryName.includes('coffee') || categoryName.includes('tea') ||
-                                categoryName.includes('frappe') || categoryName.includes('milktea') ||
-                                categoryName.includes('soda');
+                            const hasSugarIce = products[categoryIndex].hasSugarIce;
 
                             let sugarIceDropdowns = '';
                             if (hasSugarIce) {
@@ -352,6 +348,7 @@ if ($result && mysqli_num_rows($result) > 0) {
                     });
 
                     // Set up dropdown functionality after a short delay
+                    // Set up dropdown functionality after a short delay
                     setTimeout(() => {
                         document.querySelectorAll(".dropdown-menu .dropdown-item").forEach(item => {
                             item.addEventListener("click", function (e) {
@@ -360,6 +357,27 @@ if ($result && mysqli_num_rows($result) > 0) {
                                 const btn = this.closest(".dropdown").querySelector("button");
                                 btn.textContent = this.textContent;
                                 btn.setAttribute("data-value", this.getAttribute("data-value"));
+                            });
+                        });
+
+                        // Close other dropdowns when one is opened
+                        document.querySelectorAll(".dropdown button[data-bs-toggle='dropdown']").forEach(button => {
+                            button.addEventListener("show.bs.dropdown", function (event) {
+                                const currentDropdown = event.target.nextElementSibling;
+
+                                // Find all other open dropdowns and close them
+                                document.querySelectorAll(".dropdown .show").forEach(openDropdown => {
+                                    if (openDropdown !== currentDropdown) {
+                                        const parentDropdown = openDropdown.closest(".dropdown");
+                                        const dropdownButton = parentDropdown?.querySelector("button[data-bs-toggle='dropdown']");
+                                        if (dropdownButton) {
+                                            const bsDropdown = bootstrap.Dropdown.getInstance(dropdownButton);
+                                            if (bsDropdown) {
+                                                bsDropdown.hide();
+                                            }
+                                        }
+                                    }
+                                });
                             });
                         });
                     }, 100);
@@ -400,7 +418,7 @@ if ($result && mysqli_num_rows($result) > 0) {
                         }
                     }
 
-                    let iceLevel = 'Default Ice'; // Default to Default Ice
+                    let iceLevel = '';
                     if (iceSelectId) {
                         const iceDropdown = document.getElementById(iceSelectId);
                         if (iceDropdown) {
@@ -650,7 +668,7 @@ if ($result && mysqli_num_rows($result) > 0) {
                                     const price = parseFloat(document.getElementById('modal-product-price').value);
                                     const quantity = parseInt(document.getElementById('modal-quantity-input').value);
                                     const sugarLevel = document.getElementById('modal-sugar-input').value;
-                                    const iceLevel = document.getElementById('modal-ice-input').value || 'Default Ice';
+                                    const iceLevel = document.getElementById('modal-ice-input').value || '';
 
                                     // Get the modal instance before hiding it
                                     const quantityModal = document.getElementById('quantityModal');
