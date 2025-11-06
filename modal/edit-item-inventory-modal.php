@@ -392,82 +392,206 @@
     document.addEventListener('DOMContentLoaded', function () {
         // ==================== UNIT VALIDATION SYSTEM ====================
 
-        // Ingredient type detection based on keywords
         function detectIngredientType(ingredientName) {
-            const name = ingredientName.toLowerCase();
+            const name = ingredientName.toLowerCase().trim();
 
-            // LIQUIDS - anything liquid/fluid
-            const liquidKeywords = [
-                'milk', 'fresh milk', 'full cream milk', 'oat milk', 'soy milk',
-                'almond milk', 'condensed milk', 'evaporated milk', 'whipping cream',
-                'all purpose cream', 'cream', 'syrup', 'caramel syrup',
-                'hazelnut syrup', 'vanilla syrup', 'brown sugar syrup',
-                'chocolate syrup', 'strawberry syrup', 'blueberry syrup',
-                'green apple syrup', 'lychee syrup', 'peach syrup', 'lemon syrup',
-                'fructose', 'espresso', 'coffee', 'latte', 'americano', 'macchiato',
-                'mocha', 'matcha', 'tea', 'black tea', 'milk tea', 'fruit tea',
-                'juice', 'water', 'ice', 'soda', 'sprite', 'drink', 'beverage',
-                'liquid', 'ketchup', 'mayo', 'sriracha', 'soy sauce', 'fish sauce',
-                'oyster sauce', 'worcestershire sauce', 'caramel sauce',
-                'chocolate sauce', 'vanilla extract', 'honey', 'vinegar', 'oil',
-                'cooking oil', 'gravy', 'lemonade', 'cold brew', 'espresso shot',
-                'flavored syrup', 'hazelnut', 'caramel', 'vanilla', 'mocha sauce',
-                'yogurt', 'frappe base'
+            // ==================== DUAL ITEMS (Both countable AND solid) ====================
+            const dualKeywords = [
+                'ice' 
             ];
 
+            // ==================== COUNTABLE ITEMS (Bilang lang, hindi timbang) ====================
 
-            // SOLIDS - dry/powder/granular/solid items
-            const solidKeywords = [
-                'sugar', 'brown sugar', 'white sugar', 'powder', 'cocoa powder',
-                'chocolate powder', 'milo powder', 'matcha powder', 'caramel powder',
-                'cookies and cream powder', 'coffee beans', 'arabica beans',
-                'tea leaves', 'assam tea', 'frappe powder', 'topping', 'spice',
-                'salt', 'flour', 'butter', 'cheese', 'parmesan', 'cheese block',
-                'breadcrumbs', 'cornstarch', 'oats', 'nuts', 'almond', 'cashew',
-                'hazelnut', 'grain', 'rice', 'bread crumbs', 'pasta', 'macaroni',
-                'spaghetti', 'herb', 'pepper', 'seasoning', 'instant coffee',
-                'yeast', 'dry mix', 'matcha', 'taro', 'ube', 'chips', 'cookies',
-                'biscuit', 'pastry', 'cake', 'brownie', 'muffin', 'croissant',
-                'toast', 'waffle', 'bread', 'crackers'
-            ];
-
-
-            // COUNTABLE - by pieces/whole items
             const countableKeywords = [
-                'egg', 'eggs', 'ice cube', 'cup', 'piece', 'slice', 'bun',
-                'bread', 'sandwich', 'croissant', 'muffin', 'donut', 'wrap',
-                'pita', 'burger bun', 'hotdog', 'sausage', 'patty', 'nugget',
-                'fries', 'wings', 'ham', 'spam', 'bacon', 'beef', 'porkloin',
-                'chicken', 'lettuce', 'tomato', 'onion', 'garlic', 'cucumber',
-                'cup lid', 'cup sleeve', 'straw', 'tissue', 'napkin', 'fork',
-                'spoon', 'tray', 'plate', 'container', 'bottle', 'can', 'pack',
-                'box', 'bag', 'sachet', 'cup holder', 'stirrer', 'stick', 'toothpick',
-                'plastic cup', 'bottle cap', 'take-out box'
+                // Eggs 
+                'egg', 'eggs', 'eggs medium',
+
+                // Bread 
+                'loaf', 'loaf brioche bread', 'pita bread',
+
+                // Packaging/Service items 
+                'bottle', 'can',
+                'cup lid', 'cup sleeve', 'straw',
+                'tissue', 'napkin', 'fork', 'spoon',
+                'tray', 'plate', 'container',
+                'cup holder', 'stirrer', 'plastic cup', 'take-out box'
             ];
 
-            // Check which category (priority: countable > liquid > solid)
+            // ==================== LIQUID ITEMS (ML/L measurement) ====================
+
+            const liquidKeywords = [
+                // ALL Milk variants 
+                'milk', 'full cream milk', 'oatside milk', 'soy milk', 'almond milk',
+                'evaporated milk', 'condensed milk',
+                'heavy whipping cream', 'whipping cream', 'all purpose cream', 'cream',
+
+                // Coffee liquids 
+                'espresso', 'espresso shot', 'coffee liquid', 'cold brew',
+
+                // ALL Syrups
+                'syrup', 'vanilla syrup', 'caramel syrup', 'hazelnut syrup',
+                'brown sugar syrup', 'blueberry syrup', 'green apple syrup',
+                'lychee syrup', 'peach honey syrup', 'lemon syrup',
+
+                // ALL Sauces 
+                'chocolate sauce', 'caramel sauce',
+                'soy sauce', 'fish sauce', 'oystersauce', 'oyster sauce',
+                'worcestershire sauce',
+                'banana ketchup', 'ketchup',
+                'sriracha sauce', 'sriracha',
+
+                // Purees and juices
+                'puree', 'strawberry puree',
+                'juice', 'lemonade',
+
+                // Beverages
+                'water', 'soda', 'sprite', 'sprite soda',
+
+                // Oils and liquid condiments
+                'oil', 'cooking oil',
+                'vinegar', 'gravy',
+
+                // Sweet liquids
+                'fructose', 'honey',
+
+                // Creamy liquids
+                'yogurt',
+                'kewpie mayo', 'mayo', 'mayonnaise'
+            ];
+
+            // ==================== SOLID ITEMS (G/KG measurement) ====================
+
+            const solidKeywords = [
+                // Meats 
+                'chicken wings', 'wings', 'chicken',
+                'beef samgyup', 'beef giniling', 'beef', 'giniling',
+                'porkloin', 'pork',
+                'ham', 'spam', 'bacon',
+                'patty', 'nugget', 'sausage',
+
+                // Vegetables 
+                'onion', 'garlic', 'cucumber', 'tomato',
+                'lettuce', 'lemon',
+
+                // Sugar and sweeteners
+                'sugar', 'brown sugar', 'white sugar',
+
+                // ALL Powders - measured by weight
+                'powder',
+                'cocoa powder', 'chocolate powder', 'caramel powder',
+                'cookies and cream powder', 'milo powder',
+                'matcha powder', 'ceremonial matcha powder',
+
+                // Coffee shop special bases
+                'frappe base',
+
+                'taro', 'ube', 'nata de coco',
+
+                // Coffee beans 
+                'beans', 'arabica beans', 'coffee beans',
+
+                // Tea leaves 
+                'tea', 'black tea', 'assam black tea', 'tea leaves',
+
+                // Baking/Cooking ingredients 
+                'flour', 'all purpose flour',
+                'cornstarch', 'breadcrumbs',
+                'rice', 'jasmine rice', 'grain', 'oats',
+
+                // Dairy solids 
+                'cheese', 'cheese block', 'parmesan cheese', 'parmesan',
+                'butter',
+
+                // Baked goods in bulk
+                'biscuit', 'cookies', 'muffin', 'toast',
+                'waffle', 'croissant', 'brownie', 'cake', 'pastry',
+
+                // Snacks and sides 
+                'chips', 'french fries', 'fries', 'onion rings',
+
+                // Nuts 
+                'nuts', 'almond', 'cashew', 'hazelnut',
+
+                // Seasonings 
+                'salt', 'pepper', 'seasoning'
+            ];
+
+            // ==================== SPECIAL CASE DETECTION ====================
+
+            // 0. Check DUAL items first (highest priority)
+            if (dualKeywords.some(keyword => name.includes(keyword))) {
+                return 'dual';
+            }
+
+            // 1. ALL TEA (leaves/powder) = SOLID
+            if (name.includes('tea') && !name.includes('milktea')) {
+                return 'solid';
+            }
+
+            // 2. MEATS are ALWAYS SOLID 
+            const meatKeywords = ['chicken', 'wings', 'beef', 'pork', 'ham', 'spam', 'bacon'];
+            if (meatKeywords.some(keyword => name.includes(keyword))) {
+                return 'solid';
+            }
+
+            // 3. Flavor powders (not syrups/sauces) = SOLID
+            if (
+                (name.includes('vanilla') ||
+                    name.includes('caramel') ||
+                    name.includes('hazelnut') ||
+                    name.includes('mocha') ||
+                    name.includes('chocolate')) &&
+                !name.includes('syrup') &&
+                !name.includes('sauce') &&
+                !name.includes('milk') &&
+                !name.includes('cream')
+            ) {
+                return 'solid';
+            }
+
+            // 4. VEGETABLES = SOLID 
+            const veggieKeywords = ['onion', 'garlic', 'cucumber', 'tomato', 'lettuce', 'lemon'];
+            if (veggieKeywords.some(keyword => name.includes(keyword))) {
+                return 'solid';
+            }
+
+            // ==================== DETECTION PRIORITY ====================
+
+            // Check countable first (most specific)
             if (countableKeywords.some(keyword => name.includes(keyword))) {
                 return 'countable';
             }
+
+            // Check liquid (very specific keywords)
             if (liquidKeywords.some(keyword => name.includes(keyword))) {
                 return 'liquid';
             }
+
+            // Check solid (catch-all for most ingredients)
             if (solidKeywords.some(keyword => name.includes(keyword))) {
                 return 'solid';
             }
 
-
+            // Default: SOLID (safest for coffee shop inventory)
             return 'solid';
         }
 
-        // Define allowed units per category - UPDATED WITH NEW UNITS
+        // ==================== ALLOWED UNITS PER CATEGORY ====================
         const allowedUnits = {
-            liquid: ['L', 'ml', 'bottles', 'pump', 'tbsp', 'tsp', 'cup', 'shot'],
-            solid: ['kg', 'g', 'lbs', 'oz', 'bags', 'packs', 'boxes', 'tbsp', 'tsp', 'cup'],
-            countable: ['pcs', 'bags', 'bottles', 'cans', 'packs', 'boxes']
+            // Liquids - volume measurements + bottles for inventory
+            liquid: ['L', 'ml', 'pump', 'tbsp', 'tsp', 'cup', 'shot', 'bottles'],
+
+            // Solids - weight measurements + packaging for inventory purchases
+            solid: ['kg', 'g', 'lbs', 'oz', 'tbsp', 'tsp', 'cup', 'bags', 'packs', 'boxes'],
+
+            // Countables - only counting units
+            countable: ['pcs', 'bags', 'bottles', 'cans', 'packs', 'boxes'],
+
+            // Dual - combination of solid AND countable units
+            dual: ['kg', 'g', 'lbs', 'oz', 'pcs', 'bags', 'packs', 'boxes']
         };
 
-        // Get unit display names 
+        // ==================== UNIT DISPLAY NAMES ====================
         function getUnitDisplayName(unit) {
             const unitNames = {
                 'kg': 'Kilogram',
@@ -491,7 +615,7 @@
             return unitNames[unit] || unit;
         }
 
-
+        // ==================== VALIDATION FUNCTION ====================
         function validateUnitMatch(ingredientName, selectedUnit) {
             if (!ingredientName || !selectedUnit) {
                 return { valid: true };
@@ -560,7 +684,7 @@
 
         const ingredients = [
             <?php foreach ($ingredients as $ingredient): ?>
-                                            {
+                                                                    {
                     ingredientID: <?= $ingredient['ingredientID'] ?>,
                     ingredientName: '<?= addslashes($ingredient['ingredientName']) ?>'
                 },
