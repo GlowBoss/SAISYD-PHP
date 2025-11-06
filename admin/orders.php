@@ -103,6 +103,7 @@ function getStatusIcon($status) {
         case 'preparing': return '<i class="bi bi-gear"></i>';
         case 'ready': return '<i class="bi bi-box-seam"></i>';
         case 'completed': return '<i class="bi bi-check2-circle"></i>';
+        case 'cancelled': return '<i class="bi bi-x-circle"></i>';
         default: return '';
     }
 }
@@ -256,24 +257,38 @@ function generateOrderCard($order) {
                 <div class="card-actions">';
     
     if ($order['status'] === 'completed') {
+        // Completed orders - Archive button only
         $html .= '<button class="action-btn archive-action" onclick="showArchiveModal(' . $order['orderID'] . ', \'' . $orderNumber . '\')">
                     <i class="bi bi-archive"></i>
                     <span>Archive</span>
                   </button>';
     } else {
+        // Status dropdown with conditional options based on current status
         $html .= '
             <div class="dropdown w-100">
                 <button class="btn status-selector-modern dropdown-toggle w-100" type="button" id="statusDropdown' . $order['orderID'] . '" data-bs-toggle="dropdown" aria-expanded="false">
                     ' . getStatusIcon($order['status']) . ' ' . ucfirst($order['status']) . '
                 </button>
-                <ul class="dropdown-menu w-100" aria-labelledby="statusDropdown' . $order['orderID'] . '">
-                    <li><a class="dropdown-item" href="#" onclick="updateOrderStatus(' . $order['orderID'] . ', \'pending\')"><i class="bi bi-clock-history"></i> Pending</a></li>
-                    <li><a class="dropdown-item" href="#" onclick="updateOrderStatus(' . $order['orderID'] . ', \'preparing\')"><i class="bi bi-gear"></i> Preparing</a></li>
-                    <li><a class="dropdown-item" href="#" onclick="updateOrderStatus(' . $order['orderID'] . ', \'ready\')"><i class="bi bi-box-seam"></i> Ready</a></li>
-                    <li><a class="dropdown-item" href="#" onclick="updateOrderStatus(' . $order['orderID'] . ', \'completed\')"><i class="bi bi-check2-circle"></i> Completed</a></li>
-                </ul>
+                <ul class="dropdown-menu w-100" aria-labelledby="statusDropdown' . $order['orderID'] . '">';
+        
+        // Status flow logic
+        if ($order['status'] === 'pending') {
+            // Pending: Can only go to Preparing or Cancel
+            $html .= '<li><a class="dropdown-item" href="#" onclick="updateOrderStatus(' . $order['orderID'] . ', \'preparing\')"><i class="bi bi-gear"></i> Preparing</a></li>';
+            $html .= '<li><a class="dropdown-item dropdown-item-danger" href="#" onclick="updateOrderStatus(' . $order['orderID'] . ', \'cancelled\')"><i class="bi bi-x-circle"></i> Cancel</a></li>';
+        } 
+        elseif ($order['status'] === 'preparing') {
+            // Preparing: Can only go to Ready
+            $html .= '<li><a class="dropdown-item" href="#" onclick="updateOrderStatus(' . $order['orderID'] . ', \'ready\')"><i class="bi bi-box-seam"></i> Ready</a></li>';
+        } 
+        elseif ($order['status'] === 'ready') {
+            // Ready: Can go to Completed or back to Preparing
+            $html .= '<li><a class="dropdown-item" href="#" onclick="updateOrderStatus(' . $order['orderID'] . ', \'preparing\')"><i class="bi bi-gear"></i> Preparing</a></li>';
+            $html .= '<li><a class="dropdown-item" href="#" onclick="updateOrderStatus(' . $order['orderID'] . ', \'completed\')"><i class="bi bi-check2-circle"></i> Completed</a></li>';
+        }
+        
+        $html .= '</ul>
             </div>';
-
     }
     
     $html .= '</div>'; 
@@ -623,10 +638,10 @@ $statusCounts = getStatusCountsData();
                     const alertContainer = document.getElementById('alertContainer');
                     alertContainer.innerHTML = xhr.responseText;
                     
-                    // Auto-hide alert after 3 seconds
+                    // Auto-hide alert after 5 seconds
                     setTimeout(() => {
                         alertContainer.innerHTML = '';
-                    }, 3000);
+                    }, 5000);
                     
                     // Refresh current view and counts
                     fetchOrders(currentFilter);
@@ -636,12 +651,12 @@ $statusCounts = getStatusCountsData();
             xhr.send('update_status=1&orderID=' + orderID + '&status=' + newStatus);
         }
 
-        // Start polling every 5 seconds
+        // Start polling every 10 seconds
         function startPolling() {
             pollingInterval = setInterval(() => {
                 fetchOrders(currentFilter);
                 updateStatusCounts();
-            }, 5000);
+            }, 10000);
         }
 
         // Stop polling

@@ -15,7 +15,8 @@ $dailySales = "
         SUM(o.totalAmount) AS total_sales
     FROM orders o
     JOIN payments p ON o.orderID = p.orderID
-    WHERE p.paymentStatus = 'paid'
+    WHERE o.status = 'completed'
+      AND p.paymentStatus = 'Paid'
       AND o.orderDate >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
     GROUP BY sale_date
     ORDER BY sale_date;
@@ -36,6 +37,7 @@ $weeklySales = "SELECT
 FROM orders o
 JOIN payments p ON o.orderID = p.orderID
 WHERE p.paymentStatus = 'paid'
+AND o.status = 'completed'
   AND YEARWEEK(o.orderDate, 1) = YEARWEEK(CURDATE(), 1)";
 
 $weeklyResult = mysqli_query($conn, $weeklySales);
@@ -48,23 +50,27 @@ $monthlySales = "SELECT
 FROM orders o
 JOIN payments p ON o.orderID = p.orderID
 WHERE p.paymentStatus = 'paid'
+AND o.status = 'completed'
   AND YEAR(o.orderDate) = YEAR(CURDATE())
   AND MONTH(o.orderDate) = MONTH(CURDATE())";
 $monthlyResult = mysqli_query($conn, $monthlySales);
 $monthlyRow = mysqli_fetch_assoc($monthlyResult);
 $monthlyTotal = $monthlyRow['total_sales'] ?? 0;
 
-// Avg order value
-$avgOrderValue = "SELECT 
-    ROUND(AVG(o.totalAmount), 2) AS avg_order_value
-FROM orders o
-JOIN payments p ON o.orderID = p.orderID
-WHERE p.paymentStatus = 'paid'
-  AND MONTH(o.orderDate) = MONTH(CURDATE())
-  AND YEAR(o.orderDate) = YEAR(CURDATE());";
+$avgOrderValue = "
+    SELECT 
+        ROUND(AVG(o.totalAmount), 2) AS avg_order_value
+    FROM orders o
+    JOIN payments p ON o.orderID = p.orderID
+    WHERE p.paymentStatus = 'Paid'
+      AND o.status = 'Completed'
+      AND YEAR(o.orderDate) = YEAR(CURDATE())
+      AND MONTH(o.orderDate) = MONTH(CURDATE())
+";
 $avgOrderValueResult = mysqli_query($conn, $avgOrderValue);
 $avgOrderValueRow = mysqli_fetch_assoc($avgOrderValueResult);
 $averageOrderValue = $avgOrderValueRow['avg_order_value'] ?? 0;
+
 
 // Top selling product (most popular)
 $topProducts = "SELECT 
@@ -76,6 +82,7 @@ JOIN products pr ON oi.productID = pr.productID
 JOIN orders o ON oi.orderID = o.orderID
 JOIN payments p ON o.orderID = p.orderID
 WHERE p.paymentStatus = 'paid'
+AND o.status = 'completed'
   AND YEARWEEK(o.orderDate, 1) = YEARWEEK(CURDATE(), 1)
 GROUP BY pr.productID, pr.productName
 ORDER BY total_qty_sold DESC
@@ -93,7 +100,8 @@ SELECT
 FROM orderitems oi
 JOIN orders o ON oi.orderID = o.orderID
 JOIN payments p ON o.orderID = p.orderID
-WHERE p.paymentStatus = 'paid'
+WHERE o.status = 'completed'
+AND p.paymentStatus = 'paid'
   AND YEARWEEK(o.orderDate, 1) = YEARWEEK(CURDATE(), 1);
 ";
 
@@ -143,7 +151,7 @@ JOIN payments p    ON o.orderID = p.orderID
 JOIN orderitems oi ON oi.orderID = o.orderID
 LEFT JOIN products pr ON pr.productID = oi.productID
 LEFT JOIN users u  ON u.userID = o.userID
-WHERE p.paymentStatus = 'paid'
+WHERE o.status = 'completed'
 GROUP BY
   o.orderID,
   o.orderNumber,
@@ -157,16 +165,20 @@ ORDER BY o.orderDate DESC;
 ";
 $transactionResult = mysqli_query($conn, $transactionHistory);
 
+// Fetch all categories for filter dropdown
+$categoriesQuery = "SELECT categoryID, categoryName FROM categories ORDER BY categoryName ASC";
+$categoriesResult = mysqli_query($conn, $categoriesQuery);
+$categories = [];
+while ($row = mysqli_fetch_assoc($categoriesResult)) {
+    $categories[] = $row;
+}
+
 // Capture filters
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
-$category_sort = isset($_GET['category_sort']) ? strtolower($_GET['category_sort']) : '';
+$category_filter = isset($_GET['category_filter']) ? intval($_GET['category_filter']) : '';
 $price_sort = isset($_GET['price_sort']) ? strtolower($_GET['price_sort']) : '';
-$category_filter = isset($_GET['category_filter']) ? trim($_GET['category_filter']) : '';
-
 
 // Validate inputs
-if (!in_array($category_sort, ['asc', 'desc']))
-    $category_sort = '';
 if (!in_array($price_sort, ['high', 'low']))
     $price_sort = '';
 
@@ -182,29 +194,26 @@ if ($search) {
     $types .= "ss";
 }
 
+// Add category filter
 if ($category_filter) {
-    $where[] = "c.categoryName = ?";
+    $where[] = "c.categoryID = ?";
     $params[] = $category_filter;
-    $types .= "s";
+    $types .= "i";
 }
-
 
 $whereSql = $where ? "AND " . implode(" AND ", $where) : "";
 
 // Default ordering
 $orderBy = "ORDER BY total_quantity DESC";
 
-if ($category_sort) {
-    $orderBy = "ORDER BY c.categoryName " . strtoupper($category_sort);
-} elseif ($price_sort === 'high') {
+if ($price_sort === 'high') {
     $orderBy = "ORDER BY pr.price DESC";
 } elseif ($price_sort === 'low') {
     $orderBy = "ORDER BY pr.price ASC";
 }
 
-// Fetch categories 
-$sql = "SELECT categoryName FROM categories ORDER BY categoryName ASC";
-$result = $conn->query($sql);
+$weekStart = date('M j', strtotime('monday this week'));
+$weekEnd = date('M j, Y', strtotime('sunday this week'));
 
 // Final SQL
 $sql = "
@@ -224,7 +233,6 @@ $sql = "
       AND o.orderID IN (SELECT orderID FROM payments WHERE paymentStatus = 'paid')
     $whereSql
     GROUP BY pr.productID, pr.productName, c.categoryName, pr.price
-    HAVING SUM(oi.quantity) > 0
     $orderBy
 ";
 
@@ -406,49 +414,36 @@ $productResult = $stmt->get_result();
 
             <!-- Header Section -->
             <div class="header-section">
-                <div
-                    class="d-flex flex-column flex-md-row justify-content-between align-items-center align-items-md-start mb-4">
-                    <div class="text-center text-md-start w-100">
+                <div class="row align-items-center mb-4">
+                    <div class="col-12 col-lg-6 text-center text-lg-start mb-3 mb-lg-0">
                         <h1 class="page-title pt-lg-4 pt-0">Sales & Reports</h1>
-
                     </div>
 
-                    <!-- Desktop Stats Cards -->
-                    <div class="stats-cards d-none d-lg-flex">
-                        <div class="stat-card">
-                            <div class="stat-number">₱<?php echo number_format($weeklyTotal, 2); ?></div>
-                            <div class="stat-label">Weekly Sales</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number">₱<?php echo number_format($monthlyTotal, 2); ?></div>
-                            <div class="stat-label">Monthly Sales</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number"><?php echo $totalItemsSoldCount; ?></div>
-                            <div class="stat-label">Items Sold</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Mobile Stats Cards -->
-                <div class="mobile-stats d-lg-none mb-4">
-                    <div class="row g-2">
-                        <div class="col-4">
-                            <div class="stat-card">
-                                <div class="stat-number">₱<?php echo number_format($weeklyTotal, 0); ?></div>
-                                <div class="stat-label">Weekly</div>
+                    <!-- Desktop & Tablet Stats Cards -->
+                    <div class="col-12 col-lg-6">
+                        <div class="row g-2">
+                            <div class="col-12 col-md-4">
+                                <div class="stat-card">
+                                    <div class="stat-number">₱<?php echo number_format($weeklyTotal, 0); ?></div>
+                                    <div class="stat-label">Weekly Sales</div>
+                                    <div class="stat-subtext text-muted small">
+                                        <?php echo $weekStart . ' – ' . $weekEnd; ?>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="stat-card">
-                                <div class="stat-number">₱<?php echo number_format($monthlyTotal, 0); ?></div>
-                                <div class="stat-label">Monthly</div>
+                            <div class="col-12 col-md-4">
+                                <div class="stat-card">
+                                    <div class="stat-number">₱<?php echo number_format($monthlyTotal, 0); ?></div>
+                                    <div class="stat-label">Monthly Sales</div>
+                                    <div class="stat-subtext text-muted small"><?php echo date('F'); ?></div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="stat-card">
-                                <div class="stat-number"><?php echo $totalItemsSoldCount; ?></div>
-                                <div class="stat-label">Items</div>
+                            <div class="col-12 col-md-4">
+                                <div class="stat-card">
+                                    <div class="stat-number"><?php echo $totalItemsSoldCount; ?></div>
+                                    <div class="stat-label">Items Sold</div>
+                                    <div class="stat-subtext text-muted small">This Week</div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -504,21 +499,8 @@ $productResult = $stmt->get_result();
                                 </div>
                                 <div class="metric-content">
                                     <div class="metric-label">Website Visits</div>
-
-                                    <div class="row text-center">
-                                        <div class="col-4">
-                                            <div class="metric-value">1,240</div>
-                                            <div class="metric-period">Weekly</div>
-                                        </div>
-                                        <div class="col-4">
-                                            <div class="metric-value">180</div>
-                                            <div class="metric-period">Today</div>
-                                        </div>
-                                        <div class="col-4">
-                                            <div class="metric-value">12,450</div>
-                                            <div class="metric-period">Overall</div>
-                                        </div>
-                                    </div>
+                                    <div class="metric-value"><?php echo $todayVisits; ?></div>
+                                    <div class="metric-period">Today</div>
                                 </div>
                             </div>
                         </div>
@@ -559,57 +541,30 @@ $productResult = $stmt->get_result();
                         <table class="table sales-table">
                             <thead class="table-header">
                                 <tr>
-                                    <th scope="col">
-                                        <div class="th-content">
-                                            <span>Order No.</span>
-                                            <i class="bi bi-chevron-expand sort-icon"></i>
-                                        </div>
-                                    </th>
-                                    <th scope="col">
-                                        <div class="th-content">
-                                            <span>Items</span>
-                                            <i class="bi bi-chevron-expand sort-icon"></i>
-                                        </div>
-                                    </th>
-                                    <th scope="col">
-                                        <div class="th-content">
-                                            <span>Total</span>
-                                            <i class="bi bi-chevron-expand sort-icon"></i>
-                                        </div>
-                                    </th>
-                                    <th scope="col">
-                                        <div class="th-content">
-                                            <span>Payment</span>
-                                            <i class="bi bi-chevron-expand sort-icon"></i>
-                                        </div>
-                                    </th>
-                                    <th scope="col">
-                                        <div class="th-content">
-                                            <span>Status</span>
-                                            <i class="bi bi-chevron-expand sort-icon"></i>
-                                        </div>
-                                    </th>
-                                    <th scope="col">
-                                        <div class="th-content">
-                                            <span>Customer</span>
-                                            <i class="bi bi-chevron-expand sort-icon"></i>
-                                        </div>
-                                    </th>
-                                    <th scope="col">
-                                        <div class="th-content">
-                                            <span>Date</span>
-                                            <i class="bi bi-chevron-expand sort-icon"></i>
-                                        </div>
-                                    </th>
+                                    <th>Date</th>
+                                    <th>Order No.</th>
+                                    <th>Items</th>
+                                    <th>Total</th>
+                                    <th>Payment</th>
+                                    <th>Status</th>
+                                    <th>Customer</th>
                                 </tr>
                             </thead>
-
                             <tbody class="table-body">
                                 <?php
                                 if (mysqli_num_rows($transactionResult) > 0) {
                                     while ($row = mysqli_fetch_assoc($transactionResult)) {
+                                        $statusClass = strtolower($row['paymentStatus']) === 'paid' ? 'paid' : 'unpaid';
                                         ?>
                                         <tr>
+                                            <td class="date-cell">
+                                                <div class="date-content">
+                                                    <span
+                                                        class="date-value"><?= date('M d, Y', strtotime($row['orderDate'])) ?></span>
+                                                    <span
+                                                        class="time-value"><?= date('H:i', strtotime($row['orderDate'])) ?></span>
+                                                </div>
+                                            </td>
                                             <td class="order-number"><?= htmlspecialchars($row['orderNumber']) ?></td>
                                             <td class="items-cell">
                                                 <div class="items-preview"><?= $row['orderItems'] ?></div>
@@ -617,17 +572,9 @@ $productResult = $stmt->get_result();
                                             <td class="amount-cell">₱<?= number_format($row['totalAmount'], 2) ?></td>
                                             <td class="payment-method"><?= htmlspecialchars($row['paymentMethod']) ?></td>
                                             <td class="status-cell">
-                                                <span class="status-badge paid"><?= ucfirst($row['paymentStatus']) ?></span>
+                                                <span class="status-badge <?= $statusClass ?>"><?= ucfirst($row['paymentStatus']) ?></span>
                                             </td>
                                             <td class="customer-name"><?= htmlspecialchars($row['displayName']) ?></td>
-                                            <td class="date-cell">
-                                                <div class="date-content">
-                                                    <span
-                                                        class="date-value"><?= date('m/j/Y', strtotime($row['orderDate'])) ?></span>
-                                                    <span
-                                                        class="time-value"><?= date('H:i', strtotime($row['orderDate'])) ?></span>
-                                                </div>
-                                            </td>
                                         </tr>
                                         <?php
                                     }
@@ -663,20 +610,15 @@ $productResult = $stmt->get_result();
                             <div class="col-6 col-md-2">
                                 <label class="filter-label">Category</label>
                                 <select class="filter-select" name="category_filter">
-                                    <option value="">All</option>
-                                    <?php
-                                    if ($result->num_rows > 0) {
-                                        while ($row = $result->fetch_assoc()) {
-                                            $selected = ($category_filter === $row["categoryName"]) ? 'selected' : '';
-                                            echo '<option value="' . htmlspecialchars($row["categoryName"]) . '" ' . $selected . '>'
-                                                . htmlspecialchars($row["categoryName"]) . '</option>';
-                                        }
-                                    }
-                                    ?>
+                                    <option value="">All Categories</option>
+                                    <?php foreach ($categories as $cat): ?>
+                                        <option value="<?= $cat['categoryID'] ?>" 
+                                            <?= $category_filter == $cat['categoryID'] ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($cat['categoryName']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
                                 </select>
-
                             </div>
-
 
                             <div class="col-6 col-md-2">
                                 <label class="filter-label">Price</label>
@@ -703,42 +645,12 @@ $productResult = $stmt->get_result();
                         <table class="table sales-table">
                             <thead class="table-header">
                                 <tr>
-                                    <th scope="col">
-                                        <div class="th-content">
-                                            <span>Product Name</span>
-                                            <i class="bi bi-chevron-expand sort-icon"></i>
-                                        </div>
-                                    </th>
-                                    <th scope="col">
-                                        <div class="th-content">
-                                            <span>Category</span>
-                                            <i class="bi bi-chevron-expand sort-icon"></i>
-                                        </div>
-                                    </th>
-                                    <th scope="col">
-                                        <div class="th-content">
-                                            <span>Price</span>
-                                            <i class="bi bi-chevron-expand sort-icon"></i>
-                                        </div>
-                                    </th>
-                                    <th scope="col">
-                                        <div class="th-content">
-                                            <span>Quantity Sold</span>
-                                            <i class="bi bi-chevron-expand sort-icon"></i>
-                                        </div>
-                                    </th>
-                                    <th scope="col">
-                                        <div class="th-content">
-                                            <span>Total Sales</span>
-                                            <i class="bi bi-chevron-expand sort-icon"></i>
-                                        </div>
-                                    </th>
-                                    <th scope="col">
-                                        <div class="th-content">
-                                            <span>Product ID</span>
-                                            <i class="bi bi-chevron-expand sort-icon"></i>
-                                        </div>
-                                    </th>
+                                    <th>Product Name</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th>Quantity Sold</th>
+                                    <th>Total Sales</th>
+                                    <th>Product ID</th>
                                 </tr>
                             </thead>
                             <tbody class="table-body">

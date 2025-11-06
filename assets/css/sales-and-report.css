@@ -425,6 +425,11 @@ body {
     border: 1px solid color-mix(in srgb, #27ae60 30%, transparent);
 }
 
+.status-badge.unpaid {
+    background: color-mix(in srgb, #e74c3c 15%, transparent); /* Light red background */
+    color: #e74c3c; /* Darker red text */
+    border: 1px solid color-mix(in srgb, #e74c3c 30%, transparent); /* Red border */
+}
 /* Customer Name */
 .customer-name {
     font-weight: 500;

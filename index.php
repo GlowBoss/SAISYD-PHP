@@ -2,6 +2,31 @@
 include 'assets/connect.php';
 include 'assets/track_visits.php';
 
+// Get top 6 selling products (Popular Menu)
+$popularMenuQuery = "
+    SELECT 
+        pr.productID,
+        pr.productName,
+        pr.image,
+        pr.price,
+        SUM(oi.quantity) AS total_sold
+    FROM orderitems oi
+    JOIN products pr ON oi.productID = pr.productID
+    JOIN orders o ON oi.orderID = o.orderID
+    JOIN payments p ON o.orderID = p.orderID
+    WHERE p.paymentStatus = 'paid'
+      AND o.status = 'completed'
+    GROUP BY pr.productID, pr.productName, pr.image, pr.price
+    ORDER BY total_sold DESC
+    LIMIT 6
+";
+
+$popularMenuResult = mysqli_query($conn, $popularMenuQuery);
+$popularProducts = [];
+
+while ($row = mysqli_fetch_assoc($popularMenuResult)) {
+    $popularProducts[] = $row;
+}
 
 // Function to get cart item count
 function getCartItemCount()
@@ -366,71 +391,54 @@ function getCartItemCount()
 
                     <!-- Desktop Grid -->
                     <div class="row row-cols-2 row-cols-md-3 g-4 d-none d-md-flex">
-                        <div class="col animate__animated animate__fadeInUp wow" data-wow-delay="0.11s">
-                            <div class="popular-item">
-                                <img src="assets/img/img-menu/latte.png" alt="Latte">
-                                <div class="subheading menu-name1 mt-2">Latte</div>
+                        <?php
+                        if (!empty($popularProducts)) {
+                            $delay = 0.11;
+                            foreach ($popularProducts as $product) {
+                                ?>
+                                <div class="col animate__animated animate__fadeInUp wow"
+                                    data-wow-delay="<?php echo $delay; ?>s">
+                                    <div class="popular-item">
+                                        <img src="assets/img/img-menu/<?php echo htmlspecialchars($product['image']); ?>"
+                                            alt="<?php echo htmlspecialchars($product['productName']); ?>">
+                                        <div class="subheading menu-name1 mt-2">
+                                            <?php echo htmlspecialchars($product['productName']); ?></div>
+                                    </div>
+                                </div>
+                                <?php
+                                $delay += 0.01;
+                            }
+                        } else {
+                            ?>
+                            <div class="col-12 text-center">
+                                <p class="lead">No popular items yet. Check back soon!</p>
                             </div>
-                        </div>
-                        <div class="col animate__animated animate__fadeInUp wow" data-wow-delay="0.12s">
-                            <div class="popular-item">
-                                <img src="assets/img/img-menu/green_tea.png" alt="Green Tea">
-                                <div class="subheading menu-name1 mt-2">Green Tea</div>
-                            </div>
-                        </div>
-                        <div class="col animate__animated animate__fadeInUp wow" data-wow-delay="0.13s">
-                            <div class="popular-item">
-                                <img src="assets/img/coffee.png" alt="Amerikano">
-                                <div class="subheading menu-name1 mt-2">Amerikano</div>
-                            </div>
-                        </div>
-                        <div class="col animate__animated animate__fadeInUp wow" data-wow-delay="0.14s">
-                            <div class="popular-item">
-                                <img src="assets/img/img-menu/espresso.png" alt="Espresso">
-                                <div class="subheading menu-name1 mt-2">Espresso</div>
-                            </div>
-                        </div>
-                        <div class="col animate__animated animate__fadeInUp wow" data-wow-delay="0.15s">
-                            <div class="popular-item">
-                                <img src="assets/img/img-menu/matcha_latte.png" alt="Matcha Latte">
-                                <div class="subheading menu-name1 mt-2">Matcha Latte</div>
-                            </div>
-                        </div>
-                        <div class="col animate__animated animate__fadeInUp wow" data-wow-delay="0.16s">
-                            <div class="popular-item">
-                                <img src="assets/img/img-menu/mocha.png" alt="Mocha">
-                                <div class="subheading menu-name1 mt-2">Mocha</div>
-                            </div>
-                        </div>
+                            <?php
+                        }
+                        ?>
                     </div>
 
                     <!-- Mobile Horizontal Scroll -->
                     <div class="scroll-container d-md-none px-3 mt-4">
-                        <div class="popular-item animate__animated animate__fadeInUp wow" data-wow-delay="0.11s">
-                            <img src="assets/img/img-menu/latte.png" alt="Latte">
-                            <div class="subheading menu-name1 mt-2">Latte</div>
-                        </div>
-                        <div class="popular-item animate__animated animate__fadeInUp wow" data-wow-delay="0.12s">
-                            <img src="assets/img/img-menu/green_tea.png" alt="Green Tea">
-                            <div class="subheading menu-name1 mt-2">Green Tea</div>
-                        </div>
-                        <div class="popular-item animate__animated animate__fadeInUp wow" data-wow-delay="0.13s">
-                            <img src="assets/img/coffee.png" alt="Amerikano">
-                            <div class="subheading menu-name1 mt-2">Amerikano</div>
-                        </div>
-                        <div class="popular-item animate__animated animate__fadeInUp wow" data-wow-delay="0.14s">
-                            <img src="assets/img/img-menu/espresso.png" alt="Espresso">
-                            <div class="subheading menu-name1 mt-2">Espresso</div>
-                        </div>
-                        <div class="popular-item animate__animated animate__fadeInUp wow" data-wow-delay="0.15s">
-                            <img src="assets/img/img-menu/matcha_latte.png" alt="Matcha Latte">
-                            <div class="subheading menu-name1 mt-2">Matcha Latte</div>
-                        </div>
-                        <div class="popular-item animate__animated animate__fadeInUp wow" data-wow-delay="0.16s">
-                            <img src="assets/img/img-menu/mocha.png" alt="Mocha">
-                            <div class="subheading menu-name1 mt-2">Mocha</div>
-                        </div>
+                        <?php
+                        if (!empty($popularProducts)) {
+                            $delay = 0.11;
+                            foreach ($popularProducts as $product) {
+                                ?>
+                                <div class="popular-item animate__animated animate__fadeInUp wow"
+                                    data-wow-delay="<?php echo $delay; ?>s">
+                                    <img src="assets/img/img-menu/<?php echo htmlspecialchars($product['image']); ?>"
+                                        alt="<?php echo htmlspecialchars($product['productName']); ?>">
+                                    <div class="subheading menu-name1 mt-2">
+                                        <?php echo htmlspecialchars($product['productName']); ?></div>
+                                </div>
+                                <?php
+                                $delay += 0.01;
+                            }
+                        }
+                        ?>
                     </div>
+
                     <div class="text-center mt-4 animate__animated animate__pulse animate__infinite"
                         data-wow-delay="0.2s">
                         <a href="menu.php" class="see-more-btn">
@@ -1004,7 +1012,8 @@ function getCartItemCount()
 
                                     <script
                                         src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.2.10/iframeResizer.min.js"></script>
-                                    <iframe onload="iFrameResize(this)" src="https://62bd0c75c9a34489b26278d71cf40cfe.elf.site"
+                                    <iframe onload="iFrameResize(this)"
+                                        src="https://62bd0c75c9a34489b26278d71cf40cfe.elf.site"
                                         style="border:none;width:100%;"></iframe>
                                 </div>
 
