@@ -14,13 +14,13 @@ try {
     // 10=Rice Meals, 11=Wings (Ala Carte), 12=Combo Meals, 13=Snacks
     $beverageCategories = [1, 2, 3, 4, 5, 6]; // IDs for beverage categories
 
-    // Step 1: Get all categories that have available products
+    // Step 1: Get all categories that have available products - ORDERED BY NAME
     $categoriesResult = executeQuery("
         SELECT DISTINCT c.categoryID, c.categoryName
         FROM categories c
         INNER JOIN products p ON c.categoryID = p.categoryID
         WHERE p.isAvailable = 'Yes'
-        ORDER BY c.categoryID ASC
+        ORDER BY c.categoryName ASC
     ");
 
     if (!$categoriesResult) {
