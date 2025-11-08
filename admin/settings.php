@@ -3,7 +3,7 @@ include('../assets/connect.php');
 session_start();
 
 // Prevent unauthorized access
-if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin' && $_SESSION['role'] !== 'Staff') {
+if (!isset($_SESSION['userID']) || ($_SESSION['role'] !== 'Admin' && $_SESSION['role'] !== 'Staff')) {
     header("Location: login.php");
     exit();
 }
@@ -434,7 +434,7 @@ $totalUsers = mysqli_num_rows($userResult);
                                             <div class="input-group position-relative">
                                                 <span class="input-group-text form-icon"><i class="bi bi-key"></i></span>
                                                 <input type="password" class="form-control pe-5" id="newPassword"
-                                                    name="new_password" placeholder="Leave blank to keep current password">
+                                                    name="new_password" placeholder="Create New Password">
                                                 <span class="password-toggle"
                                                     onclick="togglePassword('newPassword','newPasswordIcon')">
                                                     <i class="bi bi-eye" id="newPasswordIcon"></i>
