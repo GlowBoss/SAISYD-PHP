@@ -2,36 +2,36 @@
 session_start();
 include('../assets/connect.php');
 
-$error = ""; 
+$error = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = $_POST['username'];
-    $enteredPassword = $_POST['password'];
+  $username = $_POST['username'];
+  $enteredPassword = $_POST['password'];
 
-    // Get user by username
-    $stmt = $conn->prepare("SELECT userID, password, role FROM users WHERE username = ?");
-    $stmt->bind_param("s", $username);
-    $stmt->execute();
-    $stmt->store_result();
+  // Get user by username
+  $stmt = $conn->prepare("SELECT userID, password, role FROM users WHERE username = ?");
+  $stmt->bind_param("s", $username);
+  $stmt->execute();
+  $stmt->store_result();
 
-    if ($stmt->num_rows > 0) {
-        $stmt->bind_result($userID, $storedPassword, $role);
-        $stmt->fetch();
+  if ($stmt->num_rows > 0) {
+    $stmt->bind_result($userID, $storedPassword, $role);
+    $stmt->fetch();
 
-        // Check Hashed Password
-        if (password_verify($enteredPassword, $storedPassword)) {
-            $_SESSION['userID'] = $userID;
-            $_SESSION['role']   = $role;
-            header("Location: ../admin/index.php");
-            exit();
-        } else {
-            $error = "Invalid username or password.";
-        }
+    // Check Hashed Password
+    if (password_verify($enteredPassword, $storedPassword)) {
+      $_SESSION['userID'] = $userID;
+      $_SESSION['role'] = $role;
+      header("Location: ../admin/index.php");
+      exit();
     } else {
-        $error = "Invalid username or password.";
+      $error = "Invalid username or password.";
     }
+  } else {
+    $error = "Invalid username or password.";
+  }
 
-    $stmt->close();
+  $stmt->close();
 }
 $conn->close();
 ?>
@@ -102,24 +102,37 @@ $conn->close();
               <label class="form-label">Username</label>
               <div class="input-wrapper">
                 <i class="bi bi-person input-icon"></i>
-                <input type="text" class="form-control form-input" name="username" placeholder="Enter your username" required>
+                <input type="text" class="form-control form-input" name="username" placeholder="Enter your username"
+                  required>
               </div>
             </div>
 
             <div class="form-group">
               <label class="form-label">Password</label>
-              <div class="input-wrapper">
+              <div class="input-wrapper position-relative">
                 <i class="bi bi-lock input-icon"></i>
-                <input type="password" class="form-control form-input" name="password" placeholder="Enter your password" required>
+                <input type="password" class="form-control form-input" id="password" name="password"
+                  placeholder="Enter your password" required>
+                <i class="bi bi-eye-slash toggle-password" id="togglePassword" style="
+         position:absolute;
+         right:15px;
+         top:50%;
+         transform:translateY(-50%);
+         cursor:pointer;
+         color:var(--text-muted-color, #888);
+         font-size:1.1rem;
+         transition:color 0.2s ease;
+       "></i>
               </div>
             </div>
 
+
             <!-- Error message -->
             <?php if (!empty($error)): ?>
-            <div class="error-message">
-              <i class="bi bi-exclamation-circle"></i>
-              <?php echo htmlspecialchars($error); ?>
-            </div>
+              <div class="error-message">
+                <i class="bi bi-exclamation-circle"></i>
+                <?php echo htmlspecialchars($error); ?>
+              </div>
             <?php endif; ?>
 
             <button type="submit" name="btnLogin" class="btn-login mt-3 mb-0">
@@ -151,6 +164,21 @@ $conn->close();
           percentageText.textContent = progress + "%";
         }
       }, 20);
+    });
+
+    //Password Toggle
+    const togglePassword = document.querySelector("#togglePassword");
+    const password = document.querySelector("#password");
+
+    togglePassword.addEventListener("click", function () {
+      const type = password.getAttribute("type") === "password" ? "text" : "password";
+      password.setAttribute("type", type);
+
+      this.classList.toggle("bi-eye");
+      this.classList.toggle("bi-eye-slash");
+
+      // Optional hover effect
+      this.style.color = type === "text" ? "var(--primary-color, #7b4b2a)" : "#888";
     });
   </script>
 

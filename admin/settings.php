@@ -3,7 +3,7 @@ include('../assets/connect.php');
 session_start();
 
 // Prevent unauthorized access
-if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin' && $_SESSION['role'] !== 'Staff') {
+if (!isset($_SESSION['userID']) || ($_SESSION['role'] !== 'Admin' && $_SESSION['role'] !== 'Staff')) {
     header("Location: login.php");
     exit();
 }
@@ -30,47 +30,62 @@ if (isset($_POST['btnAddUser'])) {
         $_SESSION['alertMessage'] = "Passwords do not match.";
         $_SESSION['alertType'] = "error";
     } else {
-        $checkQuery = "SELECT * FROM users WHERE email='$email' OR username='$username' LIMIT 1";
-        $checkResult = executeQuery($checkQuery);
+        // Check if email or username already exists
+        $checkQuery = "SELECT * FROM users WHERE email = ? OR username = ? LIMIT 1";
+        $stmt = $conn->prepare($checkQuery);
+        $stmt->bind_param("ss", $email, $username);
+        $stmt->execute();
+        $checkResult = $stmt->get_result();
 
-        if ($checkResult && mysqli_num_rows($checkResult) > 0) {
+        if ($checkResult && $checkResult->num_rows > 0) {
             $_SESSION['alertMessage'] = "Email or username already exists.";
             $_SESSION['alertType'] = "error";
         } else {
+            // ✅ Hash the password before inserting
+            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+            // Use prepared statement for security
             $insertQuery = "
-                INSERT INTO users (fullName, email, username, accNumber, password, role) 
-                VALUES ('$fullName', '$email', '$username', '$accNumber', '$password', '$role')";
-            executeQuery($insertQuery);
+                INSERT INTO users (fullName, email, username, accNumber, password, role)
+                VALUES (?, ?, ?, ?, ?, ?)";
+            $stmt = $conn->prepare($insertQuery);
+            $stmt->bind_param("ssssss", $fullName, $email, $username, $accNumber, $hashedPassword, $role);
+            $stmt->execute();
+
             $_SESSION['alertMessage'] = "User added successfully!";
             $_SESSION['alertType'] = "success";
         }
     }
+
     header("Location: settings.php");
     exit();
 }
-
 // UPDATE USER
 if (isset($_POST['btnUpdateUser'])) {
     $id = $_POST['userID'];
     $email = $_POST['email'];
     $username = $_POST['username'];
     $accNumber = $_POST['accNumber'];
-    $old_password = $_POST['old_password'];
     $new_password = $_POST['new_password'];
     $confirm_password = $_POST['confirm_password'];
 
+    // Get current (hashed) password from database
     $currentUser = mysqli_fetch_assoc(executeQuery("SELECT password FROM users WHERE userID=$id"));
     $currentPassword = $currentUser['password'];
 
-    if (!empty($old_password) && $old_password !== $currentPassword) {
-        $_SESSION['alertMessage'] = "Old password is incorrect.";
-        $_SESSION['alertType'] = "error";
-    } else if (!empty($new_password) && $new_password !== $confirm_password) {
+    // Check if new passwords match
+    if (!empty($new_password) && $new_password !== $confirm_password) {
         $_SESSION['alertMessage'] = "New password and confirm password do not match.";
         $_SESSION['alertType'] = "error";
     } else {
-        $finalPassword = !empty($new_password) ? $new_password : $currentPassword;
+        // If new password entered, hash it; otherwise, keep current password
+        if (!empty($new_password)) {
+            $finalPassword = password_hash($new_password, PASSWORD_DEFAULT);
+        } else {
+            $finalPassword = $currentPassword;
+        }
 
+        // Check if email already exists for another user
         $checkQuery = "SELECT * FROM users WHERE email='$email' AND userID!=$id LIMIT 1";
         $checkResult = executeQuery($checkQuery);
 
@@ -78,21 +93,25 @@ if (isset($_POST['btnUpdateUser'])) {
             $_SESSION['alertMessage'] = "Email already exists for another user.";
             $_SESSION['alertType'] = "error";
         } else {
+            // Update user info
             $updateQuery = "
                 UPDATE users SET
-                email='$email',
-                username='$username',
-                accNumber='$accNumber',
-                password='$finalPassword'
+                    email='$email',
+                    username='$username',
+                    accNumber='$accNumber',
+                    password='$finalPassword'
                 WHERE userID=$id";
             executeQuery($updateQuery);
+
             $_SESSION['alertMessage'] = "User updated successfully!";
             $_SESSION['alertType'] = "success";
         }
     }
+
     header("Location: settings.php");
     exit();
 }
+
 
 // DELETE USER
 if (isset($_POST['btnDeleteUser'])) {
@@ -411,33 +430,19 @@ $totalUsers = mysqli_num_rows($userResult);
                                     </h5>
                                     <div class="row g-3">
                                         <div class="col-12 col-md-6">
-                                            <label class="form-label">Current Password</label>
-                                            <div class="input-group position-relative">
-                                                <span class="input-group-text form-icon"><i class="bi bi-key"></i></span>
-                                                <input type="password" class="form-control pe-5" id="oldPassword"
-                                                    name="old_password" value="<?= htmlspecialchars($userToEdit['password']) ?>"
-                                                    placeholder="Current password" readonly title="Password display only">
-                                                <span class="password-toggle"
-                                                    onclick="togglePassword('oldPassword','oldPasswordIcon')">
-                                                    <i class="bi bi-eye" id="oldPasswordIcon"></i>
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        <div class="col-12 col-md-6">
-                                        </div>
-
-                                        <div class="col-12 col-md-6">
                                             <label class="form-label">New Password</label>
                                             <div class="input-group position-relative">
                                                 <span class="input-group-text form-icon"><i class="bi bi-key"></i></span>
                                                 <input type="password" class="form-control pe-5" id="newPassword"
-                                                    name="new_password" placeholder="Leave blank to keep current password">
+                                                    name="new_password" placeholder="Create New Password">
                                                 <span class="password-toggle"
                                                     onclick="togglePassword('newPassword','newPasswordIcon')">
                                                     <i class="bi bi-eye" id="newPasswordIcon"></i>
                                                 </span>
                                             </div>
+                                        </div>
+
+                                        <div class="col-12 col-md-6">
                                         </div>
 
                                         <div class="col-12 col-md-6">
@@ -452,6 +457,8 @@ $totalUsers = mysqli_num_rows($userResult);
                                                 </span>
                                             </div>
                                         </div>
+
+
                                     </div>
                                 </div>
 

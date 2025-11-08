@@ -3,7 +3,7 @@ include '../assets/connect.php';
 session_start();
 
 // Prevent unauthorized access
-if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'Admin') {
+if (!isset($_SESSION['userID']) || ($_SESSION['role'] !== 'Admin' && $_SESSION['role'] !== 'Staff')) {
     header("Location: login.php");
     exit();
 }
@@ -151,7 +151,8 @@ JOIN payments p    ON o.orderID = p.orderID
 JOIN orderitems oi ON oi.orderID = o.orderID
 LEFT JOIN products pr ON pr.productID = oi.productID
 LEFT JOIN users u  ON u.userID = o.userID
-WHERE o.status = 'completed'
+WHERE o.status = 'completed' 
+OR o.status = 'cancelled'
 GROUP BY
   o.orderID,
   o.orderNumber,
