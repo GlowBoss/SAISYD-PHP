@@ -1,6 +1,6 @@
 <?php
 include 'assets/connect.php';
-include 'assets/track_visits.php'; 
+include 'assets/track_visits.php';
 
 
 if (!isset($_SESSION['cart'])) {
@@ -107,7 +107,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Insert payment
                 $paymentStatus = 'Unpaid';
                 $refNumberEscaped = $refNumber ? "'" . mysqli_real_escape_string($conn, $refNumber) . "'" : "NULL";
-                $paymentMethodEscaped = mysqli_real_escape_string($conn, $paymentMethod);
+
+                // Convert payment method to Title Case (Cash, Gcash)
+                $paymentMethodFormatted = ucfirst(strtolower($paymentMethod)); // "cash" → "Cash", "gcash" → "Gcash"
+                $paymentMethodEscaped = mysqli_real_escape_string($conn, $paymentMethodFormatted);
 
                 $insertPaymentQuery = "INSERT INTO payments (orderID, paymentMethod, paymentStatus, referenceNumber) 
                                       VALUES ('$orderID', '$paymentMethodEscaped', '$paymentStatus', $refNumberEscaped)";
@@ -559,7 +562,7 @@ function getCartTotal()
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            
+
             const successToast = document.getElementById('successToast');
             const errorToast = document.getElementById('errorToast');
 
@@ -578,13 +581,13 @@ function getCartTotal()
 
             radioInputs.forEach(radio => {
                 radio.addEventListener('change', () => {
-                    
+
                     const groupName = radio.getAttribute('name');
                     document.querySelectorAll(`input[name="${groupName}"]`).forEach(input => {
                         input.closest('.radio-option').querySelector('.radio-card').classList.remove('selected');
                     });
 
-                    
+
                     if (radio.checked) {
                         radio.closest('.radio-option').querySelector('.radio-card').classList.add('selected');
                     }
@@ -624,12 +627,12 @@ function getCartTotal()
                 const cashCard = cashOption.querySelector('.radio-card');
 
                 if (pickupRadio && pickupRadio.checked) {
-                  
+
                     cashRadio.disabled = true;
                     cashCard.style.opacity = '0.5';
                     cashCard.style.cursor = 'not-allowed';
 
-                  
+
                     if (cashRadio.checked) {
                         gcashRadio.checked = true;
                         gcashRadio.closest('.radio-option').querySelector('.radio-card').classList.add('selected');
@@ -637,7 +640,7 @@ function getCartTotal()
                         toggleGCashField();
                     }
                 } else {
-                  
+
                     cashRadio.disabled = false;
                     cashCard.style.opacity = '1';
                     cashCard.style.cursor = 'pointer';
@@ -654,12 +657,12 @@ function getCartTotal()
                 takeoutRadio.addEventListener('change', handleOrderTypeChange);
             }
 
-            
+
             const checkoutBtn = document.getElementById('checkoutBtn');
             if (checkoutBtn) {
                 checkoutBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    
+
                 });
             }
         });
