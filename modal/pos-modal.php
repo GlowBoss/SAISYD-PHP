@@ -45,10 +45,10 @@
                 Cash
               </button>
               <ul class="dropdown-menu w-100" aria-labelledby="paymentModeDropdown">
-                <li><a class="dropdown-item" href="#" data-value="Cash">Cash</a></li>
-                <li><a class="dropdown-item" href="#" data-value="Mobile Payment">Mobile Payment</a></li>
+                <li><a class="dropdown-item" href="#" data-value="CASH">Cash</a></li>
+                <li><a class="dropdown-item" href="#" data-value="GCASH">GCash</a></li>
               </ul>
-              <input type="hidden" name="paymentMode" id="paymentModeInput" value="Cash">
+              <input type="hidden" name="paymentMode" id="paymentModeInput" value="CASH">
             </div>
           </div>
 
@@ -260,3 +260,74 @@
     </div>
   </div>
 </div>
+
+<script>
+// Initialize modal dropdowns with auto-close functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Wait for modal to be fully loaded
+    setTimeout(function() {
+        initializeModalDropdowns();
+    }, 100);
+});
+
+function initializeModalDropdowns() {
+    // Handle Order Type dropdown
+    const orderTypeDropdown = document.getElementById('orderTypeDropdown');
+    const orderTypeInput = document.getElementById('orderTypeInput');
+    const orderTypeItems = document.querySelectorAll('#confirmModal .dropdown-menu[aria-labelledby="orderTypeDropdown"] .dropdown-item');
+    
+    if (orderTypeDropdown && orderTypeInput) {
+        // Initialize dropdown if not already initialized
+        if (!bootstrap.Dropdown.getInstance(orderTypeDropdown)) {
+            new bootstrap.Dropdown(orderTypeDropdown);
+        }
+        
+        orderTypeItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                const value = this.getAttribute('data-value');
+                orderTypeDropdown.textContent = value;
+                orderTypeInput.value = value;
+                
+                // Close the dropdown
+                const dropdown = bootstrap.Dropdown.getInstance(orderTypeDropdown);
+                if (dropdown) {
+                    dropdown.hide();
+                }
+            });
+        });
+    }
+    
+    // Handle Payment Mode dropdown
+    const paymentModeDropdown = document.getElementById('paymentModeDropdown');
+    const paymentModeInput = document.getElementById('paymentModeInput');
+    const paymentModeItems = document.querySelectorAll('#confirmModal .dropdown-menu[aria-labelledby="paymentModeDropdown"] .dropdown-item');
+    
+    if (paymentModeDropdown && paymentModeInput) {
+        // Initialize dropdown if not already initialized
+        if (!bootstrap.Dropdown.getInstance(paymentModeDropdown)) {
+            new bootstrap.Dropdown(paymentModeDropdown);
+        }
+        
+        paymentModeItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                const value = this.getAttribute('data-value');
+                paymentModeDropdown.textContent = value;
+                paymentModeInput.value = value;
+                
+                // Close the dropdown
+                const dropdown = bootstrap.Dropdown.getInstance(paymentModeDropdown);
+                if (dropdown) {
+                    dropdown.hide();
+                }
+            });
+        });
+    }
+}
+
+// Re-initialize when confirm modal is shown
+document.getElementById('confirmModal')?.addEventListener('shown.bs.modal', function() {
+    initializeModalDropdowns();
+});
+</script>
