@@ -731,14 +731,14 @@ $productResult = $stmt->get_result();
             });
 
         function downloadReportCSV() {
-            let csvContent = "";
+            let csvContent = "\uFEFF"; // Add UTF-8 BOM
 
             // Add Summary Section
             csvContent += "SALES SUMMARY\n";
             csvContent += "Metric,Value\n";
-            csvContent += "Weekly Total Sales,₱<?= number_format($weeklyTotal, 2); ?>\n";
-            csvContent += "Monthly Total Sales,₱<?= number_format($monthlyTotal, 2); ?>\n";
-            csvContent += "Average Order Value,₱<?= number_format($averageOrderValue, 2); ?>\n";
+            csvContent += "Weekly Total Sales,PHP <?= number_format($weeklyTotal, 2); ?>\n";
+            csvContent += "Monthly Total Sales,PHP <?= number_format($monthlyTotal, 2); ?>\n";
+            csvContent += "Average Order Value,PHP <?= number_format($averageOrderValue, 2); ?>\n";
             csvContent += "Top Product,<?= !empty($topProductsData) ? htmlspecialchars($topProductsData[0]['productName']) : 'No sales'; ?>\n";
             csvContent += "Total Items Sold (This Week),<?= $totalItemsSoldCount ?>\n";
             csvContent += "Website Visits (Today),<?= $todayVisits ?>\n\n\n";
@@ -752,7 +752,7 @@ $productResult = $stmt->get_result();
                     const cells = row.querySelectorAll("th, td");
                     const rowData = [];
                     cells.forEach(cell => {
-                        let text = cell.innerText.replace(/"/g, '""').replace(/\n/g, ' ');
+                        let text = cell.innerText.replace(/₱/g, 'PHP ').replace(/"/g, '""').replace(/\n/g, ' ');
                         rowData.push('"' + text + '"');
                     });
                     csvContent += rowData.join(",") + "\n";
@@ -770,7 +770,7 @@ $productResult = $stmt->get_result();
                     const cells = row.querySelectorAll("th, td");
                     const rowData = [];
                     cells.forEach(cell => {
-                        let text = cell.innerText.replace(/"/g, '""').replace(/\n/g, ' ');
+                        let text = cell.innerText.replace(/₱/g, 'PHP ').replace(/"/g, '""').replace(/\n/g, ' ');
                         rowData.push('"' + text + '"');
                     });
                     csvContent += rowData.join(",") + "\n";
