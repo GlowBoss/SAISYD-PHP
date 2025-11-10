@@ -40,21 +40,21 @@ switch ($action) {
 function getStaffName()
 {
     global $conn;
-    
+
     // Check if user is logged in
     if (!isset($_SESSION['userID'])) {
         return 'POS: Walk-in Customer';
     }
-    
+
     $userID = intval($_SESSION['userID']);
     $query = "SELECT fullName FROM users WHERE userID = $userID";
     $result = executeQuery($query);
-    
+
     if ($result && mysqli_num_rows($result) > 0) {
         $user = mysqli_fetch_assoc($result);
         return 'POS: ' . $user['fullName'];
     }
-    
+
     return 'POS: Walk-in Customer';
 }
 
@@ -243,11 +243,11 @@ function checkout()
 {
     global $conn;
 
-    $paymentMethod = $_POST['paymentMethod'] ?? 'Cash';
-    
+    $paymentMethod = $_POST['paymentMethod'] ?? 'CASH';
+
     // Get staff name from database - this will be the customer name
     $customerName = getStaffName();
-    
+
     $orderType = $_POST['orderType'] ?? 'dine-in';
     $contactNumber = $_POST['contactNumber'] ?? null;
 
@@ -318,26 +318,25 @@ function checkout()
             // Handle sugar level - store as varchar or NULL
             $sugar = 'NULL';
             if (isset($item['sugarLevel']) && $item['sugarLevel'] !== null && $item['sugarLevel'] !== '' && $item['sugarLevel'] !== '0') {
-                $sugarValue = trim((string)$item['sugarLevel']);
+                $sugarValue = trim((string) $item['sugarLevel']);
                 if ($sugarValue !== '' && $sugarValue !== '0') {
                     $sugar = "'" . mysqli_real_escape_string($conn, $sugarValue) . "% Sugar'";
                 }
             }
-            
+
+            // Handle ice level - only for drinks (if iceLevel is set and not null in the item)
             // Handle ice level - only for drinks (if iceLevel is set and not null in the item)
             $ice = 'NULL'; // default to NULL for food items
-            
+
             // Check if iceLevel exists and has a meaningful value
             if (array_key_exists('iceLevel', $item) && $item['iceLevel'] !== null && $item['iceLevel'] !== '') {
-                $iceLevel = trim((string)$item['iceLevel']);
-                
-                // Only set ice if it's a valid value
-                if ($iceLevel === 'Less') {
-                    $ice = "'Less'";
-                } elseif ($iceLevel === 'Extra') {
-                    $ice = "'Extra'";
-                } elseif ($iceLevel === 'Normal') {
-                    $ice = "'Normal'";
+                $iceLevel = trim((string) $item['iceLevel']);
+
+                // Match the exact values being sent from the frontend
+                if ($iceLevel === 'Less Ice') {
+                    $ice = "'Less Ice'";
+                } elseif ($iceLevel === 'Extra Ice') {
+                    $ice = "'Extra Ice'";
                 } elseif ($iceLevel === 'Default Ice') {
                     $ice = "'Default Ice'";
                 }

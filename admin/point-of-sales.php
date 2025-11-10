@@ -365,14 +365,26 @@ if ($result && mysqli_num_rows($result) > 0) {
                             item.addEventListener("click", function (e) {
                                 e.preventDefault();
                                 e.stopPropagation(); // Prevent card click when selecting dropdown
+
                                 const btn = this.closest(".dropdown").querySelector("button");
                                 btn.textContent = this.textContent;
                                 btn.setAttribute("data-value", this.getAttribute("data-value"));
+
+                                // Get the Bootstrap dropdown instance and hide it
+                                const dropdown = bootstrap.Dropdown.getInstance(btn);
+                                if (dropdown) {
+                                    dropdown.hide();
+                                }
                             });
                         });
 
-                        // Close other dropdowns when one is opened
+                        // Initialize dropdowns and handle opening/closing
                         document.querySelectorAll(".dropdown button[data-bs-toggle='dropdown']").forEach(button => {
+                            // Initialize dropdown if not already initialized
+                            if (!bootstrap.Dropdown.getInstance(button)) {
+                                new bootstrap.Dropdown(button);
+                            }
+
                             button.addEventListener("show.bs.dropdown", function (event) {
                                 const currentDropdown = event.target.nextElementSibling;
 
