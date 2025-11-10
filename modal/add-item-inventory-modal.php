@@ -371,22 +371,6 @@ if (!isset($ingredients)) {
                 'ice' 
             ];
 
-            // ==================== COUNTABLE ITEMS ) ====================
-
-            const countableKeywords = [
-                // Eggs 
-                'egg', 'eggs', 'eggs medium',
-
-                // Bread 
-                'loaf', 'loaf brioche bread', 'pita bread',
-
-                // Packaging/Service items 
-                'bottle', 'can',
-                'cup lid', 'cup sleeve', 'straw',
-                'tissue', 'napkin', 'fork', 'spoon',
-                'tray', 'plate', 'container',
-                'cup holder', 'stirrer', 'plastic cup', 'take-out box'
-            ];
 
             // ==================== LIQUID ITEMS (ML/L measurement) ====================
 
@@ -485,6 +469,23 @@ if (!isset($ingredients)) {
 
                 // Seasonings 
                 'salt', 'pepper', 'seasoning'
+            ];
+
+             // ==================== COUNTABLE ITEMS ) ====================
+
+            const countableKeywords = [
+                // Eggs 
+                'egg', 'eggs', 'eggs medium',
+
+                // Bread 
+                'loaf', 'loaf brioche bread', 'pita bread',
+
+                // Packaging/Service items 
+                'bottle', 'can',
+                'cup lid', 'cup sleeve', 'straw',
+                'tissue', 'napkin', 'fork', 'spoon',
+                'tray', 'plate', 'container',
+                'cup holder', 'stirrer', 'plastic cup', 'take-out box'
             ];
 
             // ==================== SPECIAL CASE DETECTION ====================
