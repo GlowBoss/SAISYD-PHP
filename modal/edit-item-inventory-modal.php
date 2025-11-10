@@ -397,26 +397,10 @@
 
             // ==================== DUAL ITEMS (Both countable AND solid) ====================
             const dualKeywords = [
-                'ice' 
+                'ice'
             ];
 
-            // ==================== COUNTABLE ITEMS (Bilang lang, hindi timbang) ====================
-
-            const countableKeywords = [
-                // Eggs 
-                'egg', 'eggs', 'eggs medium',
-
-                // Bread 
-                'loaf', 'loaf brioche bread', 'pita bread',
-
-                // Packaging/Service items 
-                'bottle', 'can',
-                'cup lid', 'cup sleeve', 'straw',
-                'tissue', 'napkin', 'fork', 'spoon',
-                'tray', 'plate', 'container',
-                'cup holder', 'stirrer', 'plastic cup', 'take-out box'
-            ];
-
+           
             // ==================== LIQUID ITEMS (ML/L measurement) ====================
 
             const liquidKeywords = [
@@ -514,6 +498,23 @@
 
                 // Seasonings 
                 'salt', 'pepper', 'seasoning'
+            ];
+
+             // ==================== COUNTABLE ITEMS (Bilang lang, hindi timbang) ====================
+             
+            const countableKeywords = [
+                // Eggs 
+                'egg', 'eggs', 'eggs medium',
+
+                // Bread 
+                'loaf', 'loaf brioche bread', 'pita bread',
+
+                // Packaging/Service items 
+                'bottle', 'can', 'straw',
+                'cup lid', 'cup sleeve',
+                'tissue', 'napkin', 'fork', 'spoon',
+                'tray', 'plate', 'container',
+                'cup holder', 'stirrer', 'plastic cup', 'take-out box'
             ];
 
             // ==================== SPECIAL CASE DETECTION ====================
@@ -684,7 +685,7 @@
 
         const ingredients = [
             <?php foreach ($ingredients as $ingredient): ?>
-                                                                    {
+                                                                        {
                     ingredientID: <?= $ingredient['ingredientID'] ?>,
                     ingredientName: '<?= addslashes($ingredient['ingredientName']) ?>'
                 },
