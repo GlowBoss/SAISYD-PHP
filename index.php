@@ -1102,14 +1102,15 @@ function getCartItemCount()
                     <h2 class="accordion-header">
                         <button class="accordion-button bg-footer text-dark fw-bold collapsed" type="button"
                             data-bs-toggle="collapse" data-bs-target="#collapseMarket">
-                            Market Place
+                            Services
                         </button>
                     </h2>
                     <div id="collapseMarket" class="accordion-collapse collapse">
                         <div class="accordion-body">
                             <ul class="list-unstyled mb-0">
-                                <li><a href="#" class="text-dark text-decoration-none footer-link">Services</a></li>
-                                <li><a href="#" class="text-dark text-decoration-none footer-link">Products</a></li>
+                                <li><a href="cart.php" class="text-dark text-decoration-none footer-link">Cart</a></li>
+                                <li><a href="menu.php" class="text-dark text-decoration-none footer-link">Products</a>
+                                </li>
                             </ul>
                         </div>
                     </div>
@@ -1125,12 +1126,11 @@ function getCartItemCount()
                     <div id="collapseCompany" class="accordion-collapse collapse">
                         <div class="accordion-body" style="text-align: justify;">
                             <ul class="list-unstyled mb-0">
-                                <li><a href="#" class="text-dark text-decoration-none footer-link">About Serve
-                                        It</a>
+                                <li><a href="#about" class="text-dark text-decoration-none footer-link">About Us</a>
                                 </li>
-                                <li><a href="#" class="text-dark text-decoration-none footer-link">Help Center</a>
+                                <li><a href="#location" class="text-dark text-decoration-none footer-link">Location</a>
                                 </li>
-                                <li><a href="#" class="text-dark text-decoration-none footer-link">Contact Us</a>
+                                <li><a href="#contact" class="text-dark text-decoration-none footer-link">Contact Us</a>
                                 </li>
                             </ul>
                         </div>
@@ -1180,17 +1180,17 @@ function getCartItemCount()
                     </p>
                 </div>
                 <div class="col-lg-2" style="text-align: justify;">
-                    <h6 class="fw-bold">Market Place</h6>
+                    <h6 class="fw-bold">Services</h6>
                     <ul class="list-unstyled">
-                        <li><a href="#" class="text-dark text-decoration-none footer-link">Services</a></li>
-                        <li><a href="#" class="text-dark text-decoration-none footer-link">Products</a></li>
+                        <li><a href="cart.php" class="text-dark text-decoration-none footer-link">Cart</a></li>
+                        <li><a href="menu.php" class="text-dark text-decoration-none footer-link">Products</a></li>
                     </ul>
                 </div>
                 <div class="col-lg-2" style="text-align: justify;">
                     <h6 class="fw-bold">Company</h6>
                     <ul class="list-unstyled">
-                        <li><a href="#" class="text-dark text-decoration-none footer-link">About Serve It</a></li>
-                        <li><a href="#" class="text-dark text-decoration-none footer-link">Help Center</a></li>
+                        <li><a href="#about" class="text-dark text-decoration-none footer-link">About Us</a></li>
+                        <li><a href="#location" class="text-dark text-decoration-none footer-link">Location</a></li>
                         <li><a href="#contact" class="text-dark text-decoration-none footer-link">Contact Us</a></li>
                     </ul>
                 </div>

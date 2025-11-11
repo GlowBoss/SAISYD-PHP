@@ -481,14 +481,15 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                     <h2 class="accordion-header">
                         <button class="accordion-button bg-footer text-dark fw-bold collapsed" type="button"
                             data-bs-toggle="collapse" data-bs-target="#collapseMarket">
-                            Market Place
+                            Services
                         </button>
                     </h2>
                     <div id="collapseMarket" class="accordion-collapse collapse">
                         <div class="accordion-body">
                             <ul class="list-unstyled mb-0">
-                                <li><a href="#" class="text-dark text-decoration-none footer-link">Services</a></li>
-                                <li><a href="#" class="text-dark text-decoration-none footer-link">Products</a></li>
+                                <li><a href="cart.php" class="text-dark text-decoration-none footer-link">Cart</a></li>
+                                <li><a href="menu.php" class="text-dark text-decoration-none footer-link">Products</a>
+                                </li>
                             </ul>
                         </div>
                     </div>
@@ -504,12 +505,11 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                     <div id="collapseCompany" class="accordion-collapse collapse">
                         <div class="accordion-body" style="text-align: justify;">
                             <ul class="list-unstyled mb-0">
-                                <li><a href="#" class="text-dark text-decoration-none footer-link">About Serve
-                                        It</a>
+                                <li><a href="index.php#about" class="text-dark text-decoration-none footer-link">About Us</a>
                                 </li>
-                                <li><a href="#" class="text-dark text-decoration-none footer-link">Help Center</a>
+                                <li><a href="index.php#location" class="text-dark text-decoration-none footer-link">Location</a>
                                 </li>
-                                <li><a href="#" class="text-dark text-decoration-none footer-link">Contact Us</a>
+                                <li><a href="index.php#contact" class="text-dark text-decoration-none footer-link">Contact Us</a>
                                 </li>
                             </ul>
                         </div>
@@ -559,18 +559,18 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                     </p>
                 </div>
                 <div class="col-lg-2" style="text-align: justify;">
-                    <h6 class="fw-bold">Market Place</h6>
+                    <h6 class="fw-bold">Services</h6>
                     <ul class="list-unstyled">
-                        <li><a href="#" class="text-dark text-decoration-none footer-link">Services</a></li>
-                        <li><a href="#" class="text-dark text-decoration-none footer-link">Products</a></li>
+                        <li><a href="cart.php" class="text-dark text-decoration-none footer-link">Cart</a></li>
+                        <li><a href="menu.php" class="text-dark text-decoration-none footer-link">Products</a></li>
                     </ul>
                 </div>
                 <div class="col-lg-2" style="text-align: justify;">
                     <h6 class="fw-bold">Company</h6>
                     <ul class="list-unstyled">
-                        <li><a href="#" class="text-dark text-decoration-none footer-link">About Serve It</a></li>
-                        <li><a href="#" class="text-dark text-decoration-none footer-link">Help Center</a></li>
-                        <li><a href="#" class="text-dark text-decoration-none footer-link">Contact Us</a></li>
+                        <li><a href="index.php#about" class="text-dark text-decoration-none footer-link">About Us</a></li>
+                        <li><a href="index.php#location" class="text-dark text-decoration-none footer-link">Location</a></li>
+                        <li><a href="index.php#contact" class="text-dark text-decoration-none footer-link">Contact Us</a></li>
                     </ul>
                 </div>
                 <div class="col-lg-3 offset-lg-1">
@@ -588,7 +588,7 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
             <div
                 class="border-top mt-4 pt-3 d-flex justify-content-between align-items-center flex-wrap flex-column flex-lg-row text-center text-lg-start">
                 <p class="lead mb-0 small">
-                    © 2024 Copyright:
+                    © 2025 Copyright:
                     <span class="fw-bold d-block d-lg-inline">SAISYD CAFE</span>
                 </p>
 
