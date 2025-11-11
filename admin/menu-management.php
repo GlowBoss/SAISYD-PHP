@@ -817,7 +817,7 @@ if ($isAjax) {
                         </div>`;
                         $("#confirmModal #ingredients-container").append(row);
 
-                        // ✅ Disable the measurement-select in the new row immediately
+                       
                         const $newRow = $("#confirmModal #ingredients-container .ingredient-row").last();
                         $newRow.find('.measurement-select').prop('disabled', true).css({
                             backgroundColor: '#e9ecef',
