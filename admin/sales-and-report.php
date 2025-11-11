@@ -463,7 +463,7 @@ $productResult = $stmt->get_result();
                                 <div class="metric-content">
                                     <div class="metric-label">Avg Order Value</div>
                                     <div class="metric-value">₱<?php echo number_format($averageOrderValue, 2); ?></div>
-                                    <div class="metric-period">This Month</div>
+                                    <div class="metric-period">Today</div>
                                 </div>
                             </div>
 

@@ -9,6 +9,8 @@ if (!isset($_SESSION['userID']) || ($_SESSION['role'] !== 'Admin' && $_SESSION['
     exit();
 }
 
+// Check if this is an AJAX request
+$isAjax = isset($_GET['ajax']) && $_GET['ajax'] == '1';
 
 $searchProductTerm = '';
 $categoryFilterId = null;
@@ -187,6 +189,68 @@ if ($categoryFilterId !== null) {
     if ($row = mysqli_fetch_assoc($categoryData)) {
         $currentCategory = $row['categoryName'];
     }
+}
+
+// AJAX Response - Return only product grid HTML
+if ($isAjax) {
+    if (!empty($menuItems)) {
+        foreach ($menuItems as $row) {
+            $id = $row['productID'];
+            $name = $row['productName'];
+            $image = $row['image'];
+            $price = $row['price'];
+            $categoryName = $row['category_name'];
+            $availableQuantity = $row['availableQuantity'] ?? 0;
+            $dbAvailability = $row['isAvailable'];
+
+            $isAvailable = ($dbAvailability === 'Yes' && $availableQuantity > 0) ? 1 : 0;
+            $unavailableClass = $isAvailable ? '' : ' unavailable';
+            $statusBadgeClass = $isAvailable ? 'status-available' : 'status-unavailable';
+            $statusText = $isAvailable ? 'Available' : 'Unavailable';
+
+            echo "
+            <div class='col-6 col-md-6 col-lg-4 col-xl-2 d-flex px-3 py-2'>
+                <div class='menu-item w-100 text-center $unavailableClass'>
+                    <div class='mb-2'>
+                        <span class='status-badge $statusBadgeClass'>$statusText</span>
+                    </div>
+                    <div class='menu-img-container'>
+                        <img src='../assets/img/img-menu/" . htmlspecialchars($image) . "'
+                            alt='" . htmlspecialchars($name) . "'
+                            class='img-fluid menu-img " . ($isAvailable ? "" : "Available") . "'>
+                    </div>
+                    <div class='menu-name' title='" . htmlspecialchars($name) . "'>" . htmlspecialchars($name) . "</div>
+                    <div class='menu-price'>₱" . number_format($price) . "</div>
+                    <div class='menu-stock'>Available: " . (int) $availableQuantity . " pcs</div>
+                    <div class='d-flex flex-wrap justify-content-center gap-2 mt-2'>
+                        <button class='btn btn-sm edit-btn'
+                            data-bs-toggle='modal'
+                            data-bs-target='#editModal'
+                            data-id='$id'
+                            data-available='" . ($dbAvailability === 'Yes' ? '1' : '0') . "'>
+                            <i class='bi bi-pencil-square'></i>
+                        </button>
+                        <button type='button' class='btn btn-del' 
+                            data-bs-toggle='modal' 
+                            data-bs-target='#deleteConfirmModal'
+                            data-product-id='" . $id . "'
+                            data-product-name='" . htmlspecialchars($name) . "'>
+                            <i class='bi bi-trash'></i>
+                        </button>
+                    </div>
+                </div>
+            </div>";
+        }
+    } else {
+        echo "
+        <div class='col-12 text-center'>
+            <p>No items match the current filters</p>
+            <a href='menu-management.php' class='btn clear-btn mt-2'>
+                <i class='bi bi-x-circle'></i> Clear Search 
+            </a>
+        </div>";
+    }
+    exit(); // Stop here for AJAX requests
 }
 
 ?>
@@ -558,7 +622,7 @@ if ($categoryFilterId !== null) {
 
 
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
         <script src="../assets/js/menu-management.js"></script>
         <script src="../assets/js/admin_sidebar.js"></script>
         <script>
@@ -870,6 +934,93 @@ if ($categoryFilterId !== null) {
             setInterval(fetchProductAvailability, POLL_INTERVAL);
 
         </script>
+        
+        <!-- REAL-TIME SEARCH SCRIPT -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const searchInput = document.querySelector('input[name="searchProduct"]');
+                const productGrid = document.getElementById('productGrid');
+                let searchTimeout;
+                
+                // Get current category from URL
+                function getCurrentCategoryID() {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    return urlParams.get('categoryID') || '';
+                }
+                
+                // Real-time search on input
+                if (searchInput) {
+                    searchInput.addEventListener('input', function() {
+                        clearTimeout(searchTimeout);
+                        
+                        // Debounce - wait 300ms after user stops typing
+                        searchTimeout = setTimeout(() => {
+                            performSearch();
+                        }, 300);
+                    });
+                }
+                
+                function performSearch() {
+                    const searchTerm = searchInput.value.trim();
+                    const categoryID = getCurrentCategoryID();
+                    
+                    // Show loading indicator
+                    productGrid.innerHTML = `
+                        <div class="col-12 text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2">Searching...</p>
+                        </div>
+                    `;
+                    
+                    // Build URL with parameters
+                    let url = 'menu-management.php?ajax=1';
+                    if (searchTerm) url += '&searchProduct=' + encodeURIComponent(searchTerm);
+                    if (categoryID) url += '&categoryID=' + categoryID;
+                    
+                    // Update browser URL without reload
+                    const newUrl = 'menu-management.php';
+                    const params = [];
+                    if (searchTerm) params.push('searchProduct=' + encodeURIComponent(searchTerm));
+                    if (categoryID) params.push('categoryID=' + categoryID);
+                    history.pushState(null, '', params.length ? newUrl + '?' + params.join('&') : newUrl);
+                    
+                    // Fetch results
+                    fetch(url)
+                        .then(response => response.text())
+                        .then(html => {
+                            productGrid.innerHTML = html;
+                            
+                            // Re-attach event listeners for edit/delete buttons
+                            attachProductCardListeners();
+                        })
+                        .catch(error => {
+                            console.error('Search error:', error);
+                            productGrid.innerHTML = `
+                                <div class="col-12 text-center">
+                                    <p class="text-danger">Error loading results. Please try again.</p>
+                                </div>
+                            `;
+                        });
+                }
+                
+                // Re-attach listeners after AJAX load
+                function attachProductCardListeners() {
+                    // Delete buttons
+                    document.querySelectorAll('[data-bs-target="#deleteConfirmModal"]').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const productId = this.getAttribute('data-product-id');
+                            const productName = this.getAttribute('data-product-name');
+                            
+                            document.getElementById('deleteItemName').textContent = productName;
+                            document.getElementById('deleteProductID').value = productId;
+                        });
+                    });
+                }
+            });
+        </script>
+        
         <?php if (isset($_SESSION['alertMessage'])): ?>
             <script>
                 document.addEventListener('DOMContentLoaded', function () {
