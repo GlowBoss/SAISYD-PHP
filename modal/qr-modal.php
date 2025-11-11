@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", function () {
         qrContainer.innerHTML = "";
 
         // The URL you want the QR code to open
-        var menuUrl = "http://localhost/Capstone/SAISYD-PHP/menu.php";
+        var menuUrl = "saisydcafe/menu.com";
 
         // API endpoint with parameters
         var apiUrl = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(menuUrl);
