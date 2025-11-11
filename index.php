@@ -2,6 +2,46 @@
 include 'assets/connect.php';
 include 'assets/track_visits.php';
 
+// Default fallback popular menu (constant items)
+$defaultPopularMenu = [
+    [
+        "productID" => null,
+        "productName" => "Caramel Macchiato",
+        "image" => "caramel_macchiato.png",
+        "price" => 150
+    ],
+    [
+        "productID" => null,
+        "productName" => "Spanish Latte",
+        "image" => "spanish_latte.png",
+        "price" => 145
+    ],
+    [
+        "productID" => null,
+        "productName" => "Creamy Matcha",
+        "image" => "creamy_matcha.png",
+        "price" => 155
+    ],
+    [
+        "productID" => null,
+        "productName" => "Bulgogi Egg Drop",
+        "image" => "bulgogi_egg_drop.png",
+        "price" => 165
+    ],
+    [
+        "productID" => null,
+        "productName" => "Creamy Carbonara",
+        "image" => "creamy_carbonara.png",
+        "price" => 165
+    ],
+    [
+        "productID" => null,
+        "productName" => "Tonkatsu",
+        "image" => "tonkatsu.png",
+        "price" => 169
+    ]
+];
+
 // Get top 6 selling products (Popular Menu)
 $popularMenuQuery = "
     SELECT 
@@ -16,6 +56,7 @@ $popularMenuQuery = "
     JOIN payments p ON o.orderID = p.orderID
     WHERE p.paymentStatus = 'paid'
       AND o.status = 'completed'
+      AND YEARWEEK(o.orderDate, 1) = YEARWEEK(CURDATE(), 1) - 1
     GROUP BY pr.productID, pr.productName, pr.image, pr.price
     ORDER BY total_sold DESC
     LIMIT 6
@@ -26,6 +67,11 @@ $popularProducts = [];
 
 while ($row = mysqli_fetch_assoc($popularMenuResult)) {
     $popularProducts[] = $row;
+}
+
+// If query didn't return exactly 6 products, use default
+if (count($popularProducts) < 6) {
+    $popularProducts = $defaultPopularMenu;
 }
 
 // Function to get cart item count
@@ -392,52 +438,46 @@ function getCartItemCount()
                     <!-- Desktop Grid -->
                     <div class="row row-cols-2 row-cols-md-3 g-4 d-none d-md-flex">
                         <?php
-                        if (!empty($popularProducts)) {
-                            $delay = 0.11;
-                            foreach ($popularProducts as $product) {
-                                ?>
-                                <div class="col animate__animated animate__fadeInUp wow"
-                                    data-wow-delay="<?php echo $delay; ?>s">
-                                    <div class="popular-item">
-                                        <img src="assets/img/img-menu/<?php echo htmlspecialchars($product['image']); ?>"
-                                            alt="<?php echo htmlspecialchars($product['productName']); ?>">
-                                        <div class="subheading menu-name1 mt-2">
-                                            <?php echo htmlspecialchars($product['productName']); ?></div>
+                        $delay = 0.11;
+                        foreach ($popularProducts as $product) {
+                            ?>
+                            <div class="col animate__animated animate__fadeInUp wow"
+                                data-wow-delay="<?php echo $delay; ?>s">
+                                <div class="popular-item">
+                                    <img src="assets/img/img-menu/<?php echo htmlspecialchars($product['image']); ?>"
+                                        alt="<?php echo htmlspecialchars($product['productName']); ?>">
+                                    <div class="subheading menu-name1 mt-2">
+                                        <?php echo htmlspecialchars($product['productName']); ?>
                                     </div>
                                 </div>
-                                <?php
-                                $delay += 0.01;
-                            }
-                        } else {
-                            ?>
-                            <div class="col-12 text-center">
-                                <p class="lead">No popular items yet. Check back soon!</p>
                             </div>
                             <?php
+                            $delay += 0.01;
                         }
                         ?>
                     </div>
 
+
                     <!-- Mobile Horizontal Scroll -->
                     <div class="scroll-container d-md-none px-3 mt-4">
                         <?php
-                        if (!empty($popularProducts)) {
-                            $delay = 0.11;
-                            foreach ($popularProducts as $product) {
-                                ?>
-                                <div class="popular-item animate__animated animate__fadeInUp wow"
-                                    data-wow-delay="<?php echo $delay; ?>s">
-                                    <img src="assets/img/img-menu/<?php echo htmlspecialchars($product['image']); ?>"
-                                        alt="<?php echo htmlspecialchars($product['productName']); ?>">
-                                    <div class="subheading menu-name1 mt-2">
-                                        <?php echo htmlspecialchars($product['productName']); ?></div>
+                        $delay = 0.11;
+                        foreach ($popularProducts as $product) {
+                            ?>
+                            <div class="popular-item animate__animated animate__fadeInUp wow"
+                                data-wow-delay="<?php echo $delay; ?>s">
+                                <img src="assets/img/img-menu/<?php echo htmlspecialchars($product['image']); ?>"
+                                    alt="<?php echo htmlspecialchars($product['productName']); ?>">
+                                <div class="subheading menu-name1 mt-2">
+                                    <?php echo htmlspecialchars($product['productName']); ?>
                                 </div>
-                                <?php
-                                $delay += 0.01;
-                            }
+                            </div>
+                            <?php
+                            $delay += 0.01;
                         }
                         ?>
                     </div>
+
 
                     <div class="text-center mt-4 animate__animated animate__pulse animate__infinite"
                         data-wow-delay="0.2s">
@@ -1170,7 +1210,7 @@ function getCartItemCount()
             <div
                 class="border-top mt-4 pt-3 d-flex justify-content-between align-items-center flex-wrap flex-column flex-lg-row text-center text-lg-start">
                 <p class="lead mb-0 small">
-                    © 2024 Copyright:
+                    © 2025 Copyright:
                     <span class="fw-bold d-block d-lg-inline">SAISYD CAFE</span>
                 </p>
 

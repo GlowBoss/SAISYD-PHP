@@ -59,13 +59,12 @@ $monthlyTotal = $monthlyRow['total_sales'] ?? 0;
 
 $avgOrderValue = "
     SELECT 
-        ROUND(AVG(o.totalAmount), 2) AS avg_order_value
-    FROM orders o
-    JOIN payments p ON o.orderID = p.orderID
-    WHERE p.paymentStatus = 'Paid'
-      AND o.status = 'Completed'
-      AND YEAR(o.orderDate) = YEAR(CURDATE())
-      AND MONTH(o.orderDate) = MONTH(CURDATE())
+    ROUND(AVG(o.totalAmount), 2) AS avg_order_value
+FROM orders o
+JOIN payments p ON o.orderID = p.orderID
+WHERE p.paymentStatus = 'Paid'
+  AND o.status = 'Completed'
+  AND DATE(o.orderDate) = CURDATE();
 ";
 $avgOrderValueResult = mysqli_query($conn, $avgOrderValue);
 $avgOrderValueRow = mysqli_fetch_assoc($avgOrderValueResult);

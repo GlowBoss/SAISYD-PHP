@@ -758,14 +758,14 @@ if ($result && mysqli_num_rows($result) > 0) {
                 });
             </script>
 
-            <!-- <script>
+            <script>
                 document.addEventListener("DOMContentLoaded", function () {
                     // Reload Page every 30 seconds to fetch new orders
                     setInterval(function () {
                         location.reload();
                     }, 30000);
                 });
-            </script> -->
+            </script>
 
             <script src="../assets/js/admin_sidebar.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
