@@ -45,8 +45,8 @@ const allowedUnits = {
   "g": ["g", "kg", "oz"],
   "kg": ["kg", "g"],
   "oz": ["oz", "g"],
-  "ml": ["ml", "L", "pump", "tbsp", "tsp"],
-  "l": ["L", "ml"],
+  "ml": ["ml", "l", "pump", "tbsp", "tsp"],
+  "l": [ "ml", "l"],
   "pump": ["pump", "ml"],
   "tbsp": ["tbsp", "ml"],
   "tsp": ["tsp", "ml"],
@@ -93,11 +93,41 @@ function enforceAllowedUnitsForRow(rowEl, baseUnitCandidate, selectedUnitCandida
 
   allowed.forEach(u => {
     const opt = document.createElement("option");
-    opt.value = u; // only saves short code
-    opt.textContent = unitLabels[u] || u; // shows readable label
-    if (selected && selected === u.toLowerCase()) opt.selected = true;
-    selectEl.appendChild(opt);
+    opt.value = u; 
+    opt.textContent = unitLabels[u] || u; 
+
+    allowed.forEach(u => {
+      const opt = document.createElement("option");
+      opt.value = u;
+      opt.textContent = unitLabels[u] || u;
+  
+      let displayUnit = selectedUnitCandidate ? selectedUnitCandidate.toLowerCase() : "";
+  
+      if (!displayUnit) {
+          // weight conversions
+          if (baseUnit.toLowerCase() === "kg") displayUnit = "g";
+          else if (baseUnit.toLowerCase() === "g") displayUnit = "g";
+          else if (baseUnit.toLowerCase() === "oz") displayUnit = "g";
+  
+          // volume conversions
+          else if (baseUnit.toLowerCase() === "l") displayUnit = "ml";
+          else if (baseUnit.toLowerCase() === "ml") displayUnit = "ml";
+          else if (["pump","tbsp","tsp"].includes(baseUnit.toLowerCase())) displayUnit = "ml";
+  
+          // packaging conversions
+          else if (baseUnit.toLowerCase() === "pcs") displayUnit = "pcs";
+          else if (baseUnit.toLowerCase() === "box") displayUnit = "pcs";  // assume display in pcs
+          else if (baseUnit.toLowerCase() === "pack") displayUnit = "pcs"; // assume display in pcs
+  
+          // fallback
+          else displayUnit = baseUnit.toLowerCase();
+      }
+  
+      if (u.toLowerCase() === displayUnit) opt.selected = true;
+  
+      selectEl.appendChild(opt);
   });
+});
 
   $(selectEl).data("correct-unit", baseUnit);
   

@@ -649,8 +649,8 @@ if ($isAjax) {
                         "g": ["g", "kg", "oz"],
                         "kg": ["kg", "g"],
                         "oz": ["oz", "g"],
-                        "ml": ["ml", "L", "pump", "tbsp", "tsp"],
-                        "L": ["L", "ml"],
+                        "ml": ["ml", "l", "pump", "tbsp", "tsp"],
+                        "l": ["ml", "l"],
                         "pump": ["pump", "ml"],
                         "tbsp": ["tbsp", "ml"],
                         "tsp": ["tsp", "ml"],
@@ -659,6 +659,75 @@ if ($isAjax) {
                         "pack": ["pack", "pcs"]
                     };
 
+                    const unitLabels = {
+                        "g": "g (grams)",
+                        "kg": "kg (kilograms)",
+                        "oz": "oz (ounces)",
+                        "ml": "ml (milliliters)",
+                        "L": "L (liters)",
+                        "pump": "pump (pumps)",
+                        "tbsp": "tbsp (tablespoons)",
+                        "tsp": "tsp (teaspoons)",
+                        "pcs": "pcs (pieces)",
+                        "box": "box (boxes)",
+                        "pack": "pack (packs)"
+                    };
+
+                    function getConvertibleUnits(baseUnit) {
+                        const normalized = baseUnit ? baseUnit.toLowerCase() : "";
+                        return allowedUnits[normalized] || [baseUnit];
+                    }
+
+                    function enforceAllowedUnitsForRow(rowEl, baseUnitCandidate, selectedUnitCandidate) {
+                        const $select = $(rowEl).find('.measurement-select');
+                        if (!$select.length) return;
+
+                        const baseUnit = baseUnitCandidate ? baseUnitCandidate.toLowerCase() : "";
+                        const allowed = getConvertibleUnits(baseUnit);
+
+                        $select.empty();
+                        $select.append('<option value="" disabled>Select Unit</option>');
+
+                        // Decide default display unit
+                        let displayUnit = selectedUnitCandidate ? selectedUnitCandidate.toLowerCase() : "";
+                        // weight conversions
+                        if (baseUnit.toLowerCase() === "kg") displayUnit = "g";
+                        else if (baseUnit.toLowerCase() === "g") displayUnit = "g";
+                        else if (baseUnit.toLowerCase() === "oz") displayUnit = "g";
+
+                        // volume conversions
+                        else if (baseUnit.toLowerCase() === "l") displayUnit = "ml";
+                        else if (baseUnit.toLowerCase() === "ml") displayUnit = "ml";
+                        else if (["pump", "tbsp", "tsp"].includes(baseUnit.toLowerCase())) displayUnit = "ml";
+
+                        // packaging conversions
+                        else if (baseUnit.toLowerCase() === "pcs") displayUnit = "pcs";
+                        else if (baseUnit.toLowerCase() === "box") displayUnit = "pcs";
+                        else if (baseUnit.toLowerCase() === "pack") displayUnit = "pcs";
+
+                        // fallback
+                        else displayUnit = baseUnit.toLowerCase();
+
+                        allowed.forEach(u => {
+                            const selected = (u.toLowerCase() === displayUnit) ? "selected" : "";
+                            $select.append(`<option value="${u}" ${selected}>${unitLabels[u] || u}</option>`);
+                        });
+
+                        $select.data("correct-unit", baseUnit);
+                        // Optional: disable dropdown in edit modal
+                        const editContainer = $('#ingredients-container');
+                        if (editContainer.length && $.contains(editContainer[0], $select[0])) {
+                            $select.prop('disabled', true).css({
+                                backgroundColor: '#e9ecef',
+                                cursor: 'not-allowed',
+                                opacity: '0.6',
+                                pointerEvents: 'none'
+                            });
+                        }
+
+                    }
+
+                    // Example usage inside autocomplete select:
                     function initAutocomplete(selector) {
                         $(selector).autocomplete({
                             source: ingredients,
@@ -669,25 +738,13 @@ if ($isAjax) {
                                 $(this).siblings(".ingredient-id").val(ui.item.id);
 
                                 const ingredientUnit = ui.item.unit;
-                                const $select = $(this).closest(".ingredient-row").find(".measurement-select");
+                                const row = $(this).closest(".ingredient-row")[0];
 
-                                // clear and repopulate dropdown
-                                $select.empty();
-                                $select.append('<option value="" disabled selected>Select Unit</option>');
-
-                                if (allowedUnits[ingredientUnit]) {
-                                    allowedUnits[ingredientUnit].forEach(unit => {
-                                        $select.append(`<option value="${unit}">${unit}</option>`);
-                                    });
-                                } else {
-                                    // fallback: just show its base unit
-                                    $select.append(`<option value="${ingredientUnit}">${ingredientUnit}</option>`);
-                                }
+                                enforceAllowedUnitsForRow(row, ingredientUnit, "");
 
                                 return false;
                             },
                             change: function (event, ui) {
-                                if (skipAutocompleteChange) return; // skip when cleared manually
                                 if (!ui.item) {
                                     Swal.fire({
                                         icon: 'error',
@@ -702,6 +759,7 @@ if ($isAjax) {
                             }
                         });
                     }
+
 
                     // initialize autocomplete for existing inputs
                     initAutocomplete("#confirmModal .ingredient-search");
@@ -758,6 +816,15 @@ if ($isAjax) {
                             </div>
                         </div>`;
                         $("#confirmModal #ingredients-container").append(row);
+
+                        // ✅ Disable the measurement-select in the new row immediately
+                        const $newRow = $("#confirmModal #ingredients-container .ingredient-row").last();
+                        $newRow.find('.measurement-select').prop('disabled', true).css({
+                            backgroundColor: '#e9ecef',
+                            cursor: 'not-allowed',
+                            opacity: '0.6',
+                            pointerEvents: 'none'
+                        });
 
                         // autocomplete for new row
                         initAutocomplete($("#confirmModal #ingredients-container .ingredient-search").last());
@@ -934,36 +1001,36 @@ if ($isAjax) {
             setInterval(fetchProductAvailability, POLL_INTERVAL);
 
         </script>
-        
+
         <!-- REAL-TIME SEARCH SCRIPT -->
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function () {
                 const searchInput = document.querySelector('input[name="searchProduct"]');
                 const productGrid = document.getElementById('productGrid');
                 let searchTimeout;
-                
+
                 // Get current category from URL
                 function getCurrentCategoryID() {
                     const urlParams = new URLSearchParams(window.location.search);
                     return urlParams.get('categoryID') || '';
                 }
-                
+
                 // Real-time search on input
                 if (searchInput) {
-                    searchInput.addEventListener('input', function() {
+                    searchInput.addEventListener('input', function () {
                         clearTimeout(searchTimeout);
-                        
+
                         // Debounce - wait 300ms after user stops typing
                         searchTimeout = setTimeout(() => {
                             performSearch();
                         }, 300);
                     });
                 }
-                
+
                 function performSearch() {
                     const searchTerm = searchInput.value.trim();
                     const categoryID = getCurrentCategoryID();
-                    
+
                     // Show loading indicator
                     productGrid.innerHTML = `
                         <div class="col-12 text-center py-5">
@@ -973,25 +1040,25 @@ if ($isAjax) {
                             <p class="mt-2">Searching...</p>
                         </div>
                     `;
-                    
+
                     // Build URL with parameters
                     let url = 'menu-management.php?ajax=1';
                     if (searchTerm) url += '&searchProduct=' + encodeURIComponent(searchTerm);
                     if (categoryID) url += '&categoryID=' + categoryID;
-                    
+
                     // Update browser URL without reload
                     const newUrl = 'menu-management.php';
                     const params = [];
                     if (searchTerm) params.push('searchProduct=' + encodeURIComponent(searchTerm));
                     if (categoryID) params.push('categoryID=' + categoryID);
                     history.pushState(null, '', params.length ? newUrl + '?' + params.join('&') : newUrl);
-                    
+
                     // Fetch results
                     fetch(url)
                         .then(response => response.text())
                         .then(html => {
                             productGrid.innerHTML = html;
-                            
+
                             // Re-attach event listeners for edit/delete buttons
                             attachProductCardListeners();
                         })
@@ -1004,15 +1071,15 @@ if ($isAjax) {
                             `;
                         });
                 }
-                
+
                 // Re-attach listeners after AJAX load
                 function attachProductCardListeners() {
                     // Delete buttons
                     document.querySelectorAll('[data-bs-target="#deleteConfirmModal"]').forEach(button => {
-                        button.addEventListener('click', function() {
+                        button.addEventListener('click', function () {
                             const productId = this.getAttribute('data-product-id');
                             const productName = this.getAttribute('data-product-name');
-                            
+
                             document.getElementById('deleteItemName').textContent = productName;
                             document.getElementById('deleteProductID').value = productId;
                         });
@@ -1020,7 +1087,7 @@ if ($isAjax) {
                 }
             });
         </script>
-        
+
         <?php if (isset($_SESSION['alertMessage'])): ?>
             <script>
                 document.addEventListener('DOMContentLoaded', function () {
