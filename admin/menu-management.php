@@ -162,11 +162,51 @@ while ($row = mysqli_fetch_assoc($menuItemsResults)) {
 
     // Calculate available quantity based on inventory + recipe
     $stockCheck = mysqli_query($conn, "
-        SELECT MIN(FLOOR(i.quantity / pr.requiredQuantity)) AS availableQuantity
-        FROM productrecipe pr
-        JOIN inventory i ON i.ingredientID = pr.ingredientID
-        WHERE pr.productID = $productID
+    SELECT MIN(FLOOR(
+        inv.total_quantity /
+        CASE
+            -- Weight
+            WHEN pr.measurementUnit = 'g' AND inv.unit = 'kg' THEN pr.requiredQuantity / 1000
+            WHEN pr.measurementUnit = 'kg' AND inv.unit = 'g' THEN pr.requiredQuantity * 1000
+            WHEN pr.measurementUnit = 'oz' AND inv.unit = 'g' THEN pr.requiredQuantity * 28.35
+            WHEN pr.measurementUnit = 'g' AND inv.unit = 'oz' THEN pr.requiredQuantity / 28.35
+    
+            -- Volume
+            WHEN pr.measurementUnit = 'ml' AND inv.unit = 'L' THEN pr.requiredQuantity / 1000
+            WHEN pr.measurementUnit = 'L' AND inv.unit = 'ml' THEN pr.requiredQuantity * 1000
+            WHEN pr.measurementUnit = 'pump' AND inv.unit = 'ml' THEN pr.requiredQuantity * 10
+            WHEN pr.measurementUnit = 'tbsp' AND inv.unit = 'ml' THEN pr.requiredQuantity * 15
+            WHEN pr.measurementUnit = 'tsp' AND inv.unit = 'ml' THEN pr.requiredQuantity * 5
+            WHEN pr.measurementUnit = 'cup' AND inv.unit = 'ml' THEN pr.requiredQuantity * 240     -- assuming 1 cup = 240ml
+            WHEN pr.measurementUnit = 'shot' AND inv.unit = 'ml' THEN pr.requiredQuantity * 30     -- assuming 1 shot = 30ml
+            WHEN pr.measurementUnit = 'ml' AND inv.unit = 'pump' THEN pr.requiredQuantity / 10
+            WHEN pr.measurementUnit = 'ml' AND inv.unit = 'tbsp' THEN pr.requiredQuantity / 15
+            WHEN pr.measurementUnit = 'ml' AND inv.unit = 'tsp' THEN pr.requiredQuantity / 5
+            WHEN pr.measurementUnit = 'ml' AND inv.unit = 'cup' THEN pr.requiredQuantity / 240
+            WHEN pr.measurementUnit = 'ml' AND inv.unit = 'shot' THEN pr.requiredQuantity / 30
+    
+            -- Pieces / Packaging
+            WHEN pr.measurementUnit = 'pcs' AND inv.unit = 'box' THEN pr.requiredQuantity / 12
+            WHEN pr.measurementUnit = 'box' AND inv.unit = 'pcs' THEN pr.requiredQuantity * 12
+            WHEN pr.measurementUnit = 'pack' AND inv.unit = 'pcs' THEN pr.requiredQuantity * 6
+            WHEN pr.measurementUnit = 'pcs' AND inv.unit = 'pack' THEN pr.requiredQuantity / 6
+    
+            -- Same unit
+            WHEN pr.measurementUnit = inv.unit THEN pr.requiredQuantity
+    
+            ELSE pr.requiredQuantity
+        END
+    )) AS availableQuantity
+    FROM productRecipe pr
+    JOIN (
+        SELECT ingredientID, SUM(quantity) AS total_quantity, MAX(unit) AS unit
+        FROM inventory
+        GROUP BY ingredientID
+    ) inv ON pr.ingredientID = inv.ingredientID
+    WHERE pr.productID = $productID;
+    
     ");
+
     $stockData = mysqli_fetch_assoc($stockCheck);
     $availableQuantity = intval($stockData['availableQuantity'] ?? 0);
 
@@ -646,17 +686,25 @@ if ($isAjax) {
                     let skipAutocompleteChange = false; // flag to skip alert
 
                     const allowedUnits = {
-                        "g": ["g", "kg", "oz"],
+                        "g": ["g", "kg"],
                         "kg": ["kg", "g"],
-                        "oz": ["oz", "g"],
-                        "ml": ["ml", "L", "pump", "tbsp", "tsp"],
-                        "L": ["L", "ml"],
-                        "pump": ["pump", "ml"],
-                        "tbsp": ["tbsp", "ml"],
-                        "tsp": ["tsp", "ml"],
-                        "pcs": ["pcs", "box", "pack"],
-                        "box": ["box", "pcs"],
-                        "pack": ["pack", "pcs"]
+                        "ml": ["ml", "pump", "tbsp", "tsp", "cup", "shot"],
+                        "L": ["L", "ml", "pump", "tbsp", "tsp", "cup", "shot"],
+                        "pcs": ["pcs"]
+                    };
+
+                    // readable labels
+                    const unitLabels = {
+                        "g": "g (grams)",
+                        "kg": "kg (kilograms)",
+                        "ml": "ml (milliliters)",
+                        "L": "L (liters)",
+                        "pump": "pump (pumps)",
+                        "tbsp": "tbsp (tablespoons)",
+                        "tsp": "tsp (teaspoons)",
+                        "pcs": "pcs (pieces)",
+                        "cup": "Cup",
+                        "shot": "Shot"
                     };
 
                     function initAutocomplete(selector) {
@@ -668,26 +716,24 @@ if ($isAjax) {
                                 $(this).val(ui.item.label);
                                 $(this).siblings(".ingredient-id").val(ui.item.id);
 
-                                const ingredientUnit = ui.item.unit;
+                                const ingredientUnit = ui.item.unit; // base unit
                                 const $select = $(this).closest(".ingredient-row").find(".measurement-select");
 
-                                // clear and repopulate dropdown
+                                // clear dropdown
                                 $select.empty();
                                 $select.append('<option value="" disabled selected>Select Unit</option>');
 
-                                if (allowedUnits[ingredientUnit]) {
-                                    allowedUnits[ingredientUnit].forEach(unit => {
-                                        $select.append(`<option value="${unit}">${unit}</option>`);
-                                    });
-                                } else {
-                                    // fallback: just show its base unit
-                                    $select.append(`<option value="${ingredientUnit}">${ingredientUnit}</option>`);
-                                }
+                                // add all allowed units based on the base unit
+                                const unitsToAdd = allowedUnits[ingredientUnit] || [ingredientUnit];
+                                unitsToAdd.forEach(unit => {
+                                    const label = unitLabels[unit] || unit;
+                                    $select.append(`<option value="${unit}">${label}</option>`);
+                                });
 
                                 return false;
                             },
                             change: function (event, ui) {
-                                if (skipAutocompleteChange) return; // skip when cleared manually
+                                if (skipAutocompleteChange) return;
                                 if (!ui.item) {
                                     Swal.fire({
                                         icon: 'error',
@@ -702,6 +748,8 @@ if ($isAjax) {
                             }
                         });
                     }
+
+
 
                     // initialize autocomplete for existing inputs
                     initAutocomplete("#confirmModal .ingredient-search");
@@ -732,17 +780,16 @@ if ($isAjax) {
           font-family: var(--secondaryFont); background: var(--card-bg-color);
           color: var(--text-color-dark); padding: 12px;">
           <option value="" disabled selected>Select Unit</option>
-                                    <option value="pcs">Pieces (pcs)</option>
-                                    <option value="box">Box</option>
-                                    <option value="pack">Pack</option>
-                                    <option value="g">Gram (g)</option>
-                                    <option value="kg">Kilogram (kg)</option>
-                                    <option value="oz">Ounce (oz)</option>
-                                    <option value="ml">Milliliter (ml)</option>
-                                    <option value="L">Liter (L)</option>
-                                    <option value="pump">Pump</option>
-                                    <option value="tbsp">Tablespoon (tbsp)</option>
-                                    <option value="tsp">Teaspoon (tsp)</option>
+                                    <option value="pcs">${unitLabels["pcs"]}</option>
+                                    <option value="g">${unitLabels["g"]}</option>
+                                    <option value="kg">${unitLabels["kg"]}</option>
+                                    <option value="ml">${unitLabels["ml"]}</option>
+                                    <option value="L">${unitLabels["L"]}</option>
+                                    <option value="pump">${unitLabels["pump"]}</option>
+                                    <option value="tbsp">${unitLabels["tbsp"]}</option>
+                                    <option value="tsp">${unitLabels["tsp"]}</option>
+                                    <option value="cup">${unitLabels["cup"]}</option>
+                                    <option value="shot">${unitLabels["shot"]}</option>
                                 </select>
                                 <input type="text" class="form-control mt-2 d-none custom-unit" name="customUnit[]"
                                     placeholder="Enter custom unit" style="border: 2px solid var(--primary-color); border-radius: 10px; 
@@ -790,17 +837,11 @@ if ($isAjax) {
                         if (!correctUnit) return;
 
                         const allowedUnits = {
-                            "g": ["g", "kg", "oz"],
+                            "g": ["g", "kg"],
                             "kg": ["kg", "g"],
-                            "oz": ["oz", "g"],
-                            "ml": ["ml", "L", "pump", "tbsp", "tsp"],
-                            "L": ["L", "ml"],
-                            "pump": ["pump", "ml"],
-                            "tbsp": ["tbsp", "ml"],
-                            "tsp": ["tsp", "ml"],
-                            "pcs": ["pcs", "box", "pack"],
-                            "box": ["box", "pcs"],
-                            "pack": ["pack", "pcs"]
+                            "ml": ["ml", "pump", "tbsp", "tsp", "cup", "shot"],
+                            "L": ["L", "ml", "pump", "tbsp", "tsp", "cup", "shot"],
+                            "pcs": ["pcs"]
                         };
 
                         if (!allowedUnits[correctUnit].includes(chosenUnit)) {
@@ -934,36 +975,36 @@ if ($isAjax) {
             setInterval(fetchProductAvailability, POLL_INTERVAL);
 
         </script>
-        
+
         <!-- REAL-TIME SEARCH SCRIPT -->
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function () {
                 const searchInput = document.querySelector('input[name="searchProduct"]');
                 const productGrid = document.getElementById('productGrid');
                 let searchTimeout;
-                
+
                 // Get current category from URL
                 function getCurrentCategoryID() {
                     const urlParams = new URLSearchParams(window.location.search);
                     return urlParams.get('categoryID') || '';
                 }
-                
+
                 // Real-time search on input
                 if (searchInput) {
-                    searchInput.addEventListener('input', function() {
+                    searchInput.addEventListener('input', function () {
                         clearTimeout(searchTimeout);
-                        
+
                         // Debounce - wait 300ms after user stops typing
                         searchTimeout = setTimeout(() => {
                             performSearch();
                         }, 300);
                     });
                 }
-                
+
                 function performSearch() {
                     const searchTerm = searchInput.value.trim();
                     const categoryID = getCurrentCategoryID();
-                    
+
                     // Show loading indicator
                     productGrid.innerHTML = `
                         <div class="col-12 text-center py-5">
@@ -973,25 +1014,25 @@ if ($isAjax) {
                             <p class="mt-2">Searching...</p>
                         </div>
                     `;
-                    
+
                     // Build URL with parameters
                     let url = 'menu-management.php?ajax=1';
                     if (searchTerm) url += '&searchProduct=' + encodeURIComponent(searchTerm);
                     if (categoryID) url += '&categoryID=' + categoryID;
-                    
+
                     // Update browser URL without reload
                     const newUrl = 'menu-management.php';
                     const params = [];
                     if (searchTerm) params.push('searchProduct=' + encodeURIComponent(searchTerm));
                     if (categoryID) params.push('categoryID=' + categoryID);
                     history.pushState(null, '', params.length ? newUrl + '?' + params.join('&') : newUrl);
-                    
+
                     // Fetch results
                     fetch(url)
                         .then(response => response.text())
                         .then(html => {
                             productGrid.innerHTML = html;
-                            
+
                             // Re-attach event listeners for edit/delete buttons
                             attachProductCardListeners();
                         })
@@ -1004,15 +1045,15 @@ if ($isAjax) {
                             `;
                         });
                 }
-                
+
                 // Re-attach listeners after AJAX load
                 function attachProductCardListeners() {
                     // Delete buttons
                     document.querySelectorAll('[data-bs-target="#deleteConfirmModal"]').forEach(button => {
-                        button.addEventListener('click', function() {
+                        button.addEventListener('click', function () {
                             const productId = this.getAttribute('data-product-id');
                             const productName = this.getAttribute('data-product-name');
-                            
+
                             document.getElementById('deleteItemName').textContent = productName;
                             document.getElementById('deleteProductID').value = productId;
                         });
@@ -1020,7 +1061,7 @@ if ($isAjax) {
                 }
             });
         </script>
-        
+
         <?php if (isset($_SESSION['alertMessage'])): ?>
             <script>
                 document.addEventListener('DOMContentLoaded', function () {

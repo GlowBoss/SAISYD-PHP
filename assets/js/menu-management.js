@@ -42,75 +42,76 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 const allowedUnits = {
-  "g": ["g", "kg", "oz"],
+  "g": ["g", "kg"],
   "kg": ["kg", "g"],
-  "oz": ["oz", "g"],
-  "ml": ["ml", "L", "pump", "tbsp", "tsp"],
-  "l": ["L", "ml"],
-  "pump": ["pump", "ml"],
-  "tbsp": ["tbsp", "ml"],
-  "tsp": ["tsp", "ml"],
-  "pcs": ["pcs", "box", "pack"],
-  "box": ["box", "pcs"],
-  "pack": ["pack", "pcs"]
+  "ml": ["ml", "pump", "tbsp", "tsp", "cup", "shot"],
+  "l": ["L", "ml", "pump", "tbsp", "tsp", "cup", "shot"],
+  "pcs": ["pcs"]
 };
 
-// readable labels (only for display)
+// readable labels for display
 const unitLabels = {
   "g": "g (grams)",
   "kg": "kg (kilograms)",
-  "oz": "oz (ounces)",
   "ml": "ml (milliliters)",
-  "l": "L (liters)",
+  "L": "L (liters)",
   "pump": "pump (pumps)",
   "tbsp": "tbsp (tablespoons)",
   "tsp": "tsp (teaspoons)",
   "pcs": "pcs (pieces)",
-  "box": "box (boxes)",
-  "pack": "pack (packs)"
+  "cup": "Cup",
+  "shot": "Shot"
 };
 
 function getConvertibleUnits(baseUnit) {
-  const normalized = baseUnit ? baseUnit.toLowerCase() : "";
-  return allowedUnits[normalized] || [baseUnit];
+  if (!baseUnit) return [];
+  return allowedUnits[baseUnit] || allowedUnits[baseUnit.toLowerCase()] || allowedUnits[baseUnit.toUpperCase()] || [baseUnit];
 }
 
-function enforceAllowedUnitsForRow(rowEl, baseUnitCandidate, selectedUnitCandidate) {
+function enforceAllowedUnitsForRow(rowEl, baseUnitCandidate, selectedUnitCandidate, isExisting = false) {
   const selectEl = rowEl.querySelector('.measurement-select');
   if (!selectEl) return;
 
-  const baseUnit = baseUnitCandidate ? baseUnitCandidate.toLowerCase() : "";
+  const baseUnit = baseUnitCandidate || "";
   const allowed = getConvertibleUnits(baseUnit);
 
   selectEl.innerHTML = "";
+
+  // Placeholder option
   const placeholder = document.createElement("option");
   placeholder.value = "";
   placeholder.disabled = true;
+  placeholder.selected = !selectedUnitCandidate; // show if no unit is selected
   placeholder.textContent = "Select Unit";
   selectEl.appendChild(placeholder);
 
+  // Populate allowed units
   const selected = (selectedUnitCandidate || "").toLowerCase();
-
   allowed.forEach(u => {
     const opt = document.createElement("option");
-    opt.value = u; // only saves short code
-    opt.textContent = unitLabels[u] || u; // shows readable label
-    if (selected && selected === u.toLowerCase()) opt.selected = true;
+    opt.value = u;
+    // Use proper label if exists
+    opt.textContent = unitLabels[u] || u;
+    if (selected && u.toLowerCase() === selected) opt.selected = true;
     selectEl.appendChild(opt);
   });
 
-  $(selectEl).data("correct-unit", baseUnit);
-  
-  // DISABLE THE UNIT DROPDOWN IN EDIT MODAL
-  const editContainer = document.getElementById('edit-ingredients-container');
-  if (editContainer && editContainer.contains(rowEl)) {
+  // Lock existing rows only
+  if (isExisting) {
     selectEl.disabled = true;
-    selectEl.style.backgroundColor = '#e9ecef';
+    selectEl.classList.add('bg-light', 'text-muted'); // Bootstrap styles
     selectEl.style.cursor = 'not-allowed';
-    selectEl.style.opacity = '0.6';
-    selectEl.style.pointerEvents = 'none';
+  } else {
+    selectEl.disabled = false;
+    selectEl.classList.remove('bg-light', 'text-muted');
+    selectEl.style.cursor = '';
   }
 }
+
+
+
+
+
 
 // -----------------------------
 // CREATE INGREDIENT ROW
@@ -212,18 +213,9 @@ function initIngredientContainer(containerId, addBtnId) {
       const newRow = createIngredientRow();
       container.appendChild(newRow);
       initAutocompleteForRow(newRow);
-      
-      // If in edit modal, disable the unit dropdown
-      if (containerId === 'edit-ingredients-container') {
-        const unitSelect = newRow.querySelector('.measurement-select');
-        if (unitSelect) {
-          unitSelect.disabled = true;
-          unitSelect.style.backgroundColor = '#e9ecef';
-          unitSelect.style.cursor = 'not-allowed';
-          unitSelect.style.opacity = '0.6';
-          unitSelect.style.pointerEvents = 'none';
-        }
-      }
+
+      // New rows are editable even in edit modal
+      enforceAllowedUnitsForRow(newRow, "", "", false);
     });
 
     container.addEventListener("click", (e) => {
@@ -276,7 +268,8 @@ document.addEventListener("DOMContentLoaded", function () {
             initAutocompleteForRow(row);
             const baseFromServer = ing.baseUnit || ing.unit || ing.measurementUnit || "";
             const savedUnit = ing.measurementUnit || ing.unit || "";
-            enforceAllowedUnitsForRow(row, baseFromServer, savedUnit);
+            // Mark all ingredients from server as existing (should be locked)
+            enforceAllowedUnitsForRow(row, baseFromServer, savedUnit, true);
           });
         })
         .catch(err => console.error("Fetch error:", err));

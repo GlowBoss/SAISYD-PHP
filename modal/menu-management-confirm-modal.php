@@ -82,56 +82,7 @@
                     </h6>
 
                     <div id="ingredients-container" style="max-height: 250px; overflow-y: auto; padding-right: 5px;">
-                        <div class="row g-2 mb-2 ingredient-row">
-                            <div class="col-md-5 position-relative">
-                                <input type="text" class="form-control ingredient-search"
-                                    placeholder="Search Ingredient" required style="border: 2px solid var(--primary-color); border-radius: 10px; 
-          font-family: var(--secondaryFont); background: var(--card-bg-color);
-          color: var(--text-color-dark); padding: 12px;">
-                                <input type="hidden" name="ingredientID[]" class="ingredient-id">
-                                <button type="button" class="cancel-search" style="position:absolute; right:8px; top:50%; transform:translateY(-50%);
-          border:none; background:none; color:#333; font-size:18px; display:none; cursor:pointer;">
-                                    &times;
-                                </button>
-                            </div>
-                            <div class="col-md-3">
-                                <input type="number" class="form-control" name="requiredQuantity[]"
-                                    placeholder="Quantity" step="any" required style="border: 2px solid var(--primary-color); border-radius: 10px; 
-          font-family: var(--secondaryFont); background: var(--card-bg-color);
-          color: var(--text-color-dark); padding: 12px;">
-                            </div>
-                            <div class="col-md-3">
-                                <select class="form-select measurement-select" name="measurementUnit[]" required style="border: 2px solid var(--primary-color); border-radius: 10px; 
-          font-family: var(--secondaryFont); background: var(--card-bg-color);
-          color: var(--text-color-dark); padding: 12px;">
-                                    <option value="" disabled selected>Select Unit</option>
-                                    <option value="pcs">Pieces (pcs)</option>
-                                    <option value="box">Box</option>
-                                    <option value="pack">Pack</option>
-                                    <option value="g">Gram (g)</option>
-                                    <option value="kg">Kilogram (kg)</option>
-                                    <option value="oz">Ounce (oz)</option>
-                                    <option value="ml">Milliliter (ml)</option>
-                                    <option value="L">Liter (L)</option>
-                                    <option value="pump">Pump</option>
-                                    <option value="tbsp">Tablespoon (tbsp)</option>
-                                    <option value="tsp">Teaspoon (tsp)</option>
-                                </select>
-
-                                <input type="text" class="form-control mt-2 d-none custom-unit" name="customUnit[]"
-                                    placeholder="Enter custom unit" style="border: 2px solid var(--primary-color); border-radius: 10px; 
-          font-family: var(--secondaryFont); background: var(--card-bg-color);
-          color: var(--text-color-dark); padding: 12px;">
-
-                            </div>
-                            <div class="col-md-1 d-flex justify-content-center align-items-center">
-                                <button type="button"
-                                    class="btn btn-sm btn-del remove-ingredient d-flex justify-content-center align-items-center"
-                                    style="border-radius: 10px; width: 38px; height: 38px; transition: all 0.3s ease;">
-                                    <i class="bi bi-trash fs-5"></i>
-                                </button>
-                            </div>
-                        </div>
+                      
                     </div>
 
                     <!-- Add Ingredient Button -->
