@@ -172,18 +172,32 @@ while ($row = mysqli_fetch_assoc($menuItemsResults)) {
             WHEN pr.measurementUnit = 'g' AND inv.unit = 'oz' THEN pr.requiredQuantity / 28.35
     
             -- Volume
+            -- Existing conversions
             WHEN pr.measurementUnit = 'ml' AND inv.unit = 'L' THEN pr.requiredQuantity / 1000
             WHEN pr.measurementUnit = 'L' AND inv.unit = 'ml' THEN pr.requiredQuantity * 1000
             WHEN pr.measurementUnit = 'pump' AND inv.unit = 'ml' THEN pr.requiredQuantity * 10
             WHEN pr.measurementUnit = 'tbsp' AND inv.unit = 'ml' THEN pr.requiredQuantity * 15
             WHEN pr.measurementUnit = 'tsp' AND inv.unit = 'ml' THEN pr.requiredQuantity * 5
-            WHEN pr.measurementUnit = 'cup' AND inv.unit = 'ml' THEN pr.requiredQuantity * 240     -- assuming 1 cup = 240ml
-            WHEN pr.measurementUnit = 'shot' AND inv.unit = 'ml' THEN pr.requiredQuantity * 30     -- assuming 1 shot = 30ml
+            WHEN pr.measurementUnit = 'cup' AND inv.unit = 'ml' THEN pr.requiredQuantity * 240
+            WHEN pr.measurementUnit = 'shot' AND inv.unit = 'ml' THEN pr.requiredQuantity * 30
             WHEN pr.measurementUnit = 'ml' AND inv.unit = 'pump' THEN pr.requiredQuantity / 10
             WHEN pr.measurementUnit = 'ml' AND inv.unit = 'tbsp' THEN pr.requiredQuantity / 15
             WHEN pr.measurementUnit = 'ml' AND inv.unit = 'tsp' THEN pr.requiredQuantity / 5
             WHEN pr.measurementUnit = 'ml' AND inv.unit = 'cup' THEN pr.requiredQuantity / 240
             WHEN pr.measurementUnit = 'ml' AND inv.unit = 'shot' THEN pr.requiredQuantity / 30
+            
+            WHEN pr.measurementUnit = 'L' AND inv.unit = 'pump' THEN pr.requiredQuantity * 100  -- 1L = 1000ml / 10ml per pump
+            WHEN pr.measurementUnit = 'L' AND inv.unit = 'tbsp' THEN pr.requiredQuantity * 1000 / 15
+            WHEN pr.measurementUnit = 'L' AND inv.unit = 'tsp' THEN pr.requiredQuantity * 1000 / 5
+            WHEN pr.measurementUnit = 'L' AND inv.unit = 'cup' THEN pr.requiredQuantity * 1000 / 240
+            WHEN pr.measurementUnit = 'L' AND inv.unit = 'shot' THEN pr.requiredQuantity * 1000 / 30
+            
+            WHEN pr.measurementUnit = 'pump' AND inv.unit = 'L' THEN pr.requiredQuantity * 10 / 1000
+            WHEN pr.measurementUnit = 'tbsp' AND inv.unit = 'L' THEN pr.requiredQuantity * 15 / 1000
+            WHEN pr.measurementUnit = 'tsp' AND inv.unit = 'L' THEN pr.requiredQuantity * 5 / 1000
+            WHEN pr.measurementUnit = 'cup' AND inv.unit = 'L' THEN pr.requiredQuantity * 240 / 1000
+            WHEN pr.measurementUnit = 'shot' AND inv.unit = 'L' THEN pr.requiredQuantity * 30 / 1000
+            
     
             -- Pieces / Packaging
             WHEN pr.measurementUnit = 'pcs' AND inv.unit = 'box' THEN pr.requiredQuantity / 12
