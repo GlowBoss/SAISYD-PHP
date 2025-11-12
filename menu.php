@@ -372,6 +372,7 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
             if (mysqli_num_rows($products) > 0) {
                 while ($product = mysqli_fetch_assoc($products)) {
                     $isAvailable = ($product['isAvailable'] === 'Yes');
+                    $availableQty = isset($product['availableQuantity']) ? intval($product['availableQuantity']) : 0;
                     ?>
                     <div class="col product-item"
                         data-category="<?php echo htmlspecialchars($product['categoryName'] ?? 'Uncategorized'); ?>"
@@ -379,19 +380,19 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                         data-price="<?php echo $product['price']; ?>" data-available="<?php echo $isAvailable ? '1' : '0'; ?>">
 
                         <div class="menu-item <?php echo !$isAvailable ? 'unavailable-item' : ''; ?> text-center" style="
-                height: clamp(260px, 40vw, 320px);
-                border-radius: 20px;
-                background-color: var(--bg-color);
-                border: 0.5px solid rgba(0, 0, 0, 0.2);
-                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-                display: flex;
-                flex-direction: column;
-                justify-content: space-between;
-                padding: clamp(10px, 2vw, 15px);
-                transition: transform 0.25s ease, box-shadow 0.25s ease;
-                position: relative;
-                <?php echo !$isAvailable ? 'opacity: 0.6;' : ''; ?>
-            ">
+            height: clamp(260px, 40vw, 320px);
+            border-radius: 20px;
+            background-color: var(--bg-color);
+            border: 0.5px solid rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: clamp(10px, 2vw, 15px);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            position: relative;
+            <?php echo !$isAvailable ? 'opacity: 0.6;' : ''; ?>
+        ">
 
                             <div
                                 style="height: clamp(120px, 25vw, 150px); display: flex; align-items: center; justify-content: center;">
@@ -410,29 +411,36 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                                 ₱<?php echo number_format($product['price'], 2); ?>
                             </div>
 
+                            <!-- NEW: Display available quantity -->
+                            <?php if ($isAvailable): ?>
+                                <div style="font-size: clamp(0.7rem, 1.8vw, 0.85rem); color: white;">
+                                    Available: <?php echo $availableQty; ?> pcs
+                                </div>
+                            <?php endif; ?>
+
                             <?php if ($isAvailable): ?>
                                 <button class="lead buy-btn mt-auto" data-bs-toggle="modal" data-bs-target="#item-customization"
                                     data-product-id="<?php echo $product['productID']; ?>"
                                     data-name="<?php echo htmlspecialchars($product['productName']); ?>"
                                     data-price="<?php echo $product['price']; ?>"
                                     data-category="<?php echo htmlspecialchars($product['categoryName'] ?? 'Uncategorized'); ?>"
-                                    onclick="openPopup(this)" style="
-                            font-size: clamp(0.8rem, 2vw, 1rem);
-                            border-radius: 12px;
-                            padding: clamp(6px, 1.5vw, 8px) clamp(10px, 2vw, 14px);
-                        ">
+                                    data-available-qty="<?php echo $availableQty; ?>" onclick="openPopup(this)" style="
+                        font-size: clamp(0.8rem, 2vw, 1rem);
+                        border-radius: 12px;
+                        padding: clamp(6px, 1.5vw, 8px) clamp(10px, 2vw, 14px);
+                    ">
                                     Order Now
                                 </button>
                             <?php else: ?>
                                 <button class="lead mt-auto" disabled style="
-                            font-size: clamp(0.8rem, 2vw, 1rem);
-                            border-radius: 12px;
-                            padding: clamp(6px, 1.5vw, 8px) clamp(10px, 2vw, 14px);
-                            background-color: #ccc;
-                            color: #666;
-                            border: none;
-                            cursor: not-allowed;
-                        ">
+                        font-size: clamp(0.8rem, 2vw, 1rem);
+                        border-radius: 12px;
+                        padding: clamp(6px, 1.5vw, 8px) clamp(10px, 2vw, 14px);
+                        background-color: #ccc;
+                        color: #666;
+                        border: none;
+                        cursor: not-allowed;
+                    ">
                                     Unavailable
                                 </button>
                             <?php endif; ?>
@@ -505,11 +513,14 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                     <div id="collapseCompany" class="accordion-collapse collapse">
                         <div class="accordion-body" style="text-align: justify;">
                             <ul class="list-unstyled mb-0">
-                                <li><a href="index.php#about" class="text-dark text-decoration-none footer-link">About Us</a>
+                                <li><a href="index.php#about" class="text-dark text-decoration-none footer-link">About
+                                        Us</a>
                                 </li>
-                                <li><a href="index.php#location" class="text-dark text-decoration-none footer-link">Location</a>
+                                <li><a href="index.php#location"
+                                        class="text-dark text-decoration-none footer-link">Location</a>
                                 </li>
-                                <li><a href="index.php#contact" class="text-dark text-decoration-none footer-link">Contact Us</a>
+                                <li><a href="index.php#contact"
+                                        class="text-dark text-decoration-none footer-link">Contact Us</a>
                                 </li>
                             </ul>
                         </div>
@@ -568,9 +579,12 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                 <div class="col-lg-2" style="text-align: justify;">
                     <h6 class="fw-bold">Company</h6>
                     <ul class="list-unstyled">
-                        <li><a href="index.php#about" class="text-dark text-decoration-none footer-link">About Us</a></li>
-                        <li><a href="index.php#location" class="text-dark text-decoration-none footer-link">Location</a></li>
-                        <li><a href="index.php#contact" class="text-dark text-decoration-none footer-link">Contact Us</a></li>
+                        <li><a href="index.php#about" class="text-dark text-decoration-none footer-link">About Us</a>
+                        </li>
+                        <li><a href="index.php#location" class="text-dark text-decoration-none footer-link">Location</a>
+                        </li>
+                        <li><a href="index.php#contact" class="text-dark text-decoration-none footer-link">Contact
+                                Us</a></li>
                     </ul>
                 </div>
                 <div class="col-lg-3 offset-lg-1">
@@ -606,6 +620,13 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
 
+    <?php
+    // ==============================================
+// REPLACE THE EXISTING openPopup FUNCTION AND SCRIPTS
+// Find this section in your menu.php around line 400+
+// ==============================================
+    ?>
+
     <script>
         // Categories that need sugar/ice options (from database)
         const sugarIceCategories = <?php echo json_encode($sugarIceCategoryList); ?>;
@@ -619,6 +640,9 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
             const productId = button.getAttribute('data-product-id');
             const category = button.getAttribute('data-category');
 
+            // NEW: Get available quantity from data attribute
+            const availableQty = parseInt(button.getAttribute('data-available-qty')) || 0;
+
             document.querySelector('.itemName').textContent = productName;
             document.querySelector('.itemPrice').textContent = '₱' + parseFloat(productPrice).toFixed(2);
 
@@ -626,6 +650,25 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
             document.getElementById('modal_product_name').value = productName;
             document.getElementById('modal_price').value = productPrice;
             document.getElementById('modal_category').value = category;
+
+            // NEW: Set available quantity
+            document.getElementById('modal_available_quantity').value = availableQty;
+
+            // NEW: Update available stock display
+            const stockBadge = document.getElementById('availableStockBadge');
+            const stockCount = document.getElementById('availableStockCount');
+            if (stockCount) {
+                stockCount.textContent = availableQty;
+            }
+
+            // NEW: Set max available quantity for validation
+            window.maxAvailableQuantity = availableQty;
+
+            // Reset quantity to 1
+            document.getElementById('quantity').value = 1;
+
+            // NEW: Update button states based on available stock
+            updateButtonStates();
 
             updateModalOptions(category);
         }
@@ -647,13 +690,52 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
         function decreaseQuantity() {
             const quantityInput = document.getElementById('quantity');
             let currentValue = parseInt(quantityInput.value);
-            if (currentValue > 1) quantityInput.value = currentValue - 1;
+            if (currentValue > 1) {
+                quantityInput.value = currentValue - 1;
+                updateButtonStates();
+            }
         }
 
         function increaseQuantity() {
             const quantityInput = document.getElementById('quantity');
             let currentValue = parseInt(quantityInput.value);
-            if (currentValue < 999) quantityInput.value = currentValue + 1;
+            const maxQty = window.maxAvailableQuantity || 0;
+
+            if (currentValue < maxQty) {
+                quantityInput.value = currentValue + 1;
+                updateButtonStates();
+            }
+        }
+
+        // NEW: Update button states function
+        function updateButtonStates() {
+            const quantityInput = document.getElementById('quantity');
+            const increaseBtn = document.getElementById('increaseBtn');
+            const decreaseBtn = document.getElementById('decreaseBtn');
+            const currentValue = parseInt(quantityInput.value);
+            const maxQty = window.maxAvailableQuantity || 0;
+
+            // Disable/enable decrease button
+            if (currentValue <= 1) {
+                decreaseBtn.disabled = true;
+                decreaseBtn.style.opacity = '0.5';
+                decreaseBtn.style.cursor = 'not-allowed';
+            } else {
+                decreaseBtn.disabled = false;
+                decreaseBtn.style.opacity = '1';
+                decreaseBtn.style.cursor = 'pointer';
+            }
+
+            // Disable/enable increase button based on available stock
+            if (currentValue >= maxQty) {
+                increaseBtn.disabled = true;
+                increaseBtn.style.opacity = '0.5';
+                increaseBtn.style.cursor = 'not-allowed';
+            } else {
+                increaseBtn.disabled = false;
+                increaseBtn.style.opacity = '1';
+                increaseBtn.style.cursor = 'pointer';
+            }
         }
 
         // FIXED: Modal close event - removes duplicate and fixes scrolling
@@ -678,6 +760,35 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
             }, 100);
         });
 
+        // NEW: Manual input validation
+        document.addEventListener('DOMContentLoaded', function () {
+            const quantityInput = document.getElementById('quantity');
+
+            quantityInput.addEventListener('input', function () {
+                let value = parseInt(this.value);
+                const maxQty = window.maxAvailableQuantity || 0;
+
+                if (isNaN(value) || value < 1) {
+                    this.value = 1;
+                } else if (value > maxQty) {
+                    this.value = maxQty;
+                }
+
+                updateButtonStates();
+            });
+
+            // Prevent typing beyond max
+            quantityInput.addEventListener('keypress', function (e) {
+                const maxQty = window.maxAvailableQuantity || 0;
+                const currentVal = parseInt(this.value + e.key);
+
+                if (currentVal > maxQty) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        // Rest of your existing menu.php scripts...
         document.addEventListener('DOMContentLoaded', function () {
 
             const categoryPills = document.querySelectorAll('.category-pill');

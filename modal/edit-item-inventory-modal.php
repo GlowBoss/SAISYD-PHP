@@ -55,41 +55,12 @@
         color: var(--text-color-light);
     }
 
-    /* Unit Mismatch Warning Styles */
-    .unit-warning {
-        background-color: #fff3cd;
-        border: 2px solid #ffc107;
-        border-radius: 8px;
-        padding: 10px 15px;
-        margin-top: 10px;
-        display: none;
-    }
-
-    .unit-warning.show {
-        display: block;
-        animation: slideDown 0.3s ease;
-    }
-
-    .unit-warning i {
-        color: #856404;
-        font-size: 1.2rem;
-        margin-right: 8px;
-    }
-
-    .unit-warning-text {
-        color: #856404;
-        font-weight: 600;
-        font-family: var(--secondaryFont);
-        font-size: 0.9rem;
-    }
-
     #ingredientNameEdit {
         pointer-events: none;
         background-color: #e0e0e0;
         color: #6c6c6c;
         border-color: #c0c0c0;
         cursor: not-allowed;
-
     }
 
     #ingredientNameEdit:focus {
@@ -123,13 +94,19 @@
         box-shadow: none;
     }
 
+    /* Disabled unit field styling */
+    #unitEdit:disabled {
+        background-color: #e0e0e0;
+        color: #6c6c6c;
+        cursor: not-allowed;
+        opacity: 1;
+    }
 
     @keyframes slideDown {
         from {
             opacity: 0;
             transform: translateY(-10px);
         }
-
         to {
             opacity: 1;
             transform: translateY(0);
@@ -183,8 +160,6 @@
                                             background: var(--card-bg-color); border: 2px solid var(--primary-color); 
                                             border-top: none; border-radius: 0 0 10px 10px; display: none; ">
                                 </div>
-
-
                             </div>
 
                             <!-- Quantity -->
@@ -199,15 +174,21 @@
                                               color: var(--text-color-dark); padding: 12px;">
                             </div>
 
-                            <!-- Unit -->
+                            <!-- Unit - DISABLED BUT WILL SUBMIT -->
                             <div class="mb-4">
                                 <label for="unit" class="form-label fw-bold mb-2"
                                     style="font-family: var(--primaryFont); color: var(--text-color-dark);">
                                     Unit
                                 </label>
-                                <select class="form-select" id="unitEdit" name="unitEdit" required style="border: 2px solid var(--primary-color); border-radius: 10px; 
-                                               font-family: var(--secondaryFont); background: var(--card-bg-color);
-                                               color: var(--text-color-dark); padding: 12px;">
+                                <!-- Hidden input to send the unit value -->
+                                <input type="hidden" id="unitEditHidden" name="unitEdit">
+                                
+                                <select class="form-select" id="unitEdit" disabled style="border: 2px solid var(--primary-color); border-radius: 10px; 
+                                               font-family: var(--secondaryFont); 
+                                               background-color: #e0e0e0;
+                                               color: #6c6c6c;
+                                               cursor: not-allowed;
+                                               padding: 12px;">
                                     <option value="">Select Unit</option>
                                     <optgroup label="Weight">
                                         <option value="kg">Kilogram (kg)</option>
@@ -235,11 +216,10 @@
                                         <option value="boxes">Boxes</option>
                                     </optgroup>
                                 </select>
-
-                                <!-- Unit Mismatch Warning -->
-                                <div class="unit-warning" id="unitWarningEdit">
-                                    <i class="bi bi-exclamation-triangle-fill"></i>
-                                    <span class="unit-warning-text" id="unitWarningTextEdit"></span>
+                                <div class="form-text mt-2"
+                                    style="font-family: var(--secondaryFont); color: #6c6c6c; font-size: 0.85rem;">
+                                    <i class="bi bi-lock-fill me-1"></i>
+                                    Unit cannot be changed to maintain data consistency
                                 </div>
                             </div>
                         </div>
@@ -331,364 +311,16 @@
     </div>
 </div>
 
-<!-- Unit Mismatch Error Modal -->
-<div class="modal fade" id="unitMismatchModal" tabindex="-1" aria-labelledby="unitMismatchModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-4 shadow-lg border-0" style="background: var(--bg-color);">
-            <div class="modal-header border-0 pb-2"
-                style="background: linear-gradient(135deg, #ff6b6b 0%, #dc3545 100%);">
-                <h5 class="modal-title fw-bold text-white" id="unitMismatchModalLabel">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Unit Mismatch Error
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                    aria-label="Close"></button>
-            </div>
-            <div class="modal-body text-center py-4">
-                <div class="mb-3">
-                    <i class="bi bi-x-circle-fill" style="font-size: 4rem; color: #dc3545;"></i>
-                </div>
-                <h5 class="fw-bold mb-3" style="color: var(--text-color-dark); font-family: var(--primaryFont);">
-                    Incompatible Unit Selected
-                </h5>
-                <p class="mb-2" style="color: var(--text-color-dark); font-family: var(--secondaryFont);"
-                    id="mismatchMessage">
-                    <!-- Dynamic message here -->
-                </p>
-                <div class="alert alert-warning mt-3" role="alert" style="font-size: 0.9rem;">
-                    <i class="bi bi-info-circle me-2"></i>
-                    <strong>Allowed units:</strong> <span id="allowedUnitsText"></span>
-                </div>
-            </div>
-            <div class="modal-footer border-0 justify-content-center">
-                <button type="button" class="btn fw-bold px-4 py-2" id="fixUnitMismatchBtn" style="
-                    background: var(--text-color-dark); 
-                    color: var(--text-color-light); 
-                    border: none;
-                    border-radius: 10px; 
-                    font-family: var(--primaryFont); 
-                    letter-spacing: 1px;
-                    box-shadow: 0 4px 8px rgba(196, 162, 119, 0.3); 
-                    transition: all 0.3s ease;
-                    min-width: 120px;
-                    " onmouseover="
-                    this.style.background='var(--primary-color)'; 
-                    this.style.transform='translateY(-2px)';
-                    this.style.boxShadow='0 6px 12px rgba(196, 162, 119, 0.4)';
-                    " onmouseout="
-                    this.style.background='var(--text-color-dark)'; 
-                    this.style.transform='translateY(0)';
-                    this.style.boxShadow='0 4px 8px rgba(196, 162, 119, 0.3)';
-                    ">
-                    <i class="bi bi-tools me-2"></i>FIX THIS NOW
-                </button>
-            </div>
-
-        </div>
-    </div>
-</div>
-
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // ==================== UNIT VALIDATION SYSTEM ====================
-
-        function detectIngredientType(ingredientName) {
-            const name = ingredientName.toLowerCase().trim();
-
-            // ==================== DUAL ITEMS (Both countable AND solid) ====================
-            const dualKeywords = [
-                'ice'
-            ];
-
-           
-            // ==================== LIQUID ITEMS (ML/L measurement) ====================
-
-            const liquidKeywords = [
-                // ALL Milk variants 
-                'milk', 'full cream milk', 'oatside milk', 'soy milk', 'almond milk',
-                'evaporated milk', 'condensed milk',
-                'heavy whipping cream', 'whipping cream', 'all purpose cream', 'cream',
-
-                // Coffee liquids 
-                'espresso', 'espresso shot', 'coffee liquid', 'cold brew',
-
-                // ALL Syrups
-                'syrup', 'vanilla syrup', 'caramel syrup', 'hazelnut syrup',
-                'brown sugar syrup', 'blueberry syrup', 'green apple syrup',
-                'lychee syrup', 'peach honey syrup', 'lemon syrup',
-
-                // ALL Sauces 
-                'chocolate sauce', 'caramel sauce',
-                'soy sauce', 'fish sauce', 'oystersauce', 'oyster sauce',
-                'worcestershire sauce',
-                'banana ketchup', 'ketchup',
-                'sriracha sauce', 'sriracha',
-
-                // Purees and juices
-                'puree', 'strawberry puree',
-                'juice', 'lemonade',
-
-                // Beverages
-                'water', 'soda', 'sprite', 'sprite soda',
-
-                // Oils and liquid condiments
-                'oil', 'cooking oil',
-                'vinegar', 'gravy',
-
-                // Sweet liquids
-                'fructose', 'honey',
-
-                // Creamy liquids
-                'yogurt',
-                'kewpie mayo', 'mayo', 'mayonnaise'
-            ];
-
-            // ==================== SOLID ITEMS (G/KG measurement) ====================
-
-            const solidKeywords = [
-                // Meats 
-                'chicken wings', 'wings', 'chicken',
-                'beef samgyup', 'beef giniling', 'beef', 'giniling',
-                'porkloin', 'pork',
-                'ham', 'spam', 'bacon',
-                'patty', 'nugget', 'sausage',
-
-                // Vegetables 
-                'onion', 'garlic', 'cucumber', 'tomato',
-                'lettuce', 'lemon',
-
-                // Sugar and sweeteners
-                'sugar', 'brown sugar', 'white sugar',
-
-                // ALL Powders - measured by weight
-                'powder',
-                'cocoa powder', 'chocolate powder', 'caramel powder',
-                'cookies and cream powder', 'milo powder',
-                'matcha powder', 'ceremonial matcha powder',
-
-                // Coffee shop special bases
-                'frappe base',
-
-                'taro', 'ube', 'nata de coco',
-
-                // Coffee beans 
-                'beans', 'arabica beans', 'coffee beans',
-
-                // Tea leaves 
-                'tea', 'black tea', 'assam black tea', 'tea leaves',
-
-                // Baking/Cooking ingredients 
-                'flour', 'all purpose flour',
-                'cornstarch', 'breadcrumbs',
-                'rice', 'jasmine rice', 'grain', 'oats',
-
-                // Dairy solids 
-                'cheese', 'cheese block', 'parmesan cheese', 'parmesan',
-                'butter',
-
-                // Baked goods in bulk
-                'biscuit', 'cookies', 'muffin', 'toast',
-                'waffle', 'croissant', 'brownie', 'cake', 'pastry',
-
-                // Snacks and sides 
-                'chips', 'french fries', 'fries', 'onion rings',
-
-                // Nuts 
-                'nuts', 'almond', 'cashew', 'hazelnut',
-
-                // Seasonings 
-                'salt', 'pepper', 'seasoning'
-            ];
-
-             // ==================== COUNTABLE ITEMS (Bilang lang, hindi timbang) ====================
-             
-            const countableKeywords = [
-                // Eggs 
-                'egg', 'eggs', 'eggs medium',
-
-                // Bread 
-                'loaf', 'loaf brioche bread', 'pita bread',
-
-                // Packaging/Service items 
-                'bottle', 'can', 'straw',
-                'cup lid', 'cup sleeve',
-                'tissue', 'napkin', 'fork', 'spoon',
-                'tray', 'plate', 'container',
-                'cup holder', 'stirrer', 'plastic cup', 'take-out box'
-            ];
-
-            // ==================== SPECIAL CASE DETECTION ====================
-
-            // 0. Check DUAL items first (highest priority)
-            if (dualKeywords.some(keyword => name.includes(keyword))) {
-                return 'dual';
-            }
-
-            // 1. ALL TEA (leaves/powder) = SOLID
-            if (name.includes('tea') && !name.includes('milktea')) {
-                return 'solid';
-            }
-
-            // 2. MEATS are ALWAYS SOLID 
-            const meatKeywords = ['chicken', 'wings', 'beef', 'pork', 'ham', 'spam', 'bacon'];
-            if (meatKeywords.some(keyword => name.includes(keyword))) {
-                return 'solid';
-            }
-
-            // 3. Flavor powders (not syrups/sauces) = SOLID
-            if (
-                (name.includes('vanilla') ||
-                    name.includes('caramel') ||
-                    name.includes('hazelnut') ||
-                    name.includes('mocha') ||
-                    name.includes('chocolate')) &&
-                !name.includes('syrup') &&
-                !name.includes('sauce') &&
-                !name.includes('milk') &&
-                !name.includes('cream')
-            ) {
-                return 'solid';
-            }
-
-            // 4. VEGETABLES = SOLID 
-            const veggieKeywords = ['onion', 'garlic', 'cucumber', 'tomato', 'lettuce', 'lemon'];
-            if (veggieKeywords.some(keyword => name.includes(keyword))) {
-                return 'solid';
-            }
-
-            // ==================== DETECTION PRIORITY ====================
-
-            // Check countable first (most specific)
-            if (countableKeywords.some(keyword => name.includes(keyword))) {
-                return 'countable';
-            }
-
-            // Check liquid (very specific keywords)
-            if (liquidKeywords.some(keyword => name.includes(keyword))) {
-                return 'liquid';
-            }
-
-            // Check solid (catch-all for most ingredients)
-            if (solidKeywords.some(keyword => name.includes(keyword))) {
-                return 'solid';
-            }
-
-            // Default: SOLID (safest for coffee shop inventory)
-            return 'solid';
-        }
-
-        // ==================== ALLOWED UNITS PER CATEGORY ====================
-        const allowedUnits = {
-            // Liquids - volume measurements + bottles for inventory
-            liquid: ['L', 'ml', 'pump', 'tbsp', 'tsp', 'cup', 'shot', 'bottles'],
-
-            // Solids - weight measurements + packaging for inventory purchases
-            solid: ['kg', 'g', 'lbs', 'oz', 'tbsp', 'tsp', 'cup', 'bags', 'packs', 'boxes'],
-
-            // Countables - only counting units
-            countable: ['pcs', 'bags', 'bottles', 'cans', 'packs', 'boxes'],
-
-            // Dual - combination of solid AND countable units
-            dual: ['kg', 'g', 'lbs', 'oz', 'pcs', 'bags', 'packs', 'boxes']
-        };
-
-        // ==================== UNIT DISPLAY NAMES ====================
-        function getUnitDisplayName(unit) {
-            const unitNames = {
-                'kg': 'Kilogram',
-                'g': 'Gram',
-                'lbs': 'Pounds',
-                'oz': 'Ounce',
-                'L': 'Liter',
-                'ml': 'Milliliter',
-                'pump': 'Pump',
-                'tbsp': 'Tablespoon',
-                'tsp': 'Teaspoon',
-                'cup': 'Cup',
-                'shot': 'Shot',
-                'pcs': 'Pieces',
-                'bags': 'Bags',
-                'bottles': 'Bottles',
-                'cans': 'Cans',
-                'packs': 'Packs',
-                'boxes': 'Boxes'
-            };
-            return unitNames[unit] || unit;
-        }
-
-        // ==================== VALIDATION FUNCTION ====================
-        function validateUnitMatch(ingredientName, selectedUnit) {
-            if (!ingredientName || !selectedUnit) {
-                return { valid: true };
-            }
-
-            const ingredientType = detectIngredientType(ingredientName);
-            const allowed = allowedUnits[ingredientType];
-
-            if (!allowed.includes(selectedUnit)) {
-                const allowedUnitsDisplay = allowed.map(u => getUnitDisplayName(u)).join(', ');
-                return {
-                    valid: false,
-                    type: ingredientType,
-                    message: `"${ingredientName}" is a ${ingredientType} ingredient and cannot use "${getUnitDisplayName(selectedUnit)}" as unit.`,
-                    allowedUnits: allowedUnitsDisplay
-                };
-            }
-
-            return { valid: true };
-        }
-
-
-        function showUnitMismatchModal(validation) {
-            document.getElementById('mismatchMessage').textContent = validation.message;
-            document.getElementById('allowedUnitsText').textContent = validation.allowedUnits;
-
-            const mismatchModal = new bootstrap.Modal(document.getElementById('unitMismatchModal'), {
-                backdrop: 'static',
-                keyboard: false
-            });
-            mismatchModal.show();
-        }
-
-
-        document.addEventListener('click', function (e) {
-            if (e.target && e.target.id === 'fixUnitMismatchBtn') {
-                const mismatchModal = bootstrap.Modal.getInstance(document.getElementById('unitMismatchModal'));
-                if (mismatchModal) {
-                    mismatchModal.hide();
-                }
-
-                document.getElementById('unitEdit').focus();
-                document.getElementById('unitEdit').scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center'
-                });
-            }
-        });
-
-
-        function showUnitWarning(message) {
-            const warning = document.getElementById('unitWarningEdit');
-            const warningText = document.getElementById('unitWarningTextEdit');
-
-            warningText.textContent = message;
-            warning.classList.add('show');
-        }
-
-
-        function hideUnitWarning() {
-            const warning = document.getElementById('unitWarningEdit');
-            warning.classList.remove('show');
-        }
-
         // ==================== AUTOCOMPLETE SYSTEM ====================
 
         const ingredients = [
             <?php foreach ($ingredients as $ingredient): ?>
-                                                                        {
-                    ingredientID: <?= $ingredient['ingredientID'] ?>,
-                    ingredientName: '<?= addslashes($ingredient['ingredientName']) ?>'
-                },
+            {
+                ingredientID: <?= $ingredient['ingredientID'] ?>,
+                ingredientName: '<?= addslashes($ingredient['ingredientName']) ?>'
+            },
             <?php endforeach; ?>
         ];
 
@@ -698,14 +330,12 @@
         const unitSelectEdit = document.getElementById('unitEdit');
         let selectedIndexEdit = -1;
 
-
         ingredientInputEdit.addEventListener('input', function () {
             const query = this.value.toLowerCase().trim();
 
             if (query === '') {
                 hideDropdownEdit();
                 ingredientIDInputEdit.value = '';
-                hideUnitWarning();
                 return;
             }
 
@@ -715,37 +345,7 @@
 
             showDropdownEdit(filtered, query);
             selectedIndexEdit = -1;
-
-
-            const currentUnit = unitSelectEdit.value;
-            if (currentUnit) {
-                const validation = validateUnitMatch(this.value, currentUnit);
-                if (!validation.valid) {
-                    showUnitWarning(validation.message);
-                } else {
-                    hideUnitWarning();
-                }
-            }
         });
-
-
-        unitSelectEdit.addEventListener('change', function () {
-            const ingredientName = ingredientInputEdit.value.trim();
-            const selectedUnit = this.value;
-
-            if (!ingredientName || !selectedUnit) {
-                hideUnitWarning();
-                return;
-            }
-
-            const validation = validateUnitMatch(ingredientName, selectedUnit);
-            if (!validation.valid) {
-                showUnitWarning(validation.message);
-            } else {
-                hideUnitWarning();
-            }
-        });
-
 
         ingredientInputEdit.addEventListener('keydown', function (e) {
             const items = dropdownEdit.querySelectorAll('.autocomplete-item');
@@ -767,7 +367,6 @@
                 hideDropdownEdit();
             }
         });
-
 
         document.addEventListener('click', function (e) {
             if (!ingredientInputEdit.contains(e.target) && !dropdownEdit.contains(e.target)) {
@@ -834,17 +433,6 @@
 
             hideDropdownEdit();
             selectedIndexEdit = -1;
-
-
-            const currentUnit = unitSelectEdit.value;
-            if (currentUnit) {
-                const validation = validateUnitMatch(ingredientName, currentUnit);
-                if (!validation.valid) {
-                    showUnitWarning(validation.message);
-                } else {
-                    hideUnitWarning();
-                }
-            }
         }
 
         function updateSelectionEdit(items) {
@@ -858,42 +446,11 @@
             selectedIndexEdit = -1;
         }
 
-        // ==================== FORM SUBMIT WITH VALIDATION ====================
+        // ==================== FORM SUBMIT ====================
 
         document.getElementById('updateForm').addEventListener('submit', function (e) {
-
             e.preventDefault();
             e.stopPropagation();
-
-            const ingredientName = ingredientInputEdit.value.trim();
-            const selectedUnit = unitSelectEdit.value;
-
-            console.log('Edit Form - Validating:', ingredientName, 'with unit:', selectedUnit);
-
-
-            const validation = validateUnitMatch(ingredientName, selectedUnit);
-
-            console.log('Edit Form - Validation result:', validation);
-
-            if (!validation.valid) {
-                // Show error modal and BLOCK submission completely
-                console.log('BLOCKING EDIT SUBMISSION - Unit mismatch detected!');
-                showUnitMismatchModal(validation);
-
-
-                unitSelectEdit.style.borderColor = '#dc3545';
-                unitSelectEdit.style.boxShadow = '0 0 0 0.2rem rgba(220, 53, 69, 0.25)';
-
-
-                return false;
-            }
-
-            console.log('Edit Form - Validation passed - Proceeding with submission');
-
-
-            unitSelectEdit.style.borderColor = 'var(--primary-color)';
-            unitSelectEdit.style.boxShadow = 'none';
-
 
             const formData = new FormData(this);
 
@@ -936,30 +493,10 @@
                 document.getElementById('ingredientNameEdit').value = ingredient;
                 document.getElementById('quantityEdit').value = quantity;
                 document.getElementById('unitEdit').value = unit;
+                document.getElementById('unitEditHidden').value = unit; // Set hidden input value
                 document.getElementById('expirationEdit').value = expiration;
                 document.getElementById('thresholdEdit').value = threshold;
-
-
-                hideUnitWarning();
-
-
-                unitSelectEdit.style.borderColor = 'var(--primary-color)';
-                unitSelectEdit.style.boxShadow = 'none';
-
-
-                const validation = validateUnitMatch(ingredient, unit);
-                if (!validation.valid) {
-                    showUnitWarning(validation.message);
-                }
             });
-        });
-
-        document.getElementById('editItemModal').addEventListener('hidden.bs.modal', function () {
-            hideUnitWarning();
-
-
-            unitSelectEdit.style.borderColor = 'var(--primary-color)';
-            unitSelectEdit.style.boxShadow = 'none';
         });
     });
 </script>
