@@ -31,16 +31,26 @@
                     <input type="hidden" id="modal_product_name" name="product_name">
                     <input type="hidden" id="modal_price" name="price">
                     <input type="hidden" id="modal_category" name="category">
+                    <input type="hidden" id="modal_available_quantity" name="available_quantity">
 
                     <!-- Item name & price -->
                     <h2 class="itemName text-center fw-bold"
                         style="font-family: var(--primaryFont); color: var(--text-color-dark);">
                         Product Name
                     </h2>
-                    <h4 class="itemPrice text-center mb-4"
+                    <h4 class="itemPrice text-center mb-2"
                         style="color: var(--primary-color); font-family: var(--secondaryFont); font-weight: 600;">
                         ₱0.00
                     </h4>
+                    
+                    <!-- Available Stock Display -->
+                    <div class="text-center mb-3">
+                        <span class="badge" id="availableStockBadge" 
+                            style="background-color: transparent; color: var(--gray); 
+                                   font-family: var(--primaryFont); font-size: 0.9rem; padding: 6px 12px;">
+                            Available: <span id="availableStockCount">0</span> pcs
+                        </span>
+                    </div>
 
                     <!-- Sugar -->
                     <div class="mb-3" id="sugarOption">
@@ -94,18 +104,18 @@
                         <label class="form-label fw-bold d-block mb-2"
                             style="color: var(--text-color-dark); font-size: var(--subheading);">Quantity</label>
                         <div class="d-flex justify-content-center align-items-center gap-3">
-                            <button type="button" onclick="decreaseQuantity()"
+                            <button type="button" id="decreaseBtn" onclick="decreaseQuantity()"
                                 style="width: 36px; height: 36px; border-radius: 50%; background: var(--primary-color); color: var(--text-color-light); border: none; font-weight: bold; font-size: 1.2rem; transition: all 0.3s ease;"
-                                onmouseover="this.style.background='var(--btn-hover1)'; this.style.transform='translateY(-2px)';"
-                                onmouseout="this.style.background='var(--primary-color)'; this.style.transform='translateY(0)';">
+                                onmouseover="if(!this.disabled) { this.style.background='var(--btn-hover1)'; this.style.transform='translateY(-2px)'; }"
+                                onmouseout="if(!this.disabled) { this.style.background='var(--primary-color)'; this.style.transform='translateY(0)'; }">
                                 −
                             </button>
                             <input type="number" name="quantity" id="quantity" value="1" min="1" max="999"
                                 style="width: 70px; height: 40px; text-align: center; font-weight: bold; font-size: 1.1rem; border: 2px solid var(--primary-color); border-radius: 10px; font-family: var(--secondaryFont); color: var(--text-color-dark); background: var(--card-bg-color); box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); -moz-appearance: textfield; -webkit-appearance: none; margin: 0;">
-                            <button type="button" onclick="increaseQuantity()"
+                            <button type="button" id="increaseBtn" onclick="increaseQuantity()"
                                 style="width: 36px; height: 36px; border-radius: 50%; background: var(--primary-color); color: var(--text-color-light); border: none; font-weight: bold; font-size: 1.2rem; transition: all 0.3s ease;"
-                                onmouseover="this.style.background='var(--btn-hover1)'; this.style.transform='translateY(-2px)';"
-                                onmouseout="this.style.background='var(--primary-color)'; this.style.transform='translateY(0)';">
+                                onmouseover="if(!this.disabled) { this.style.background='var(--btn-hover1)'; this.style.transform='translateY(-2px)'; }"
+                                onmouseout="if(!this.disabled) { this.style.background='var(--primary-color)'; this.style.transform='translateY(0)'; }">
                                 +
                             </button>
                         </div>
@@ -137,7 +147,7 @@
                             font-family: var(--primaryFont); 
                             letter-spacing: 1px; 
                             box-shadow: 0 4px 8px rgba(0,0,0,0.25); 
-        t                   ransition: all 0.3s ease;
+                            transition: all 0.3s ease;
                         " onmouseover="
                             this.style.boxShadow='0 6px 12px rgba(0,0,0,0.35)'; 
                             this.style.transform='translateY(-2px)';
@@ -188,11 +198,24 @@
 <script>
     // Validation before submit
     document.getElementById('orderForm').addEventListener('submit', function (e) {
-        let qty = document.getElementById('quantity').value;
+        let qty = parseInt(document.getElementById('quantity').value);
+        const maxQty = window.maxAvailableQuantity || 0;
+        
+        // Hide previous error
+        document.getElementById('formError').classList.add('d-none');
+        
         if (qty <= 0) {
             e.preventDefault();
             document.getElementById('formError').classList.remove('d-none');
             document.getElementById('formError').innerText = "Quantity must be at least 1.";
+            return;
+        }
+        
+        if (qty > maxQty) {
+            e.preventDefault();
+            document.getElementById('formError').classList.remove('d-none');
+            document.getElementById('formError').innerText = `Only ${maxQty} pcs available. Please reduce quantity.`;
+            return;
         }
     });
 </script>

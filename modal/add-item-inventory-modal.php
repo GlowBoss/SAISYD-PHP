@@ -183,28 +183,14 @@ if (!isset($ingredients)) {
                                     <option value="">Select Unit</option>
                                     <optgroup label="Weight">
                                         <option value="kg">Kilogram (kg)</option>
-                                        <option value="g">Gram (g)</option>
-                                        <option value="lbs">Pounds (lbs)</option>
-                                        <option value="oz">Ounce (oz)</option>
+                                        <option value="g">Gram (g)</option>     
                                     </optgroup>
                                     <optgroup label="Volume - Metric">
                                         <option value="L">Liter (L)</option>
                                         <option value="ml">Milliliter (ml)</option>
                                     </optgroup>
-                                    <optgroup label="Volume - Coffee Shop">
-                                        <option value="pump">Pump</option>
-                                        <option value="tbsp">Tablespoon (tbsp)</option>
-                                        <option value="tsp">Teaspoon (tsp)</option>
-                                        <option value="cup">Cup</option>
-                                        <option value="shot">Shot</option>
-                                    </optgroup>
                                     <optgroup label="Count">
-                                        <option value="pcs">Pieces (pcs)</option>
-                                        <option value="bags">Bags</option>
-                                        <option value="bottles">Bottles</option>
-                                        <option value="cans">Cans</option>
-                                        <option value="packs">Packs</option>
-                                        <option value="boxes">Boxes</option>
+                                        <option value="pcs">Pieces (pcs)</option>  
                                     </optgroup>
                                 </select>
 
@@ -568,21 +554,9 @@ if (!isset($ingredients)) {
             const unitNames = {
                 'kg': 'Kilogram',
                 'g': 'Gram',
-                'lbs': 'Pounds',
-                'oz': 'Ounce',
                 'L': 'Liter',
                 'ml': 'Milliliter',
-                'pump': 'Pump',
-                'tbsp': 'Tablespoon',
-                'tsp': 'Teaspoon',
-                'cup': 'Cup',
-                'shot': 'Shot',
                 'pcs': 'Pieces',
-                'bags': 'Bags',
-                'bottles': 'Bottles',
-                'cans': 'Cans',
-                'packs': 'Packs',
-                'boxes': 'Boxes'
             };
             return unitNames[unit] || unit;
         }

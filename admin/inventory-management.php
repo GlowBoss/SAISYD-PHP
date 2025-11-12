@@ -22,8 +22,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     $threshold = mysqli_real_escape_string($conn, $_POST['threshold']);
     $lastUpdated = date('Y-m-d');
 
+    // Ensure quantity is not negative
+    if ($quantity < 0) {
+        $quantity = 0;
+    }
+
     // Validation
-    if (empty($ingredientName) || empty($quantity) || empty($unit) || empty($expirationDate) || empty($threshold)) {
+    if (empty($ingredientName) || empty($unit) || empty($expirationDate) || empty($threshold)) {
         $message = 'All fields are required!';
         $messageType = 'error';
     } else {
@@ -75,7 +80,53 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     }
 }
 
+// UPDATE - Edit inventory item
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'update') {
+    $inventoryID = mysqli_real_escape_string($conn, $_POST['inventoryID']);
+    $ingredientID = mysqli_real_escape_string($conn, $_POST['ingredientID']);
+    $ingredientName = mysqli_real_escape_string($conn, trim($_POST['ingredientName']));
+    $quantity = mysqli_real_escape_string($conn, $_POST['quantity']);
+    $unit = mysqli_real_escape_string($conn, $_POST['unit']);
+    $expirationDate = mysqli_real_escape_string($conn, $_POST['expirationDate']);
+    $threshold = mysqli_real_escape_string($conn, $_POST['threshold']);
+    $lastUpdated = date('Y-m-d');
 
+    // Ensure quantity is not negative - IMPORTANT PART!
+    if ($quantity < 0) {
+        $quantity = 0;
+        $message = 'Quantity cannot be negative. Set to 0 instead.';
+        $messageType = 'warning';
+    }
+
+    // Validation
+    if (empty($inventoryID) || empty($ingredientName) || empty($unit) || empty($expirationDate) || empty($threshold)) {
+        $message = 'All fields are required!';
+        $messageType = 'error';
+    } else {
+        // Update ingredient name if changed
+        $updateIngredientQuery = "UPDATE ingredients SET ingredientName = '$ingredientName' WHERE ingredientID = '$ingredientID'";
+        executeQuery($updateIngredientQuery);
+
+        // Update inventory
+        $updateQuery = "UPDATE inventory 
+                       SET quantity = '$quantity', 
+                           unit = '$unit', 
+                           lastUpdated = '$lastUpdated', 
+                           expirationDate = '$expirationDate',
+                           threshold = '$threshold'
+                       WHERE inventoryID = '$inventoryID'";
+
+        if (executeQuery($updateQuery)) {
+            if (empty($message)) {
+                $message = 'Inventory item updated successfully!';
+                $messageType = 'success';
+            }
+        } else {
+            $message = 'Error updating inventory item!';
+            $messageType = 'error';
+        }
+    }
+}
 
 // DELETE - Remove inventory item
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'delete') {
@@ -122,11 +173,11 @@ if (isset($_GET['order']) && ($_GET['order'] === 'asc' || $_GET['order'] === 'de
     $order = strtoupper($_GET['order']);
 }
 
-// Query
+// Query - Make sure quantity is never negative in display
 $inventoryQuery = "SELECT i.inventoryID,
                           i.ingredientID,
                           ing.ingredientName,
-                          i.quantity,
+                          GREATEST(i.quantity, 0) as quantity,
                           i.unit,
                           i.lastUpdated,
                           i.expirationDate,
@@ -154,10 +205,16 @@ function toggleOrder($currentOrder)
 // Calculate statistics
 $totalItems = count($rows);
 $lowStockCount = 0;
+$outOfStockCount = 0;
 $expiredCount = 0;
 
 foreach ($rows as $row) {
-    if ($row['quantity'] <= $row['threshold']) {
+    // Count out of stock items
+    if ($row['quantity'] == 0) {
+        $outOfStockCount++;
+    }
+    // Count low stock items (excluding out of stock)
+    elseif ($row['quantity'] <= $row['threshold']) {
         $lowStockCount++;
     }
 
@@ -355,6 +412,10 @@ foreach ($rows as $row) {
                             <div class="stat-label">Low Stock</div>
                         </div>
                         <div class="stat-card">
+                            <div class="stat-number danger" id="outOfStockItems"><?php echo $outOfStockCount; ?></div>
+                            <div class="stat-label">Out of Stock</div>
+                        </div>
+                        <div class="stat-card">
                             <div class="stat-number danger" id="expiredItems"><?php echo $expiredCount; ?></div>
                             <div class="stat-label">Expired</div>
                         </div>
@@ -364,19 +425,25 @@ foreach ($rows as $row) {
                 <!-- Mobile Stats Cards -->
                 <div class="mobile-stats d-lg-none mb-4">
                     <div class="row g-2">
-                        <div class="col-4">
+                        <div class="col-3">
                             <div class="stat-card">
                                 <div class="stat-number" id="totalItemsMobile"><?php echo $totalItems; ?></div>
                                 <div class="stat-label">Total</div>
                             </div>
                         </div>
-                        <div class="col-4">
+                        <div class="col-3">
                             <div class="stat-card">
                                 <div class="stat-number warning" id="lowStockMobile"><?php echo $lowStockCount; ?></div>
                                 <div class="stat-label">Low Stock</div>
                             </div>
                         </div>
-                        <div class="col-4">
+                        <div class="col-3">
+                            <div class="stat-card">
+                                <div class="stat-number danger" id="outOfStockMobile"><?php echo $outOfStockCount; ?></div>
+                                <div class="stat-label">Out of Stock</div>
+                            </div>
+                        </div>
+                        <div class="col-3">
                             <div class="stat-card">
                                 <div class="stat-number danger" id="expiredMobile"><?php echo $expiredCount; ?></div>
                                 <div class="stat-label">Expired</div>
@@ -570,10 +637,10 @@ foreach ($rows as $row) {
                                             <div class="quantity-content">
                                                 <span class="quantity-value"><?= $row['quantity'] ?></span>
                                                 <span class="quantity-unit"><?= $row['unit'] ?></span>
-                                                <?php if ($row['quantity'] <= $row['threshold']): ?>
-                                                    <span class="status-badge low-stock">Low Stock</span>
-                                                <?php elseif ($row['quantity'] == 0): ?>
+                                                <?php if ($row['quantity'] == 0): ?>
                                                     <span class="status-badge out-of-stock">Out of Stock</span>
+                                                <?php elseif ($row['quantity'] <= $row['threshold']): ?>
+                                                    <span class="status-badge low-stock">Low Stock</span>
                                                 <?php endif; ?>
                                             </div>
                                         </td>
@@ -697,6 +764,30 @@ foreach ($rows as $row) {
                     document.getElementById('thresholdEdit').value = this.dataset.threshold;
                 });
             });
+
+            // CLIENT-SIDE VALIDATION: Prevent negative quantity input
+            const quantityInputs = document.querySelectorAll('input[name="quantity"]');
+            quantityInputs.forEach(input => {
+                input.addEventListener('input', function () {
+                    if (this.value < 0) {
+                        this.value = 0;
+                        showToast('Quantity cannot be negative. Set to 0.', 'warning');
+                    }
+                });
+
+                // Also check on blur (when user leaves the field)
+                input.addEventListener('blur', function () {
+                    if (this.value === '' || this.value < 0) {
+                        this.value = 0;
+                    }
+                });
+            });
+
+            // Set minimum attribute to 0 for quantity inputs
+            quantityInputs.forEach(input => {
+                input.setAttribute('min', '0');
+                input.setAttribute('step', '0.01');
+            });
         });
 
         // Toast Notification System
@@ -707,8 +798,8 @@ foreach ($rows as $row) {
             const toastHtml = `
             <div class="toast ${type}" role="alert" aria-live="assertive" aria-atomic="true" id="${toastId}" data-bs-autohide="true" data-bs-delay="5000">
                 <div class="toast-header">
-                    <i class="bi ${type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'} me-2"></i>
-                    <strong class="me-auto">${type === 'success' ? 'Success' : 'Error'}</strong>
+                    <i class="bi ${type === 'success' ? 'bi-check-circle-fill' : type === 'warning' ? 'bi-exclamation-triangle-fill' : 'bi-exclamation-triangle-fill'} me-2"></i>
+                    <strong class="me-auto">${type === 'success' ? 'Success' : type === 'warning' ? 'Warning' : 'Error'}</strong>
                     <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
                 </div>
                 <div class="toast-body">
@@ -847,15 +938,15 @@ foreach ($rows as $row) {
 
                     // Stock status filter
                     if (filters.stockStatus) {
-                        const isLowStock = quantity <= threshold;
+                        const isLowStock = quantity <= threshold && quantity > 0;
                         const isOutOfStock = quantity === 0;
 
                         switch (filters.stockStatus) {
                             case 'low':
-                                if (!isLowStock || isOutOfStock) return false;
+                                if (!isLowStock) return false;
                                 break;
                             case 'normal':
-                                if (isLowStock) return false;
+                                if (isLowStock || isOutOfStock) return false;
                                 break;
                             case 'out':
                                 if (!isOutOfStock) return false;
@@ -890,7 +981,7 @@ foreach ($rows as $row) {
                     this.filteredRows.sort((a, b) => {
                         const nameA = a.querySelector('.item-name').textContent.toLowerCase();
                         const nameB = b.querySelector('.item-name').textContent.toLowerCase();
-                        
+
                         if (filters.sortOrder === 'asc') {
                             return nameA.localeCompare(nameB);
                         } else {
@@ -1124,6 +1215,7 @@ foreach ($rows as $row) {
 
                 // Update header stats based on filtered results
                 let lowStockCount = 0;
+                let outOfStockCount = 0;
                 let expiredCount = 0;
 
                 this.filteredRows.forEach(row => {
@@ -1132,7 +1224,12 @@ foreach ($rows as $row) {
                     const expiryDate = new Date(row.dataset.expiryDate);
                     const currentDate = new Date();
 
-                    if (quantity <= threshold) {
+                    // Count out of stock
+                    if (quantity === 0) {
+                        outOfStockCount++;
+                    }
+                    // Count low stock (excluding out of stock)
+                    else if (quantity <= threshold) {
                         lowStockCount++;
                     }
 
@@ -1144,10 +1241,12 @@ foreach ($rows as $row) {
                 // Update all stat displays
                 const totalElements = document.querySelectorAll('#totalItems, #totalItemsMobile');
                 const lowStockElements = document.querySelectorAll('#lowStockItems, #lowStockMobile');
+                const outOfStockElements = document.querySelectorAll('#outOfStockItems, #outOfStockMobile');
                 const expiredElements = document.querySelectorAll('#expiredItems, #expiredMobile');
 
                 totalElements.forEach(el => el.textContent = this.filteredRows.length);
                 lowStockElements.forEach(el => el.textContent = lowStockCount);
+                outOfStockElements.forEach(el => el.textContent = outOfStockCount);
                 expiredElements.forEach(el => el.textContent = expiredCount);
             }
 
