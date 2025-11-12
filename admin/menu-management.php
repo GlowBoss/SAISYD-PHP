@@ -162,11 +162,51 @@ while ($row = mysqli_fetch_assoc($menuItemsResults)) {
 
     // Calculate available quantity based on inventory + recipe
     $stockCheck = mysqli_query($conn, "
-        SELECT MIN(FLOOR(i.quantity / pr.requiredQuantity)) AS availableQuantity
-        FROM productrecipe pr
-        JOIN inventory i ON i.ingredientID = pr.ingredientID
-        WHERE pr.productID = $productID
+    SELECT MIN(FLOOR(
+        inv.total_quantity /
+        CASE
+            -- Weight
+            WHEN pr.measurementUnit = 'g' AND inv.unit = 'kg' THEN pr.requiredQuantity / 1000
+            WHEN pr.measurementUnit = 'kg' AND inv.unit = 'g' THEN pr.requiredQuantity * 1000
+            WHEN pr.measurementUnit = 'oz' AND inv.unit = 'g' THEN pr.requiredQuantity * 28.35
+            WHEN pr.measurementUnit = 'g' AND inv.unit = 'oz' THEN pr.requiredQuantity / 28.35
+    
+            -- Volume
+            WHEN pr.measurementUnit = 'ml' AND inv.unit = 'L' THEN pr.requiredQuantity / 1000
+            WHEN pr.measurementUnit = 'L' AND inv.unit = 'ml' THEN pr.requiredQuantity * 1000
+            WHEN pr.measurementUnit = 'pump' AND inv.unit = 'ml' THEN pr.requiredQuantity * 10
+            WHEN pr.measurementUnit = 'tbsp' AND inv.unit = 'ml' THEN pr.requiredQuantity * 15
+            WHEN pr.measurementUnit = 'tsp' AND inv.unit = 'ml' THEN pr.requiredQuantity * 5
+            WHEN pr.measurementUnit = 'cup' AND inv.unit = 'ml' THEN pr.requiredQuantity * 240     -- assuming 1 cup = 240ml
+            WHEN pr.measurementUnit = 'shot' AND inv.unit = 'ml' THEN pr.requiredQuantity * 30     -- assuming 1 shot = 30ml
+            WHEN pr.measurementUnit = 'ml' AND inv.unit = 'pump' THEN pr.requiredQuantity / 10
+            WHEN pr.measurementUnit = 'ml' AND inv.unit = 'tbsp' THEN pr.requiredQuantity / 15
+            WHEN pr.measurementUnit = 'ml' AND inv.unit = 'tsp' THEN pr.requiredQuantity / 5
+            WHEN pr.measurementUnit = 'ml' AND inv.unit = 'cup' THEN pr.requiredQuantity / 240
+            WHEN pr.measurementUnit = 'ml' AND inv.unit = 'shot' THEN pr.requiredQuantity / 30
+    
+            -- Pieces / Packaging
+            WHEN pr.measurementUnit = 'pcs' AND inv.unit = 'box' THEN pr.requiredQuantity / 12
+            WHEN pr.measurementUnit = 'box' AND inv.unit = 'pcs' THEN pr.requiredQuantity * 12
+            WHEN pr.measurementUnit = 'pack' AND inv.unit = 'pcs' THEN pr.requiredQuantity * 6
+            WHEN pr.measurementUnit = 'pcs' AND inv.unit = 'pack' THEN pr.requiredQuantity / 6
+    
+            -- Same unit
+            WHEN pr.measurementUnit = inv.unit THEN pr.requiredQuantity
+    
+            ELSE pr.requiredQuantity
+        END
+    )) AS availableQuantity
+    FROM productRecipe pr
+    JOIN (
+        SELECT ingredientID, SUM(quantity) AS total_quantity, MAX(unit) AS unit
+        FROM inventory
+        GROUP BY ingredientID
+    ) inv ON pr.ingredientID = inv.ingredientID
+    WHERE pr.productID = $productID;
+    
     ");
+
     $stockData = mysqli_fetch_assoc($stockCheck);
     $availableQuantity = intval($stockData['availableQuantity'] ?? 0);
 
@@ -646,88 +686,27 @@ if ($isAjax) {
                     let skipAutocompleteChange = false; // flag to skip alert
 
                     const allowedUnits = {
-                        "g": ["g", "kg", "oz"],
+                        "g": ["g", "kg"],
                         "kg": ["kg", "g"],
-                        "oz": ["oz", "g"],
-                        "ml": ["ml", "l", "pump", "tbsp", "tsp"],
-                        "l": ["ml", "l"],
-                        "pump": ["pump", "ml"],
-                        "tbsp": ["tbsp", "ml"],
-                        "tsp": ["tsp", "ml"],
-                        "pcs": ["pcs", "box", "pack"],
-                        "box": ["box", "pcs"],
-                        "pack": ["pack", "pcs"]
+                        "ml": ["ml", "pump", "tbsp", "tsp", "cup", "shot"],
+                        "L": ["L", "ml", "pump", "tbsp", "tsp", "cup", "shot"],
+                        "pcs": ["pcs"]
                     };
 
+                    // readable labels
                     const unitLabels = {
                         "g": "g (grams)",
                         "kg": "kg (kilograms)",
-                        "oz": "oz (ounces)",
                         "ml": "ml (milliliters)",
                         "L": "L (liters)",
                         "pump": "pump (pumps)",
                         "tbsp": "tbsp (tablespoons)",
                         "tsp": "tsp (teaspoons)",
                         "pcs": "pcs (pieces)",
-                        "box": "box (boxes)",
-                        "pack": "pack (packs)"
+                        "cup": "Cup",
+                        "shot": "Shot"
                     };
 
-                    function getConvertibleUnits(baseUnit) {
-                        const normalized = baseUnit ? baseUnit.toLowerCase() : "";
-                        return allowedUnits[normalized] || [baseUnit];
-                    }
-
-                    function enforceAllowedUnitsForRow(rowEl, baseUnitCandidate, selectedUnitCandidate) {
-                        const $select = $(rowEl).find('.measurement-select');
-                        if (!$select.length) return;
-
-                        const baseUnit = baseUnitCandidate ? baseUnitCandidate.toLowerCase() : "";
-                        const allowed = getConvertibleUnits(baseUnit);
-
-                        $select.empty();
-                        $select.append('<option value="" disabled>Select Unit</option>');
-
-                        // Decide default display unit
-                        let displayUnit = selectedUnitCandidate ? selectedUnitCandidate.toLowerCase() : "";
-                        // weight conversions
-                        if (baseUnit.toLowerCase() === "kg") displayUnit = "g";
-                        else if (baseUnit.toLowerCase() === "g") displayUnit = "g";
-                        else if (baseUnit.toLowerCase() === "oz") displayUnit = "g";
-
-                        // volume conversions
-                        else if (baseUnit.toLowerCase() === "l") displayUnit = "ml";
-                        else if (baseUnit.toLowerCase() === "ml") displayUnit = "ml";
-                        else if (["pump", "tbsp", "tsp"].includes(baseUnit.toLowerCase())) displayUnit = "ml";
-
-                        // packaging conversions
-                        else if (baseUnit.toLowerCase() === "pcs") displayUnit = "pcs";
-                        else if (baseUnit.toLowerCase() === "box") displayUnit = "pcs";
-                        else if (baseUnit.toLowerCase() === "pack") displayUnit = "pcs";
-
-                        // fallback
-                        else displayUnit = baseUnit.toLowerCase();
-
-                        allowed.forEach(u => {
-                            const selected = (u.toLowerCase() === displayUnit) ? "selected" : "";
-                            $select.append(`<option value="${u}" ${selected}>${unitLabels[u] || u}</option>`);
-                        });
-
-                        $select.data("correct-unit", baseUnit);
-                        // Optional: disable dropdown in edit modal
-                        const editContainer = $('#ingredients-container');
-                        if (editContainer.length && $.contains(editContainer[0], $select[0])) {
-                            $select.prop('disabled', true).css({
-                                backgroundColor: '#e9ecef',
-                                cursor: 'not-allowed',
-                                opacity: '0.6',
-                                pointerEvents: 'none'
-                            });
-                        }
-
-                    }
-
-                    // Example usage inside autocomplete select:
                     function initAutocomplete(selector) {
                         $(selector).autocomplete({
                             source: ingredients,
@@ -737,14 +716,24 @@ if ($isAjax) {
                                 $(this).val(ui.item.label);
                                 $(this).siblings(".ingredient-id").val(ui.item.id);
 
-                                const ingredientUnit = ui.item.unit;
-                                const row = $(this).closest(".ingredient-row")[0];
+                                const ingredientUnit = ui.item.unit; // base unit
+                                const $select = $(this).closest(".ingredient-row").find(".measurement-select");
 
-                                enforceAllowedUnitsForRow(row, ingredientUnit, "");
+                                // clear dropdown
+                                $select.empty();
+                                $select.append('<option value="" disabled selected>Select Unit</option>');
+
+                                // add all allowed units based on the base unit
+                                const unitsToAdd = allowedUnits[ingredientUnit] || [ingredientUnit];
+                                unitsToAdd.forEach(unit => {
+                                    const label = unitLabels[unit] || unit;
+                                    $select.append(`<option value="${unit}">${label}</option>`);
+                                });
 
                                 return false;
                             },
                             change: function (event, ui) {
+                                if (skipAutocompleteChange) return;
                                 if (!ui.item) {
                                     Swal.fire({
                                         icon: 'error',
@@ -759,6 +748,7 @@ if ($isAjax) {
                             }
                         });
                     }
+
 
 
                     // initialize autocomplete for existing inputs
@@ -790,17 +780,16 @@ if ($isAjax) {
           font-family: var(--secondaryFont); background: var(--card-bg-color);
           color: var(--text-color-dark); padding: 12px;">
           <option value="" disabled selected>Select Unit</option>
-                                    <option value="pcs">Pieces (pcs)</option>
-                                    <option value="box">Box</option>
-                                    <option value="pack">Pack</option>
-                                    <option value="g">Gram (g)</option>
-                                    <option value="kg">Kilogram (kg)</option>
-                                    <option value="oz">Ounce (oz)</option>
-                                    <option value="ml">Milliliter (ml)</option>
-                                    <option value="L">Liter (L)</option>
-                                    <option value="pump">Pump</option>
-                                    <option value="tbsp">Tablespoon (tbsp)</option>
-                                    <option value="tsp">Teaspoon (tsp)</option>
+                                    <option value="pcs">${unitLabels["pcs"]}</option>
+                                    <option value="g">${unitLabels["g"]}</option>
+                                    <option value="kg">${unitLabels["kg"]}</option>
+                                    <option value="ml">${unitLabels["ml"]}</option>
+                                    <option value="L">${unitLabels["L"]}</option>
+                                    <option value="pump">${unitLabels["pump"]}</option>
+                                    <option value="tbsp">${unitLabels["tbsp"]}</option>
+                                    <option value="tsp">${unitLabels["tsp"]}</option>
+                                    <option value="cup">${unitLabels["cup"]}</option>
+                                    <option value="shot">${unitLabels["shot"]}</option>
                                 </select>
                                 <input type="text" class="form-control mt-2 d-none custom-unit" name="customUnit[]"
                                     placeholder="Enter custom unit" style="border: 2px solid var(--primary-color); border-radius: 10px; 
@@ -816,15 +805,6 @@ if ($isAjax) {
                             </div>
                         </div>`;
                         $("#confirmModal #ingredients-container").append(row);
-
-                       
-                        const $newRow = $("#confirmModal #ingredients-container .ingredient-row").last();
-                        $newRow.find('.measurement-select').prop('disabled', true).css({
-                            backgroundColor: '#e9ecef',
-                            cursor: 'not-allowed',
-                            opacity: '0.6',
-                            pointerEvents: 'none'
-                        });
 
                         // autocomplete for new row
                         initAutocomplete($("#confirmModal #ingredients-container .ingredient-search").last());
@@ -857,17 +837,11 @@ if ($isAjax) {
                         if (!correctUnit) return;
 
                         const allowedUnits = {
-                            "g": ["g", "kg", "oz"],
+                            "g": ["g", "kg"],
                             "kg": ["kg", "g"],
-                            "oz": ["oz", "g"],
-                            "ml": ["ml", "L", "pump", "tbsp", "tsp"],
-                            "L": ["L", "ml"],
-                            "pump": ["pump", "ml"],
-                            "tbsp": ["tbsp", "ml"],
-                            "tsp": ["tsp", "ml"],
-                            "pcs": ["pcs", "box", "pack"],
-                            "box": ["box", "pcs"],
-                            "pack": ["pack", "pcs"]
+                            "ml": ["ml", "pump", "tbsp", "tsp", "cup", "shot"],
+                            "L": ["L", "ml", "pump", "tbsp", "tsp", "cup", "shot"],
+                            "pcs": ["pcs"]
                         };
 
                         if (!allowedUnits[correctUnit].includes(chosenUnit)) {
