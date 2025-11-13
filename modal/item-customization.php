@@ -170,7 +170,7 @@
 <?php if (isset($_SESSION['cart_message'])): ?>
     <div class="toast-container position-fixed bottom-0 end-0 p-3 z-3">
         <div id="orderToast" class="toast align-items-center border-0 fade" role="alert" aria-live="assertive"
-            aria-atomic="true" data-bs-delay="3000" data-bs-autohide="true"
+            aria-atomic="true" data-bs-delay="6000" data-bs-autohide="true"
             style="background-color: var(--text-color-dark); color: var(--text-color-light); border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.25);">
             <div class="d-flex align-items-center">
                 <i class="bi bi-check-circle-fill ms-3" style="font-size: 1.2rem; color: var(--accent-color);"></i>
