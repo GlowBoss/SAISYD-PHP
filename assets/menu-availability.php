@@ -22,28 +22,55 @@ if ($productID <= 0) {
 // --- Always calculate availableQuantity first ---
 $sql = "
 SELECT MIN(FLOOR(
-    inv.total_quantity / 
-    CASE 
-        WHEN pr.measurementUnit = 'g' AND inv.unit = 'kg' THEN pr.requiredQuantity / 1000
-        WHEN pr.measurementUnit = 'kg' AND inv.unit = 'g' THEN pr.requiredQuantity * 1000
-        WHEN pr.measurementUnit = 'oz' AND inv.unit = 'g' THEN pr.requiredQuantity * 28.35
-        WHEN pr.measurementUnit = 'g' AND inv.unit = 'oz' THEN pr.requiredQuantity / 28.35
-        WHEN pr.measurementUnit = 'ml' AND inv.unit = 'L' THEN pr.requiredQuantity / 1000
-        WHEN pr.measurementUnit = 'L' AND inv.unit = 'ml' THEN pr.requiredQuantity * 1000
-        WHEN pr.measurementUnit = 'pump' AND inv.unit = 'ml' THEN pr.requiredQuantity * 10
-        WHEN pr.measurementUnit = 'tbsp' AND inv.unit = 'ml' THEN pr.requiredQuantity * 15
-        WHEN pr.measurementUnit = 'tsp' AND inv.unit = 'ml' THEN pr.requiredQuantity * 5
-        WHEN pr.measurementUnit = 'pcs' AND inv.unit = 'box' THEN pr.requiredQuantity / 12
-        WHEN pr.measurementUnit = 'box' AND inv.unit = 'pcs' THEN pr.requiredQuantity * 12
-        WHEN pr.measurementUnit = 'pack' AND inv.unit = 'pcs' THEN pr.requiredQuantity * 6
-        WHEN pr.measurementUnit = 'pcs' AND inv.unit = 'pack' THEN pr.requiredQuantity / 6
-        WHEN pr.measurementUnit = inv.unit THEN pr.requiredQuantity
+    inv.total_quantity /
+    CASE
+        -- ==========================================
+        -- KG INVENTORY (can be deducted by: kg, g)
+        -- ==========================================
+        WHEN inv.unit = 'kg' AND pr.measurementUnit = 'kg' THEN pr.requiredQuantity
+        WHEN inv.unit = 'kg' AND pr.measurementUnit = 'g' THEN pr.requiredQuantity / 1000
+        
+        -- ==========================================
+        -- G INVENTORY (can be deducted by: kg, g)
+        -- ==========================================
+        WHEN inv.unit = 'g' AND pr.measurementUnit = 'g' THEN pr.requiredQuantity
+        WHEN inv.unit = 'g' AND pr.measurementUnit = 'kg' THEN pr.requiredQuantity * 1000
+        
+        -- ==========================================
+        -- LITER INVENTORY (can be deducted by: L, ml, pump, tbsp, tsp, shot, cup)
+        -- ==========================================
+        WHEN inv.unit = 'L' AND pr.measurementUnit = 'L' THEN pr.requiredQuantity
+        WHEN inv.unit = 'L' AND pr.measurementUnit = 'ml' THEN pr.requiredQuantity / 1000
+        WHEN inv.unit = 'L' AND pr.measurementUnit = 'pump' THEN pr.requiredQuantity * 10 / 1000
+        WHEN inv.unit = 'L' AND pr.measurementUnit = 'tbsp' THEN pr.requiredQuantity * 15 / 1000
+        WHEN inv.unit = 'L' AND pr.measurementUnit = 'tsp' THEN pr.requiredQuantity * 5 / 1000
+        WHEN inv.unit = 'L' AND pr.measurementUnit = 'shot' THEN pr.requiredQuantity * 30 / 1000
+        WHEN inv.unit = 'L' AND pr.measurementUnit = 'cup' THEN pr.requiredQuantity * 240 / 1000
+        
+        -- ==========================================
+        -- ML INVENTORY (can be deducted by: ml, pump, tbsp, tsp, shot, cup)
+        -- ==========================================
+        WHEN inv.unit = 'ml' AND pr.measurementUnit = 'ml' THEN pr.requiredQuantity
+        WHEN inv.unit = 'ml' AND pr.measurementUnit = 'pump' THEN pr.requiredQuantity * 10
+        WHEN inv.unit = 'ml' AND pr.measurementUnit = 'tbsp' THEN pr.requiredQuantity * 15
+        WHEN inv.unit = 'ml' AND pr.measurementUnit = 'tsp' THEN pr.requiredQuantity * 5
+        WHEN inv.unit = 'ml' AND pr.measurementUnit = 'shot' THEN pr.requiredQuantity * 30
+        WHEN inv.unit = 'ml' AND pr.measurementUnit = 'cup' THEN pr.requiredQuantity * 240
+        
+        -- ==========================================
+        -- PIECES INVENTORY (can only be deducted by: pcs)
+        -- ==========================================
+        WHEN inv.unit = 'pcs' AND pr.measurementUnit = 'pcs' THEN pr.requiredQuantity
+        
+        -- ==========================================
+        -- FALLBACK: Same unit or no conversion
+        -- ==========================================
         ELSE pr.requiredQuantity
     END
-)) availableQuantity
+)) AS availableQuantity
 FROM productRecipe pr
 JOIN (
-    SELECT ingredientID, SUM(quantity) total_quantity, MAX(unit) unit
+    SELECT ingredientID, SUM(quantity) AS total_quantity, MAX(unit) AS unit
     FROM inventory
     GROUP BY ingredientID
 ) inv ON pr.ingredientID = inv.ingredientID
@@ -60,7 +87,8 @@ if ($res && $row = mysqli_fetch_assoc($res)) {
 // Fetch current availability
 $currentRow = mysqli_query($conn, "SELECT isAvailable FROM products WHERE productID = $productID");
 $currentAvailability = null;
-if ($currentRow && $r = mysqli_fetch_assoc($currentRow)) $currentAvailability = $r['isAvailable'];
+if ($currentRow && $r = mysqli_fetch_assoc($currentRow))
+    $currentAvailability = $r['isAvailable'];
 
 // --- Decide final status ---
 if ($requestedAvailability !== null) {

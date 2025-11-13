@@ -110,13 +110,14 @@ switch ($sortOption) {
 }
 
 // Build product query with filter + sort - SHOW ALL PRODUCTS, AVAILABLE FIRST
+// UPDATED: Check BOTH isAvailable AND availableQuantity
 if ($categoryFilter === 'ALL') {
     $productQuery = "
         SELECT p.*, c.categoryName 
         FROM products p 
         LEFT JOIN categories c ON p.categoryID = c.categoryID 
         ORDER BY 
-            CASE WHEN p.isAvailable = 'Yes' THEN 0 ELSE 1 END,
+            CASE WHEN p.isAvailable = 'Yes' AND p.availableQuantity > 0 THEN 0 ELSE 1 END,
             $orderBy
     ";
 } else {
@@ -127,7 +128,7 @@ if ($categoryFilter === 'ALL') {
         LEFT JOIN categories c ON p.categoryID = c.categoryID 
         WHERE c.categoryName = '$safeCategory'
         ORDER BY 
-            CASE WHEN p.isAvailable = 'Yes' THEN 0 ELSE 1 END,
+            CASE WHEN p.isAvailable = 'Yes' AND p.availableQuantity > 0 THEN 0 ELSE 1 END,
             $orderBy
     ";
 }
@@ -371,13 +372,15 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
             <?php
             if (mysqli_num_rows($products) > 0) {
                 while ($product = mysqli_fetch_assoc($products)) {
-                    $isAvailable = ($product['isAvailable'] === 'Yes');
+                    // UPDATED: Check BOTH isAvailable flag AND availableQuantity
                     $availableQty = isset($product['availableQuantity']) ? intval($product['availableQuantity']) : 0;
+                    $isAvailable = ($product['isAvailable'] === 'Yes' && $availableQty > 0);
                     ?>
                     <div class="col product-item"
                         data-category="<?php echo htmlspecialchars($product['categoryName'] ?? 'Uncategorized'); ?>"
                         data-name="<?php echo htmlspecialchars($product['productName']); ?>"
-                        data-price="<?php echo $product['price']; ?>" data-available="<?php echo $isAvailable ? '1' : '0'; ?>">
+                        data-price="<?php echo $product['price']; ?>" 
+                        data-available="<?php echo $isAvailable ? '1' : '0'; ?>">
 
                         <div class="menu-item <?php echo !$isAvailable ? 'unavailable-item' : ''; ?> text-center" style="
             height: clamp(260px, 40vw, 320px);
@@ -411,12 +414,16 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                                 ₱<?php echo number_format($product['price'], 2); ?>
                             </div>
 
-                            <!-- NEW: Display available quantity -->
-                            <?php if ($isAvailable): ?>
-                                <div style="font-size: clamp(0.7rem, 1.8vw, 0.85rem); color: white;">
+                            <!-- UPDATED: Display available quantity or Out of Stock -->
+                            <div style="font-size: clamp(0.7rem, 1.8vw, 0.85rem); 
+                                        color: <?php echo $availableQty > 0 ? 'white' : '#dc3545'; ?>; 
+                                        font-weight: <?php echo $availableQty > 0 ? 'normal' : '600'; ?>;">
+                                <?php if ($availableQty > 0): ?>
                                     Available: <?php echo $availableQty; ?> pcs
-                                </div>
-                            <?php endif; ?>
+                                <?php else: ?>
+                                    
+                                <?php endif; ?>
+                            </div>
 
                             <?php if ($isAvailable): ?>
                                 <button class="lead buy-btn mt-auto" data-bs-toggle="modal" data-bs-target="#item-customization"
@@ -620,13 +627,6 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
 
-    <?php
-    // ==============================================
-// REPLACE THE EXISTING openPopup FUNCTION AND SCRIPTS
-// Find this section in your menu.php around line 400+
-// ==============================================
-    ?>
-
     <script>
         // Categories that need sugar/ice options (from database)
         const sugarIceCategories = <?php echo json_encode($sugarIceCategoryList); ?>;
@@ -640,7 +640,7 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
             const productId = button.getAttribute('data-product-id');
             const category = button.getAttribute('data-category');
 
-            // NEW: Get available quantity from data attribute
+            // Get available quantity from data attribute
             const availableQty = parseInt(button.getAttribute('data-available-qty')) || 0;
 
             document.querySelector('.itemName').textContent = productName;
@@ -651,23 +651,23 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
             document.getElementById('modal_price').value = productPrice;
             document.getElementById('modal_category').value = category;
 
-            // NEW: Set available quantity
+            // Set available quantity
             document.getElementById('modal_available_quantity').value = availableQty;
 
-            // NEW: Update available stock display
+            // Update available stock display
             const stockBadge = document.getElementById('availableStockBadge');
             const stockCount = document.getElementById('availableStockCount');
             if (stockCount) {
                 stockCount.textContent = availableQty;
             }
 
-            // NEW: Set max available quantity for validation
+            // Set max available quantity for validation
             window.maxAvailableQuantity = availableQty;
 
             // Reset quantity to 1
             document.getElementById('quantity').value = 1;
 
-            // NEW: Update button states based on available stock
+            // Update button states based on available stock
             updateButtonStates();
 
             updateModalOptions(category);
@@ -707,7 +707,7 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
             }
         }
 
-        // NEW: Update button states function
+        // Update button states function
         function updateButtonStates() {
             const quantityInput = document.getElementById('quantity');
             const increaseBtn = document.getElementById('increaseBtn');
@@ -738,7 +738,7 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
             }
         }
 
-        // FIXED: Modal close event - removes duplicate and fixes scrolling
+        // Modal close event - removes duplicate and fixes scrolling
         document.getElementById('item-customization').addEventListener('hidden.bs.modal', function () {
             // Reset form values
             document.getElementById('quantity').value = 1;
@@ -751,7 +751,7 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                 document.querySelector('input[name="ice"][value="Default Ice"]').checked = true;
             }
 
-            // Fix scrolling issue - THIS IS THE FIX
+            // Fix scrolling issue
             setTimeout(() => {
                 document.body.classList.remove('modal-open');
                 document.body.style.overflow = '';
@@ -760,7 +760,7 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
             }, 100);
         });
 
-        // NEW: Manual input validation
+        // Manual input validation
         document.addEventListener('DOMContentLoaded', function () {
             const quantityInput = document.getElementById('quantity');
 
@@ -788,7 +788,7 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
             });
         });
 
-        // Rest of your existing menu.php scripts...
+        // Category and Sort functionality
         document.addEventListener('DOMContentLoaded', function () {
 
             const categoryPills = document.querySelectorAll('.category-pill');
