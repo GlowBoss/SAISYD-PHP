@@ -9,6 +9,50 @@ if (!isset($_SESSION['userID']) || ($_SESSION['role'] !== 'Admin' && $_SESSION['
     exit();
 }
 
+// ===================================================================
+// HANDLE AVAILABILITY TOGGLE
+// ===================================================================
+if (isset($_POST['btnToggleAvailability'])) {
+    $productID = intval($_POST['productID']);
+    $newAvailability = intval($_POST['newAvailability']); // 1 or 0
+
+    // Convert to Yes/No for database
+    $isAvailableText = ($newAvailability == 1) ? 'Yes' : 'No';
+
+    // Only update the isAvailable flag, NOT the quantity
+    // Quantity is auto-calculated based on inventory
+    $updateQuery = "UPDATE products 
+                    SET isAvailable = '$isAvailableText' 
+                    WHERE productID = $productID";
+
+    if (mysqli_query($conn, $updateQuery)) {
+        // Get updated product info
+        $productQuery = "SELECT productName, availableQuantity, isAvailable 
+                        FROM products 
+                        WHERE productID = $productID";
+        $result = mysqli_query($conn, $productQuery);
+        $product = mysqli_fetch_assoc($result);
+
+        // Return JSON response
+        echo json_encode([
+            'success' => true,
+            'message' => 'Availability updated',
+            'product' => [
+                'productID' => $productID,
+                'productName' => $product['productName'],
+                'availableQuantity' => $product['availableQuantity'],
+                'isAvailable' => $isAvailableText
+            ]
+        ]);
+    } else {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Database update failed'
+        ]);
+    }
+    exit();
+}
+
 // Check if this is an AJAX request
 $isAjax = isset($_GET['ajax']) && $_GET['ajax'] == '1';
 
@@ -100,28 +144,90 @@ if (isset($_POST['btnAddProduct'])) {
     exit();
 }
 
-// DELETEEEE
+// ===================================================================
+// CASCADE DELETE - DELETES PRODUCT AND ALL RELATED ORDERS
+// ===================================================================
 if (isset($_POST['btnDeleteProduct'])) {
     $productID = intval($_POST['productID']);
 
     if ($productID > 0) {
-        $result = mysqli_query($conn, "SELECT image FROM products WHERE productID = '$productID'");
-        $row = mysqli_fetch_assoc($result);
-        if ($row && !empty($row['image'])) {
-            $imagePath = "../assets/img/img-menu/" . $row['image'];
-            if (file_exists($imagePath)) {
+        // ✅ Start transaction for data integrity
+        mysqli_begin_transaction($conn);
+        
+        try {
+            // 1. Get image file first
+            $result = mysqli_query($conn, "SELECT image FROM products WHERE productID = $productID");
+            $row = mysqli_fetch_assoc($result);
+            $imagePath = null;
+            if ($row && !empty($row['image'])) {
+                $imagePath = "../assets/img/img-menu/" . $row['image'];
+            }
+            
+            // 2. Get all orders that contain this product
+            $ordersQuery = mysqli_query($conn, "
+                SELECT DISTINCT orderID 
+                FROM orderitems 
+                WHERE productID = $productID
+            ");
+            
+            $orderIDs = [];
+            while ($order = mysqli_fetch_assoc($ordersQuery)) {
+                $orderIDs[] = intval($order['orderID']);
+            }
+            
+            // 3. Delete related records in correct order (respecting foreign keys)
+            if (!empty($orderIDs)) {
+                $orderIDsList = implode(',', $orderIDs);
+                
+                // Delete payments first
+                mysqli_query($conn, "DELETE FROM payments WHERE orderID IN ($orderIDsList)");
+                
+                // Delete all order items for these orders
+                mysqli_query($conn, "DELETE FROM orderitems WHERE orderID IN ($orderIDsList)");
+                
+                // Delete the orders themselves
+                mysqli_query($conn, "DELETE FROM orders WHERE orderID IN ($orderIDsList)");
+            }
+            
+            // 4. Delete product recipe
+            mysqli_query($conn, "DELETE FROM productrecipe WHERE productID = $productID");
+            
+            // 5. Finally delete the product
+            mysqli_query($conn, "DELETE FROM products WHERE productID = $productID");
+            
+            // 6. Delete image file if exists
+            if ($imagePath && file_exists($imagePath)) {
                 unlink($imagePath);
             }
+            
+            // ✅ Commit transaction
+            mysqli_commit($conn);
+            
+            // Success message with count
+            $orderCount = count($orderIDs);
+            if ($orderCount > 0) {
+                $_SESSION['alertMessage'] = "Product deleted successfully! ($orderCount related orders also removed)";
+                $_SESSION['alertType'] = "warning";
+            } else {
+                $_SESSION['alertMessage'] = "Product deleted successfully!";
+                $_SESSION['alertType'] = "success";
+            }
+            
+        } catch (Exception $e) {
+            // ❌ Rollback on error
+            mysqli_rollback($conn);
+            
+            $_SESSION['alertMessage'] = "Error deleting product: " . $e->getMessage();
+            $_SESSION['alertType'] = "error";
+            
+            error_log("Delete product failed: " . $e->getMessage());
         }
-        mysqli_query($conn, "DELETE FROM productrecipe WHERE productID = '$productID'");
-        mysqli_query($conn, "DELETE FROM products WHERE productID = '$productID'");
-
-        $_SESSION['alertMessage'] = "Product deleted successfully!";
-        $_SESSION['alertType'] = "success";
+        
     } else {
         $_SESSION['alertMessage'] = "Invalid product ID!";
         $_SESSION['alertType'] = "error";
     }
+    
     header("Location: menu-management.php");
     exit();
 }
@@ -160,76 +266,77 @@ $menuItems = [];
 while ($row = mysqli_fetch_assoc($menuItemsResults)) {
     $productID = $row['productID'];
 
-    // Calculate available quantity based on inventory + recipe
+    // ===================================================================
+    // CALCULATE AVAILABLE QUANTITY - FIXED UNIT CONVERSIONS
+    // ===================================================================
     $stockCheck = mysqli_query($conn, "
-    SELECT MIN(FLOOR(
-        inv.total_quantity /
-        CASE
-            -- Weight
-            WHEN pr.measurementUnit = 'g' AND inv.unit = 'kg' THEN pr.requiredQuantity / 1000
-            WHEN pr.measurementUnit = 'kg' AND inv.unit = 'g' THEN pr.requiredQuantity * 1000
-            WHEN pr.measurementUnit = 'oz' AND inv.unit = 'g' THEN pr.requiredQuantity * 28.35
-            WHEN pr.measurementUnit = 'g' AND inv.unit = 'oz' THEN pr.requiredQuantity / 28.35
-    
-            -- Volume
-            -- Existing conversions
-            WHEN pr.measurementUnit = 'ml' AND inv.unit = 'L' THEN pr.requiredQuantity / 1000
-            WHEN pr.measurementUnit = 'L' AND inv.unit = 'ml' THEN pr.requiredQuantity * 1000
-            WHEN pr.measurementUnit = 'pump' AND inv.unit = 'ml' THEN pr.requiredQuantity * 10
-            WHEN pr.measurementUnit = 'tbsp' AND inv.unit = 'ml' THEN pr.requiredQuantity * 15
-            WHEN pr.measurementUnit = 'tsp' AND inv.unit = 'ml' THEN pr.requiredQuantity * 5
-            WHEN pr.measurementUnit = 'cup' AND inv.unit = 'ml' THEN pr.requiredQuantity * 240
-            WHEN pr.measurementUnit = 'shot' AND inv.unit = 'ml' THEN pr.requiredQuantity * 30
-            WHEN pr.measurementUnit = 'ml' AND inv.unit = 'pump' THEN pr.requiredQuantity / 10
-            WHEN pr.measurementUnit = 'ml' AND inv.unit = 'tbsp' THEN pr.requiredQuantity / 15
-            WHEN pr.measurementUnit = 'ml' AND inv.unit = 'tsp' THEN pr.requiredQuantity / 5
-            WHEN pr.measurementUnit = 'ml' AND inv.unit = 'cup' THEN pr.requiredQuantity / 240
-            WHEN pr.measurementUnit = 'ml' AND inv.unit = 'shot' THEN pr.requiredQuantity / 30
-            
-            WHEN pr.measurementUnit = 'L' AND inv.unit = 'pump' THEN pr.requiredQuantity * 100  -- 1L = 1000ml / 10ml per pump
-            WHEN pr.measurementUnit = 'L' AND inv.unit = 'tbsp' THEN pr.requiredQuantity * 1000 / 15
-            WHEN pr.measurementUnit = 'L' AND inv.unit = 'tsp' THEN pr.requiredQuantity * 1000 / 5
-            WHEN pr.measurementUnit = 'L' AND inv.unit = 'cup' THEN pr.requiredQuantity * 1000 / 240
-            WHEN pr.measurementUnit = 'L' AND inv.unit = 'shot' THEN pr.requiredQuantity * 1000 / 30
-            
-            WHEN pr.measurementUnit = 'pump' AND inv.unit = 'L' THEN pr.requiredQuantity * 10 / 1000
-            WHEN pr.measurementUnit = 'tbsp' AND inv.unit = 'L' THEN pr.requiredQuantity * 15 / 1000
-            WHEN pr.measurementUnit = 'tsp' AND inv.unit = 'L' THEN pr.requiredQuantity * 5 / 1000
-            WHEN pr.measurementUnit = 'cup' AND inv.unit = 'L' THEN pr.requiredQuantity * 240 / 1000
-            WHEN pr.measurementUnit = 'shot' AND inv.unit = 'L' THEN pr.requiredQuantity * 30 / 1000
-            
-    
-            -- Pieces / Packaging
-            WHEN pr.measurementUnit = 'pcs' AND inv.unit = 'box' THEN pr.requiredQuantity / 12
-            WHEN pr.measurementUnit = 'box' AND inv.unit = 'pcs' THEN pr.requiredQuantity * 12
-            WHEN pr.measurementUnit = 'pack' AND inv.unit = 'pcs' THEN pr.requiredQuantity * 6
-            WHEN pr.measurementUnit = 'pcs' AND inv.unit = 'pack' THEN pr.requiredQuantity / 6
-    
-            -- Same unit
-            WHEN pr.measurementUnit = inv.unit THEN pr.requiredQuantity
-    
-            ELSE pr.requiredQuantity
-        END
-    )) AS availableQuantity
-    FROM productRecipe pr
-    JOIN (
-        SELECT ingredientID, SUM(quantity) AS total_quantity, MAX(unit) AS unit
-        FROM inventory
-        GROUP BY ingredientID
-    ) inv ON pr.ingredientID = inv.ingredientID
-    WHERE pr.productID = $productID;
-    
+        SELECT MIN(FLOOR(
+            inv.total_quantity /
+            CASE
+                -- ==========================================
+                -- KG INVENTORY (can be deducted by: kg, g)
+                -- ==========================================
+                WHEN inv.unit = 'kg' AND pr.measurementUnit = 'kg' THEN pr.requiredQuantity
+                WHEN inv.unit = 'kg' AND pr.measurementUnit = 'g' THEN pr.requiredQuantity / 1000
+                
+                -- ==========================================
+                -- G INVENTORY (can be deducted by: kg, g)
+                -- ==========================================
+                WHEN inv.unit = 'g' AND pr.measurementUnit = 'g' THEN pr.requiredQuantity
+                WHEN inv.unit = 'g' AND pr.measurementUnit = 'kg' THEN pr.requiredQuantity * 1000
+                
+                -- ==========================================
+                -- LITER INVENTORY (can be deducted by: L, ml, pump, tbsp, tsp, shot, cup)
+                -- ==========================================
+                WHEN inv.unit = 'L' AND pr.measurementUnit = 'L' THEN pr.requiredQuantity
+                WHEN inv.unit = 'L' AND pr.measurementUnit = 'ml' THEN pr.requiredQuantity / 1000
+                WHEN inv.unit = 'L' AND pr.measurementUnit = 'pump' THEN pr.requiredQuantity * 10 / 1000
+                WHEN inv.unit = 'L' AND pr.measurementUnit = 'tbsp' THEN pr.requiredQuantity * 15 / 1000
+                WHEN inv.unit = 'L' AND pr.measurementUnit = 'tsp' THEN pr.requiredQuantity * 5 / 1000
+                WHEN inv.unit = 'L' AND pr.measurementUnit = 'shot' THEN pr.requiredQuantity * 30 / 1000
+                WHEN inv.unit = 'L' AND pr.measurementUnit = 'cup' THEN pr.requiredQuantity * 240 / 1000
+                
+                -- ==========================================
+                -- ML INVENTORY (can be deducted by: ml, pump, tbsp, tsp, shot, cup)
+                -- ==========================================
+                WHEN inv.unit = 'ml' AND pr.measurementUnit = 'ml' THEN pr.requiredQuantity
+                WHEN inv.unit = 'ml' AND pr.measurementUnit = 'pump' THEN pr.requiredQuantity * 10
+                WHEN inv.unit = 'ml' AND pr.measurementUnit = 'tbsp' THEN pr.requiredQuantity * 15
+                WHEN inv.unit = 'ml' AND pr.measurementUnit = 'tsp' THEN pr.requiredQuantity * 5
+                WHEN inv.unit = 'ml' AND pr.measurementUnit = 'shot' THEN pr.requiredQuantity * 30
+                WHEN inv.unit = 'ml' AND pr.measurementUnit = 'cup' THEN pr.requiredQuantity * 240
+                
+                -- ==========================================
+                -- PIECES INVENTORY (can only be deducted by: pcs)
+                -- ==========================================
+                WHEN inv.unit = 'pcs' AND pr.measurementUnit = 'pcs' THEN pr.requiredQuantity
+                
+                -- ==========================================
+                -- FALLBACK: Same unit or no conversion
+                -- ==========================================
+                ELSE pr.requiredQuantity
+            END
+        )) AS availableQuantity
+        FROM productRecipe pr
+        JOIN (
+            SELECT ingredientID, SUM(quantity) AS total_quantity, MAX(unit) AS unit
+            FROM inventory
+            GROUP BY ingredientID
+        ) inv ON pr.ingredientID = inv.ingredientID
+        WHERE pr.productID = $productID;
     ");
 
     $stockData = mysqli_fetch_assoc($stockCheck);
     $availableQuantity = intval($stockData['availableQuantity'] ?? 0);
 
     // Update product availability in DB
-    if ($availableQuantity <= 0 && $row['isAvailable'] == 1) {
-        mysqli_query($conn, "UPDATE products SET isAvailable = 0, availableQuantity = 0 WHERE productID = $productID");
-        $row['isAvailable'] = 0;
+    if ($availableQuantity <= 0 && $row['isAvailable'] == 'Yes') {
+        // Auto-set to unavailable if out of stock
+        mysqli_query($conn, "UPDATE products SET isAvailable = 'No', availableQuantity = 0 WHERE productID = $productID");
+        $row['isAvailable'] = 'No';
         $row['availableQuantity'] = 0;
     } else {
+        // Just update quantity, keep manual availability setting
         mysqli_query($conn, "UPDATE products SET availableQuantity = $availableQuantity WHERE productID = $productID");
         $row['availableQuantity'] = $availableQuantity;
     }
@@ -684,11 +791,10 @@ if ($isAjax) {
                 const deleteModal = document.getElementById('deleteConfirmModal');
 
                 deleteModal.addEventListener('show.bs.modal', function (event) {
-                    const button = event.relatedTarget; // Button that triggered the modal
+                    const button = event.relatedTarget;
                     const productId = button.getAttribute('data-product-id');
                     const productName = button.getAttribute('data-product-name');
 
-                    // Update modal content
                     deleteModal.querySelector('#deleteItemName').textContent = productName;
                     deleteModal.querySelector('#deleteProductID').value = productId;
                 });
@@ -697,7 +803,7 @@ if ($isAjax) {
             document.addEventListener('DOMContentLoaded', () => {
                 $(document).ready(function () {
                     var ingredients = <?php echo json_encode($ingredients); ?>;
-                    let skipAutocompleteChange = false; // flag to skip alert
+                    let skipAutocompleteChange = false;
 
                     const allowedUnits = {
                         "g": ["g", "kg"],
@@ -707,7 +813,6 @@ if ($isAjax) {
                         "pcs": ["pcs"]
                     };
 
-                    // readable labels
                     const unitLabels = {
                         "g": "g (grams)",
                         "kg": "kg (kilograms)",
@@ -730,14 +835,12 @@ if ($isAjax) {
                                 $(this).val(ui.item.label);
                                 $(this).siblings(".ingredient-id").val(ui.item.id);
 
-                                const ingredientUnit = ui.item.unit; // base unit
+                                const ingredientUnit = ui.item.unit;
                                 const $select = $(this).closest(".ingredient-row").find(".measurement-select");
 
-                                // clear dropdown
                                 $select.empty();
                                 $select.append('<option value="" disabled selected>Select Unit</option>');
 
-                                // add all allowed units based on the base unit
                                 const unitsToAdd = allowedUnits[ingredientUnit] || [ingredientUnit];
                                 unitsToAdd.forEach(unit => {
                                     const label = unitLabels[unit] || unit;
@@ -763,12 +866,8 @@ if ($isAjax) {
                         });
                     }
 
-
-
-                    // initialize autocomplete for existing inputs
                     initAutocomplete("#confirmModal .ingredient-search");
 
-                    // Add new ingredient row
                     $("#confirmModal #add-modal-ingredient").click(function () {
                         var row = `
                         <div class="row g-2 mb-2 ingredient-row">
@@ -819,19 +918,15 @@ if ($isAjax) {
                             </div>
                         </div>`;
                         $("#confirmModal #ingredients-container").append(row);
-
-                        // autocomplete for new row
                         initAutocomplete($("#confirmModal #ingredients-container .ingredient-search").last());
                     });
 
-                    // remove ingredient row
                     $(document).on("click", "#confirmModal .remove-ingredient", function () {
                         $(this).closest(".ingredient-row").remove();
                     });
 
-                    // cancel search button click
                     $(document).on("click", "#confirmModal .cancel-search", function () {
-                        skipAutocompleteChange = true; // skip alert
+                        skipAutocompleteChange = true;
                         const input = $(this).siblings(".ingredient-search");
                         input.val("");
                         input.siblings(".ingredient-id").val("");
@@ -839,12 +934,10 @@ if ($isAjax) {
                         setTimeout(() => skipAutocompleteChange = false, 10);
                     });
 
-                    // show/hide cancel search button on input
                     $(document).on("input", "#confirmModal .ingredient-search", function () {
                         $(this).siblings(".cancel-search").toggle($(this).val().trim() !== "");
                     });
 
-                    // Unit mismatch validation
                     $(document).on("change", "#confirmModal .measurement-select", function () {
                         const correctUnit = $(this).data("correct-unit");
                         const chosenUnit = $(this).val();
@@ -875,32 +968,25 @@ if ($isAjax) {
                     const availabilityStatus = document.getElementById('availabilityStatus');
                     let currentProductId = null;
 
-                    // Update modal toggle with product data
                     document.querySelectorAll('.edit-btn').forEach(button => {
                         button.addEventListener('click', function () {
                             currentProductId = this.getAttribute('data-id');
                             const isAvailable = this.getAttribute('data-available') === '1';
-
-                            // Set toggle state properly
                             availabilityToggle.checked = isAvailable;
                             updateAvailabilityStatus(isAvailable);
                         });
                     });
 
-
-                    // Handle toggle change
                     if (availabilityToggle) {
                         availabilityToggle.addEventListener('change', function () {
                             const isChecked = this.checked;
                             updateAvailabilityStatus(isChecked);
-
                             if (currentProductId) {
                                 updateProductAvailability(currentProductId, isChecked ? 1 : 0);
                             }
                         });
                     }
 
-                    // Update text + badge inside modal
                     function updateAvailabilityStatus(isAvailable) {
                         if (availabilityStatus) {
                             availabilityStatus.textContent = isAvailable ? 'Available' : 'Unavailable';
@@ -909,18 +995,14 @@ if ($isAjax) {
                         }
                     }
 
-                    // AJAX request to update availability
                     function updateProductAvailability(productId, newAvailability) {
                         fetch('menu-management.php', {
                             method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded'
-                            },
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                             body: `btnToggleAvailability=1&productID=${productId}&newAvailability=${newAvailability}`
                         })
                             .then(response => response.text())
                             .then(() => {
-                                // Update product card without reloading
                                 const productCard = document.querySelector(`.edit-btn[data-id="${productId}"]`).closest('.menu-item');
                                 const badge = productCard.querySelector('.status-badge');
 
@@ -934,7 +1016,6 @@ if ($isAjax) {
                                     badge.className = 'status-badge status-unavailable';
                                 }
 
-                                // Show toast
                                 const toast = document.getElementById('updateToast');
                                 if (toast) {
                                     const bsToast = new bootstrap.Toast(toast);
@@ -944,20 +1025,15 @@ if ($isAjax) {
                             .catch(err => console.error('Error updating product availability:', err));
                     }
                 });
-
             });
 
-
-
             window.ingredients = <?php echo json_encode($ingredients); ?>;
-
             const ingredientsData = <?php echo json_encode($ingredients); ?>;
 
-            // Polling interval in milliseconds
-            const POLL_INTERVAL = 5000; // every 5 seconds
+            const POLL_INTERVAL = 5000;
 
             function fetchProductAvailability() {
-                fetch('fetch-availability.php') // new endpoint that returns JSON of productID -> possible_count
+                fetch('fetch-availability.php')
                     .then(res => res.json())
                     .then(data => {
                         data.forEach(item => {
@@ -966,9 +1042,8 @@ if ($isAjax) {
 
                             const badge = productCard.querySelector('.status-badge');
                             const newAvailable = item.possible_count > 0 ? 1 : 0;
-
-                            // Only update if changed
                             const isCurrentlyAvailable = badge.classList.contains('status-available');
+                            
                             if ((newAvailable && !isCurrentlyAvailable) || (!newAvailable && isCurrentlyAvailable)) {
                                 if (newAvailable) {
                                     productCard.classList.remove('unavailable');
@@ -985,33 +1060,24 @@ if ($isAjax) {
                     .catch(err => console.error('Error fetching availability:', err));
             }
 
-            // Start polling
             setInterval(fetchProductAvailability, POLL_INTERVAL);
-
         </script>
 
-        <!-- REAL-TIME SEARCH SCRIPT -->
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 const searchInput = document.querySelector('input[name="searchProduct"]');
                 const productGrid = document.getElementById('productGrid');
                 let searchTimeout;
 
-                // Get current category from URL
                 function getCurrentCategoryID() {
                     const urlParams = new URLSearchParams(window.location.search);
                     return urlParams.get('categoryID') || '';
                 }
 
-                // Real-time search on input
                 if (searchInput) {
                     searchInput.addEventListener('input', function () {
                         clearTimeout(searchTimeout);
-
-                        // Debounce - wait 300ms after user stops typing
-                        searchTimeout = setTimeout(() => {
-                            performSearch();
-                        }, 300);
+                        searchTimeout = setTimeout(() => { performSearch(); }, 300);
                     });
                 }
 
@@ -1019,7 +1085,6 @@ if ($isAjax) {
                     const searchTerm = searchInput.value.trim();
                     const categoryID = getCurrentCategoryID();
 
-                    // Show loading indicator
                     productGrid.innerHTML = `
                         <div class="col-12 text-center py-5">
                             <div class="spinner-border text-primary" role="status">
@@ -1029,45 +1094,33 @@ if ($isAjax) {
                         </div>
                     `;
 
-                    // Build URL with parameters
                     let url = 'menu-management.php?ajax=1';
                     if (searchTerm) url += '&searchProduct=' + encodeURIComponent(searchTerm);
                     if (categoryID) url += '&categoryID=' + categoryID;
 
-                    // Update browser URL without reload
                     const newUrl = 'menu-management.php';
                     const params = [];
                     if (searchTerm) params.push('searchProduct=' + encodeURIComponent(searchTerm));
                     if (categoryID) params.push('categoryID=' + categoryID);
                     history.pushState(null, '', params.length ? newUrl + '?' + params.join('&') : newUrl);
 
-                    // Fetch results
                     fetch(url)
                         .then(response => response.text())
                         .then(html => {
                             productGrid.innerHTML = html;
-
-                            // Re-attach event listeners for edit/delete buttons
                             attachProductCardListeners();
                         })
                         .catch(error => {
                             console.error('Search error:', error);
-                            productGrid.innerHTML = `
-                                <div class="col-12 text-center">
-                                    <p class="text-danger">Error loading results. Please try again.</p>
-                                </div>
-                            `;
+                            productGrid.innerHTML = `<div class="col-12 text-center"><p class="text-danger">Error loading results. Please try again.</p></div>`;
                         });
                 }
 
-                // Re-attach listeners after AJAX load
                 function attachProductCardListeners() {
-                    // Delete buttons
                     document.querySelectorAll('[data-bs-target="#deleteConfirmModal"]').forEach(button => {
                         button.addEventListener('click', function () {
                             const productId = this.getAttribute('data-product-id');
                             const productName = this.getAttribute('data-product-name');
-
                             document.getElementById('deleteItemName').textContent = productName;
                             document.getElementById('deleteProductID').value = productId;
                         });
@@ -1085,33 +1138,29 @@ if ($isAjax) {
                     const bsToast = new bootstrap.Toast(toastEl, { delay: 2500 });
 
                     const message = '<?= $_SESSION['alertMessage'] ?>';
-                    const type = '<?= $_SESSION['alertType'] ?>'; // success, error, warning
+                    const type = '<?= $_SESSION['alertType'] ?>';
 
                     toastBody.textContent = message;
 
-                    // Use Bootstrap Icons
                     if (type === 'error') {
                         toastIcon.className = 'bi bi-x-circle-fill text-danger';
                     } else if (type === 'warning') {
-                        toastIcon.className = 'bi bi-exclamation-triangle-fill';
+                        toastIcon.className = 'bi bi-exclamation-triangle-fill text-warning';
                     } else {
-                        toastIcon.className = 'bi bi-check-circle-fill';
+                        toastIcon.className = 'bi bi-check-circle-fill text-success';
                     }
 
                     bsToast.show();
                 });
             </script>
-
             <?php
             unset($_SESSION['alertMessage']);
             unset($_SESSION['alertType']);
             ?>
         <?php endif; ?>
 
-
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous">
-            </script>
+        </script>
 </body>
-
 </html>

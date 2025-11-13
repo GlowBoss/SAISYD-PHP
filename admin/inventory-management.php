@@ -12,6 +12,14 @@ if (!isset($_SESSION['userID']) || ($_SESSION['role'] !== 'Admin' && $_SESSION['
 $message = '';
 $messageType = '';
 
+// Helper function to format quantity (removes unnecessary decimals)
+function formatQuantity($quantity)
+{
+    $quantity = round($quantity, 2); // Round to 2 decimal places
+    // Remove unnecessary trailing zeros and decimal point
+    return rtrim(rtrim(number_format($quantity, 2, '.', ''), '0'), '.');
+}
+
 // CREATE - Add new inventory item (Updated to handle new ingredients)
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'create') {
     $ingredientID = mysqli_real_escape_string($conn, $_POST['ingredientID']);
@@ -22,10 +30,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     $threshold = mysqli_real_escape_string($conn, $_POST['threshold']);
     $lastUpdated = date('Y-m-d');
 
-    // Ensure quantity is not negative
+    // Ensure quantity is not negative and round to 2 decimal places
     if ($quantity < 0) {
         $quantity = 0;
     }
+    $quantity = round($quantity, 2); // Round to 2 decimal places
 
     // Validation
     if (empty($ingredientName) || empty($unit) || empty($expirationDate) || empty($threshold)) {
@@ -64,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
                 $message = 'This ingredient already exists in inventory!';
                 $messageType = 'error';
             } else {
-                // Insert new inventory item
+                // Insert new inventory item with rounded quantity
                 $insertInventoryQuery = "INSERT INTO inventory (ingredientID, quantity, unit, lastUpdated, expirationDate, threshold) 
                                        VALUES ('$ingredientID', '$quantity', '$unit', '$lastUpdated', '$expirationDate', '$threshold')";
 
@@ -91,12 +100,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     $threshold = mysqli_real_escape_string($conn, $_POST['threshold']);
     $lastUpdated = date('Y-m-d');
 
-    // Ensure quantity is not negative - IMPORTANT PART!
+    // Ensure quantity is not negative and round to 2 decimal places
     if ($quantity < 0) {
         $quantity = 0;
         $message = 'Quantity cannot be negative. Set to 0 instead.';
         $messageType = 'warning';
     }
+    $quantity = round($quantity, 2); // Round to 2 decimal places
 
     // Validation
     if (empty($inventoryID) || empty($ingredientName) || empty($unit) || empty($expirationDate) || empty($threshold)) {
@@ -107,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
         $updateIngredientQuery = "UPDATE ingredients SET ingredientName = '$ingredientName' WHERE ingredientID = '$ingredientID'";
         executeQuery($updateIngredientQuery);
 
-        // Update inventory
+        // Update inventory with rounded quantity
         $updateQuery = "UPDATE inventory 
                        SET quantity = '$quantity', 
                            unit = '$unit', 
@@ -173,11 +183,11 @@ if (isset($_GET['order']) && ($_GET['order'] === 'asc' || $_GET['order'] === 'de
     $order = strtoupper($_GET['order']);
 }
 
-// Query - Make sure quantity is never negative in display
+// Query - Round quantity to 2 decimal places and make sure it's never negative
 $inventoryQuery = "SELECT i.inventoryID,
                           i.ingredientID,
                           ing.ingredientName,
-                          GREATEST(i.quantity, 0) as quantity,
+                          ROUND(GREATEST(i.quantity, 0), 2) as quantity,
                           i.unit,
                           i.lastUpdated,
                           i.expirationDate,
@@ -192,6 +202,8 @@ $result = executeQuery($inventoryQuery);
 $rows = [];
 if ($result && mysqli_num_rows($result) > 0) {
     while ($row = mysqli_fetch_assoc($result)) {
+        // Format quantity to remove unnecessary decimals (5.00 becomes 5, 5.50 stays 5.5, 5.23 stays 5.23)
+        $row['quantity'] = formatQuantity($row['quantity']);
         $rows[] = $row;
     }
 }
@@ -439,7 +451,8 @@ foreach ($rows as $row) {
                         </div>
                         <div class="col-3">
                             <div class="stat-card">
-                                <div class="stat-number danger" id="outOfStockMobile"><?php echo $outOfStockCount; ?></div>
+                                <div class="stat-number danger" id="outOfStockMobile"><?php echo $outOfStockCount; ?>
+                                </div>
                                 <div class="stat-label">Out of Stock</div>
                             </div>
                         </div>
