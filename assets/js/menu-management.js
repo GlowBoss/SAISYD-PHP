@@ -161,9 +161,9 @@ function createIngredientRow(name = "", qty = "", unit = "") {
       </select>
     </div>
 
-    <div class="col-12 col-md-1 d-flex justify-content-center mt-2 mt-md-0">
-      <button type="button" class="btn btn-sm btn-del remove-ingredient" 
-              style="border-radius: 8px; font-family: var(--primaryFont);">
+    <div class=" px-2 col-md-1 d-flex justify-content-center align-items-center">
+      <button type="button" class="btn btn-sm btn-del remove-ingredient d-flex justify-content-center align-items-center" 
+              style="border-radius: 10px; width: 38px; height: 38px; transition: all 0.3s ease; font-family: var(--primaryFont);">
         <i class="bi bi-trash"></i>
       </button>
     </div>
