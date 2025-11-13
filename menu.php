@@ -383,19 +383,19 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                         data-available="<?php echo $isAvailable ? '1' : '0'; ?>">
 
                         <div class="menu-item <?php echo !$isAvailable ? 'unavailable-item' : ''; ?> text-center" style="
-            height: clamp(260px, 40vw, 320px);
-            border-radius: 20px;
-            background-color: var(--bg-color);
-            border: 0.5px solid rgba(0, 0, 0, 0.2);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: clamp(10px, 2vw, 15px);
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
-            position: relative;
-            <?php echo !$isAvailable ? 'opacity: 0.6;' : ''; ?>
-        ">
+    height: clamp(260px, 40vw, 320px);
+    border-radius: 20px;
+    background-color: var(--bg-color);
+    border: 0.5px solid rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: clamp(10px, 2vw, 15px);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    position: relative;
+    <?php echo !$isAvailable ? 'opacity: 0.6;' : ''; ?>
+">
 
                             <div
                                 style="height: clamp(120px, 25vw, 150px); display: flex; align-items: center; justify-content: center;">

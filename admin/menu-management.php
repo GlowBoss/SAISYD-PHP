@@ -616,7 +616,7 @@ if ($isAjax) {
                 <div class="row g-3 align-items-end">
 
                     <!-- Quick Search (Left Side) -->
-                    <div class="col-12 col-md-12 col-lg-5 px-md-4">
+                    <div class="col-12 col-md-12 col-lg-7 px-md-4">
                         <form method="get" class="search-container">
                             <div class="input-group search-bar">
                                 <input type="text" class="form-control search-input" name="searchProduct"
@@ -635,7 +635,7 @@ if ($isAjax) {
 
 
                     <!-- Actions (Right Side) -->
-                    <div class="col-12 col-md-12 col-lg-7 px-lg-4">
+                    <div class="col-12 col-md-12 col-lg-5 px-lg-4">
                         <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-lg-end w-100">
 
                             <!-- Add Button -->
@@ -820,7 +820,7 @@ if ($isAjax) {
                     let skipAutocompleteChange = false;
 
                     const allowedUnits = {
-                        "g": ["g", "kg"],
+                        "g": ["g"],
                         "kg": ["kg", "g"],
                         "ml": ["ml", "pump", "tbsp", "tsp", "cup", "shot"],
                         "L": ["L", "ml", "pump", "tbsp", "tsp", "cup", "shot"],
@@ -958,7 +958,7 @@ if ($isAjax) {
                         if (!correctUnit) return;
 
                         const allowedUnits = {
-                            "g": ["g", "kg"],
+                            "g": ["g"],
                             "kg": ["kg", "g"],
                             "ml": ["ml", "pump", "tbsp", "tsp", "cup", "shot"],
                             "L": ["L", "ml", "pump", "tbsp", "tsp", "cup", "shot"],

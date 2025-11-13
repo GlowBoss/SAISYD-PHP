@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 const allowedUnits = {
-  "g": ["g", "kg"],
+  "g": ["g"],
   "kg": ["kg", "g"],
   "ml": ["ml", "pump", "tbsp", "tsp", "cup", "shot"],
   "l": ["L", "ml", "pump", "tbsp", "tsp", "cup", "shot"],
