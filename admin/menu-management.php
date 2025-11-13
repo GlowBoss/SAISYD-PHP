@@ -59,29 +59,43 @@ $isAjax = isset($_GET['ajax']) && $_GET['ajax'] == '1';
 $searchProductTerm = '';
 $categoryFilterId = null;
 
-// dito kona nilagay sa taas tong pag 
+// ✅ Initialize ingredients array
+$ingredients = [];
+
+// Get ingredients from inventory
 $result = mysqli_query($conn, "
     SELECT i.ingredientID, ing.ingredientName, i.unit
     FROM inventory i
     JOIN ingredients ing ON i.ingredientID = ing.ingredientID
+    GROUP BY i.ingredientID, ing.ingredientName, i.unit
     ORDER BY ing.ingredientName ASC
 ");
 
-while ($row = mysqli_fetch_assoc($result)) {
-    $ingredients[] = [
-        "id" => $row['ingredientID'],
-        "label" => $row['ingredientName'],
-        "value" => $row['ingredientName'],
-        "unit" => $row['unit']
-    ];
+if ($result) {
+    while ($row = mysqli_fetch_assoc($result)) {
+        $ingredients[] = [
+            "id" => $row['ingredientID'],
+            "label" => $row['ingredientName'],
+            "value" => $row['ingredientName'],
+            "unit" => $row['unit']
+        ];
+    }
 }
 
 // ADDDDDD PRODUCT
 if (isset($_POST['btnAddProduct'])) {
+    // ✅ Validate required fields first
+    if (empty($_POST['productName']) || empty($_POST['price']) || empty($_POST['categoryID'])) {
+        $_SESSION['alertMessage'] = "Please fill in all required fields!";
+        $_SESSION['alertType'] = "error";
+        header("Location: menu-management.php");
+        exit();
+    }
+
     $productName = mysqli_real_escape_string($conn, $_POST['productName']);
-    $price = $_POST['price'];
-    $availableQuantity = $_POST['availableQuantity'];
-    $categoryID = $_POST['categoryID'];
+    $price = floatval($_POST['price']);
+    $availableQuantity = 0; // ✅ Default to 0, will be calculated from inventory
+    $categoryID = intval($_POST['categoryID']);
     $isAvailable = 1;
     $image = NULL;
     if (!empty($_FILES['image']['name'])) {
