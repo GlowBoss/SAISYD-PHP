@@ -47,7 +47,8 @@ const allowedUnits = {
   "ml": ["ml", "pump", "tbsp", "tsp", "cup", "shot"],
   "l": ["L", "ml", "pump", "tbsp", "tsp", "cup", "shot"],
   "pcs": ["pcs"]
-};
+}; 
+
 
 // readable labels for display
 const unitLabels = {
