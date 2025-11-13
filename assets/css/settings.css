@@ -378,6 +378,7 @@ body {
     margin-bottom: 2rem;
 }
 
+
 /* Table Styles */
 .users-table {
     width: 100%;
@@ -429,6 +430,17 @@ body {
     font-size: var(--h6);
     font-family: var(--secondaryFont);
     background-color: var(--card-bg-color);
+}
+
+.table-responsive {
+    display: block;
+    width: 100%;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table-responsive table {
+    min-width: 900px; 
 }
 
 /* User Info Cell */
@@ -1192,5 +1204,18 @@ hr {
     .table-header {
         background: var(--secondary-color) !important;
         color: var(--text-color-dark) !important;
+    }
+}
+@media (max-width: 768px) {
+    .menu-settings-section .row {
+        display: flex;
+        flex-wrap: nowrap;      
+        overflow-x: auto;       
+        gap: 1rem;             
+    }
+
+    .menu-settings-section .col-12.col-md-6 {
+        flex: 0 0 80%;          
+        max-width: 80%;
     }
 }
