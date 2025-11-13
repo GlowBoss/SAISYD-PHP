@@ -221,12 +221,12 @@ $outOfStockCount = 0;
 $expiredCount = 0;
 
 foreach ($rows as $row) {
-    // Count out of stock items
-    if ($row['quantity'] == 0) {
+    // Count out of stock items (ONLY when quantity is exactly 0)
+    if (floatval($row['quantity']) == 0) {
         $outOfStockCount++;
     }
-    // Count low stock items (excluding out of stock)
-    elseif ($row['quantity'] <= $row['threshold']) {
+    // Count low stock items (excluding out of stock, only when quantity > 0 but <= threshold)
+    elseif (floatval($row['quantity']) > 0 && floatval($row['quantity']) <= floatval($row['threshold'])) {
         $lowStockCount++;
     }
 
@@ -269,6 +269,7 @@ foreach ($rows as $row) {
 
     <!-- Favicon -->
     <link rel="icon" href="../assets/img/round_logo.png" type="image/png">
+    
 </head>
 
 <body>
@@ -650,9 +651,13 @@ foreach ($rows as $row) {
                                             <div class="quantity-content">
                                                 <span class="quantity-value"><?= $row['quantity'] ?></span>
                                                 <span class="quantity-unit"><?= $row['unit'] ?></span>
-                                                <?php if ($row['quantity'] == 0): ?>
+                                                <?php 
+                                                // FIXED: Only show "Out of Stock" when quantity is EXACTLY 0
+                                                if (floatval($row['quantity']) == 0): ?>
                                                     <span class="status-badge out-of-stock">Out of Stock</span>
-                                                <?php elseif ($row['quantity'] <= $row['threshold']): ?>
+                                                <?php 
+                                                // Show "Low Stock" only when quantity > 0 BUT <= threshold
+                                                elseif (floatval($row['quantity']) > 0 && floatval($row['quantity']) <= floatval($row['threshold'])): ?>
                                                     <span class="status-badge low-stock">Low Stock</span>
                                                 <?php endif; ?>
                                             </div>
@@ -945,14 +950,14 @@ foreach ($rows as $row) {
 
                 // Apply other filters
                 this.filteredRows = this.filteredRows.filter(row => {
-                    const quantity = parseInt(row.dataset.quantity);
+                    const quantity = parseFloat(row.dataset.quantity);
                     const expiryDate = row.dataset.expiryDate;
-                    const threshold = parseInt(row.dataset.threshold);
+                    const threshold = parseFloat(row.dataset.threshold);
 
-                    // Stock status filter
+                    // Stock status filter - FIXED: Only "Out of Stock" when quantity is exactly 0
                     if (filters.stockStatus) {
-                        const isLowStock = quantity <= threshold && quantity > 0;
                         const isOutOfStock = quantity === 0;
+                        const isLowStock = quantity > 0 && quantity <= threshold;
 
                         switch (filters.stockStatus) {
                             case 'low':
@@ -1232,17 +1237,17 @@ foreach ($rows as $row) {
                 let expiredCount = 0;
 
                 this.filteredRows.forEach(row => {
-                    const quantity = parseInt(row.dataset.quantity);
-                    const threshold = parseInt(row.dataset.threshold);
+                    const quantity = parseFloat(row.dataset.quantity);
+                    const threshold = parseFloat(row.dataset.threshold);
                     const expiryDate = new Date(row.dataset.expiryDate);
                     const currentDate = new Date();
 
-                    // Count out of stock
+                    // FIXED: Count out of stock only when quantity is exactly 0
                     if (quantity === 0) {
                         outOfStockCount++;
                     }
-                    // Count low stock (excluding out of stock)
-                    else if (quantity <= threshold) {
+                    // Count low stock only when quantity > 0 but <= threshold
+                    else if (quantity > 0 && quantity <= threshold) {
                         lowStockCount++;
                     }
 
