@@ -45,10 +45,10 @@
                 Cash
               </button>
               <ul class="dropdown-menu w-100" aria-labelledby="paymentModeDropdown">
-                <li><a class="dropdown-item" href="#" data-value="CASH">Cash</a></li>
-                <li><a class="dropdown-item" href="#" data-value="GCASH">GCash</a></li>
+                <li><a class="dropdown-item" href="#" data-value="Cash">Cash</a></li>
+                <li><a class="dropdown-item" href="#" data-value="GCash">GCash</a></li>
               </ul>
-              <input type="hidden" name="paymentMode" id="paymentModeInput" value="CASH">
+              <input type="hidden" name="paymentMode" id="paymentModeInput" value="Cash">
             </div>
           </div>
 
