@@ -1154,12 +1154,12 @@ function getCartItemCount()
                                 </a>
                             </p>
                             <p class="mb-1">
-                                <a href="#" class="text-dark text-decoration-none footer-link">
+                                <a href="https://www.facebook.com/saisydcafethehiddenfarm" class="text-dark text-decoration-none footer-link">
                                     <i class="fab fa-facebook-f me-2"></i>Facebook
                                 </a>
                             </p>
                             <p class="mb-1">
-                                <a href="#" class="text-dark text-decoration-none footer-link">
+                                <a href="https://share.google/qoHwD7PeVO6vmKIuA" class="text-dark text-decoration-none footer-link">
                                     <i class="fab fa-google me-2"></i>Google
                                 </a>
                             </p>
@@ -1215,8 +1215,8 @@ function getCartItemCount()
                 </p>
 
                 <div class="d-none d-lg-flex gap-3 fs-5">
-                    <a href="#" class="text-dark"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" class="text-dark"><i class="fab fa-google"></i></a>
+                    <a href="https://www.facebook.com/saisydcafethehiddenfarm" class="text-dark"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://share.google/qoHwD7PeVO6vmKIuA" class="text-dark"><i class="fab fa-google"></i></a>
                 </div>
             </div>
         </div>
