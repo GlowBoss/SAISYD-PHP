@@ -1,37 +1,94 @@
 <?php
-session_start();
+// Secure session configuration
+ini_set('session.cookie_httponly', 1);
+ini_set('session.cookie_secure', 0); // Set to 1 if using HTTPS
+ini_set('session.use_only_cookies', 1);
+ini_set('session.cookie_samesite', 'Strict');
+
+
+// Check if user is already logged in, redirect to dashboard
+if (isset($_SESSION['userID']) && isset($_SESSION['role'])) {
+    header("Location: index.php");
+    exit();
+}
+
 include('../assets/connect.php');
 
 $error = "";
+$show_timeout = isset($_GET['timeout']);
+$show_logout = isset($_GET['logout']);
+$show_security = isset($_GET['error']) && $_GET['error'] === 'security';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-  $username = $_POST['username'];
-  $enteredPassword = $_POST['password'];
+  // Rate limiting check (prevent brute force)
+  if (!isset($_SESSION['login_attempts'])) {
+    $_SESSION['login_attempts'] = 0;
+    $_SESSION['last_attempt_time'] = time();
+  }
+  
+  // Reset attempts after 15 minutes
+  if (time() - $_SESSION['last_attempt_time'] > 900) {
+    $_SESSION['login_attempts'] = 0;
+  }
+  
+  // Block after 5 failed attempts
+  if ($_SESSION['login_attempts'] >= 5) {
+    $time_left = 900 - (time() - $_SESSION['last_attempt_time']);
+    $error = "Too many failed attempts. Please try again in " . ceil($time_left / 60) . " minutes.";
+  } else {
+    $username = trim($_POST['username']);
+    $enteredPassword = $_POST['password'];
 
-  // Get user by username
-  $stmt = $conn->prepare("SELECT userID, password, role FROM users WHERE username = ?");
-  $stmt->bind_param("s", $username);
-  $stmt->execute();
-  $stmt->store_result();
+    // Get user by username
+    $stmt = $conn->prepare("SELECT userID, password, role FROM users WHERE username = ?");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $stmt->store_result();
 
-  if ($stmt->num_rows > 0) {
-    $stmt->bind_result($userID, $storedPassword, $role);
-    $stmt->fetch();
+    if ($stmt->num_rows > 0) {
+      $stmt->bind_result($userID, $storedPassword, $role);
+      $stmt->fetch();
 
-    // Check Hashed Password
-    if (password_verify($enteredPassword, $storedPassword)) {
-      $_SESSION['userID'] = $userID;
-      $_SESSION['role'] = $role;
-      header("Location: ../admin/index.php");
-      exit();
+      // Check Hashed Password
+      if (password_verify($enteredPassword, $storedPassword)) {
+        // Clear old session data completely
+        session_unset();
+        session_destroy();
+        
+        // Start fresh session
+        session_start();
+        
+        // Regenerate session ID to prevent session fixation
+        session_regenerate_id(true);
+        
+        // Set session variables
+        $_SESSION['userID'] = $userID;
+        $_SESSION['role'] = $role;
+        $_SESSION['last_activity'] = time();
+        $_SESSION['created'] = time();
+        $_SESSION['login_attempts'] = 0;
+        
+        // Create session fingerprint
+        $_SESSION['fingerprint'] = md5(
+          $_SERVER['HTTP_USER_AGENT'] ?? '' . 
+          $_SERVER['REMOTE_ADDR'] ?? ''
+        );
+        
+        header("Location: index.php");
+        exit();
+      } else {
+        $_SESSION['login_attempts']++;
+        $_SESSION['last_attempt_time'] = time();
+        $error = "Invalid username or password.";
+      }
     } else {
+      $_SESSION['login_attempts']++;
+      $_SESSION['last_attempt_time'] = time();
       $error = "Invalid username or password.";
     }
-  } else {
-    $error = "Invalid username or password.";
-  }
 
-  $stmt->close();
+    $stmt->close();
+  }
 }
 $conn->close();
 ?>
@@ -97,6 +154,30 @@ $conn->close();
           <h2 class="form-title">Welcome Back</h2>
           <p class="form-subtitle">Sign in to access your dashboard</p>
 
+          <!-- Security alert -->
+          <?php if ($show_security): ?>
+            <div class="alert alert-danger">
+              <i class="bi bi-shield-exclamation"></i>
+              Security alert: Suspicious activity detected. Please login again.
+            </div>
+          <?php endif; ?>
+
+          <!-- Timeout message -->
+          <?php if ($show_timeout): ?>
+            <div class="alert alert-warning">
+              <i class="bi bi-clock-history"></i>
+              Your session has expired. Please login again.
+            </div>
+          <?php endif; ?>
+
+          <!-- Logout message -->
+          <?php if ($show_logout): ?>
+            <div class="alert alert-success">
+              <i class="bi bi-check-circle"></i>
+              You have been successfully logged out.
+            </div>
+          <?php endif; ?>
+
           <form action="" method="post">
             <div class="form-group">
               <label class="form-label">Username</label>
@@ -149,21 +230,25 @@ $conn->close();
 
   <script>
     document.addEventListener("DOMContentLoaded", function () {
-      let progress = 0;
+      // Check if loading screen exists before trying to hide it
+      const loadingScreen = document.getElementById("loading-screen");
       const progressBar = document.getElementById("progress-bar");
       const percentageText = document.getElementById("loading-percentage");
-
-      const interval = setInterval(() => {
-        if (progress >= 100) {
-          clearInterval(interval);
-          document.body.classList.remove("loading");
-          document.getElementById("loading-screen").style.display = "none";
-        } else {
-          progress += 1;
-          progressBar.style.width = progress + "%";
-          percentageText.textContent = progress + "%";
-        }
-      }, 20);
+      
+      if (loadingScreen && progressBar && percentageText) {
+        let progress = 0;
+        const interval = setInterval(() => {
+          if (progress >= 100) {
+            clearInterval(interval);
+            document.body.classList.remove("loading");
+            loadingScreen.style.display = "none";
+          } else {
+            progress += 1;
+            progressBar.style.width = progress + "%";
+            percentageText.textContent = progress + "%";
+          }
+        }, 20);
+      }
     });
 
     //Password Toggle

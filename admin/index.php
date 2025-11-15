@@ -1,6 +1,6 @@
 <?php
+include('auth_check.php');
 include '../assets/connect.php';
-session_start();
 
 // Check if user is logged in and is an admin 
 if (!isset($_SESSION['userID']) || ($_SESSION['role'] !== 'Admin' && $_SESSION['role'] !== 'Staff')) {
@@ -67,7 +67,7 @@ if (!isset($_SESSION['userID']) || ($_SESSION['role'] !== 'Admin' && $_SESSION['
             </a>
 
             <!-- Logout Button -->
-            <a class="action-btn logout-btn" href="login.php">
+            <a class="action-btn logout-btn" href="logout.php">
               <i class="bi bi-power"></i>
               <span class="btn-text d-none d-lg-inline">Log Out</span>
             </a>

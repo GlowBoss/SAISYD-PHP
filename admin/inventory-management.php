@@ -1,6 +1,7 @@
 <?php
+include('auth_check.php');
 include '../assets/connect.php';
-session_start();
+
 
 // Check if user is logged in and is an admin 
 if (!isset($_SESSION['userID']) || ($_SESSION['role'] !== 'Admin' && $_SESSION['role'] !== 'Staff')) {
@@ -332,7 +333,7 @@ foreach ($rows as $row) {
                     <i class="bi bi-gear"></i>
                     <span>Settings</span>
                 </a>
-                <a href="login.php" class="admin-nav-link">
+                <a href="logout.php" class="admin-nav-link">
                     <i class="bi bi-box-arrow-right"></i>
                     <span>Logout</span>
                 </a>

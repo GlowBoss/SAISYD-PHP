@@ -1,5 +1,5 @@
 <?php
-session_start();
+include('auth_check.php');
 include '../assets/connect.php';
 
 // Check if user is logged in and is an admin 
@@ -499,7 +499,7 @@ $statusCounts = getStatusCountsData();
                 <i class="bi bi-gear"></i>
                 <span>Settings</span>
             </a>
-            <a href="login.php" class="admin-nav-link">
+            <a href="logout.php" class="admin-nav-link">
                 <i class="bi bi-box-arrow-right"></i>
                 <span>Logout</span>
             </a>
