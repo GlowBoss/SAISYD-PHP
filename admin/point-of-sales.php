@@ -49,6 +49,18 @@ if ($result && mysqli_num_rows($result) > 0) {
     <!-- Favicon -->
     <link rel="icon" href="../assets/img/round_logo.png" type="image/png">
 </head>
+<style>
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    /* Remove number input arrows in Firefox */
+    input[type=number] {
+        -moz-appearance: textfield;
+    }
+</style>
 
 <body>
     <div class="container-fluid mainContainer p-2">
@@ -203,6 +215,226 @@ if ($result && mysqli_num_rows($result) > 0) {
             <!-- Order Confirmation Modal -->
             <div id="modal-placeholder"></div>
             <script>
+                // ==============================================
+                // POS MODAL QUANTITY MANAGEMENT - COMPLETE SCRIPT
+                // Add this to point-of-sales.php BEFORE the modal loads
+                // ==============================================
+
+                // Global variable to store current product's available quantity
+                window.currentAvailableQuantity = 0;
+
+                // Function to initialize quantity modal when opened
+                window.initializeQuantityModal = function (availableQty) {
+                    // Set the available quantity
+                    window.currentAvailableQuantity = parseInt(availableQty) || 0;
+
+                    console.log('✓ Initializing modal with available quantity:', window.currentAvailableQuantity);
+
+                    // Update available stock display if it exists
+                    const availableStockSpan = document.getElementById('availableStock');
+                    if (availableStockSpan) {
+                        availableStockSpan.textContent = availableQty;
+                    }
+
+                    // Reset quantity to 1
+                    const quantityInput = document.getElementById('quantity');
+                    const modalQuantityInput = document.getElementById('modal-quantity-input');
+                    if (quantityInput) {
+                        quantityInput.value = 1;
+                        quantityInput.setAttribute('max', availableQty);
+                    }
+                    if (modalQuantityInput) modalQuantityInput.value = 1;
+
+                    // Update button states immediately
+                    window.updateButtonStates(1);
+                };
+
+                // Update button states based on current quantity
+                window.updateButtonStates = function (currentQty) {
+                    const decreaseBtn = document.querySelector('#quantityModal button[onclick="decreaseQuantity()"]');
+                    const increaseBtn = document.querySelector('#quantityModal button[onclick="increaseQuantity()"]');
+
+                    console.log('Updating buttons - Current:', currentQty, 'Max:', window.currentAvailableQuantity);
+
+                    // Disable decrease button if at minimum (1)
+                    if (decreaseBtn) {
+                        if (currentQty <= 1) {
+                            decreaseBtn.disabled = true;
+                            decreaseBtn.style.opacity = '0.5';
+                            decreaseBtn.style.cursor = 'not-allowed';
+                        } else {
+                            decreaseBtn.disabled = false;
+                            decreaseBtn.style.opacity = '1';
+                            decreaseBtn.style.cursor = 'pointer';
+                        }
+                    }
+
+                    // Disable increase button if at maximum (available stock)
+                    if (increaseBtn) {
+                        if (currentQty >= window.currentAvailableQuantity) {
+                            increaseBtn.disabled = true;
+                            increaseBtn.style.opacity = '0.5';
+                            increaseBtn.style.cursor = 'not-allowed';
+                            console.log('✓ Plus button DISABLED at max stock');
+                        } else {
+                            increaseBtn.disabled = false;
+                            increaseBtn.style.opacity = '1';
+                            increaseBtn.style.cursor = 'pointer';
+                            console.log('✓ Plus button enabled');
+                        }
+                    }
+                };
+
+                // Validate manual input - fires on every keystroke
+                window.validateQuantityInput = function (event) {
+                    const quantityInput = document.getElementById('quantity');
+                    const modalQuantityInput = document.getElementById('modal-quantity-input');
+
+                    if (quantityInput && modalQuantityInput) {
+                        let value = quantityInput.value;
+
+                        console.log('⌨️ Input detected:', value, '| Max:', window.currentAvailableQuantity);
+
+                        // Remove any non-digit characters
+                        value = value.replace(/\D/g, '');
+
+                        // If empty, don't set anything yet
+                        if (value === '') {
+                            quantityInput.value = '';
+                            return;
+                        }
+
+                        // Convert to number
+                        let numValue = parseInt(value);
+
+                        // If exceeds stock, immediately cap it
+                        if (numValue > window.currentAvailableQuantity) {
+                            console.log('✗ Exceeded max! Capping at:', window.currentAvailableQuantity);
+                            numValue = window.currentAvailableQuantity;
+                        }
+
+                        // If less than 1, set to 1
+                        if (numValue < 1) {
+                            numValue = 1;
+                        }
+
+                        // Update both inputs immediately
+                        quantityInput.value = numValue;
+                        modalQuantityInput.value = numValue;
+                        window.updateButtonStates(numValue);
+                    }
+                };
+
+                // Additional validation on blur
+                window.validateOnBlur = function () {
+                    const quantityInput = document.getElementById('quantity');
+                    const modalQuantityInput = document.getElementById('modal-quantity-input');
+
+                    if (quantityInput && modalQuantityInput) {
+                        let value = parseInt(quantityInput.value);
+
+                        // If empty or invalid, set to 1
+                        if (isNaN(value) || value < 1 || quantityInput.value === '') {
+                            value = 1;
+                        }
+
+                        // If exceeds stock, cap at max
+                        if (value > window.currentAvailableQuantity) {
+                            value = window.currentAvailableQuantity;
+                        }
+
+                        quantityInput.value = value;
+                        modalQuantityInput.value = value;
+                        window.updateButtonStates(value);
+                    }
+                };
+
+                // Form validation before submit
+                document.addEventListener('DOMContentLoaded', function () {
+                    setTimeout(function () {
+                        const addToOrderForm = document.getElementById('addToOrderForm');
+                        if (addToOrderForm) {
+                            addToOrderForm.addEventListener('submit', function (e) {
+                                const qty = parseInt(document.getElementById('quantity').value);
+
+                                if (isNaN(qty) || qty <= 0) {
+                                    e.preventDefault();
+                                    alert("Quantity must be at least 1.");
+                                    return false;
+                                }
+
+                                if (qty > window.currentAvailableQuantity) {
+                                    e.preventDefault();
+                                    alert(`Only ${window.currentAvailableQuantity} pcs available. Please reduce quantity.`);
+                                    return false;
+                                }
+                            });
+                        }
+                    }, 500);
+                });
+
+                // Reset modal when closed
+                document.addEventListener('DOMContentLoaded', function () {
+                    setTimeout(function () {
+                        const quantityModal = document.getElementById('quantityModal');
+                        if (quantityModal) {
+                            quantityModal.addEventListener('hidden.bs.modal', function () {
+                                const quantityInput = document.getElementById('quantity');
+                                const modalQuantityInput = document.getElementById('modal-quantity-input');
+
+                                if (quantityInput) quantityInput.value = 1;
+                                if (modalQuantityInput) modalQuantityInput.value = 1;
+
+                                window.currentAvailableQuantity = 0;
+
+                                const decreaseBtn = document.querySelector('#quantityModal button[onclick="decreaseQuantity()"]');
+                                const increaseBtn = document.querySelector('#quantityModal button[onclick="increaseQuantity()"]');
+
+                                if (decreaseBtn) {
+                                    decreaseBtn.disabled = false;
+                                    decreaseBtn.style.opacity = '1';
+                                    decreaseBtn.style.cursor = 'pointer';
+                                }
+
+                                if (increaseBtn) {
+                                    increaseBtn.disabled = false;
+                                    increaseBtn.style.opacity = '1';
+                                    increaseBtn.style.cursor = 'pointer';
+                                }
+
+                                console.log('✓ Modal reset');
+                            });
+                        }
+                    }, 500);
+                });
+
+                console.log('✓ POS Modal Quantity Management loaded globally');</script>
+            <script>
+                const quantityInput = document.getElementById('quantity');
+
+                if (quantityInput) {
+                    quantityInput.addEventListener('input', (e) => {
+                        e.target.value = e.target.value.replace(/\D/g, '');
+
+                        const min = parseInt(e.target.min) || 1;
+                        const max = parseInt(e.target.max) || window.currentAvailableQuantity || 999;
+
+                        if (e.target.value === '') return;
+
+                        let value = parseInt(e.target.value);
+                        if (value < min) value = min;
+                        if (value > max) value = max;
+
+                        e.target.value = value;
+                    });
+
+                    quantityInput.addEventListener('paste', (e) => {
+                        const pasteData = e.clipboardData.getData('text');
+                        if (!/^\d+$/.test(pasteData)) {
+                            e.preventDefault();
+                        }
+                    });
+                }
                 // Global variables
                 var products = [];
                 var total = 0;
@@ -301,15 +533,13 @@ if ($result && mysqli_num_rows($result) > 0) {
 
                             const hasSugarIce = products[categoryIndex].hasSugarIce;
 
-                            // Get available quantity from the product data
-                            const availableQty = content.quantity || 0;
-
                             let sugarIceDropdowns = '';
                             if (hasSugarIce) {
                                 const sugarOptions = content.sugarLevels.map(level =>
                                     `<li><a class="dropdown-item" data-value="${level}">${level}% Sugar Level</a></li>`
                                 ).join('');
 
+                                // Ice options that map to database enum values
                                 const iceOptions = [
                                     { display: "Less Ice", value: "Less Ice" },
                                     { display: "Default Ice", value: "Default Ice" },
@@ -344,7 +574,7 @@ if ($result && mysqli_num_rows($result) > 0) {
     <div class="col-12 col-sm-6 col-md-4 col-lg-2">
         <div class="menu-item border p-3 rounded shadow text-center width-auto card-hover" 
              style="cursor: pointer; display: flex; flex-direction: column; height: 100%;"
-             onclick="showQuantityModal('${content.productID}', '${content.name} ${size.name}', '${size.price}', '${size.name}', '${sugarSelectId}', '${iceSelectId}', ${availableQty})">
+             onclick="showQuantityModal('${content.productID}', '${content.name} ${size.name}', '${size.price}', '${size.name}', '${sugarSelectId}', '${iceSelectId}', ${content.quantity})">
             <img src="../assets/img/img-menu/${content.img}" alt="${content.name}" 
                  class="img-fluid mb-2" style="max-height: 170px; min-height: 120px; pointer-events: none;">
             <div class="lead menu-name fw-bold">${content.name}</div>
@@ -352,7 +582,7 @@ if ($result && mysqli_num_rows($result) > 0) {
                 <span class="lead fw-bold menu-price">₱${size.price}</span>
                 <span class="lead menu-size">${size.name}</span>
             </div>
-            <div class="text-muted small mb-2">Stock: ${availableQty}</div>
+           
             <div style="margin-top: auto;">
                 ${sugarIceDropdowns}
             </div>
@@ -409,14 +639,18 @@ if ($result && mysqli_num_rows($result) > 0) {
                 }
 
                 // Fixed function to work with your modal structure
-                function showQuantityModal(productID, name, price, size, sugarSelectId = null, iceSelectId = null) {
+                // Updated showQuantityModal function in point-of-sales.php
+                function showQuantityModal(productID, name, price, size, sugarSelectId = null, iceSelectId = null, availableQuantity = 0) {
+                    console.log('=== showQuantityModal called ===');
+                    console.log('Available Quantity passed:', availableQuantity);
+                    console.log('Type:', typeof availableQuantity);
+
                     // Check if modal exists, if not wait for it to load
                     const quantityModal = document.getElementById('quantityModal');
                     if (!quantityModal) {
                         console.log('Modal not ready, waiting...');
-                        // Wait a bit and try again
                         setTimeout(() => {
-                            showQuantityModal(productID, name, price, size, sugarSelectId, iceSelectId);
+                            showQuantityModal(productID, name, price, size, sugarSelectId, iceSelectId, availableQuantity);
                         }, 100);
                         return;
                     }
@@ -427,12 +661,27 @@ if ($result && mysqli_num_rows($result) > 0) {
                     const modalProductPrice = document.getElementById('modal-product-price');
                     const modalQuantityInput = document.getElementById('modal-quantity-input');
                     const quantityInput = document.getElementById('quantity');
+                    const availableStockSpan = document.getElementById('availableStock');
+                    const modalAvailableQuantity = document.getElementById('modal-available-quantity');
 
                     if (modalProductId) modalProductId.value = productID;
                     if (modalProductName) modalProductName.value = name;
                     if (modalProductPrice) modalProductPrice.value = price;
                     if (modalQuantityInput) modalQuantityInput.value = 1;
                     if (quantityInput) quantityInput.value = 1;
+                    if (availableStockSpan) availableStockSpan.textContent = availableQuantity;
+                    if (modalAvailableQuantity) modalAvailableQuantity.value = availableQuantity;
+
+                    // **CRITICAL: Initialize the quantity validation system**
+                    console.log('Calling initializeQuantityModal with:', availableQuantity);
+                    if (typeof initializeQuantityModal === 'function') {
+                        initializeQuantityModal(availableQuantity);
+                    } else {
+                        console.error('initializeQuantityModal function not found!');
+                        // Fallback
+                        currentAvailableQuantity = parseInt(availableQuantity) || 0;
+                        console.log('Fallback - set currentAvailableQuantity to:', currentAvailableQuantity);
+                    }
 
                     // Get sugar and ice levels if applicable
                     let sugarLevel = '';
@@ -458,6 +707,7 @@ if ($result && mysqli_num_rows($result) > 0) {
                     if (modalIceInput) modalIceInput.value = iceLevel;
 
                     // Show modal
+                    console.log('Opening modal...');
                     const modal = new bootstrap.Modal(quantityModal);
                     modal.show();
                 }
@@ -466,23 +716,38 @@ if ($result && mysqli_num_rows($result) > 0) {
                 function increaseQuantity() {
                     const quantityInput = document.getElementById('quantity');
                     const modalQuantityInput = document.getElementById('modal-quantity-input');
+
                     if (quantityInput && modalQuantityInput) {
-                        const currentValue = parseInt(quantityInput.value);
-                        const newValue = currentValue + 1;
-                        quantityInput.value = newValue;
-                        modalQuantityInput.value = newValue;
+                        let currentValue = parseInt(quantityInput.value);
+                        if (isNaN(currentValue)) currentValue = 1;
+
+                        // Do not exceed max available quantity
+                        if (currentValue < window.currentAvailableQuantity) {
+                            const newValue = currentValue + 1;
+                            quantityInput.value = newValue;
+                            modalQuantityInput.value = newValue;
+
+                            // Update button states
+                            window.updateButtonStates(newValue);
+                        }
                     }
                 }
 
                 function decreaseQuantity() {
                     const quantityInput = document.getElementById('quantity');
                     const modalQuantityInput = document.getElementById('modal-quantity-input');
+
                     if (quantityInput && modalQuantityInput) {
-                        const currentValue = parseInt(quantityInput.value);
+                        let currentValue = parseInt(quantityInput.value);
+                        if (isNaN(currentValue)) currentValue = 1;
+
                         if (currentValue > 1) {
                             const newValue = currentValue - 1;
                             quantityInput.value = newValue;
                             modalQuantityInput.value = newValue;
+
+                            // Update button states
+                            window.updateButtonStates(newValue);
                         }
                     }
                 }
