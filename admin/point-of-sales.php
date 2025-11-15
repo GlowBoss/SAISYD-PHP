@@ -863,6 +863,16 @@ if ($result && mysqli_num_rows($result) > 0) {
                 }
 
                 function confirmOrder() {
+                    // Prevent double submission
+                    const confirmBtn = document.querySelector('.btnConfirm');
+                    if (confirmBtn.disabled) {
+                        return; // Already processing
+                    }
+
+                    // Disable button to prevent double clicks
+                    confirmBtn.disabled = true;
+                    confirmBtn.textContent = 'Processing...';
+
                     const paymentMethod = document.getElementById('paymentModeInput')?.value || 'Cash';
                     const orderType = document.getElementById('orderTypeInput')?.value || 'dine-in';
 
@@ -879,6 +889,10 @@ if ($result && mysqli_num_rows($result) > 0) {
                     })
                         .then(response => response.json())
                         .then(data => {
+                            // Re-enable button
+                            confirmBtn.disabled = false;
+                            confirmBtn.textContent = 'CONFIRM ORDER';
+
                             if (data.success) {
                                 const modal = bootstrap.Modal.getInstance(document.getElementById('confirmModal'));
                                 if (modal) {
@@ -900,12 +914,18 @@ if ($result && mysqli_num_rows($result) > 0) {
                                 // Clear the cart display
                                 loadCartFromSession();
                             } else {
+                                // Show error to user
                                 alert('Error placing order: ' + (data.error || 'Unknown error'));
+                                console.error('Order error:', data);
                             }
                         })
                         .catch(error => {
+                            // Re-enable button on error
+                            confirmBtn.disabled = false;
+                            confirmBtn.textContent = 'CONFIRM ORDER';
+
                             console.error('Error:', error);
-                            alert('Failed to place order');
+                            alert('Failed to place order. Please try again.');
                         });
                 }
 

@@ -124,6 +124,151 @@
     </div>
   </div>
 </div>
+<!-- Order Confirmation Modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 shadow-lg border-0" style="background: var(--bg-color);">
+
+      <!-- Header -->
+      <div class="modal-header border-0 pb-0">
+        <h1 class="modal-title fs-4 fw-bold" id="confirmModalLabel"
+          style="font-family: var(--primaryFont); color: var(--primary-color); letter-spacing: 1px;">
+          Confirm Order
+        </h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+          style="filter: invert(50%);"></button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Order Summary Section -->
+        <div class="mb-4">
+          <label class="form-label fw-bold d-block mb-3"
+            style="color: var(--text-color-dark); font-size: 1.1rem; letter-spacing: 0.5px; font-family: var(--primaryFont);">
+            Order Summary
+          </label>
+          <ul id="orderSummaryList" class="list-unstyled mb-0"
+            style="font-family: var(--secondaryFont); color: var(--text-color-dark); max-height: 200px; overflow-y: auto;">
+            <!-- Order items will be populated dynamically by openPopup() -->
+          </ul>
+        </div>
+
+        <!-- Order Type Dropdown -->
+        <div class="mb-3">
+          <label class="form-label fw-bold d-block mb-2"
+            style="color: var(--text-color-dark); font-size: 1rem; letter-spacing: 0.5px; font-family: var(--primaryFont);">
+            Order Type
+          </label>
+          <div class="dropdown">
+            <button class="btn dropdown-toggle w-100" type="button" id="orderTypeDropdown" data-bs-toggle="dropdown"
+              aria-expanded="false"
+              style="background: var(--card-bg-color); color: var(--text-color-dark); border: 2px solid var(--primary-color); border-radius: 10px; font-family: var(--secondaryFont); padding: 10px; text-align: left;">
+              Dine-in
+            </button>
+            <ul class="dropdown-menu w-100" aria-labelledby="orderTypeDropdown"
+              style="border-radius: 10px; border: 2px solid var(--primary-color);">
+              <li><a class="dropdown-item" href="#" data-value="dine-in"
+                  style="font-family: var(--secondaryFont); padding: 10px;">Dine-in</a></li>
+              <li><a class="dropdown-item" href="#" data-value="take-out"
+                  style="font-family: var(--secondaryFont); padding: 10px;">Take-out</a></li>
+            </ul>
+          </div>
+          <input type="hidden" id="orderTypeInput" value="dine-in">
+        </div>
+
+        <!-- Payment Mode Dropdown -->
+        <div class="mb-3">
+          <label class="form-label fw-bold d-block mb-2"
+            style="color: var(--text-color-dark); font-size: 1rem; letter-spacing: 0.5px; font-family: var(--primaryFont);">
+            Payment Mode
+          </label>
+          <div class="dropdown">
+            <button class="btn dropdown-toggle w-100" type="button" id="paymentModeDropdown" data-bs-toggle="dropdown"
+              aria-expanded="false"
+              style="background: var(--card-bg-color); color: var(--text-color-dark); border: 2px solid var(--primary-color); border-radius: 10px; font-family: var(--secondaryFont); padding: 10px; text-align: left;">
+              Cash
+            </button>
+            <ul class="dropdown-menu w-100" aria-labelledby="paymentModeDropdown"
+              style="border-radius: 10px; border: 2px solid var(--primary-color);">
+              <li><a class="dropdown-item" href="#" data-value="Cash"
+                  style="font-family: var(--secondaryFont); padding: 10px;">Cash</a></li>
+              <li><a class="dropdown-item" href="#" data-value="GCash"
+                  style="font-family: var(--secondaryFont); padding: 10px;">GCash</a></li>
+            </ul>
+          </div>
+          <input type="hidden" id="paymentModeInput" value="Cash">
+        </div>
+      </div>
+
+      <div class="modal-footer border-0 pt-0">
+        <div class="d-flex gap-3 justify-content-center w-100">
+          <!-- Cancel Button -->
+          <button type="button" class="btn fw-bold px-4 py-2" data-bs-dismiss="modal" style="
+            background: var(--card-bg-color); 
+            color: var(--text-color-dark); 
+            border: 2px solid var(--primary-color);
+            border-radius: 10px; 
+            font-family: var(--primaryFont); 
+            letter-spacing: 1px; 
+            transition: all 0.3s ease;
+            min-width: 120px;
+          " onmouseover="
+            this.style.background='var(--primary-color)'; 
+            this.style.color='var(--text-color-light)';
+            this.style.transform='translateY(-2px)';
+            this.style.boxShadow='0 4px 8px rgba(0,0,0,0.2)';
+          " onmouseout="
+            this.style.background='var(--card-bg-color)'; 
+            this.style.color='var(--text-color-dark)';
+            this.style.transform='translateY(0)';
+            this.style.boxShadow='none';
+          ">
+            CANCEL
+          </button>
+
+          <!-- Confirm Order Button -->
+          <button type="button" class="btn btnConfirm fw-bold px-4 py-2" onclick="confirmOrder()" style="
+            background: var(--text-color-dark); 
+            color: white; 
+            border: none;
+            border-radius: 10px; 
+            font-family: var(--primaryFont); 
+            letter-spacing: 1px; 
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); 
+            transition: all 0.3s ease;
+            min-width: 120px;
+          " onmouseover="
+            this.style.background='var(--primary-color)';  
+            this.style.transform='translateY(-2px)';    
+            this.style.boxShadow='0 6px 12px rgba(0, 0, 0, 0.4)';
+          " onmouseout="
+            this.style.background='var(--text-color-dark)'; 
+            this.style.transform='translateY(0)';
+            this.style.boxShadow='0 4px 8px rgba(0, 0, 0, 0.3)';
+          ">
+            CONFIRM ORDER
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Success Toast Notification -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+  <div id="orderToast" class="toast align-items-center border-0 shadow-lg" role="alert" aria-live="assertive"
+    aria-atomic="true"
+    style="background: var(--card-bg-color); border-radius: 10px; font-family: var(--secondaryFont);">
+    <div class="d-flex">
+      <div class="toast-body" style="color: var(--text-color-dark);">
+        <strong class="text-success" style="font-family: var(--primaryFont);">✓ Order Placed Successfully!</strong><br>
+        <span style="font-size: 0.95rem;">Order #<span id="receiptNumber" class="fw-bold"
+            style="color: var(--primary-color);"></span> has been placed.</span>
+      </div>
+      <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
+</div>
 <script>
   let selectedProduct = {};
 
@@ -174,6 +319,9 @@
 
     bootstrap.Modal.getInstance(document.getElementById('quantityModal')).hide();
   }
+
+
+
 </script>
 
 <script>
