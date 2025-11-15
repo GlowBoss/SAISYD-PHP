@@ -1,6 +1,7 @@
 <?php
+include('auth_check.php');
 include '../assets/connect.php';
-session_start();
+
 
 // Prevent unauthorized access
 if (!isset($_SESSION['userID']) || ($_SESSION['role'] !== 'Admin' && $_SESSION['role'] !== 'Staff')) {
@@ -401,7 +402,7 @@ $productResult = $stmt->get_result();
                 <i class="bi bi-gear"></i>
                 <span>Settings</span>
             </a>
-            <a href="login.php" class="admin-nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.45s">
+            <a href="logout.php" class="admin-nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.45s">
                 <i class="bi bi-box-arrow-right"></i>
                 <span>Logout</span>
             </a>
