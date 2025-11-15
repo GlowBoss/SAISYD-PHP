@@ -301,13 +301,15 @@ if ($result && mysqli_num_rows($result) > 0) {
 
                             const hasSugarIce = products[categoryIndex].hasSugarIce;
 
+                            // Get available quantity from the product data
+                            const availableQty = content.quantity || 0;
+
                             let sugarIceDropdowns = '';
                             if (hasSugarIce) {
                                 const sugarOptions = content.sugarLevels.map(level =>
                                     `<li><a class="dropdown-item" data-value="${level}">${level}% Sugar Level</a></li>`
                                 ).join('');
 
-                                // Ice options that map to database enum values
                                 const iceOptions = [
                                     { display: "Less Ice", value: "Less Ice" },
                                     { display: "Default Ice", value: "Default Ice" },
@@ -342,7 +344,7 @@ if ($result && mysqli_num_rows($result) > 0) {
     <div class="col-12 col-sm-6 col-md-4 col-lg-2">
         <div class="menu-item border p-3 rounded shadow text-center width-auto card-hover" 
              style="cursor: pointer; display: flex; flex-direction: column; height: 100%;"
-             onclick="showQuantityModal('${content.productID}', '${content.name} ${size.name}', '${size.price}', '${size.name}', '${sugarSelectId}', '${iceSelectId}')">
+             onclick="showQuantityModal('${content.productID}', '${content.name} ${size.name}', '${size.price}', '${size.name}', '${sugarSelectId}', '${iceSelectId}', ${availableQty})">
             <img src="../assets/img/img-menu/${content.img}" alt="${content.name}" 
                  class="img-fluid mb-2" style="max-height: 170px; min-height: 120px; pointer-events: none;">
             <div class="lead menu-name fw-bold">${content.name}</div>
@@ -350,7 +352,7 @@ if ($result && mysqli_num_rows($result) > 0) {
                 <span class="lead fw-bold menu-price">₱${size.price}</span>
                 <span class="lead menu-size">${size.name}</span>
             </div>
-           
+            <div class="text-muted small mb-2">Stock: ${availableQty}</div>
             <div style="margin-top: auto;">
                 ${sugarIceDropdowns}
             </div>
@@ -758,14 +760,14 @@ if ($result && mysqli_num_rows($result) > 0) {
                 });
             </script>
 
-            <script>
+            <!-- <script>
                 document.addEventListener("DOMContentLoaded", function () {
                     // Reload Page every 30 seconds to fetch new orders
                     setInterval(function () {
                         location.reload();
                     }, 30000);
                 });
-            </script>
+            </script> -->
 
             <script src="../assets/js/admin_sidebar.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
