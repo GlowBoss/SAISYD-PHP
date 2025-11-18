@@ -4,12 +4,12 @@
     font-family: var(--primaryFont);
 }
 
-.navbar-nav {
+.navbar-custom .navbar-nav {
     justify-content: center;
     flex-wrap: wrap;
 }
 
-.nav-link {
+.navbar-custom .nav-link {
     color: var(--text-color-dark) !important;
     font-size: var(--lead);
     font-weight: 500;
@@ -27,44 +27,44 @@
     transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
 }
 
-.nav-link i {
+.navbar-custom .nav-link i {
     font-size: 1.5rem;
     line-height: 1;
     margin-bottom: 0.15rem;
     transition: transform 0.2s ease;
 }
 
-.nav-link span {
+.navbar-custom .nav-link span {
     font-size: 0.75rem;
     line-height: 1;
 }
 
-.nav-link:hover {
+.navbar-custom .nav-link:hover {
     background-color: var(--btn-hover1);
     color: white !important;
     transform: translateY(-2px);
 }
 
-.nav-link:hover i,
-.nav-link:hover span {
+.navbar-custom .nav-link:hover i,
+.navbar-custom .nav-link:hover span {
     color: white !important;
     transform: scale(1.05);
 }
 
 /* Active state */
-.nav-link.active {
+.navbar-custom .nav-link.active {
     background-color: var(--primary-color);
     color: white !important;
     font-weight: 600;
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.12);
 }
 
-.nav-link.active i,
-.nav-link.active span {
+.navbar-custom .nav-link.active i,
+.navbar-custom .nav-link.active span {
     color: white !important;
 }
 
-.menu-btn {
+.navbar-custom .menu-btn {
     background-color: var(--text-color-dark);
     color: var(--text-color-light);
     font-weight: 500;
@@ -74,14 +74,14 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
 }
 
-.menu-btn:hover {
+.navbar-custom .menu-btn:hover {
     background-color: var(--primary-color);
     color: var(--text-color-light);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     font-weight: 600;
 }
 
-.navbar-toggler {
+.navbar-custom .navbar-toggler {
     border: none;
     background: none;
     padding: 0;
@@ -94,22 +94,22 @@
         justify-content: center;
     }
 
-    .navbar-brand {
+    .navbar-custom .navbar-brand {
         position: absolute;
         left: 1rem;
         top: 50%;
         transform: translateY(-50%);
     }
 
-    .navbar-collapse {
+    .navbar-custom .navbar-collapse {
         position: static;
     }
 
-    .navbar-nav {
+    .navbar-custom .navbar-nav {
         margin: 0;
     }
 
-    .d-none.d-lg-flex {
+    .navbar-custom .d-none.d-lg-flex {
         position: absolute;
         right: 1rem;
         top: 50%;
