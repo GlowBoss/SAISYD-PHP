@@ -472,7 +472,8 @@ function getCartTotal()
                                         <input class="form-check-input" type="radio" name="payment_method" value="cash"
                                             id="cash" required>
                                         <label class="radio-card" for="cash">
-                                            <i class="bi bi-cash mb-2 d-block" style="font-size: 1.5rem;"></i>
+                                            <img src="assets/img/Cash.png" alt="Cash" class="payment-logo mb-2 d-block"
+                                                style="width: 50px; height: 50px; object-fit: contain;">
                                             <p class="radio-label">Cash</p>
                                         </label>
                                     </div>
@@ -480,7 +481,9 @@ function getCartTotal()
                                         <input class="form-check-input" type="radio" name="payment_method" value="gcash"
                                             id="gcash" required>
                                         <label class="radio-card" for="gcash">
-                                            <i class="bi bi-phone mb-2 d-block" style="font-size: 1.5rem;"></i>
+                                            <img src="assets/img/gcashLogo.png" alt="GCash"
+                                                class="payment-logo mb-2 d-block"
+                                                style="width: 50px; height: 50px; object-fit: contain;">
                                             <p class="radio-label">GCash</p>
                                         </label>
                                     </div>
