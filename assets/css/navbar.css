@@ -157,3 +157,26 @@
      filter: blur(3px);
      pointer-events: none;
  }
+
+ .navbar-custom .container-fluid {
+    position: relative;
+    justify-content: center;
+}
+
+.navbar-brand {
+    position: absolute;
+    left: 1rem;
+}
+
+.d-none.d-lg-flex {
+    position: absolute;
+    right: 1rem;
+}
+
+.navbar-collapse {
+    position: static;
+}
+
+.navbar-nav {
+    margin: 0;
+}

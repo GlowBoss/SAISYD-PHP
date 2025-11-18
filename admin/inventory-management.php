@@ -16,9 +16,9 @@ $messageType = '';
 // Helper function to format quantity (removes unnecessary decimals)
 function formatQuantity($quantity)
 {
-    $quantity = round($quantity, 2); // Round to 2 decimal places
+    $quantity = round($quantity, 3); // Round to 2 decimal places
     // Remove unnecessary trailing zeros and decimal point
-    return rtrim(rtrim(number_format($quantity, 2, '.', ''), '0'), '.');
+    return rtrim(rtrim(number_format($quantity, 3, '.', ''), '0'), '.');
 }
 
 // CREATE - Add new inventory item (Updated to handle new ingredients)
@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     if ($quantity < 0) {
         $quantity = 0;
     }
-    $quantity = round($quantity, 2); // Round to 2 decimal places
+    $quantity = round($quantity, 3); // Round to 2 decimal places
 
     // Validation
     if (empty($ingredientName) || empty($unit) || empty($expirationDate) || empty($threshold)) {
@@ -107,7 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
         $message = 'Quantity cannot be negative. Set to 0 instead.';
         $messageType = 'warning';
     }
-    $quantity = round($quantity, 2); // Round to 2 decimal places
+    $quantity = round($quantity, 3); // Round to 2 decimal places
 
     // Validation
     if (empty($inventoryID) || empty($ingredientName) || empty($unit) || empty($expirationDate) || empty($threshold)) {
@@ -188,7 +188,7 @@ if (isset($_GET['order']) && ($_GET['order'] === 'asc' || $_GET['order'] === 'de
 $inventoryQuery = "SELECT i.inventoryID,
                           i.ingredientID,
                           ing.ingredientName,
-                          ROUND(GREATEST(i.quantity, 0), 2) as quantity,
+                          ROUND(GREATEST(i.quantity, 0), 3) as quantity,
                           i.unit,
                           i.lastUpdated,
                           i.expirationDate,

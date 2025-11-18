@@ -75,7 +75,7 @@ function getOrdersData($status = 'pending') {
     $sql = "SELECT 
                 o.orderID, o.orderDate, o.customerName, o.orderContactNumber, 
                 o.totalAmount, o.orderType, o.orderNumber, o.status,
-                p.paymentMethod, p.paymentStatus
+                p.paymentMethod, p.paymentStatus, p.referenceNumber
             FROM orders o
             LEFT JOIN payments p ON o.orderID = p.orderID
             $whereClause
@@ -164,6 +164,15 @@ function generateOrderCard($order) {
                     <i class="bi bi-wallet2"></i>
                     <span class="info-label">Payment:</span>
                     <strong>' . ucfirst($order['paymentMethod']) . '</strong>
+                  </div>';
+    }
+    
+    // GCash Reference Number - Show if payment method is GCash and reference number exists
+    if (strtolower($order['paymentMethod']) === 'gcash' && !empty($order['referenceNumber'])) {
+        $html .= '<div class="info-pill gcash-reference">
+                    <i class="bi bi-receipt"></i>
+                    <span class="info-label">Reference No.:</span>
+                    <strong>' . htmlspecialchars($order['referenceNumber']) . '</strong>
                   </div>';
     }
     
