@@ -168,13 +168,18 @@ function generateOrderCard($order) {
     }
     
     // GCash Reference Number - Show if payment method is GCash and reference number exists
-    if (strtolower($order['paymentMethod']) === 'gcash' && !empty($order['referenceNumber'])) {
-        $html .= '<div class="info-pill gcash-reference">
-                    <i class="bi bi-receipt"></i>
-                    <span class="info-label">Reference No.:</span>
-                    <strong>' . htmlspecialchars($order['referenceNumber']) . '</strong>
-                  </div>';
-    }
+   // GCash Reference Number - Show if payment method is GCash and reference number exists
+if (strtolower($order['paymentMethod']) === 'gcash' && !empty($order['referenceNumber'])) {
+    // Get last 4 digits and mask the rest
+    $refNumber = $order['referenceNumber'];
+    $maskedRef = str_repeat('*', max(0, strlen($refNumber) - 4)) . substr($refNumber, -4);
+    
+    $html .= '<div class="info-pill gcash-reference">
+                <i class="bi bi-receipt"></i>
+                <span class="info-label">Reference No.:</span>
+                <strong> *********'. htmlspecialchars($maskedRef) . '</strong>
+              </div>';
+}
     
     $html .= '</div>'; 
     

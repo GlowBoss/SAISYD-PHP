@@ -39,8 +39,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Validation
         if (empty($orderType) || empty($paymentMethod)) {
             $_SESSION['cart_error'] = 'Please select both order method and payment method.';
-        } elseif ($paymentMethod === 'gcash' && (!$refNumber || !preg_match('/^\d{13}$/', $refNumber))) {
-            $_SESSION['cart_error'] = 'GCash reference number must be exactly 13 digits.';
+        } elseif ($paymentMethod === 'gcash' && (!$refNumber || !preg_match('/^\d{4}$/', $refNumber))) {
+            $_SESSION['cart_error'] = 'GCash reference number must be exactly 4 digits.';
         } elseif (empty($_SESSION['cart'])) {
             $_SESSION['cart_error'] = 'Your cart is empty.';
         } elseif ($orderType === 'pickup' && (empty($customerName) || empty($customerPhone))) {
@@ -467,14 +467,16 @@ function getCartTotal()
                                     <i class="bi bi-credit-card me-2"></i>
                                     Payment Method
                                 </h3>
+
                                 <div class="radio-group">
                                     <div class="radio-option">
                                         <input class="form-check-input" type="radio" name="payment_method" value="cash"
                                             id="cash" required>
-                                        <label class="radio-card" for="cash">
-                                            <img src="assets/img/Cash.png" alt="Cash" class="payment-logo mb-2 d-block"
+                                        <label class="radio-card" for="cash"
+                                            style="display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100%;">
+                                            <img src="assets/img/Cash.png" alt="Cash" class="payment-logo mb-2"
                                                 style="width: 50px; height: 50px; object-fit: contain;">
-                                            <p class="radio-label">Cash</p>
+                                            <p class="radio-label mb-0">Cash</p>
                                         </label>
                                     </div>
                                     <div class="radio-option">
@@ -484,16 +486,21 @@ function getCartTotal()
                                             <img src="assets/img/gcashLogo.png" alt="GCash"
                                                 class="payment-logo mb-2 d-block"
                                                 style="width: 50px; height: 50px; object-fit: contain;">
-                                            <p class="radio-label">GCash</p>
+                                            <p class="radio-label mb-1">GCash</p>
+                                            <small class="gcash-details text-muted d-block"
+                                                style="font-size: 0.85rem; transition: color 0.3s ease;">
+                                                <span class="fw-bold d-block">Sydney A.</span>
+                                                <span class="d-block">0912-299-2819</span>
+                                            </small>
                                         </label>
                                     </div>
                                 </div>
 
                                 <div class="gcash-field" id="gcashField" style="display:none;">
                                     <input type="text" class="form-control" name="ref_number" id="refNumber"
-                                        placeholder="Enter 13-digit GCash Reference Number" pattern="\d{13}" maxlength="13"
+                                        placeholder="Enter last 4 digits of GCash Reference Number" pattern="\d{4}" maxlength="4"
                                         inputmode="numeric"
-                                        oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,13);">
+                                        oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,4);">
                                 </div>
                             </div>
 
