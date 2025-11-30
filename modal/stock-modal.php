@@ -226,7 +226,7 @@ $totalCount = $lowStockCount + $outOfStockCount + $expiredCount;
                           <?= htmlspecialchars($row['ingredientName']) ?>
                         </span>
                         <small class="text-muted" style="font-size: 0.75rem;">
-                          Threshold: <?= htmlspecialchars($row['threshold']) ?> <?= htmlspecialchars($row['unit']) ?>
+                          Threshold: <?= number_format($row['threshold'], 3) ?> <?= htmlspecialchars($row['unit']) ?>
                         </small>
                       </div>
                       <span class="badge rounded-pill px-2 px-sm-3 py-1 py-sm-2 flex-shrink-0" style="
@@ -236,7 +236,7 @@ $totalCount = $lowStockCount + $outOfStockCount + $expiredCount;
                           font-family: var(--primaryFont);
                           font-size: 0.8rem;
                         ">
-                        <?= htmlspecialchars($row['quantity']) ?> <?= htmlspecialchars($row['unit']) ?>
+                        <?= number_format($row['quantity'], 3) ?> <?= htmlspecialchars($row['unit']) ?>
                       </span>
                     </li>
                   <?php endforeach; ?>
@@ -273,7 +273,7 @@ $totalCount = $lowStockCount + $outOfStockCount + $expiredCount;
                           font-family: var(--primaryFont);
                           font-size: 0.8rem;
                         ">
-                        0 <?= htmlspecialchars($row['unit']) ?>
+                        0.000 <?= htmlspecialchars($row['unit']) ?>
                       </span>
                     </li>
                   <?php endforeach; ?>
@@ -316,7 +316,7 @@ $totalCount = $lowStockCount + $outOfStockCount + $expiredCount;
                           font-family: var(--primaryFont);
                           font-size: 0.8rem;
                         ">
-                        <?= htmlspecialchars($row['quantity']) ?> <?= htmlspecialchars($row['unit']) ?>
+                        <?= number_format($row['quantity'], 3) ?> <?= htmlspecialchars($row['unit']) ?>
                       </span>
                     </li>
                   <?php endforeach; ?>

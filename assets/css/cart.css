@@ -406,6 +406,10 @@
     display: block;
 }
 
+.radio-option input[type="radio"]:checked ~ label .gcash-details {
+        color: white !important;
+    }
+
 /* Form Controls */
 .gcash-field {
     margin-top: 12px;

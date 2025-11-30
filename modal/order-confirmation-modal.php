@@ -183,11 +183,11 @@
                 } else if (paymentMethod === 'gcash') {
                    
                     if (!refNumber || refNumber.trim() === '') {
-                        errorMessage = 'Please enter a GCash reference number.';
+                        errorMessage = 'Please enter the last 4 digits of GCash reference number.';
                         hasError = true;
-                    } else if (!/^\d{13}$/.test(refNumber.trim())) {
+                    } else if (!/^\d{4}$/.test(refNumber.trim())) {
                         
-                        errorMessage = 'GCash reference number must be exactly 13 digits.';
+                        errorMessage = 'GCash reference number must be exactly 4 digits.';
                         hasError = true;
                     }
                 } else if (<?= json_encode(empty($_SESSION['cart'])) ?>) {
@@ -222,8 +222,8 @@
                 if (paymentMethod === 'gcash') {
                     const refNumber = refNumberInput ? refNumberInput.value.trim() : '';
                     
-                    if (!refNumber || !/^\d{13}$/.test(refNumber)) {
-                        showErrorMessage('Invalid GCash reference number. Must be exactly 13 digits.');
+                    if (!refNumber || !/^\d{4}$/.test(refNumber)) {
+                        showErrorMessage('Invalid GCash reference number. Must be exactly 4 digits.');
                         return;
                     }
                 }
@@ -265,14 +265,14 @@
             refNumberInput.addEventListener('input', function(e) {
                 
                 let value = e.target.value.replace(/[^0-9]/g, '');
-                if (value.length > 13) {
-                    value = value.slice(0, 13);
+                if (value.length > 4) {
+                    value = value.slice(0, 4);
                 }
                 e.target.value = value;
 
                 const gcashField = document.getElementById('gcashField');
                 if (gcashField) {
-                    if (value.length === 13) {
+                    if (value.length === 4) {
 
                         e.target.style.borderColor = '#28a745';
                         e.target.style.boxShadow = '0 0 0 0.2rem rgba(40, 167, 69, 0.25)';
@@ -377,7 +377,7 @@
 
                     const refNumber = formData.get('ref_number');
                     if (refNumber) {
-                        gcashRef.innerHTML = `Ref: ${refNumber}`;
+                        gcashRef.innerHTML = `Ref: ****${refNumber}`;
                         gcashRef.style.display = 'block';
                     }
                     break;
