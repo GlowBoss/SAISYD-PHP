@@ -2,12 +2,12 @@
 include('auth_check.php');
 include '../assets/connect.php';
 
-
-// Prevent unauthorized access
+// Check if user is logged in and is an admin 
 if (!isset($_SESSION['userID']) || ($_SESSION['role'] !== 'Admin' && $_SESSION['role'] !== 'Staff')) {
-    header("Location: login.php");
+    header("Location: logout.php");
     exit();
 }
+
 
 // Daily total sales for the past 30 days
 $dailySales = "
@@ -339,7 +339,7 @@ $productResult = $stmt->get_result();
                     <i class="bi bi-gear"></i>
                     <span>Settings</span>
                 </a>
-                <a href="login.php" class="admin-nav-link">
+                <a href="logout.php" class="admin-nav-link">
                     <i class="bi bi-box-arrow-right"></i>
                     <span>Logout</span>
                 </a>

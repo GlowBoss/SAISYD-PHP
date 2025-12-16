@@ -5,7 +5,7 @@ include('../assets/connect.php');
 
 // Prevent unauthorized access
 if (!isset($_SESSION['userID']) || ($_SESSION['role'] !== 'Admin' && $_SESSION['role'] !== 'Staff')) {
-    header("Location: login.php");
+    header("Location: logout.php");
     exit();
 }
 
@@ -252,7 +252,7 @@ $totalUsers = mysqli_num_rows($userResult);
                     <i class="bi bi-gear"></i>
                     <span>Settings</span>
                 </a>
-                <a href="login.php" class="admin-nav-link">
+                <a href="logout.php" class="admin-nav-link">
                     <i class="bi bi-box-arrow-right"></i>
                     <span>Logout</span>
                 </a>

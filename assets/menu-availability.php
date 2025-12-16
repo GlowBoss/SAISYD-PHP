@@ -68,7 +68,7 @@ SELECT MIN(FLOOR(
         ELSE pr.requiredQuantity
     END
 )) AS availableQuantity
-FROM productRecipe pr
+FROM productrecipe pr
 JOIN (
     SELECT ingredientID, SUM(quantity) AS total_quantity, MAX(unit) AS unit
     FROM inventory
