@@ -41,7 +41,7 @@
                                font-family: var(--secondaryFont); background: var(--card-bg-color);
                                color: var(--text-color-dark); padding: 12px;">
                                     <?php
-                                    $categoriesQuery = "SELECT * FROM Categories";
+                                    $categoriesQuery = "SELECT * FROM categories";
                                     $categoriesResult = mysqli_query($conn, $categoriesQuery);
                                     while ($cat = mysqli_fetch_assoc($categoriesResult)) {
                                         echo '<option value="' . $cat['categoryID'] . '">' . htmlspecialchars($cat['categoryName']) . '</option>';

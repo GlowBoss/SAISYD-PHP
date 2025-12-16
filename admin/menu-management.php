@@ -1,12 +1,13 @@
 <?php
 include('auth_check.php');
-include('../assets/connect.php');
+include '../assets/connect.php';
 
 // Check if user is logged in and is an admin 
 if (!isset($_SESSION['userID']) || ($_SESSION['role'] !== 'Admin' && $_SESSION['role'] !== 'Staff')) {
-    header("Location: login.php");
+    header("Location: logout.php");
     exit();
 }
+
 
 // ===================================================================
 // HANDLE AVAILABILITY TOGGLE
@@ -51,9 +52,6 @@ if (isset($_POST['btnToggleAvailability'])) {
     }
     exit();
 }
-
-// Check if this is an AJAX request
-$isAjax = isset($_GET['ajax']) && $_GET['ajax'] == '1';
 
 $searchProductTerm = '';
 $categoryFilterId = null;
@@ -330,7 +328,7 @@ while ($row = mysqli_fetch_assoc($menuItemsResults)) {
                 ELSE pr.requiredQuantity
             END
         )) AS availableQuantity
-        FROM productRecipe pr
+        FROM productrecipe pr
         JOIN (
             SELECT ingredientID, SUM(quantity) AS total_quantity, MAX(unit) AS unit
             FROM inventory
@@ -365,68 +363,6 @@ if ($categoryFilterId !== null) {
     }
 }
 
-// AJAX Response - Return only product grid HTML
-if ($isAjax) {
-    if (!empty($menuItems)) {
-        foreach ($menuItems as $row) {
-            $id = $row['productID'];
-            $name = $row['productName'];
-            $image = $row['image'];
-            $price = $row['price'];
-            $categoryName = $row['category_name'];
-            $availableQuantity = $row['availableQuantity'] ?? 0;
-            $dbAvailability = $row['isAvailable'];
-
-            $isAvailable = ($dbAvailability === 'Yes' && $availableQuantity > 0) ? 1 : 0;
-            $unavailableClass = $isAvailable ? '' : ' unavailable';
-            $statusBadgeClass = $isAvailable ? 'status-available' : 'status-unavailable';
-            $statusText = $isAvailable ? 'Available' : 'Unavailable';
-
-            echo "
-            <div class='col-6 col-md-6 col-lg-4 col-xl-2 d-flex px-3 py-2'>
-                <div class='menu-item w-100 text-center $unavailableClass'>
-                    <div class='mb-2'>
-                        <span class='status-badge $statusBadgeClass'>$statusText</span>
-                    </div>
-                    <div class='menu-img-container'>
-                        <img src='../assets/img/img-menu/" . htmlspecialchars($image) . "'
-                            alt='" . htmlspecialchars($name) . "'
-                            class='img-fluid menu-img " . ($isAvailable ? "" : "Available") . "'>
-                    </div>
-                    <div class='menu-name' title='" . htmlspecialchars($name) . "'>" . htmlspecialchars($name) . "</div>
-                    <div class='menu-price'>₱" . number_format($price) . "</div>
-                    <div class='menu-stock'>Available: " . (int) $availableQuantity . " pcs</div>
-                    <div class='d-flex flex-wrap justify-content-center gap-2 mt-2'>
-                        <button class='btn btn-sm edit-btn'
-                            data-bs-toggle='modal'
-                            data-bs-target='#editModal'
-                            data-id='$id'
-                            data-available='" . ($dbAvailability === 'Yes' ? '1' : '0') . "'>
-                            <i class='bi bi-pencil-square'></i>
-                        </button>
-                        <button type='button' class='btn btn-del' 
-                            data-bs-toggle='modal' 
-                            data-bs-target='#deleteConfirmModal'
-                            data-product-id='" . $id . "'
-                            data-product-name='" . htmlspecialchars($name) . "'>
-                            <i class='bi bi-trash'></i>
-                        </button>
-                    </div>
-                </div>
-            </div>";
-        }
-    } else {
-        echo "
-        <div class='col-12 text-center'>
-            <p>No items match the current filters</p>
-            <a href='menu-management.php' class='btn clear-btn mt-2'>
-                <i class='bi bi-x-circle'></i> Clear Search 
-            </a>
-        </div>";
-    }
-    exit(); // Stop here for AJAX requests
-}
-
 ?>
 
 <!doctype html>
@@ -446,7 +382,7 @@ if ($isAjax) {
     <link rel="stylesheet" href="../assets/css/menu-management.css">
     <link rel="stylesheet" href="../assets/css/admin_sidebar.css">
 
-    <!-- Bootstrap Icons (latest version so cash-register works) -->
+    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
     <!-- Font Awesome -->
@@ -461,14 +397,12 @@ if ($isAjax) {
     <!-- Favicon -->
     <link rel="icon" href="../assets/img/round_logo.png" type="image/png">
 
-    <!-- jquery import ginamit ko ito para sa bagong js ng search at pag add ng row sa ingredient (nagpatulong nako kay bro dito kung pano gamitin) -->
+    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
 
-
 </head>
-
 
 <body>
     <!-- Toast Container -->
@@ -481,15 +415,13 @@ if ($isAjax) {
         </button>
     </div>
 
-    <!-- Desktop Sidebar (visible on md+ screens) -->
+    <!-- Desktop Sidebar -->
     <div class="d-none d-md-block">
         <div class="desktop-sidebar p-4">
-            <!-- Logo Section -->
             <div class="text-center mb-4">
                 <img src="../assets/img/saisydLogo.png" class="admin-logo" alt="Saisyd Cafe Admin" />
             </div>
 
-            <!-- MENU Section -->
             <div class="section-header">Menu</div>
             <div class="mb-3">
                 <a href="index.php" class="admin-nav-link">
@@ -504,17 +436,16 @@ if ($isAjax) {
                     <i class="bi bi-shop-window"></i>
                     <span>Point of Sales</span>
                 </a>
-                <a href="inventory-management.php" class="admin-nav-link active">
+                <a href="inventory-management.php" class="admin-nav-link">
                     <i class="bi bi-boxes"></i>
                     <span>Inventory Management</span>
                 </a>
-                <a href="menu-management.php" class="admin-nav-link">
+                <a href="menu-management.php" class="admin-nav-link active">
                     <i class="bi bi-menu-button-wide"></i>
                     <span>Menu Management</span>
                 </a>
             </div>
 
-            <!-- FINANCIAL Section -->
             <div class="section-header">Financial</div>
             <div class="mb-3">
                 <a href="sales-and-report.php" class="admin-nav-link">
@@ -523,14 +454,13 @@ if ($isAjax) {
                 </a>
             </div>
 
-            <!-- TOOLS Section -->
             <div class="section-header">Tools</div>
             <div>
                 <a href="settings.php" class="admin-nav-link">
                     <i class="bi bi-gear"></i>
                     <span>Settings</span>
                 </a>
-                <a href="login.php" class="admin-nav-link">
+                <a href="logout.php" class="admin-nav-link">
                     <i class="bi bi-box-arrow-right"></i>
                     <span>Logout</span>
                 </a>
@@ -551,45 +481,36 @@ if ($isAjax) {
         </div>
 
         <div id="sidebarNav">
-            <!-- MENU Section -->
             <div class="section-header">Menu</div>
             <a href="index.php" class="admin-nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.1s">
                 <i class="bi bi-speedometer2"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="orders.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
-                data-wow-delay="0.15s">
+            <a href="orders.php" class="admin-nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.15s">
                 <i class="bi bi-clipboard-check"></i>
                 <span>Order Management</span>
             </a>
-            <a href="point-of-sales.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
-                data-wow-delay="0.2s">
+            <a href="point-of-sales.php" class="admin-nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.2s">
                 <i class="bi bi-shop-window"></i>
                 <span>Point of Sales</span>
             </a>
-            <a href="inventory-management.php" class="admin-nav-link active wow animate__animated animate__fadeInLeft"
-                data-wow-delay="0.25s">
+            <a href="inventory-management.php" class="admin-nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.25s">
                 <i class="bi bi-boxes"></i>
                 <span>Inventory Management</span>
             </a>
-            <a href="menu-management.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
-                data-wow-delay="0.3s">
+            <a href="menu-management.php" class="admin-nav-link active wow animate__animated animate__fadeInLeft" data-wow-delay="0.3s">
                 <i class="bi bi-menu-button-wide"></i>
                 <span>Menu Management</span>
             </a>
 
-            <!-- FINANCIAL Section -->
             <div class="section-header">Financial</div>
-            <a href="sales-and-report.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
-                data-wow-delay="0.35s">
+            <a href="sales-and-report.php" class="admin-nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.35s">
                 <i class="bi bi-graph-up-arrow"></i>
                 <span>Sales & Reports</span>
             </a>
 
-            <!-- TOOLS Section -->
             <div class="section-header">Tools</div>
-            <a href="settings.php" class="admin-nav-link wow animate__animated animate__fadeInLeft"
-                data-wow-delay="0.4s">
+            <a href="settings.php" class="admin-nav-link wow animate__animated animate__fadeInLeft" data-wow-delay="0.4s">
                 <i class="bi bi-gear"></i>
                 <span>Settings</span>
             </a>
@@ -614,7 +535,7 @@ if ($isAjax) {
             <div class="action-bar mb-4">
                 <div class="row g-3 align-items-end">
 
-                    <!-- Quick Search (Left Side) -->
+                    <!-- Quick Search -->
                     <div class="col-12 col-md-12 col-lg-7 px-md-4">
                         <form method="get" class="search-container">
                             <div class="input-group search-bar">
@@ -632,14 +553,12 @@ if ($isAjax) {
                         </form>
                     </div>
 
-
-                    <!-- Actions (Right Side) -->
+                    <!-- Actions -->
                     <div class="col-12 col-md-12 col-lg-5 px-lg-4">
                         <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-lg-end w-100">
 
                             <!-- Add Button -->
-                            <button class="action-btn" type="button" data-bs-toggle="modal"
-                                data-bs-target="#confirmModal">
+                            <button class="action-btn" type="button" data-bs-toggle="modal" data-bs-target="#confirmModal">
                                 <i class="bi bi-plus-circle"></i>
                                 <span class="d-sm-inline">Add</span>
                             </button>
@@ -677,9 +596,7 @@ if ($isAjax) {
                     </div>
                 </div>
 
-
-
-                <div id="productGrid" class="row g-3 m-2 row g-3 m-2 justify-content-start align-items-stretch ">
+                <div id="productGrid" class="row g-3 m-2 justify-content-start align-items-stretch">
                     <?php
                     if (!empty($menuItems)) {
                         foreach ($menuItems as $row) {
@@ -691,7 +608,6 @@ if ($isAjax) {
                             $availableQuantity = $row['availableQuantity'] ?? 0;
                             $dbAvailability = $row['isAvailable'];
 
-                            //  must have stock AND manually marked as available
                             $isAvailable = ($dbAvailability === 'Yes' && $availableQuantity > 0) ? 1 : 0;
 
                             $unavailableClass = $isAvailable ? '' : ' unavailable';
@@ -699,7 +615,7 @@ if ($isAjax) {
                             $statusText = $isAvailable ? 'Available' : 'Unavailable';
 
                             echo "
-            <div class='col-6 col-md-6 col-lg-4 col-xl-2 d-flex  px-3 py-2'>
+            <div class='col-6 col-md-6 col-lg-4 col-xl-2 d-flex px-3 py-2'>
                 <div class='menu-item w-100 text-center $unavailableClass'>
                     <div class='mb-2'>
                         <span class='status-badge $statusBadgeClass'>$statusText</span>
@@ -716,13 +632,13 @@ if ($isAjax) {
                     <div class='menu-stock'>Available: " . (int) $availableQuantity . " pcs</div>
 
                     <div class='d-flex flex-wrap justify-content-center gap-2 mt-2'>
-                    <button class='btn btn-sm edit-btn'
-                        data-bs-toggle='modal'
-                        data-bs-target='#editModal'
-                        data-id='$id'
-                        data-available='" . ($dbAvailability === 'Yes' ? '1' : '0') . "'>
-                        <i class='bi bi-pencil-square'></i>
-                    </button>
+                        <button class='btn btn-sm edit-btn'
+                            data-bs-toggle='modal'
+                            data-bs-target='#editModal'
+                            data-id='$id'
+                            data-available='" . ($dbAvailability === 'Yes' ? '1' : '0') . "'>
+                            <i class='bi bi-pencil-square'></i>
+                        </button>
 
                         <button type='button' class='btn btn-del' 
                             data-bs-toggle='modal' 
@@ -731,32 +647,26 @@ if ($isAjax) {
                             data-product-name='" . htmlspecialchars($name) . "'>
                             <i class='bi bi-trash'></i>
                         </button>
-
                     </div>
                 </div>
             </div>
             ";
                         }
                     } else {
-                        // No products message + clear search button
                         echo "
         <div class='col-12 text-center'>
-        <p>No items match the current filters</p>
-        <a href='?' class='btn clear-btn mt-2'>
-            <i class='bi bi-x-circle'></i> Clear Search 
-        </a>
-    </div>
+            <p>No items match the current filters</p>
+            <a href='menu-management.php' class='btn clear-btn mt-2'>
+                <i class='bi bi-x-circle'></i> Clear Search 
+            </a>
+        </div>
         ";
                     }
                     ?>
                 </div>
 
-
-
-
-
                 <!-- Toast Container -->
-                <div class=" toast-container p-3 position-fixed end-0 p-3 " style="z-index: 1100">
+                <div class="toast-container p-3 position-fixed end-0 p-3" style="z-index: 1100">
                     <div id="updateToast" class="toast align-items-center updateToast border-0" role="alert"
                         aria-live="assertive" aria-atomic="true">
                         <div class="d-flex">
@@ -781,24 +691,20 @@ if ($isAjax) {
                         <i id="toastIcon" class="bi "></i>
                         <span id="toastMessage" class="px-2"></span>
                     </div>
-
                     <button type="button" class="btn-close ms-auto" data-bs-dismiss="toast" aria-label="Close"></button>
                 </div>
             </div>
         </div>
 
-
-
-
         <?php include '../modal/menu-management-confirm-modal.php'; ?>
         <?php include '../modal/menu-management-edit-modal.php'; ?>
         <?php include '../modal/delete-confirm-menu-management.php'; ?>
-
 
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
         <script src="../assets/js/menu-management.js"></script>
         <script src="../assets/js/admin_sidebar.js"></script>
+        
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 const deleteModal = document.getElementById('deleteConfirmModal');
@@ -976,47 +882,50 @@ if ($isAjax) {
                     });
                 });
 
-                document.addEventListener('DOMContentLoaded', function () {
-                    const availabilityToggle = document.getElementById('availabilityToggle');
-                    const availabilityStatus = document.getElementById('availabilityStatus');
-                    let currentProductId = null;
+                // Availability toggle handler
+                const availabilityToggle = document.getElementById('availabilityToggle');
+                const availabilityStatus = document.getElementById('availabilityStatus');
+                let currentProductId = null;
 
-                    document.querySelectorAll('.edit-btn').forEach(button => {
-                        button.addEventListener('click', function () {
-                            currentProductId = this.getAttribute('data-id');
-                            const isAvailable = this.getAttribute('data-available') === '1';
+                document.querySelectorAll('.edit-btn').forEach(button => {
+                    button.addEventListener('click', function () {
+                        currentProductId = this.getAttribute('data-id');
+                        const isAvailable = this.getAttribute('data-available') === '1';
+                        if (availabilityToggle) {
                             availabilityToggle.checked = isAvailable;
                             updateAvailabilityStatus(isAvailable);
-                        });
-                    });
-
-                    if (availabilityToggle) {
-                        availabilityToggle.addEventListener('change', function () {
-                            const isChecked = this.checked;
-                            updateAvailabilityStatus(isChecked);
-                            if (currentProductId) {
-                                updateProductAvailability(currentProductId, isChecked ? 1 : 0);
-                            }
-                        });
-                    }
-
-                    function updateAvailabilityStatus(isAvailable) {
-                        if (availabilityStatus) {
-                            availabilityStatus.textContent = isAvailable ? 'Available' : 'Unavailable';
-                            availabilityStatus.className = 'status-badge ' +
-                                (isAvailable ? 'status-available' : 'status-unavailable');
                         }
-                    }
+                    });
+                });
 
-                    function updateProductAvailability(productId, newAvailability) {
-                        fetch('menu-management.php', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                            body: `btnToggleAvailability=1&productID=${productId}&newAvailability=${newAvailability}`
-                        })
-                            .then(response => response.text())
-                            .then(() => {
-                                const productCard = document.querySelector(`.edit-btn[data-id="${productId}"]`).closest('.menu-item');
+                if (availabilityToggle) {
+                    availabilityToggle.addEventListener('change', function () {
+                        const isChecked = this.checked;
+                        updateAvailabilityStatus(isChecked);
+                        if (currentProductId) {
+                            updateProductAvailability(currentProductId, isChecked ? 1 : 0);
+                        }
+                    });
+                }
+
+                function updateAvailabilityStatus(isAvailable) {
+                    if (availabilityStatus) {
+                        availabilityStatus.textContent = isAvailable ? 'Available' : 'Unavailable';
+                        availabilityStatus.className = 'status-badge ' +
+                            (isAvailable ? 'status-available' : 'status-unavailable');
+                    }
+                }
+
+                function updateProductAvailability(productId, newAvailability) {
+                    fetch('menu-management.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: `btnToggleAvailability=1&productID=${productId}&newAvailability=${newAvailability}`
+                    })
+                        .then(response => response.text())
+                        .then(() => {
+                            const productCard = document.querySelector(`.edit-btn[data-id="${productId}"]`)?.closest('.menu-item');
+                            if (productCard) {
                                 const badge = productCard.querySelector('.status-badge');
 
                                 if (newAvailability == 1) {
@@ -1034,15 +943,16 @@ if ($isAjax) {
                                     const bsToast = new bootstrap.Toast(toast);
                                     bsToast.show();
                                 }
-                            })
-                            .catch(err => console.error('Error updating product availability:', err));
-                    }
-                });
+                            }
+                        })
+                        .catch(err => console.error('Error updating product availability:', err));
+                }
             });
 
             window.ingredients = <?php echo json_encode($ingredients); ?>;
             const ingredientsData = <?php echo json_encode($ingredients); ?>;
 
+            // Poll for availability updates every 5 seconds
             const POLL_INTERVAL = 5000;
 
             function fetchProductAvailability() {
@@ -1074,72 +984,6 @@ if ($isAjax) {
             }
 
             setInterval(fetchProductAvailability, POLL_INTERVAL);
-        </script>
-
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const searchInput = document.querySelector('input[name="searchProduct"]');
-                const productGrid = document.getElementById('productGrid');
-                let searchTimeout;
-
-                function getCurrentCategoryID() {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    return urlParams.get('categoryID') || '';
-                }
-
-                if (searchInput) {
-                    searchInput.addEventListener('input', function () {
-                        clearTimeout(searchTimeout);
-                        searchTimeout = setTimeout(() => { performSearch(); }, 300);
-                    });
-                }
-
-                function performSearch() {
-                    const searchTerm = searchInput.value.trim();
-                    const categoryID = getCurrentCategoryID();
-
-                    productGrid.innerHTML = `
-                        <div class="col-12 text-center py-5">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                            <p class="mt-2">Searching...</p>
-                        </div>
-                    `;
-
-                    let url = 'menu-management.php?ajax=1';
-                    if (searchTerm) url += '&searchProduct=' + encodeURIComponent(searchTerm);
-                    if (categoryID) url += '&categoryID=' + categoryID;
-
-                    const newUrl = 'menu-management.php';
-                    const params = [];
-                    if (searchTerm) params.push('searchProduct=' + encodeURIComponent(searchTerm));
-                    if (categoryID) params.push('categoryID=' + categoryID);
-                    history.pushState(null, '', params.length ? newUrl + '?' + params.join('&') : newUrl);
-
-                    fetch(url)
-                        .then(response => response.text())
-                        .then(html => {
-                            productGrid.innerHTML = html;
-                            attachProductCardListeners();
-                        })
-                        .catch(error => {
-                            console.error('Search error:', error);
-                            productGrid.innerHTML = `<div class="col-12 text-center"><p class="text-danger">Error loading results. Please try again.</p></div>`;
-                        });
-                }
-
-                function attachProductCardListeners() {
-                    document.querySelectorAll('[data-bs-target="#deleteConfirmModal"]').forEach(button => {
-                        button.addEventListener('click', function () {
-                            const productId = this.getAttribute('data-product-id');
-                            const productName = this.getAttribute('data-product-name');
-                            document.getElementById('deleteItemName').textContent = productName;
-                            document.getElementById('deleteProductID').value = productId;
-                        });
-                    });
-                }
-            });
         </script>
 
         <?php if (isset($_SESSION['alertMessage'])): ?>

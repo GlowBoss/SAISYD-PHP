@@ -1,8 +1,8 @@
 <?php
 $dbhost = "localhost";
-$dbuser = "root";
-$dbpass = "";
-$db = "saisyd_final";
+$dbuser = "saisyeue_1";
+$dbpass = "4MwRUn5k4rzM";
+$db = "saisyeue_saisyd_final";
 
 $conn = new mysqli($dbhost, $dbuser, $dbpass, $db) or die("Connect failed: %s\n" . $conn->error);
 

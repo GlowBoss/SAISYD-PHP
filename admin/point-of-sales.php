@@ -4,7 +4,7 @@ include '../assets/connect.php';
 
 // Check if user is logged in and is an admin 
 if (!isset($_SESSION['userID']) || ($_SESSION['role'] !== 'Admin' && $_SESSION['role'] !== 'Staff')) {
-    header("Location: login.php");
+    header("Location: logout.php");
     exit();
 }
 

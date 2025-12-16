@@ -357,14 +357,16 @@ function checkout()
 
             // Update product quantity and availability
             $updateProductQuery = "UPDATE products 
-                                  SET availableQuantity = availableQuantity - $quantity,
-                                      isAvailable = CASE 
-                                          WHEN (availableQuantity - $quantity) <= 0 THEN 'No'
-                                          ELSE 'Yes'
-                                      END
-                                  WHERE productID = $productID";
+                      SET availableQuantity = availableQuantity - $quantity
+                      WHERE productID = $productID";
 
             $updateResult = executeQuery($updateProductQuery);
+            if (!$updateResult) {
+                throw new Exception('Failed to update product quantity: ' . mysqli_error($conn));
+            }
+
+            // Then update availability based on the NEW quantity
+            updateProductAvailability($productID);
             if (!$updateResult) {
                 throw new Exception('Failed to update product quantity: ' . mysqli_error($conn));
             }

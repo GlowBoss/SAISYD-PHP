@@ -35,11 +35,11 @@ $updateQuery .= " WHERE productID=$productID";
 mysqli_query($conn, $updateQuery);
 
 // Delete old ingredients
-mysqli_query($conn, "DELETE FROM productRecipe WHERE productID=$productID");
+mysqli_query($conn, "DELETE FROM productrecipe WHERE productID=$productID");
 
 // Insert updated ingredients
 if (!empty($ingredients)) {
-    $stmt = $conn->prepare("INSERT INTO productRecipe (productID, ingredientID, measurementUnit, requiredQuantity) VALUES (?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO productrecipe (productID, ingredientID, measurementUnit, requiredQuantity) VALUES (?, ?, ?, ?)");
     foreach ($ingredients as $ing) {
         $ingredientName = mysqli_real_escape_string($conn, $ing['name']);
         $qty = floatval($ing['qty']);
