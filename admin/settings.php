@@ -11,13 +11,13 @@ if (!isset($_SESSION['userID']) || ($_SESSION['role'] !== 'Admin' && $_SESSION['
 
 $userToEdit = null;
 
-// EDIT USER FETCH
+// Edit User Fetch
 if (isset($_GET['editUser'])) {
     $userID = $_GET['editUser'];
     $userToEdit = mysqli_fetch_assoc(executeQuery("SELECT * FROM users WHERE userID=$userID"));
 }
 
-// ADD USER
+// Add User
 if (isset($_POST['btnAddUser'])) {
     $fullName = $_POST['fullName'];
     $email = $_POST['email'];
@@ -30,9 +30,8 @@ if (isset($_POST['btnAddUser'])) {
     if ($password !== $confirm_password) {
         $_SESSION['alertMessage'] = "Passwords do not match.";
         $_SESSION['alertType'] = "error";
-    } else {
-        // Check if email or username already exists
-        $checkQuery = "SELECT * FROM users WHERE email = ? OR username = ? LIMIT 1";
+    } else { 
+        $checkQuery = "SELECT * FROM users WHERE email = ? OR username = ? LIMIT 1";  // Check if email or username already exists
         $stmt = $conn->prepare($checkQuery);
         $stmt->bind_param("ss", $email, $username);
         $stmt->execute();
@@ -42,9 +41,8 @@ if (isset($_POST['btnAddUser'])) {
             $_SESSION['alertMessage'] = "Email or username already exists.";
             $_SESSION['alertType'] = "error";
         } else {
-            // ✅ Hash the password before inserting
-            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-
+            $hashedPassword = password_hash($password, PASSWORD_DEFAULT); // Hash the password before 
+            
             // Use prepared statement for security
             $insertQuery = "
                 INSERT INTO users (fullName, email, username, accNumber, password, role)
@@ -52,7 +50,6 @@ if (isset($_POST['btnAddUser'])) {
             $stmt = $conn->prepare($insertQuery);
             $stmt->bind_param("ssssss", $fullName, $email, $username, $accNumber, $hashedPassword, $role);
             $stmt->execute();
-
             $_SESSION['alertMessage'] = "User added successfully!";
             $_SESSION['alertType'] = "success";
         }
@@ -61,7 +58,7 @@ if (isset($_POST['btnAddUser'])) {
     header("Location: settings.php");
     exit();
 }
-// UPDATE USER
+// Update
 if (isset($_POST['btnUpdateUser'])) {
     $id = $_POST['userID'];
     $email = $_POST['email'];
@@ -78,9 +75,10 @@ if (isset($_POST['btnUpdateUser'])) {
     if (!empty($new_password) && $new_password !== $confirm_password) {
         $_SESSION['alertMessage'] = "New password and confirm password do not match.";
         $_SESSION['alertType'] = "error";
-    } else {
-        // If new password entered, hash it; otherwise, keep current password
-        if (!empty($new_password)) {
+    } else {   
+
+         // If new password entered, hash it; otherwise, keep current password
+        if (!empty($new_password)) {   
             $finalPassword = password_hash($new_password, PASSWORD_DEFAULT);
         } else {
             $finalPassword = $currentPassword;
@@ -94,6 +92,7 @@ if (isset($_POST['btnUpdateUser'])) {
             $_SESSION['alertMessage'] = "Email already exists for another user.";
             $_SESSION['alertType'] = "error";
         } else {
+
             // Update user info
             $updateQuery = "
                 UPDATE users SET
@@ -114,7 +113,7 @@ if (isset($_POST['btnUpdateUser'])) {
 }
 
 
-// DELETE USER
+// Delete User
 if (isset($_POST['btnDeleteUser'])) {
     $id = $_POST['userID'];
 
@@ -132,7 +131,7 @@ if (isset($_POST['btnDeleteUser'])) {
     exit();
 }
 
-// CHANGE ROLE
+// Change Role
 if (isset($_POST['userID']) && isset($_POST['role'])) {
     $id = $_POST['userID'];
     $role = $_POST['role'];
@@ -355,7 +354,7 @@ $totalUsers = mysqli_num_rows($userResult);
                 </div>
             </div>
 
-            <!-- USER MANAGEMENT SECTION - ONLY FOR ADMINS -->
+            <!-- User Management for Admins -->
             <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'Admin'): ?>
 
                 <?php if ($userToEdit): ?>
@@ -601,7 +600,7 @@ $totalUsers = mysqli_num_rows($userResult);
 
             <?php endif; ?>
 
-            <!-- Menu Settings Section - VISIBLE TO ALL ADMINS -->
+            <!-- Menu Settings Section -->
             <div class="menu-settings-section">
                 <div class="action-bar mb-4">
                     <h2 class="section-title">
@@ -729,19 +728,19 @@ $totalUsers = mysqli_num_rows($userResult);
             const iconColor = isSuccess ? 'var(--accent-color)' : '#e74c3c';
 
             const toastHTML = `
-        <div id="dynamicToast" class="toast align-items-center border-0 fade show position-fixed top-0 end-0 m-3" 
-             role="alert" aria-live="assertive" aria-atomic="true" 
-             data-bs-delay="3000" data-bs-autohide="true"
-             style="background-color: var(--text-color-dark); color: var(--text-color-light); border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.25); z-index: 9999;">
-            <div class="d-flex align-items-center">
-                <i class="${icon} ms-3" style="font-size: 1.2rem; color: ${iconColor};"></i>
-                <div class="toast-body" style="font-family: var(--secondaryFont);">
-                    ${message}
+            <div id="dynamicToast" class="toast align-items-center border-0 fade show position-fixed top-0 end-0 m-3" 
+                role="alert" aria-live="assertive" aria-atomic="true" 
+                data-bs-delay="3000" data-bs-autohide="true"
+                style="background-color: var(--text-color-dark); color: var(--text-color-light); border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.25); z-index: 9999;">
+                <div class="d-flex align-items-center">
+                    <i class="${icon} ms-3" style="font-size: 1.2rem; color: ${iconColor};"></i>
+                    <div class="toast-body" style="font-family: var(--secondaryFont);">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"
+                            style="filter: invert(1);"></button>
                 </div>
-                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"
-                        style="filter: invert(1);"></button>
             </div>
-        </div>
     `;
 
             document.body.insertAdjacentHTML('beforeend', toastHTML);
@@ -756,12 +755,11 @@ $totalUsers = mysqli_num_rows($userResult);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Initialize WOW animations
             if (typeof WOW !== 'undefined') {
                 new WOW().init();
             }
 
-            // Initialize and show toast if exists
+            // Initialize and show toast
             const toastElement = document.getElementById('alertToast');
             if (toastElement) {
                 const toast = new bootstrap.Toast(toastElement);

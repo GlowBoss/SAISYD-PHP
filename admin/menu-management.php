@@ -8,25 +8,16 @@ if (!isset($_SESSION['userID']) || ($_SESSION['role'] !== 'Admin' && $_SESSION['
     exit();
 }
 
-
-// ===================================================================
-// HANDLE AVAILABILITY TOGGLE
-// ===================================================================
+// Availability Toggle
 if (isset($_POST['btnToggleAvailability'])) {
     $productID = intval($_POST['productID']);
-    $newAvailability = intval($_POST['newAvailability']); // 1 or 0
-
-    // Convert to Yes/No for database
+    $newAvailability = intval($_POST['newAvailability']);
     $isAvailableText = ($newAvailability == 1) ? 'Yes' : 'No';
-
-    // Only update the isAvailable flag, NOT the quantity
-    // Quantity is auto-calculated based on inventory
     $updateQuery = "UPDATE products 
                     SET isAvailable = '$isAvailableText' 
                     WHERE productID = $productID";
 
-    if (mysqli_query($conn, $updateQuery)) {
-        // Get updated product info
+    if (mysqli_query($conn, $updateQuery)) {  // Get updated product info
         $productQuery = "SELECT productName, availableQuantity, isAvailable 
                         FROM products 
                         WHERE productID = $productID";
@@ -56,7 +47,7 @@ if (isset($_POST['btnToggleAvailability'])) {
 $searchProductTerm = '';
 $categoryFilterId = null;
 
-// ✅ Initialize ingredients array
+// Initialize ingredients array
 $ingredients = [];
 
 // Get ingredients from inventory
@@ -79,9 +70,10 @@ if ($result) {
     }
 }
 
-// ADDDDDD PRODUCT
+// Add product
 if (isset($_POST['btnAddProduct'])) {
-    // ✅ Validate required fields first
+
+    // Validate required fields first
     if (empty($_POST['productName']) || empty($_POST['price']) || empty($_POST['categoryID'])) {
         $_SESSION['alertMessage'] = "Please fill in all required fields!";
         $_SESSION['alertType'] = "error";
@@ -91,7 +83,7 @@ if (isset($_POST['btnAddProduct'])) {
 
     $productName = mysqli_real_escape_string($conn, $_POST['productName']);
     $price = floatval($_POST['price']);
-    $availableQuantity = 0; // ✅ Default to 0, will be calculated from inventory
+    $availableQuantity = 0;
     $categoryID = intval($_POST['categoryID']);
     $isAvailable = 1;
     $image = NULL;
@@ -101,7 +93,7 @@ if (isset($_POST['btnAddProduct'])) {
         $targetDir = "../assets/img/img-menu/";
         $targetFile = $targetDir . $image;
 
-        // check file type
+        // Check file type
         $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/jpg'];
         $fileType = mime_content_type($imageTemp);
 
@@ -111,9 +103,9 @@ if (isset($_POST['btnAddProduct'])) {
             header("Location: menu-management.php");
             exit();
         }
-        // don't move yet only after insert
     }
-    // check duplicate 
+
+    // Check duplicate 
     $checkQuery = "SELECT * FROM products 
                    WHERE productName = '$productName' ";
     $checkResult = mysqli_query($conn, $checkQuery);
@@ -124,18 +116,18 @@ if (isset($_POST['btnAddProduct'])) {
         header("Location: menu-management.php");
         exit();
     }
-    // insert into products
+    // Insert into products
     $insertProduct = "INSERT INTO products (productName, categoryID, price, availableQuantity, image, isAvailable) 
                       VALUES ('$productName', '$categoryID', '$price', '$availableQuantity', '$image', '$isAvailable')";
     if (mysqli_query($conn, $insertProduct)) {
         $productID = mysqli_insert_id($conn);
 
-        // only move image the file if insert is successful
+        // Move image file if insert is successful
         if (!empty($_FILES['image']['name'])) {
             move_uploaded_file($imageTemp, $targetFile);
         }
 
-        // insert into productrecipe
+        // Insert into productrecipe
         if (!empty($_POST['ingredientID'])) {
             foreach ($_POST['ingredientID'] as $index => $ingredientID) {
                 $ingredientID = intval($ingredientID);
@@ -155,18 +147,16 @@ if (isset($_POST['btnAddProduct'])) {
     exit();
 }
 
-// ===================================================================
-// CASCADE DELETE - DELETES PRODUCT AND ALL RELATED ORDERS
-// ===================================================================
+
+// Cascade Delete
 if (isset($_POST['btnDeleteProduct'])) {
     $productID = intval($_POST['productID']);
 
     if ($productID > 0) {
-        // ✅ Start transaction for data integrity
         mysqli_begin_transaction($conn);
-        
         try {
-            // 1. Get image file first
+
+            // Get image
             $result = mysqli_query($conn, "SELECT image FROM products WHERE productID = $productID");
             $row = mysqli_fetch_assoc($result);
             $imagePath = null;
@@ -174,7 +164,7 @@ if (isset($_POST['btnDeleteProduct'])) {
                 $imagePath = "../assets/img/img-menu/" . $row['image'];
             }
             
-            // 2. Get all orders that contain this product
+            //Get all orders that contain this product
             $ordersQuery = mysqli_query($conn, "
                 SELECT DISTINCT orderID 
                 FROM orderitems 
@@ -186,35 +176,24 @@ if (isset($_POST['btnDeleteProduct'])) {
                 $orderIDs[] = intval($order['orderID']);
             }
             
-            // 3. Delete related records in correct order (respecting foreign keys)
+            //Delete related records
             if (!empty($orderIDs)) {
                 $orderIDsList = implode(',', $orderIDs);
-                
-                // Delete payments first
                 mysqli_query($conn, "DELETE FROM payments WHERE orderID IN ($orderIDsList)");
-                
-                // Delete all order items for these orders
                 mysqli_query($conn, "DELETE FROM orderitems WHERE orderID IN ($orderIDsList)");
-                
-                // Delete the orders themselves
                 mysqli_query($conn, "DELETE FROM orders WHERE orderID IN ($orderIDsList)");
             }
             
-            // 4. Delete product recipe
-            mysqli_query($conn, "DELETE FROM productrecipe WHERE productID = $productID");
+            mysqli_query($conn, "DELETE FROM productrecipe WHERE productID = $productID"); // Delete product Recipe
+            mysqli_query($conn, "DELETE FROM products WHERE productID = $productID"); // Delete the Product
             
-            // 5. Finally delete the product
-            mysqli_query($conn, "DELETE FROM products WHERE productID = $productID");
-            
-            // 6. Delete image file if exists
-            if ($imagePath && file_exists($imagePath)) {
+            if ($imagePath && file_exists($imagePath)) { // Delete image file if exists
                 unlink($imagePath);
             }
-            
-            // ✅ Commit transaction
+
             mysqli_commit($conn);
             
-            // Success message with count
+            // Success message
             $orderCount = count($orderIDs);
             if ($orderCount > 0) {
                 $_SESSION['alertMessage'] = "Product deleted successfully! ($orderCount related orders also removed)";
@@ -225,15 +204,12 @@ if (isset($_POST['btnDeleteProduct'])) {
             }
             
         } catch (Exception $e) {
-            // ❌ Rollback on error
             mysqli_rollback($conn);
-            
             $_SESSION['alertMessage'] = "Error deleting product: " . $e->getMessage();
             $_SESSION['alertType'] = "error";
-            
             error_log("Delete product failed: " . $e->getMessage());
         }
-        
+
     } else {
         $_SESSION['alertMessage'] = "Invalid product ID!";
         $_SESSION['alertType'] = "error";
@@ -277,28 +253,21 @@ $menuItems = [];
 while ($row = mysqli_fetch_assoc($menuItemsResults)) {
     $productID = $row['productID'];
 
-    // ===================================================================
-    // CALCULATE AVAILABLE QUANTITY - FIXED UNIT CONVERSIONS
-    // ===================================================================
+    // Calculates Available Quantity
     $stockCheck = mysqli_query($conn, "
         SELECT MIN(FLOOR(
             inv.total_quantity /
             CASE
-                -- ==========================================
-                -- KG INVENTORY (can be deducted by: kg, g)
-                -- ==========================================
+
+                -- (kg) Inventory (can be deducted by: kg, g)
                 WHEN inv.unit = 'kg' AND pr.measurementUnit = 'kg' THEN pr.requiredQuantity
                 WHEN inv.unit = 'kg' AND pr.measurementUnit = 'g' THEN pr.requiredQuantity / 1000
                 
-                -- ==========================================
-                -- G INVENTORY (can be deducted by: kg, g)
-                -- ==========================================
+                -- (g) Inventory (can be deducted by: kg, g)
                 WHEN inv.unit = 'g' AND pr.measurementUnit = 'g' THEN pr.requiredQuantity
                 WHEN inv.unit = 'g' AND pr.measurementUnit = 'kg' THEN pr.requiredQuantity * 1000
                 
-                -- ==========================================
-                -- LITER INVENTORY (can be deducted by: L, ml, pump, tbsp, tsp, shot, cup)
-                -- ==========================================
+                -- (L) Inventory (can be deducted by: L, ml, pump, tbsp, tsp, shot, cup)
                 WHEN inv.unit = 'L' AND pr.measurementUnit = 'L' THEN pr.requiredQuantity
                 WHEN inv.unit = 'L' AND pr.measurementUnit = 'ml' THEN pr.requiredQuantity / 1000
                 WHEN inv.unit = 'L' AND pr.measurementUnit = 'pump' THEN pr.requiredQuantity * 10 / 1000
@@ -307,24 +276,16 @@ while ($row = mysqli_fetch_assoc($menuItemsResults)) {
                 WHEN inv.unit = 'L' AND pr.measurementUnit = 'shot' THEN pr.requiredQuantity * 30 / 1000
                 WHEN inv.unit = 'L' AND pr.measurementUnit = 'cup' THEN pr.requiredQuantity * 240 / 1000
                 
-                -- ==========================================
-                -- ML INVENTORY (can be deducted by: ml, pump, tbsp, tsp, shot, cup)
-                -- ==========================================
+                -- (ml) Inventory (can be deducted by: ml, pump, tbsp, tsp, shot, cup)
                 WHEN inv.unit = 'ml' AND pr.measurementUnit = 'ml' THEN pr.requiredQuantity
                 WHEN inv.unit = 'ml' AND pr.measurementUnit = 'pump' THEN pr.requiredQuantity * 10
                 WHEN inv.unit = 'ml' AND pr.measurementUnit = 'tbsp' THEN pr.requiredQuantity * 15
                 WHEN inv.unit = 'ml' AND pr.measurementUnit = 'tsp' THEN pr.requiredQuantity * 5
                 WHEN inv.unit = 'ml' AND pr.measurementUnit = 'shot' THEN pr.requiredQuantity * 30
                 WHEN inv.unit = 'ml' AND pr.measurementUnit = 'cup' THEN pr.requiredQuantity * 240
-                
-                -- ==========================================
-                -- PIECES INVENTORY (can only be deducted by: pcs)
-                -- ==========================================
+
+                -- (pcs) INVENTORY (can only be deducted by: pcs)
                 WHEN inv.unit = 'pcs' AND pr.measurementUnit = 'pcs' THEN pr.requiredQuantity
-                
-                -- ==========================================
-                -- FALLBACK: Same unit or no conversion
-                -- ==========================================
                 ELSE pr.requiredQuantity
             END
         )) AS availableQuantity
@@ -340,14 +301,12 @@ while ($row = mysqli_fetch_assoc($menuItemsResults)) {
     $stockData = mysqli_fetch_assoc($stockCheck);
     $availableQuantity = intval($stockData['availableQuantity'] ?? 0);
 
-    // Update product availability in DB
-    if ($availableQuantity <= 0 && $row['isAvailable'] == 'Yes') {
-        // Auto-set to unavailable if out of stock
-        mysqli_query($conn, "UPDATE products SET isAvailable = 'No', availableQuantity = 0 WHERE productID = $productID");
+    // Update product availability
+    if ($availableQuantity <= 0 && $row['isAvailable'] == 'Yes') { 
+        mysqli_query($conn, "UPDATE products SET isAvailable = 'No', availableQuantity = 0 WHERE productID = $productID");  // Auto-set to unavailable if out of stock
         $row['isAvailable'] = 'No';
         $row['availableQuantity'] = 0;
     } else {
-        // Just update quantity, keep manual availability setting
         mysqli_query($conn, "UPDATE products SET availableQuantity = $availableQuantity WHERE productID = $productID");
         $row['availableQuantity'] = $availableQuantity;
     }
@@ -355,7 +314,7 @@ while ($row = mysqli_fetch_assoc($menuItemsResults)) {
     $menuItems[] = $row;
 }
 
-$currentCategory = 'All'; // default
+$currentCategory = 'All';
 if ($categoryFilterId !== null) {
     $categoryData = mysqli_query($conn, "SELECT categoryName FROM categories WHERE categoryID = $categoryFilterId");
     if ($row = mysqli_fetch_assoc($categoryData)) {
@@ -1015,7 +974,6 @@ if ($categoryFilterId !== null) {
             unset($_SESSION['alertType']);
             ?>
         <?php endif; ?>
-
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous">
         </script>

@@ -152,7 +152,7 @@ body {
     animation: fadeIn 1s ease 1s backwards;
 }
 
-/* Login Container */
+
 .login-container {
     flex: 0 0 auto;
     width: 100%;
@@ -189,7 +189,6 @@ body {
     border-radius: 10px;
 }
 
-/* Login Card */
 .login-card {
     background: rgba(255, 255, 255, 0.98);
     backdrop-filter: blur(15px);
@@ -211,7 +210,6 @@ body {
     }
 }
 
-/* Login Header */
 .login-header {
     text-align: center;
     margin-bottom: 2rem;
@@ -346,7 +344,7 @@ body {
     display: inline-block;
 }
 
-/* Error Message */
+
 .error-message {
     background: rgba(220, 53, 69, 0.1);
     border: 1px solid rgba(220, 53, 69, 0.3);
@@ -387,7 +385,7 @@ body {
     }
 }
 
-/* Login Button */
+
 .btn-login {
     width: 100%;
     padding: 1rem;
@@ -441,7 +439,6 @@ body {
     transform: translateX(5px);
 }
 
-/* Login Footer */
 .login-footer {
     text-align: center;
     padding-top: 1.5rem;
@@ -457,7 +454,7 @@ body {
 }
 
 
-/* Large Tablets & Medium Screens (1024px) */
+
 @media (max-width: 1024px) {
     .login-wrapper {
         gap: 3rem;
@@ -477,7 +474,7 @@ body {
     }
 }
 
-/* Tablets (900px -  */
+
 @media (max-width: 900px) {
     .login-wrapper {
         flex-direction: column;
@@ -487,7 +484,6 @@ body {
         overflow-y: auto;
     }
 
-    /* HIDE BACKGROUND MESSAGE ON MOBILE */
     .background-message {
         display: none;
     }
@@ -503,7 +499,6 @@ body {
     }
 }
 
-/* Small Tablets (768px) */
 @media (max-width: 768px) {
     .login-wrapper {
         padding: 1rem;
@@ -520,7 +515,6 @@ body {
     }
 }
 
-/* Large Phones (600px)  */
 @media (max-width: 600px) {
     body {
         overflow-y: auto;
@@ -582,7 +576,6 @@ body {
     }
 }
 
-/* Mobile Phones (480px) */
 @media (max-width: 480px) {
     body {
         padding-top: 1.5rem;

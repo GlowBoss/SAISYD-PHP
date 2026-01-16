@@ -25,10 +25,10 @@ if (!isset($_SESSION['userID']) || ($_SESSION['role'] !== 'Admin' && $_SESSION['
 
 <body>
   <div class="admin-wrapper">
-    <!-- Header Section -->
     <header class="admin-header">
       <div class="container-fluid">
         <div class="header-content">
+
           <!-- Logo Section -->
           <div class="logo-section">
             <div style="
@@ -72,6 +72,7 @@ if (!isset($_SESSION['userID']) || ($_SESSION['role'] !== 'Admin' && $_SESSION['
               <span class="btn-text d-none d-lg-inline">Log Out</span>
             </a>
           </div>
+
         </div>
       </div>
     </header>
@@ -79,7 +80,6 @@ if (!isset($_SESSION['userID']) || ($_SESSION['role'] !== 'Admin' && $_SESSION['
     <!-- Main Dashboard Content -->
     <main class="dashboard-main">
       <div class="container-fluid h-100">
-        <!-- Welcome Section -->
         <section class="welcome-section">
           <div class="welcome-content">
             <h1 class="dashboard-title">ADMIN DASHBOARD</h1>

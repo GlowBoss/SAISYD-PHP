@@ -1,7 +1,7 @@
 <?php
+
 include('auth_check.php');
 include '../assets/connect.php';
-
 
 // Check if user is logged in and is an admin 
 if (!isset($_SESSION['userID']) || ($_SESSION['role'] !== 'Admin' && $_SESSION['role'] !== 'Staff')) {
@@ -16,12 +16,11 @@ $messageType = '';
 // Helper function to format quantity (removes unnecessary decimals)
 function formatQuantity($quantity)
 {
-    $quantity = round($quantity, 3); // Round to 2 decimal places
-    // Remove unnecessary trailing zeros and decimal point
+    $quantity = round($quantity, 3); // Round to 2 decimal places 
     return rtrim(rtrim(number_format($quantity, 3, '.', ''), '0'), '.');
 }
 
-// CREATE - Add new inventory item (Updated to handle new ingredients)
+// Add new inventory item (Updated to handle new ingredients)
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'create') {
     $ingredientID = mysqli_real_escape_string($conn, $_POST['ingredientID']);
     $ingredientName = mysqli_real_escape_string($conn, trim($_POST['ingredientName']));
@@ -42,18 +41,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
         $message = 'All fields are required!';
         $messageType = 'error';
     } else {
-        // Check if this is a new ingredient (ingredientID is empty)
         if (empty($ingredientID)) {
-            // Check if ingredient name already exists
             $checkIngredientQuery = "SELECT ingredientID FROM ingredients WHERE ingredientName = '$ingredientName'";
             $checkIngredientResult = executeQuery($checkIngredientQuery);
 
             if (mysqli_num_rows($checkIngredientResult) > 0) {
-                // Ingredient exists, get the ID
                 $existingIngredient = mysqli_fetch_assoc($checkIngredientResult);
                 $ingredientID = $existingIngredient['ingredientID'];
             } else {
-                // Insert new ingredient
                 $insertIngredientQuery = "INSERT INTO ingredients (ingredientName) VALUES ('$ingredientName')";
                 if (executeQuery($insertIngredientQuery)) {
                     $ingredientID = mysqli_insert_id($conn);
@@ -64,17 +59,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
             }
         }
 
-        // If we have ingredientID (either existing or newly created), proceed with inventory
+        // If there is a ingredientID proceed with inventory
         if (!empty($ingredientID) && empty($message)) {
-            // Check if this ingredient already exists in inventory
             $checkInventoryQuery = "SELECT inventoryID FROM inventory WHERE ingredientID = '$ingredientID'";
             $checkInventoryResult = executeQuery($checkInventoryQuery);
 
             if (mysqli_num_rows($checkInventoryResult) > 0) {
                 $message = 'This ingredient already exists in inventory!';
                 $messageType = 'error';
-            } else {
-                // Insert new inventory item with rounded quantity
+            } else {    // Insert new inventory item with rounded quantity
                 $insertInventoryQuery = "INSERT INTO inventory (ingredientID, quantity, unit, lastUpdated, expirationDate, threshold) 
                                        VALUES ('$ingredientID', '$quantity', '$unit', '$lastUpdated', '$expirationDate', '$threshold')";
 
@@ -90,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     }
 }
 
-// UPDATE - Edit inventory item
+// Edit/Update inventory item
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'update') {
     $inventoryID = mysqli_real_escape_string($conn, $_POST['inventoryID']);
     $ingredientID = mysqli_real_escape_string($conn, $_POST['ingredientID']);
@@ -114,11 +107,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
         $message = 'All fields are required!';
         $messageType = 'error';
     } else {
-        // Update ingredient name if changed
         $updateIngredientQuery = "UPDATE ingredients SET ingredientName = '$ingredientName' WHERE ingredientID = '$ingredientID'";
         executeQuery($updateIngredientQuery);
-
-        // Update inventory with rounded quantity
         $updateQuery = "UPDATE inventory 
                        SET quantity = '$quantity', 
                            unit = '$unit', 
@@ -126,7 +116,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
                            expirationDate = '$expirationDate',
                            threshold = '$threshold'
                        WHERE inventoryID = '$inventoryID'";
-
         if (executeQuery($updateQuery)) {
             if (empty($message)) {
                 $message = 'Inventory item updated successfully!';
@@ -139,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     }
 }
 
-// DELETE - Remove inventory item
+// Remove inventory item
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'delete') {
     $inventoryID = mysqli_real_escape_string($conn, $_POST['inventoryID']);
 
@@ -184,7 +173,7 @@ if (isset($_GET['order']) && ($_GET['order'] === 'asc' || $_GET['order'] === 'de
     $order = strtoupper($_GET['order']);
 }
 
-// Query - Round quantity to 2 decimal places and make sure it's never negative
+// Inventory Query that rounds the quantity to 2 decimal places to make sure it's never negative
 $inventoryQuery = "SELECT i.inventoryID,
                           i.ingredientID,
                           ing.ingredientName,
@@ -203,7 +192,6 @@ $result = executeQuery($inventoryQuery);
 $rows = [];
 if ($result && mysqli_num_rows($result) > 0) {
     while ($row = mysqli_fetch_assoc($result)) {
-        // Format quantity to remove unnecessary decimals (5.00 becomes 5, 5.50 stays 5.5, 5.23 stays 5.23)
         $row['quantity'] = formatQuantity($row['quantity']);
         $rows[] = $row;
     }
@@ -653,11 +641,11 @@ foreach ($rows as $row) {
                                                 <span class="quantity-value"><?= $row['quantity'] ?></span>
                                                 <span class="quantity-unit"><?= $row['unit'] ?></span>
                                                 <?php 
-                                                // FIXED: Only show "Out of Stock" when quantity is EXACTLY 0
+                                                // Shows "Out of Stock" when quantity is exactly 0
                                                 if (floatval($row['quantity']) == 0): ?>
                                                     <span class="status-badge out-of-stock">Out of Stock</span>
                                                 <?php 
-                                                // Show "Low Stock" only when quantity > 0 BUT <= threshold
+                                                // Show "Low Stock" only when quantity > 0 but <= threshold
                                                 elseif (floatval($row['quantity']) > 0 && floatval($row['quantity']) <= floatval($row['threshold'])): ?>
                                                     <span class="status-badge low-stock">Low Stock</span>
                                                 <?php endif; ?>
@@ -784,7 +772,7 @@ foreach ($rows as $row) {
                 });
             });
 
-            // CLIENT-SIDE VALIDATION: Prevent negative quantity input
+            // Validation: Prevent negative quantity input
             const quantityInputs = document.querySelectorAll('input[name="quantity"]');
             quantityInputs.forEach(input => {
                 input.addEventListener('input', function () {
@@ -843,7 +831,7 @@ foreach ($rows as $row) {
             showToast('<?= addslashes($message) ?>', '<?= $messageType ?>');
         <?php endif; ?>
 
-        // Enhanced Inventory Management System with Individual Filter Removal
+        // Individual Filter Removal
         class InventoryManager {
             constructor() {
                 this.originalRows = Array.from(document.querySelectorAll('#inventoryTableBody tr:not(#noRecordsRow)'));
@@ -858,6 +846,7 @@ foreach ($rows as $row) {
             }
 
             bindEvents() {
+             
                 // Search functionality
                 const searchInput = document.getElementById('searchInput');
                 const searchBtn = document.getElementById('searchBtn');
@@ -955,7 +944,7 @@ foreach ($rows as $row) {
                     const expiryDate = row.dataset.expiryDate;
                     const threshold = parseFloat(row.dataset.threshold);
 
-                    // Stock status filter - FIXED: Only "Out of Stock" when quantity is exactly 0
+                    // Stock status filter
                     if (filters.stockStatus) {
                         const isOutOfStock = quantity === 0;
                         const isLowStock = quantity > 0 && quantity <= threshold;
@@ -1038,7 +1027,6 @@ foreach ($rows as $row) {
                         break;
                 }
 
-                // Re-apply filters
                 this.applyFilters();
 
                 showToast(`${this.getFilterDisplayName(filterType)} filter removed.`, 'success');
@@ -1086,7 +1074,7 @@ foreach ($rows as $row) {
             }
 
             clearAllFilters() {
-                // Clear all filter inputs
+
                 document.getElementById('filterStockStatus').value = '';
                 document.getElementById('filterExpiryStatus').value = '';
                 document.getElementById('filterSortOrder').value = 'asc';
@@ -1128,7 +1116,7 @@ foreach ($rows as $row) {
                 return count;
             }
 
-            // Enhanced active filters display with individual remove buttons
+            // Active filters display with individual remove buttons
             updateActiveFiltersDisplay() {
                 const activeFiltersDiv = document.getElementById('activeFilters');
                 const activeFilterTags = document.getElementById('activeFilterTags');
@@ -1243,11 +1231,9 @@ foreach ($rows as $row) {
                     const expiryDate = new Date(row.dataset.expiryDate);
                     const currentDate = new Date();
 
-                    // FIXED: Count out of stock only when quantity is exactly 0
                     if (quantity === 0) {
                         outOfStockCount++;
                     }
-                    // Count low stock only when quantity > 0 but <= threshold
                     else if (quantity > 0 && quantity <= threshold) {
                         lowStockCount++;
                     }
