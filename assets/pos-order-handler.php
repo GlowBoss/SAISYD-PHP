@@ -34,9 +34,7 @@ switch ($action) {
         break;
 }
 
-/**
- * Get staff name from database based on userID in session
- */
+ // Get staff name from database based on userID in session
 function getStaffName()
 {
     global $conn;
@@ -58,9 +56,7 @@ function getStaffName()
     return 'POS: Walk-in Customer';
 }
 
-/**
- * Updates product availability based on quantity
- */
+// Updates product availability based on quantity
 function updateProductAvailability($productID = null)
 {
     global $conn;
@@ -81,13 +77,10 @@ function updateProductAvailability($productID = null)
                       ELSE 'Yes'
                   END";
     }
-
     return executeQuery($query);
 }
 
-/**
- * Check if product has enough stock
- */
+// Check if product has enough stock
 function checkProductStock($productID, $requestedQuantity)
 {
     global $conn;
@@ -324,9 +317,7 @@ function checkout()
                 }
             }
 
-            // Handle ice level - only for drinks (if iceLevel is set and not null in the item)
-            // Handle ice level - only for drinks (if iceLevel is set and not null in the item)
-            $ice = 'NULL'; // default to NULL for food items
+            $ice = 'NULL'; 
 
             // Check if iceLevel exists and has a meaningful value
             if (array_key_exists('iceLevel', $item) && $item['iceLevel'] !== null && $item['iceLevel'] !== '') {

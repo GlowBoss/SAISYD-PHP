@@ -26,7 +26,7 @@ if ($ipAddress === '::1') {
 // Hash the IP for privacy
 $hashedIp = hash('sha256', $ipAddress);
 
-// Ensure session array exists
+// Ensure session array exist
 if (!isset($_SESSION['logged_pages'])) {
     $_SESSION['logged_pages'] = [];
 }

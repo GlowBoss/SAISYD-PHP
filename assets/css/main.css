@@ -1,7 +1,6 @@
 html {
     scroll-behavior: smooth;
     scroll-padding-top: 80px;
-
 }
 
 body {
@@ -147,7 +146,6 @@ footer .fab:not(.fa-tiktok):hover {
     color: var(--primary-color);
 }
 
-/*  Coffee Image - Enhanced */
 .coffee-img {
     position: relative;
     z-index: 2;

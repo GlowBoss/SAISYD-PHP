@@ -285,14 +285,14 @@
     document.getElementById('modal-product-price').value = price;
     document.getElementById('modal-available-quantity').value = stock;
 
-    // 🔥 THE FIX — set available stock globally and reset quantity
+    // Set available stock globally and reset quantity
     initializeQuantityModal(stock);
 
     const modal = new bootstrap.Modal(document.getElementById('quantityModal'));
     modal.show();
   }
 
-  // + / – button logic
+  // Button Logic
   function updateQuantity(change) {
     const input = document.getElementById('modal-quantity-input');
     const min = parseInt(input.min);
@@ -305,18 +305,14 @@
 
     input.value = newValue;
 
-    // Trigger validation events (optional but helps with UI consistency)
+    // Trigger validation events
     input.dispatchEvent(new Event('input'));
   }
 
   function confirmAdd() {
     const qty = parseInt(document.getElementById('modal-quantity-input').value);
     const notes = document.getElementById('modal-instructions').value;
-
     console.log("Add to cart:", selectedProduct, "Qty:", qty, "Notes:", notes);
-
-    // >>> Your add-to-cart PHP/JS logic goes here <<<
-
     bootstrap.Modal.getInstance(document.getElementById('quantityModal')).hide();
   }
 
@@ -336,7 +332,7 @@
     // Set the available quantity
     currentAvailableQuantity = parseInt(availableQty) || 0;
 
-    console.log('Initializing modal with available quantity:', currentAvailableQuantity); // Debug
+    console.log('Initializing modal with available quantity:', currentAvailableQuantity);
 
     // Update available stock display if it exists
     const availableStockSpan = document.getElementById('availableStock');
@@ -349,7 +345,7 @@
     const modalQuantityInput = document.getElementById('modal-quantity-input');
     if (quantityInput) {
       quantityInput.value = 1;
-      quantityInput.setAttribute('max', availableQty); // Set max attribute dynamically
+      quantityInput.setAttribute('max', availableQty); 
     }
     if (modalQuantityInput) modalQuantityInput.value = 1;
 
@@ -362,9 +358,9 @@
     const decreaseBtn = document.querySelector('#quantityModal button[onclick="decreaseQuantity()"]');
     const increaseBtn = document.querySelector('#quantityModal button[onclick="increaseQuantity()"]');
 
-    console.log('Updating button states - Current:', currentQty, 'Max:', currentAvailableQuantity); // Debug
+    console.log('Updating button states - Current:', currentQty, 'Max:', currentAvailableQuantity);
 
-    // Disable decrease button if at minimum (1)
+    // Disable decrease button
     if (decreaseBtn) {
       if (currentQty <= 1) {
         decreaseBtn.disabled = true;
@@ -377,7 +373,7 @@
       }
     }
 
-    // Disable increase button if at maximum (available stock)
+    // Disable increase button 
     if (increaseBtn) {
       if (currentQty >= currentAvailableQuantity) {
         increaseBtn.disabled = true;
@@ -401,7 +397,7 @@
     if (quantityInput && modalQuantityInput) {
       let currentValue = parseInt(quantityInput.value) || 1;
 
-      // Check if we can increase (stock limit) ✓ THIS IS THE KEY PART
+      // Check if we can increase 
       if (currentValue < currentAvailableQuantity) {
         const newValue = currentValue + 1;
         quantityInput.value = newValue;
@@ -427,35 +423,30 @@
     }
   }
 
-  // Validate manual input - fires on every keystroke
+  // Validate manual input
   function validateQuantityInput(event) {
     const quantityInput = document.getElementById('quantity');
     const modalQuantityInput = document.getElementById('modal-quantity-input');
 
-    console.log('Validating input - Max allowed:', currentAvailableQuantity, 'Current value:', quantityInput?.value); // Debug
+    console.log('Validating input - Max allowed:', currentAvailableQuantity, 'Current value:', quantityInput?.value);
 
     if (quantityInput && modalQuantityInput) {
       let value = quantityInput.value;
 
-      // Remove any non-digit characters
       value = value.replace(/\D/g, '');
 
-      // If empty, don't set anything yet (let user type)
       if (value === '') {
         quantityInput.value = '';
         return;
       }
 
-      // Convert to number
       let numValue = parseInt(value);
 
-      // If exceeds stock, immediately cap it
       if (numValue > currentAvailableQuantity) {
-        console.log('Exceeded max! Capping at:', currentAvailableQuantity); // Debug
+        console.log('Exceeded max! Capping at:', currentAvailableQuantity); 
         numValue = currentAvailableQuantity;
       }
 
-      // If less than 1, set to 1
       if (numValue < 1) {
         numValue = 1;
       }
@@ -467,7 +458,6 @@
     }
   }
 
-  // Additional validation on blur (when user leaves the field)
   function validateOnBlur() {
     const quantityInput = document.getElementById('quantity');
     const modalQuantityInput = document.getElementById('modal-quantity-input');
@@ -475,12 +465,10 @@
     if (quantityInput && modalQuantityInput) {
       let value = parseInt(quantityInput.value);
 
-      // If empty or invalid, set to 1
       if (isNaN(value) || value < 1 || quantityInput.value === '') {
         value = 1;
       }
 
-      // If exceeds stock, cap at max
       if (value > currentAvailableQuantity) {
         value = currentAvailableQuantity;
       }
@@ -491,7 +479,6 @@
     }
   }
 
-  // Form validation before submit
   document.addEventListener('DOMContentLoaded', function () {
     const addToOrderForm = document.getElementById('addToOrderForm');
     if (addToOrderForm) {

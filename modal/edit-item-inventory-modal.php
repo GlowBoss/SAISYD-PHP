@@ -94,7 +94,6 @@
         box-shadow: none;
     }
 
-    /* Disabled unit field styling */
     #unitEdit:disabled {
         background-color: #e0e0e0;
         color: #6c6c6c;
@@ -313,7 +312,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // ==================== AUTOCOMPLETE SYSTEM ====================
+        // AUTOCOMPLETE SYSTEM
 
         const ingredients = [
             <?php foreach ($ingredients as $ingredient): ?>
@@ -446,7 +445,7 @@
             selectedIndexEdit = -1;
         }
 
-        // ==================== FORM SUBMIT ====================
+        // FORM SUBMIT
 
         document.getElementById('updateForm').addEventListener('submit', function (e) {
             e.preventDefault();
@@ -476,7 +475,7 @@
                 });
         });
 
-        // ==================== POPULATE EDIT MODAL ====================
+        // POPULATE EDIT MODAL 
 
         document.querySelectorAll('.edit-btn').forEach(button => {
             button.addEventListener('click', function () {
@@ -493,7 +492,7 @@
                 document.getElementById('ingredientNameEdit').value = ingredient;
                 document.getElementById('quantityEdit').value = quantity;
                 document.getElementById('unitEdit').value = unit;
-                document.getElementById('unitEditHidden').value = unit; // Set hidden input value
+                document.getElementById('unitEditHidden').value = unit; 
                 document.getElementById('expirationEdit').value = expiration;
                 document.getElementById('thresholdEdit').value = threshold;
             });

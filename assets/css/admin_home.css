@@ -10,7 +10,6 @@ body {
     color: var(--text-color-dark);
     line-height: 1.4;
     height: 100vh;
-    /* Desktop: prevent scrolling */
     overflow: hidden;
 }
 
@@ -37,7 +36,6 @@ body {
     }
 }
 
-/* Header Styles */
 .admin-header {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
@@ -88,7 +86,6 @@ body {
     gap: 0.75rem;
 }
 
-/* Notification Button */
 .notification-btn {
     position: relative;
     background: transparent;
@@ -125,7 +122,6 @@ body {
     border: 2px solid white;
 }
 
-/* Action Buttons */
 .action-btn {
     display: flex;
     align-items: center;
@@ -168,7 +164,6 @@ body {
     box-shadow: 0 4px 15px rgba(51, 51, 51, 0.3);
 }
 
-/* Main Dashboard */
 .dashboard-main {
     flex: 1;
     display: flex;
@@ -186,7 +181,6 @@ body {
     }
 }
 
-/* Welcome Section */
 .welcome-section {
     text-align: center;
     padding: 1rem;
@@ -235,7 +229,6 @@ body {
     color: var(--primary-color);
 }
 
-/* Dashboard Grid */
 .dashboard-grid {
     flex: 1;
     padding: 0 1rem;
@@ -359,7 +352,6 @@ body {
     color: var(--btn-hover1);
 }
 
-/* Footer */
 .admin-footer {
     background: transparent;
     color: var(--primary-color);

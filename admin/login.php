@@ -20,8 +20,7 @@ $show_logout = isset($_GET['logout']);
 $show_security = isset($_GET['error']) && $_GET['error'] === 'security';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-  // Rate limiting check (prevent brute force)
-  if (!isset($_SESSION['login_attempts'])) {
+  if (!isset($_SESSION['login_attempts'])) { // Rate limiting check
     $_SESSION['login_attempts'] = 0;
     $_SESSION['last_attempt_time'] = time();
   }
@@ -51,14 +50,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
       // Check Hashed Password
       if (password_verify($enteredPassword, $storedPassword)) {
-        // Clear old session data completely
         session_unset();
         session_destroy();
-        
-        // Start fresh session
         session_start();
-        
-        // Regenerate session ID to prevent session fixation
         session_regenerate_id(true);
         
         // Set session variables
@@ -266,7 +260,6 @@ $conn->close();
       this.style.color = type === "text" ? "var(--primary-color, #7b4b2a)" : "#888";
     });
   </script>
-
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 

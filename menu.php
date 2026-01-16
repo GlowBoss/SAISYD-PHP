@@ -109,8 +109,6 @@ switch ($sortOption) {
         $orderBy = "p.productName ASC";
 }
 
-// Build product query with filter + sort - SHOW ALL PRODUCTS, AVAILABLE FIRST
-// UPDATED: Check BOTH isAvailable AND availableQuantity
 if ($categoryFilter === 'ALL') {
     $productQuery = "
         SELECT p.*, c.categoryName 
@@ -628,7 +626,7 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
 
     <script>
-        // Categories that need sugar/ice options (from database)
+        // Categories that need sugar/ice options
         const sugarIceCategories = <?php echo json_encode($sugarIceCategoryList); ?>;
 
         function openPopup(button) {
@@ -663,8 +661,6 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
 
             // Set max available quantity for validation
             window.maxAvailableQuantity = availableQty;
-
-            // Reset quantity to 1
             document.getElementById('quantity').value = 1;
 
             // Update button states based on available stock
@@ -738,7 +734,7 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
             }
         }
 
-        // Modal close event - removes duplicate and fixes scrolling
+        // Modal close event
         document.getElementById('item-customization').addEventListener('hidden.bs.modal', function () {
             // Reset form values
             document.getElementById('quantity').value = 1;
@@ -751,7 +747,6 @@ $currentJSCategory = isset($_COOKIE['selected_category']) ? $_COOKIE['selected_c
                 document.querySelector('input[name="ice"][value="Default Ice"]').checked = true;
             }
 
-            // Fix scrolling issue
             setTimeout(() => {
                 document.body.classList.remove('modal-open');
                 document.body.style.overflow = '';

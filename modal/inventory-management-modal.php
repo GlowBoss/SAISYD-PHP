@@ -259,7 +259,6 @@ input[type=number] {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Existing ingredients data - no JSON needed, direct PHP array
     const ingredients = [
         <?php foreach ($ingredients as $ingredient): ?>
         {

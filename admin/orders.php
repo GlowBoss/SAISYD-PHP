@@ -179,10 +179,8 @@ function generateOrderCard($order)
                   </div>';
     }
 
-    // GCash Reference Number - Show if payment method is GCash and reference number exists
-
+    // Get last 4 digits of the Gcash Reference number and mask the rest
     if (strtolower($order['paymentMethod']) === 'gcash' && !empty($order['referenceNumber'])) {
-        // Get last 4 digits and mask the rest
         $refNumber = $order['referenceNumber'];
         $maskedRef = str_repeat('*', max(0, strlen($refNumber) - 4)) . substr($refNumber, -4);
 
@@ -282,8 +280,7 @@ function generateOrderCard($order)
                 <!-- Action Controls -->
                 <div class="card-actions">';
 
-    if ($order['status'] === 'completed') {
-        // Completed orders - Archive button only
+    if ($order['status'] === 'completed') {  // Completed orders - Archive button only
         $html .= '<button class="action-btn archive-action" onclick="showArchiveModal(' . $order['orderID'] . ', \'' . $orderNumber . '\')">
                     <i class="bi bi-archive"></i>
                     <span>Archive</span>
@@ -298,15 +295,12 @@ function generateOrderCard($order)
                 <ul class="dropdown-menu w-100" aria-labelledby="statusDropdown' . $order['orderID'] . '">';
 
         // Status flow logic
-        if ($order['status'] === 'pending') {
-            // Pending: Can only go to Preparing or Cancel
+        if ($order['status'] === 'pending') { // Pending: Can only go to Preparing or Cancel
             $html .= '<li><a class="dropdown-item" href="#" onclick="updateOrderStatus(' . $order['orderID'] . ', \'preparing\')"><i class="bi bi-gear"></i> Preparing</a></li>';
             $html .= '<li><a class="dropdown-item dropdown-item-danger" href="#" onclick="updateOrderStatus(' . $order['orderID'] . ', \'cancelled\')"><i class="bi bi-x-circle"></i> Cancel</a></li>';
-        } elseif ($order['status'] === 'preparing') {
-            // Preparing: Can only go to Ready
+        } elseif ($order['status'] === 'preparing') { // Preparing: Can only go to Ready
             $html .= '<li><a class="dropdown-item" href="#" onclick="updateOrderStatus(' . $order['orderID'] . ', \'ready\')"><i class="bi bi-box-seam"></i> Ready</a></li>';
-        } elseif ($order['status'] === 'ready') {
-            // Ready: Can go to Completed or back to Preparing
+        } elseif ($order['status'] === 'ready') {  // Ready: Can go to Completed or back to Preparing
             $html .= '<li><a class="dropdown-item" href="#" onclick="updateOrderStatus(' . $order['orderID'] . ', \'preparing\')"><i class="bi bi-gear"></i> Preparing</a></li>';
             $html .= '<li><a class="dropdown-item" href="#" onclick="updateOrderStatus(' . $order['orderID'] . ', \'completed\')"><i class="bi bi-check2-circle"></i> Completed</a></li>';
         }
@@ -633,11 +627,7 @@ $statusCounts = getStatusCountsData();
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4 && xhr.status === 200) {
                     document.getElementById('filterTabs').innerHTML = xhr.responseText;
-
-                    // Reapply active class to current filter
                     document.querySelector(`[data-status="${currentFilter}"]`).classList.add('active');
-
-                    // Update total count
                     updateTotalCount();
                 }
             };
@@ -661,6 +651,7 @@ $statusCounts = getStatusCountsData();
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4 && xhr.status === 200) {
+
                     // Show success/error message
                     const alertContainer = document.getElementById('alertContainer');
                     alertContainer.innerHTML = xhr.responseText;
@@ -693,11 +684,11 @@ $statusCounts = getStatusCountsData();
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', function () {
-            // Start polling
+
             startPolling();
 
-            // Stop polling when page is hidden (tab switch, minimize)
-            document.addEventListener('visibilitychange', function () {
+            // Stop polling when page is hidden
+            document.addEventListener('visibilitychange', function () { 
                 if (document.hidden) {
                     stopPolling();
                 } else {
@@ -709,8 +700,6 @@ $statusCounts = getStatusCountsData();
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Include your existing sidebar scripts -->
     <script src="../assets/js/admin_sidebar.js"></script>
 </body>
 

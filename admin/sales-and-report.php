@@ -811,8 +811,6 @@ $productResult = $stmt->get_result();
 
             const toast = new bootstrap.Toast(document.getElementById(toastId));
             toast.show();
-
-            // Remove toast element after it's hidden
             document.getElementById(toastId).addEventListener('hidden.bs.toast', function () {
                 this.remove();
             });

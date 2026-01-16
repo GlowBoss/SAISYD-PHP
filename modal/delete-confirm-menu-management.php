@@ -1,4 +1,4 @@
-<!-- Delete Confirmation Modal - CASCADE VERSION -->
+<!-- Delete Confirmation Modal -->
 <div class='modal fade' id='deleteConfirmModal' data-bs-backdrop='true' tabindex='-1'
     aria-labelledby='deleteConfirmModalLabel' aria-hidden='true'>
     <div class='modal-dialog modal-dialog-centered'>
@@ -32,7 +32,7 @@
                     </p>
                 </div>
 
-                <!-- ⚠️ CRITICAL WARNING ALERT -->
+                <!--  CRITICAL WARNING ALERT -->
                 <div class='alert alert-danger d-flex align-items-start mb-4' role='alert' 
                      style='border-left: 4px solid #dc3545; background: rgba(220, 53, 69, 0.1); 
                             border-radius: 8px; font-family: var(--secondaryFont);'>

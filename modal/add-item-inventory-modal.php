@@ -347,19 +347,17 @@ if (!isset($ingredients)) {
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // ==================== UNIT VALIDATION SYSTEM ====================
+        // UNIT VALIDATION SYSTEM
 
         function detectIngredientType(ingredientName) {
             const name = ingredientName.toLowerCase().trim();
 
-            // ==================== DUAL ITEMS (Both countable AND solid) ====================
+            // DUAL ITEMS (Both countable AND solid)
             const dualKeywords = [
                 'ice' 
             ];
 
-
-            // ==================== LIQUID ITEMS (ML/L measurement) ====================
-
+            // LIQUID ITEMS (ML/L measurement) 
             const liquidKeywords = [
                 // ALL Milk variants 
                 'milk', 'full cream milk', 'oatside milk', 'soy milk', 'almond milk',
@@ -400,7 +398,7 @@ if (!isset($ingredients)) {
                 'kewpie mayo', 'mayo', 'mayonnaise'
             ];
 
-            // ==================== SOLID ITEMS (G/KG measurement) ====================
+            // SOLID ITEMS (G/KG measurement)
 
             const solidKeywords = [
                 // Meats 
@@ -457,7 +455,7 @@ if (!isset($ingredients)) {
                 'salt', 'pepper', 'seasoning'
             ];
 
-             // ==================== COUNTABLE ITEMS ) ====================
+             // COUNTABLE ITEMS
 
             const countableKeywords = [
                 // Eggs 
@@ -474,25 +472,18 @@ if (!isset($ingredients)) {
                 'cup holder', 'stirrer', 'plastic cup', 'take-out box'
             ];
 
-            // ==================== SPECIAL CASE DETECTION ====================
-
-            // 0. Check DUAL items first (highest priority)
+            // SPECIAL CASE DETECTION
             if (dualKeywords.some(keyword => name.includes(keyword))) {
                 return 'dual';
             }
-
-            // 1. ALL TEA (leaves/powder) = SOLID
             if (name.includes('tea') && !name.includes('milktea')) {
                 return 'solid';
-            }
-
-            // 2. MEATS are ALWAYS SOLID 
+            } 
             const meatKeywords = ['chicken', 'wings', 'beef', 'pork', 'ham', 'spam', 'bacon'];
             if (meatKeywords.some(keyword => name.includes(keyword))) {
                 return 'solid';
             }
 
-            // 3. Flavor powders (not syrups/sauces) = SOLID
             if (
                 (name.includes('vanilla') ||
                     name.includes('caramel') ||
@@ -507,49 +498,41 @@ if (!isset($ingredients)) {
                 return 'solid';
             }
 
-            // 4. VEGETABLES = SOLID 
+            // VEGETABLES
             const veggieKeywords = ['onion', 'garlic', 'cucumber', 'tomato', 'lettuce', 'lemon'];
             if (veggieKeywords.some(keyword => name.includes(keyword))) {
                 return 'solid';
             }
 
-            // ==================== DETECTION PRIORITY ====================
-
-            // Check countable first (most specific)
+            // DETECTION PRIORITY
             if (countableKeywords.some(keyword => name.includes(keyword))) {
                 return 'countable';
             }
-
-            // Check liquid (very specific keywords)
             if (liquidKeywords.some(keyword => name.includes(keyword))) {
                 return 'liquid';
             }
-
-            // Check solid (catch-all for most ingredients)
             if (solidKeywords.some(keyword => name.includes(keyword))) {
                 return 'solid';
             }
-
-            // Default: SOLID (safest for coffee shop inventory)
             return 'solid';
         }
 
-        // ==================== ALLOWED UNITS PER CATEGORY ====================
+        // ALLOWED UNITS PER CATEGORY
         const allowedUnits = {
-            // Liquids - volume measurements + bottles for inventory
+            // Liquids 
             liquid: ['L', 'ml', 'pump', 'tbsp', 'tsp', 'cup', 'shot', 'bottles'],
 
-            // Solids - weight measurements + packaging for inventory purchases
+            // Solids
             solid: ['kg', 'g', 'lbs', 'oz', 'tbsp', 'tsp', 'cup', 'bags', 'packs', 'boxes'],
 
-            // Countables - only counting units
+            // Countables
             countable: ['pcs', 'bags', 'bottles', 'cans', 'packs', 'boxes'],
 
-            // Dual - combination of solid AND countable units
+            // Dual
             dual: ['kg', 'g', 'lbs', 'oz', 'pcs', 'bags', 'packs', 'boxes']
         };
 
-        // ==================== UNIT DISPLAY NAMES ====================
+        // UNIT DISPLAY NAMES
         function getUnitDisplayName(unit) {
             const unitNames = {
                 'kg': 'Kilogram',
@@ -561,7 +544,7 @@ if (!isset($ingredients)) {
             return unitNames[unit] || unit;
         }
 
-        // ==================== VALIDATION FUNCTION ====================
+        // VALIDATION FUNCTION
         function validateUnitMatch(ingredientName, selectedUnit) {
             if (!ingredientName || !selectedUnit) {
                 return { valid: true };
@@ -626,7 +609,7 @@ if (!isset($ingredients)) {
             warning.classList.remove('show');
         }
 
-        // ==================== AUTOCOMPLETE SYSTEM ====================
+        // AUTOCOMPLETE SYSTEM 
 
         const ingredients = [
             <?php foreach ($ingredients as $ingredient): ?>
@@ -802,7 +785,7 @@ if (!isset($ingredients)) {
             selectedIndex = -1;
         }
 
-        // ==================== FORM SUBMIT WITH VALIDATION ====================
+        // FORM SUBMIT WITH VALIDATION
 
         const addItemForm = document.getElementById('addItemForm');
         const addItemBtn = document.getElementById('addItemBtn');

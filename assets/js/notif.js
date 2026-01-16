@@ -1,4 +1,4 @@
-// CATEGORY BUTTONS - active toggle
+// CATEGORY BUTTONS
 document.querySelectorAll(".categorybtn").forEach(btn => {
   btn.addEventListener("click", function () {
     document.querySelectorAll(".categorybtn")
@@ -7,7 +7,7 @@ document.querySelectorAll(".categorybtn").forEach(btn => {
   });
 });
 
-// DROPDOWN - change text on select
+// DROPDOWN
 document.querySelectorAll('.dropdown').forEach(dropdown => {
   const button = dropdown.querySelector('.dropdown-toggle');
   const items = dropdown.querySelectorAll('.dropdown-item');

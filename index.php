@@ -2,7 +2,7 @@
 include 'assets/connect.php';
 include 'assets/track_visits.php';
 
-// Default fallback popular menu (constant items)
+// Default fallback popular menu 
 $defaultPopularMenu = [
     [
         "productID" => null,
@@ -42,7 +42,7 @@ $defaultPopularMenu = [
     ]
 ];
 
-// Get top 6 selling products (Popular Menu)
+// Get top 6 selling products 
 $popularMenuQuery = "
     SELECT 
         pr.productID,

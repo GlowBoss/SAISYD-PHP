@@ -19,14 +19,14 @@ $result = executeQuery($salesQuery);
 
 // Send as Excel-compatible content
 header('Content-Type: application/vnd.ms-excel');
-header('Cache-Control: max-age=0');
 
+header('Cache-Control: max-age=0');
 $output = fopen("php://output", "w");
 
-// Table Headers
+// Table Header
 fputcsv($output, ['#', 'Item Name', 'Category', 'Price (Each)', 'Quantity', 'Total', 'Product ID'], "\t");
 
-// Data Rows
+// Data Row
 if ($result && mysqli_num_rows($result) > 0) {
     $i = 1;
     while ($row = mysqli_fetch_assoc($result)) {
@@ -41,6 +41,5 @@ if ($result && mysqli_num_rows($result) > 0) {
         ], "\t");
     }
 }
-
 fclose($output);
 exit;

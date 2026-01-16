@@ -157,7 +157,7 @@ if (isset($_POST['update_status'])) {
                             $sweetenerID = 52; // Brown Sugar Syrup
                         }
 
-                        // ✅ Get recipe WITH UNITS
+                        //  Get recipe WITH UNITS
                         $recipeRes = mysqli_query($conn, "
                             SELECT 
                                 pr.ingredientID, 
@@ -184,7 +184,7 @@ if (isset($_POST['update_status'])) {
                                 $requiredQty *= $sugarMultiplier;
                             }
 
-                            // ✅ CONVERT UNITS BEFORE CALCULATING DEDUCTION
+                            //  CONVERT UNITS BEFORE CALCULATING DEDUCTION
                             $convertedQty = convertToInventoryUnit($requiredQty, $recipeUnit, $invUnit);
                             $totalDeduction = $convertedQty * $orderQty;
 

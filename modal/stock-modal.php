@@ -1,8 +1,7 @@
 <?php
 include '../assets/connect.php';
 
-// Low Stock Items (quantity > 0 AND quantity <= threshold)
-// Use GREATEST to automatically convert negative values to 0
+// Low Stock Items 
 $lowStockSql = "
     SELECT i.ingredientName, 
            GREATEST(inv.quantity, 0) as quantity, 
@@ -24,8 +23,7 @@ if ($lowStockResult) {
   }
 }
 
-// Out of Stock Items (quantity <= 0)
-// Includes both 0 and negative values
+// Out of Stock Items 
 $outOfStockSql = "
     SELECT i.ingredientName, inv.unit
     FROM ingredients i
@@ -44,7 +42,6 @@ if ($outOfStockResult) {
 }
 
 // Expired Items
-// Use GREATEST to handle negative quantities
 $expiredSql = "
     SELECT i.ingredientName, 
            GREATEST(inv.quantity, 0) as quantity, 

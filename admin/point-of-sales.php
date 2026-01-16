@@ -8,7 +8,7 @@ if (!isset($_SESSION['userID']) || ($_SESSION['role'] !== 'Admin' && $_SESSION['
     exit();
 }
 
-//Count Pending Orders
+// Count Pending Orders
 $pendingOrdersQuery = "SELECT COUNT(*) AS pending_count FROM orders WHERE status = 'Pending'";
 $result = mysqli_query($conn, $pendingOrdersQuery);
 
@@ -17,13 +17,10 @@ if ($result && mysqli_num_rows($result) > 0) {
     $row = mysqli_fetch_assoc($result);
     $pendingCount = $row['pending_count'];
 }
-
 ?>
-
 
 <!doctype html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -56,7 +53,6 @@ if ($result && mysqli_num_rows($result) > 0) {
         margin: 0;
     }
 
-    /* Remove number input arrows in Firefox */
     input[type=number] {
         -moz-appearance: textfield;
     }
@@ -189,7 +185,7 @@ if ($result && mysqli_num_rows($result) > 0) {
 
                             <!-- Scrollable receipt list -->
                             <div id="receipt" style="max-height: 600px; overflow-y: auto;">
-                                <!-- receipt items -->
+                                <!-- Receipt items -->
                             </div>
 
                             <div class="container-fluid">
@@ -231,7 +227,8 @@ if ($result && mysqli_num_rows($result) > 0) {
             <div id="modal-placeholder"></div>
 
             <script>
-                // Add this JavaScript function to calculate change
+
+                //  Change Calculator
                 function calculateChange() {
                     const cashInput = document.getElementById('cashInput');
                     const totalValueElement = document.getElementById('totalValue');
@@ -249,15 +246,15 @@ if ($result && mysqli_num_rows($result) > 0) {
                             changeValueElement.classList.remove('text-danger');
                             changeValueElement.classList.add('text-success');
                             changeDisplay.style.display = 'flex';
-                            changeDisplay.style.removeProperty('display'); // Remove inline style
-                            changeDisplay.style.display = 'flex'; // Set to flex
+                            changeDisplay.style.removeProperty('display'); 
+                            changeDisplay.style.display = 'flex';
                         } else {
                             changeValueElement.textContent = '₱' + Math.abs(change).toFixed(2) + ' short';
                             changeValueElement.classList.remove('text-success');
                             changeValueElement.classList.add('text-danger');
                             changeDisplay.style.display = 'flex';
-                            changeDisplay.style.removeProperty('display'); // Remove inline style
-                            changeDisplay.style.display = 'flex'; // Set to flex
+                            changeDisplay.style.removeProperty('display'); 
+                            changeDisplay.style.display = 'flex'; 
                         }
                     } else {
                         changeDisplay.style.display = 'none';
@@ -284,19 +281,12 @@ if ($result && mysqli_num_rows($result) > 0) {
                 }
             </script>
             <script>
-                // ==============================================
-                // POS MODAL QUANTITY MANAGEMENT - COMPLETE SCRIPT
-                // Add this to point-of-sales.php BEFORE the modal loads
-                // ==============================================
 
-                // Global variable to store current product's available quantity
                 window.currentAvailableQuantity = 0;
 
-                // Function to initialize quantity modal when opened
+                // Initialize quantity modal when opened
                 window.initializeQuantityModal = function (availableQty) {
-                    // Set the available quantity
                     window.currentAvailableQuantity = parseInt(availableQty) || 0;
-
                     console.log('✓ Initializing modal with available quantity:', window.currentAvailableQuantity);
 
                     // Update available stock display if it exists
@@ -312,9 +302,8 @@ if ($result && mysqli_num_rows($result) > 0) {
                         quantityInput.value = 1;
                         quantityInput.setAttribute('max', availableQty);
                     }
+                    
                     if (modalQuantityInput) modalQuantityInput.value = 1;
-
-                    // Update button states immediately
                     window.updateButtonStates(1);
                 };
 
@@ -354,26 +343,20 @@ if ($result && mysqli_num_rows($result) > 0) {
                     }
                 };
 
-                // Validate manual input - fires on every keystroke
+                // Validate manual input
                 window.validateQuantityInput = function (event) {
                     const quantityInput = document.getElementById('quantity');
                     const modalQuantityInput = document.getElementById('modal-quantity-input');
 
                     if (quantityInput && modalQuantityInput) {
                         let value = quantityInput.value;
-
                         console.log('⌨️ Input detected:', value, '| Max:', window.currentAvailableQuantity);
-
-                        // Remove any non-digit characters
                         value = value.replace(/\D/g, '');
-
-                        // If empty, don't set anything yet
                         if (value === '') {
                             quantityInput.value = '';
                             return;
                         }
 
-                        // Convert to number
                         let numValue = parseInt(value);
 
                         // If exceeds stock, immediately cap it
@@ -564,6 +547,7 @@ if ($result && mysqli_num_rows($result) > 0) {
                         }
                         sessionStorage.removeItem('selectedCategory'); // Clear after use
                     } else if (products.length > 0) {
+
                         // Select first category by default if no saved selection
                         const firstCategory = document.querySelector('.category-pill');
                         if (firstCategory) {
@@ -589,6 +573,7 @@ if ($result && mysqli_num_rows($result) > 0) {
                     }
 
                     products[categoryIndex].contents.forEach((content, contentIndex) => {
+
                         // Check if product has sizes
                         if (!content.sizes || content.sizes.length === 0) {
                             console.warn('Product has no sizes:', content);
@@ -618,60 +603,58 @@ if ($result && mysqli_num_rows($result) > 0) {
                                 ).join('');
 
                                 sugarIceDropdowns = `
-                    <div class="dropdown mb-2" onclick="event.stopPropagation();">
-                        <button class="btn btn-outline-dark dropdown-toggle w-100" type="button" 
-                                id="${sugarSelectId}" data-bs-toggle="dropdown" aria-expanded="false">
-                            Sugar Level
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="${sugarSelectId}">
-                            ${sugarOptions}
-                        </ul>
-                    </div>
+                                <div class="dropdown mb-2" onclick="event.stopPropagation();">
+                                    <button class="btn btn-outline-dark dropdown-toggle w-100" type="button" 
+                                            id="${sugarSelectId}" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Sugar Level
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="${sugarSelectId}">
+                                        ${sugarOptions}
+                                    </ul>
+                                </div>
 
-                    <div class="dropdown mb-2" onclick="event.stopPropagation();">
-                        <button class="btn btn-outline-dark dropdown-toggle w-100" type="button" 
-                                id="${iceSelectId}" data-bs-toggle="dropdown" aria-expanded="false">
-                            Ice Level
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="${iceSelectId}">
-                            ${iceOptions}
-                        </ul>
-                    </div>`;
+                                <div class="dropdown mb-2" onclick="event.stopPropagation();">
+                                    <button class="btn btn-outline-dark dropdown-toggle w-100" type="button" 
+                                            id="${iceSelectId}" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Ice Level
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="${iceSelectId}">
+                                        ${iceOptions}
+                                    </ul>
+                                </div>`;
                             }
 
                             maincontainer.innerHTML += `
-    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
-        <div class="menu-item border p-3 rounded shadow text-center width-auto card-hover" 
-             style="cursor: pointer; display: flex; flex-direction: column; height: 100%;"
-             onclick="showQuantityModal('${content.productID}', '${content.name} ${size.name}', '${size.price}', '${size.name}', '${sugarSelectId}', '${iceSelectId}', ${content.quantity})">
-            <img src="../assets/img/img-menu/${content.img}" alt="${content.name}" 
-                 class="img-fluid mb-2" style="max-height: 170px; min-height: 120px; pointer-events: none;">
-            <div class="lead menu-name fw-bold">${content.name}</div>
-            <div class="d-flex justify-content-center align-items-center gap-2 my-2">
-                <span class="lead fw-bold menu-price">₱${size.price}</span>
-                <span class="lead menu-size">${size.name}</span>
-            </div>
-           
-            <div style="margin-top: auto;">
-                ${sugarIceDropdowns}
-            </div>
-        </div>
-    </div>`;
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                                <div class="menu-item border p-3 rounded shadow text-center width-auto card-hover" 
+                                    style="cursor: pointer; display: flex; flex-direction: column; height: 100%;"
+                                    onclick="showQuantityModal('${content.productID}', '${content.name} ${size.name}', '${size.price}', '${size.name}', '${sugarSelectId}', '${iceSelectId}', ${content.quantity})">
+                                    <img src="../assets/img/img-menu/${content.img}" alt="${content.name}" 
+                                        class="img-fluid mb-2" style="max-height: 170px; min-height: 120px; pointer-events: none;">
+                                    <div class="lead menu-name fw-bold">${content.name}</div>
+                                    <div class="d-flex justify-content-center align-items-center gap-2 my-2">
+                                        <span class="lead fw-bold menu-price">₱${size.price}</span>
+                                        <span class="lead menu-size">${size.name}</span>
+                                    </div>
+                                
+                                    <div style="margin-top: auto;">
+                                        ${sugarIceDropdowns}
+                                    </div>
+                                </div>
+                            </div>`;
                         });
                     });
-
 
                     setTimeout(() => {
                         document.querySelectorAll(".dropdown-menu .dropdown-item").forEach(item => {
                             item.addEventListener("click", function (e) {
                                 e.preventDefault();
-                                e.stopPropagation(); // Prevent card click when selecting dropdown
+                                e.stopPropagation();
 
                                 const btn = this.closest(".dropdown").querySelector("button");
                                 btn.textContent = this.textContent;
                                 btn.setAttribute("data-value", this.getAttribute("data-value"));
 
-                                // Get the Bootstrap dropdown instance and hide it
                                 const dropdown = bootstrap.Dropdown.getInstance(btn);
                                 if (dropdown) {
                                     dropdown.hide();
@@ -681,7 +664,6 @@ if ($result && mysqli_num_rows($result) > 0) {
 
                         // Initialize dropdowns and handle opening/closing
                         document.querySelectorAll(".dropdown button[data-bs-toggle='dropdown']").forEach(button => {
-                            // Initialize dropdown if not already initialized
                             if (!bootstrap.Dropdown.getInstance(button)) {
                                 new bootstrap.Dropdown(button);
                             }
@@ -707,8 +689,7 @@ if ($result && mysqli_num_rows($result) > 0) {
                     }, 100);
                 }
 
-                // Fixed function to work with your modal structure
-                // Updated showQuantityModal function in point-of-sales.php
+                // Show Quantity Modal
                 function showQuantityModal(productID, name, price, size, sugarSelectId = null, iceSelectId = null, availableQuantity = 0) {
                     console.log('=== showQuantityModal called ===');
                     console.log('Available Quantity passed:', availableQuantity);
@@ -741,13 +722,12 @@ if ($result && mysqli_num_rows($result) > 0) {
                     if (availableStockSpan) availableStockSpan.textContent = availableQuantity;
                     if (modalAvailableQuantity) modalAvailableQuantity.value = availableQuantity;
 
-                    // **CRITICAL: Initialize the quantity validation system**
+                    // Initialize the quantity validation system
                     console.log('Calling initializeQuantityModal with:', availableQuantity);
                     if (typeof initializeQuantityModal === 'function') {
                         initializeQuantityModal(availableQuantity);
                     } else {
                         console.error('initializeQuantityModal function not found!');
-                        // Fallback
                         currentAvailableQuantity = parseInt(availableQuantity) || 0;
                         console.log('Fallback - set currentAvailableQuantity to:', currentAvailableQuantity);
                     }
@@ -775,7 +755,6 @@ if ($result && mysqli_num_rows($result) > 0) {
                     if (modalSugarInput) modalSugarInput.value = sugarLevel;
                     if (modalIceInput) modalIceInput.value = iceLevel;
 
-                    // Show modal
                     console.log('Opening modal...');
                     const modal = new bootstrap.Modal(quantityModal);
                     modal.show();
@@ -795,8 +774,6 @@ if ($result && mysqli_num_rows($result) > 0) {
                             const newValue = currentValue + 1;
                             quantityInput.value = newValue;
                             modalQuantityInput.value = newValue;
-
-                            // Update button states
                             window.updateButtonStates(newValue);
                         }
                     }
@@ -814,8 +791,6 @@ if ($result && mysqli_num_rows($result) > 0) {
                             const newValue = currentValue - 1;
                             quantityInput.value = newValue;
                             modalQuantityInput.value = newValue;
-
-                            // Update button states
                             window.updateButtonStates(newValue);
                         }
                     }
@@ -836,9 +811,7 @@ if ($result && mysqli_num_rows($result) > 0) {
 
                             // Get the Order Now button
                             const orderButton = document.querySelector('.btn-dark-order');
-
                             if (data.cart && data.cart.length > 0) {
-                                // Enable button when cart has items
                                 if (orderButton) {
                                     orderButton.disabled = false;
                                     orderButton.style.opacity = '1';
@@ -860,7 +833,6 @@ if ($result && mysqli_num_rows($result) > 0) {
                     </div>`;
                                 });
                             } else {
-                                // Disable button when cart is empty
                                 if (orderButton) {
                                     orderButton.disabled = true;
                                     orderButton.style.opacity = '0.5';
@@ -891,7 +863,6 @@ if ($result && mysqli_num_rows($result) > 0) {
                 }
 
                 function openPopup() {
-                    // Check if cart has items
                     fetch('../assets/pos-order-handler.php', {
                         method: 'POST',
                         body: new URLSearchParams({ action: 'get_cart' })
@@ -933,13 +904,11 @@ if ($result && mysqli_num_rows($result) > 0) {
                 }
 
                 function confirmOrder() {
-                    // Prevent double submission
                     const confirmBtn = document.querySelector('.btnConfirm');
                     if (confirmBtn.disabled) {
                         return;
                     }
 
-                    // Disable button to prevent double clicks
                     confirmBtn.disabled = true;
                     confirmBtn.textContent = 'Processing...';
 
@@ -959,7 +928,6 @@ if ($result && mysqli_num_rows($result) > 0) {
                     })
                         .then(response => response.json())
                         .then(data => {
-                            // Re-enable button
                             confirmBtn.disabled = false;
                             confirmBtn.textContent = 'CONFIRM ORDER';
 
@@ -981,20 +949,16 @@ if ($result && mysqli_num_rows($result) > 0) {
                                     toast.show();
                                 }
 
-                                // Clear the cart display
                                 loadCartFromSession();
                                 clearCashInput();
                             } else {
-                                // Show error to user
                                 alert('Error placing order: ' + (data.error || 'Unknown error'));
                                 console.error('Order error:', data);
                             }
                         })
                         .catch(error => {
-                            // Re-enable button on error
                             confirmBtn.disabled = false;
                             confirmBtn.textContent = 'CONFIRM ORDER';
-
                             console.error('Error:', error);
                             alert('Failed to place order. Please try again.');
                         });
@@ -1003,7 +967,6 @@ if ($result && mysqli_num_rows($result) > 0) {
 
                 // Function to set up dropdown handlers
                 function setupDropdownHandlers() {
-                    // Handle dropdown selections for order type and payment method
                     document.querySelectorAll('#confirmModal .dropdown-item').forEach(item => {
                         item.addEventListener('click', function (e) {
                             e.preventDefault();
@@ -1021,7 +984,6 @@ if ($result && mysqli_num_rows($result) > 0) {
 
                 // Updated DOMContentLoaded section
                 document.addEventListener("DOMContentLoaded", function () {
-                    // Initialize WOW.js
                     if (typeof WOW !== 'undefined') {
                         new WOW().init();
                     }
@@ -1116,16 +1078,6 @@ if ($result && mysqli_num_rows($result) > 0) {
                     }
                 });
             </script>
-
-            <!-- <script>
-                document.addEventListener("DOMContentLoaded", function () {
-                    // Reload Page every 30 seconds to fetch new orders
-                    setInterval(function () {
-                        location.reload();
-                    }, 30000);
-                });
-            </script> -->
-
             <script src="../assets/js/admin_sidebar.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
                 integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO"
