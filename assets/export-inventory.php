@@ -105,7 +105,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     exit();
 }
 
-// If not a POST request or no action specified, redirect back
 header('Location: inventory-management.php');
 exit();
 ?>

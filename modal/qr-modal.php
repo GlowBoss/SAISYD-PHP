@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
     qrModal.addEventListener("shown.bs.modal", function () {
         qrContainer.innerHTML = "";
 
-        // The URL you want the QR code to open
+       
         var menuUrl = "https://saisydcafe.com/menu.php";
 
         // API endpoint with parameters

@@ -3,7 +3,7 @@ include 'connect.php';
 session_start();
 header('Content-Type: application/json');
 
-// ✅ Validate ID
+// Validate ID
 if (!isset($_GET['id'])) {
     echo json_encode(['error' => 'Missing ID']);
     exit;
@@ -66,7 +66,7 @@ while ($row = mysqli_fetch_assoc($result)) {
     }
 }
 
-// ✅ Return as JSON
+// Return as JSON
 echo json_encode([
     'product' => $product,
     'ingredients' => $ingredients

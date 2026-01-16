@@ -19,7 +19,7 @@ if ($productID <= 0) {
     exit;
 }
 
-// --- Always calculate availableQuantity first ---
+// Always calculate availableQuantity first 
 $sql = "
 SELECT MIN(FLOOR(
     inv.total_quantity /

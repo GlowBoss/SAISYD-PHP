@@ -61,7 +61,6 @@
                         <i class="bi bi-list-check me-2"></i>Your Order
                     </h6>
                     <div id="orderSummaryList" style="font-family: var(--secondaryFont); color: var(--text-color-dark); font-size: 0.8rem; max-height: 80px; overflow-y: auto;">
-                        <!-- Filled dynamically by JS -->
                     </div>
                 </div>
 

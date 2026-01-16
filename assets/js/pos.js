@@ -12,9 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let cartItems = [];
 
-    // ------------------------
     // CATEGORY FILTERING
-    // ------------------------
     const categoryPills = document.querySelectorAll('.category-pill');
     const productGrid = document.getElementById('maincontainer');
     let allProductsData = [];
@@ -56,10 +54,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-
-    // ------------------------
-    // FIX: UPDATE HIDDEN SUGAR/ICE INPUTS
-    // ------------------------
+    // UPDATE HIDDEN SUGAR/ICE INPUTS
     document.querySelectorAll('.dropdown-menu .dropdown-item').forEach(item => {
         item.addEventListener('click', function (e) {
             e.preventDefault();
@@ -73,9 +68,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // ------------------------
     // OPEN QUANTITY MODAL ON CLICK
-    // ------------------------
     document.addEventListener('click', function (e) {
         if (e.target.classList.contains('add-to-order-btn')) {
             const btn = e.target;
@@ -100,9 +93,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // ------------------------
     // ADD TO ORDER FORM (AJAX + CART STORAGE)
-    // ------------------------
     addToOrderForm.addEventListener('submit', function (e) {
         e.preventDefault();
         const formData = new FormData(this);
@@ -140,9 +131,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .catch(err => console.error(err));
     });
 
-    // ------------------------
     // ORDER NOW BUTTON - MODIFIED TO CHECK FOR EMPTY CART
-    // ------------------------
     if (orderNowBtn) {
         orderNowBtn.addEventListener('click', function () {
             // Check if cart is empty
@@ -153,22 +142,22 @@ document.addEventListener('DOMContentLoaded', function () {
                     title: 'No items in cart',
                     text: 'Please add items to your order before proceeding.',
                     showConfirmButton: true,
-                    confirmButtonColor: 'var(--primary-color)', // base color
+                    confirmButtonColor: 'var(--primary-color)',
                     didOpen: () => {
                         const btn = Swal.getConfirmButton();
-                        btn.style.transition = 'background 0.3s'; // smooth hover
+                        btn.style.transition = 'background 0.3s';
                         btn.addEventListener('mouseenter', () => {
-                            btn.style.background = 'var(--btn-hover1)'; // hover color
+                            btn.style.background = 'var(--btn-hover1)';
                         });
                         btn.addEventListener('mouseleave', () => {
-                            btn.style.background = 'var(--primary-color)'; // original color
+                            btn.style.background = 'var(--primary-color)';
                         });
                     },
                     timerProgressBar: false,
                     toast: false,
                     position: 'center'
                 });
-                return; // Stop execution if cart is empty
+                return;
             }
 
 
@@ -202,9 +191,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ------------------------
     // REMOVE ITEM
-    // ------------------------
     document.addEventListener('click', function (e) {
         if (e.target.classList.contains('remove-item-btn')) {
             const index = e.target.dataset.index;
@@ -229,9 +216,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // ------------------------
     // QUANTITY CONTROL
-    // ------------------------
     const qtyInput = document.getElementById('quantity');
     const hiddenQtyInput = document.getElementById('modal-quantity-input');
 
@@ -251,9 +236,7 @@ document.addEventListener('DOMContentLoaded', function () {
         hiddenQtyInput.value = val;
     }
 
-    // ------------------------
-// FIX: UPDATE DROPDOWN BUTTONS + TOGGLE REF NUMBER
-// ------------------------
+// DROPDOWN BUTTONS AND TOGGLE REF NUMBER
 document.querySelectorAll('.dropdown-menu .dropdown-item').forEach(item => {
   item.addEventListener('click', function (e) {
     e.preventDefault();
@@ -265,7 +248,6 @@ document.querySelectorAll('.dropdown-menu .dropdown-item').forEach(item => {
     if (hiddenInput) hiddenInput.value = value;
     if (btn) btn.textContent = value;
 
-    // Show or hide Reference Number if Mobile Payment is selected
     if (hiddenInput && hiddenInput.id === 'paymentModeInput') {
       const refNumberContainer = document.getElementById('refNumberContainer');
       if (value === 'Mobile Payment') {
@@ -277,15 +259,12 @@ document.querySelectorAll('.dropdown-menu .dropdown-item').forEach(item => {
   });
 });
 
-
-    // ------------------------
     // CANCEL ORDER BUTTON
-    // ------------------------
     const cancelOrderBtn = document.getElementById('cancelOrderBtn');
 
     if (cancelOrderBtn) {
         cancelOrderBtn.addEventListener('click', function () {
-            if (cartItems.length === 0) return; // Nothing to clear
+            if (cartItems.length === 0) return;
 
             Swal.fire({
                 title: 'Cancel Order?',
@@ -297,12 +276,11 @@ document.querySelectorAll('.dropdown-menu .dropdown-item').forEach(item => {
                 confirmButtonText: 'Yes, cancel it!'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // 1. Clear front-end
+                  
                     cartItems = [];
                     receiptContainer.innerHTML = '';
                     totalValue.textContent = '0.00';
 
-                    // 2. Clear PHP session via fetch
                     const formData = new FormData();
                     formData.append('cancel_order', '1');
 

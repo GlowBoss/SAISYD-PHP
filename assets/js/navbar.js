@@ -31,12 +31,10 @@ openBtn.addEventListener('click', () => {
     if (mainContent) {
         mainContent.classList.add('blur');
     }
-    document.body.style.overflow = 'hidden'; // Prevent body scrolling
+    document.body.style.overflow = 'hidden'; 
 
-    // Reset WOW.js animations every open
     document.querySelectorAll('#mobileSidebar .nav-link').forEach((el) => {
         el.classList.remove('animate__animated', 'animate__fadeInLeft', 'wow');
-        // FIXED: Force visibility regardless of WOW state
         el.style.visibility = 'visible';
         el.style.opacity = '1';
         void el.offsetWidth;
@@ -46,7 +44,6 @@ openBtn.addEventListener('click', () => {
     new WOW().sync();
 });
 
-// CLOSE SIDEBAR
 function closeSidebar() {
     gsap.to(sidebar, {
         xPercent: -100,
@@ -69,7 +66,7 @@ function closeSidebar() {
     if (mainContent) {
         mainContent.classList.remove('blur');
     }
-    document.body.style.overflow = 'auto'; // Re-enable body scrolling
+    document.body.style.overflow = 'auto';
 }
 
 closeBtn.addEventListener('click', closeSidebar);
@@ -110,7 +107,6 @@ function setActiveBasedOnCurrentPageAndHash() {
             return;
         }
 
-        // Fallback: look for direct hash links
         const directHashLinks = document.querySelectorAll(`.nav-link[href="${currentHash}"]`);
         if (directHashLinks.length > 0) {
             directHashLinks.forEach(link => link.classList.add('active'));
@@ -118,7 +114,6 @@ function setActiveBasedOnCurrentPageAndHash() {
         }
     }
 
-    // Default: set active based on current page
     const currentPageLinks = document.querySelectorAll(`.nav-link[href="${currentPage}"]`);
     currentPageLinks.forEach(link => link.classList.add('active'));
 }
@@ -300,7 +295,6 @@ function initializeSidebarEffects() {
         link.style.transform = 'translateX(20px)';
         link.style.opacity = '0';
         link.style.transition = 'all 0.3s ease';
-        // FIXED: Force visibility for WOW elements
         if (link.classList.contains('wow')) {
             link.style.visibility = 'visible';
         }

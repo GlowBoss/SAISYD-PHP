@@ -19,14 +19,14 @@ if (
 }
 
 $inventoryID   = intval($_POST['inventoryID']);
-$ingredientID  = intval($_POST['ingredientIDEdit']); // ✅ must exist
+$ingredientID  = intval($_POST['ingredientIDEdit']); 
 $ingredient    = trim($_POST['ingredientNameEdit']);
 $quantity      = floatval($_POST['quantityEdit']);
 $unit          = mysqli_real_escape_string($conn, $_POST['unitEdit']);
 $expiration    = $_POST['expirationEdit'];  // YYYY-MM-DD
 $threshold     = floatval($_POST['thresholdEdit']);
 
-// ✅ Ensure ingredientID exists in DB (optional safety check)
+//  Ensure ingredientID exists in DB (optional safety check)
 $checkStmt = $conn->prepare("SELECT ingredientID FROM ingredients WHERE ingredientID = ?");
 $checkStmt->bind_param("i", $ingredientID);
 $checkStmt->execute();
@@ -39,7 +39,7 @@ if ($checkStmt->num_rows === 0) {
 }
 $checkStmt->close();
 
-// ✅ Update inventory row
+//  Update inventory row
 $sql = "UPDATE inventory 
         SET ingredientID = ?, 
             quantity = ?, 

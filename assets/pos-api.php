@@ -6,15 +6,7 @@ try {
     // Update products with 0 or less quantity to unavailable
     $updateQuery = "UPDATE products SET isAvailable = 'No' WHERE availableQuantity <= 0";
     executeQuery($updateQuery);
-
-    // Define which categories should have sugar/ice options based on database categoryIDs
-    // Based on your database:
-    // 1=Espresso Based, 2=Non-Coffee, 3=Frappé, 4=Milktea, 5=Fruit Tea, 6=Fruit Soda
-    // 7=Pasta, 8=Korean Egg-Drop Sandwich, 9=Mini Korean Egg-Drop Sandwich
-    // 10=Rice Meals, 11=Wings (Ala Carte), 12=Combo Meals, 13=Snacks
-    $beverageCategories = [1, 2, 3, 4, 5, 6]; // IDs for beverage categories
-
-    // Step 1: Get all categories that have available products - ORDERED BY NAME
+    $beverageCategories = [1, 2, 3, 4, 5, 6];
     $categoriesResult = executeQuery("
         SELECT DISTINCT c.categoryID, c.categoryName
         FROM categories c
@@ -32,12 +24,7 @@ try {
     while ($cat = $categoriesResult->fetch_assoc()) {
         $categoryID = $cat['categoryID'];
         $categoryName = $cat['categoryName'];
-
-        // Check if this category should have sugar/ice options based on categoryID
         $hasSugarIce = in_array($categoryID, $beverageCategories);
-
-        // Step 2: Get ONLY AVAILABLE products under each category
-        // Use prepared statement to prevent SQL injection
         $stmt = $conn->prepare("
             SELECT productID, productName, image, availableQuantity, price, isAvailable
             FROM products
@@ -63,7 +50,7 @@ try {
             $basePrice = (float) $prod['price'];
             $productID = $prod['productID'];
 
-            // For now, using single Regular size
+            
             $sizes = [
                 [
                     "name" => "",

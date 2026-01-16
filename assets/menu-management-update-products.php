@@ -20,7 +20,7 @@ $price = intval($_POST['price']);
 $categoryID = intval($_POST['categoryID']);
 $ingredients = isset($_POST['ingredients']) ? json_decode($_POST['ingredients'], true) : [];
 
-// Handle file upload
+// File upload
 $imageFile = '';
 if (isset($_FILES['attachment']) && $_FILES['attachment']['error'] === UPLOAD_ERR_OK) {
     $uploadDir = '../assets/img/img-menu/';
