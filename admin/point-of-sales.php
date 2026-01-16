@@ -194,14 +194,29 @@ if ($result && mysqli_num_rows($result) > 0) {
 
                             <div class="container-fluid">
                                 <div class="line-divider" style="height: 1px;"></div>
+
                                 <div class="mt-4 d-flex flex-row justify-content-between">
                                     <div><b>TOTAL</b></div>
                                     <div><b id="totalValue">0</b></div>
                                 </div>
+
+                                <!-- Cash Input Section -->
+                                <div class="mt-3">
+                                    <label for="cashInput" class="form-label fw-bold">Cash Amount</label>
+                                    <input type="number" class="form-control" id="cashInput"
+                                        placeholder="Enter cash amount" min="0" step="0.01" oninput="calculateChange()">
+                                </div>
+
+                                <!-- Change Display -->
+                                <div class="mt-3 d-flex flex-row justify-content-between align-items-center p-2 bg-light rounded"
+                                    id="changeDisplay" style="display: none !important;">
+                                    <div><b>CHANGE</b></div>
+                                    <div><b class="text-success" id="changeValue">0.00</b></div>
+                                </div>
+
                                 <div class="d-flex flex-column flex-md-row justify-content-center gap-3 mt-4">
                                     <button class="btn btn-dark-order w-100 w-md-auto py-2 px-3"
-                                        onclick="openPopup()">Order
-                                        Now</button>
+                                        onclick="openPopup()">Order Now</button>
                                     <button class="btn btn-dark-cancel w-100 w-md-auto py-2 px-3"
                                         onclick="cancelOrder()">Cancel Order</button>
                                 </div>
@@ -214,6 +229,60 @@ if ($result && mysqli_num_rows($result) > 0) {
 
             <!-- Order Confirmation Modal -->
             <div id="modal-placeholder"></div>
+
+            <script>
+                // Add this JavaScript function to calculate change
+                function calculateChange() {
+                    const cashInput = document.getElementById('cashInput');
+                    const totalValueElement = document.getElementById('totalValue');
+                    const changeValueElement = document.getElementById('changeValue');
+                    const changeDisplay = document.getElementById('changeDisplay');
+
+                    const cashAmount = parseFloat(cashInput.value) || 0;
+                    const totalAmount = parseFloat(totalValueElement.textContent) || 0;
+
+                    if (cashAmount > 0 && totalAmount > 0) {
+                        const change = cashAmount - totalAmount;
+
+                        if (change >= 0) {
+                            changeValueElement.textContent = '₱' + change.toFixed(2);
+                            changeValueElement.classList.remove('text-danger');
+                            changeValueElement.classList.add('text-success');
+                            changeDisplay.style.display = 'flex';
+                            changeDisplay.style.removeProperty('display'); // Remove inline style
+                            changeDisplay.style.display = 'flex'; // Set to flex
+                        } else {
+                            changeValueElement.textContent = '₱' + Math.abs(change).toFixed(2) + ' short';
+                            changeValueElement.classList.remove('text-success');
+                            changeValueElement.classList.add('text-danger');
+                            changeDisplay.style.display = 'flex';
+                            changeDisplay.style.removeProperty('display'); // Remove inline style
+                            changeDisplay.style.display = 'flex'; // Set to flex
+                        }
+                    } else {
+                        changeDisplay.style.display = 'none';
+                    }
+                }
+
+                // Function to clear cash input and change display
+                function clearCashInput() {
+                    const cashInput = document.getElementById('cashInput');
+                    const changeDisplay = document.getElementById('changeDisplay');
+                    const changeValue = document.getElementById('changeValue');
+
+                    if (cashInput) {
+                        cashInput.value = '';
+                    }
+                    if (changeDisplay) {
+                        changeDisplay.style.display = 'none';
+                    }
+                    if (changeValue) {
+                        changeValue.textContent = '0.00';
+                        changeValue.classList.remove('text-danger');
+                        changeValue.classList.add('text-success');
+                    }
+                }
+            </script>
             <script>
                 // ==============================================
                 // POS MODAL QUANTITY MANAGEMENT - COMPLETE SCRIPT
@@ -813,6 +882,7 @@ if ($result && mysqli_num_rows($result) > 0) {
                         .then(data => {
                             if (data.success) {
                                 loadCartFromSession();
+                                clearCashInput();
                             }
                         })
                         .catch(error => {
@@ -866,7 +936,7 @@ if ($result && mysqli_num_rows($result) > 0) {
                     // Prevent double submission
                     const confirmBtn = document.querySelector('.btnConfirm');
                     if (confirmBtn.disabled) {
-                        return; // Already processing
+                        return;
                     }
 
                     // Disable button to prevent double clicks
@@ -913,6 +983,7 @@ if ($result && mysqli_num_rows($result) > 0) {
 
                                 // Clear the cart display
                                 loadCartFromSession();
+                                clearCashInput();
                             } else {
                                 // Show error to user
                                 alert('Error placing order: ' + (data.error || 'Unknown error'));
@@ -928,6 +999,7 @@ if ($result && mysqli_num_rows($result) > 0) {
                             alert('Failed to place order. Please try again.');
                         });
                 }
+
 
                 // Function to set up dropdown handlers
                 function setupDropdownHandlers() {
@@ -1020,13 +1092,13 @@ if ($result && mysqli_num_rows($result) > 0) {
                                 });
                             }
 
-                            // Add event listener to confirm button if it exists
+                            
                             const confirmBtn = document.querySelector('.btnConfirm');
                             if (confirmBtn) {
                                 confirmBtn.addEventListener('click', confirmOrder);
                             }
 
-                            // Set up dropdown handlers
+                            
                             setupDropdownHandlers();
                         })
                         .catch(error => {
